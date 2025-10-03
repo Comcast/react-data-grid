@@ -1,4 +1,4 @@
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent, type Locator } from '@vitest/browser/context';
 import { css } from '@linaria/core';
 
 import { DataGrid } from '../../src';
@@ -48,12 +48,8 @@ export function getHeaderCellsNew(...names: readonly string[]) {
   return names.map((name) => getHeaderCell(name));
 }
 
-export function getRow(name: string) {
-  return page.getByRole('row', { name, exact: true });
-}
-
-export function getRowsNew(...names: readonly string[]) {
-  return names.map(getRow);
+export function getRowByCellOrCellName(cell: string | Locator) {
+  return page.getByRole('row').filter({ has: typeof cell === 'string' ? getCell(cell) : cell });
 }
 
 export function getCell(name: string) {
@@ -70,6 +66,10 @@ export function getSelectAllCheckbox() {
 
 export function getRows() {
   return page.getByRole('row').elements().slice(1);
+}
+
+export function getRowsNew() {
+  return page.getByRole('row');
 }
 
 export function getCellsAtRowIndex(rowIdx: number) {
@@ -126,4 +126,12 @@ export async function scrollGrid({
 export async function tabIntoGrid() {
   await userEvent.click(page.getByRole('button', { name: 'Before' }));
   await userEvent.tab();
+}
+
+export function testCount(locator: Locator, expectedCount: number) {
+  return expect.poll(() => locator.elements()).toHaveLength(expectedCount);
+}
+
+export function testRowCount(expectedLength: number) {
+  return testCount(getRowsNew(), expectedLength);
 }
