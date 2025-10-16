@@ -1,2 +1,0 @@
-import{l as e,m as t}from"./index-ChpKXmoL.js";var n=t(e()),r=`c1tgi1fh`;function i({tabIndex:e,expanded:t,onCellExpand:i}){function a(e){(e.key===` `||e.key===`Enter`)&&(e.preventDefault(),i())}return(0,n.jsx)(`div`,{className:r,onClick:i,onKeyDown:a,children:(0,n.jsx)(`span`,{tabIndex:e,children:t?`▼`:`▶`})})}export{i as t};
-//# sourceMappingURL=CellExpanderFormatter-B2b4uesa.js.map
