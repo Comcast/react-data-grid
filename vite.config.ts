@@ -105,6 +105,7 @@ export default defineConfig(({ command, isPreview }) => ({
     sequence: {
       shuffle: true
     },
+    slowTestThreshold: 1000,
     projects: [
       {
         extends: true,
