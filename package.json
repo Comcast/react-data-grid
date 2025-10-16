@@ -1,6 +1,6 @@
 {
   "name": "react-data-grid",
-  "version": "7.0.0-beta.57",
+  "version": "7.0.0-beta.58",
   "license": "MIT",
   "description": "Feature-rich and customizable data grid React component",
   "keywords": [
@@ -58,7 +58,7 @@
     "@linaria/core": "^6.3.0",
     "@tanstack/react-router": "^1.132.31",
     "@tanstack/router-plugin": "^1.132.31",
-    "@types/node": "^24.6.2",
+    "@types/node": "^24.8.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
