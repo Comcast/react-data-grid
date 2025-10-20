@@ -95,6 +95,8 @@ export default defineConfig(({ command, isPreview }) => ({
   },
   test: {
     globals: true,
+    slowTestThreshold: 1000,
+    testTimeout: 40_000,
     coverage: {
       provider: 'istanbul',
       enabled: isCI,
@@ -124,6 +126,10 @@ export default defineConfig(({ command, isPreview }) => ({
               },
               {
                 browser: 'firefox',
+                context: { viewport }
+              },
+              {
+                browser: 'webkit',
                 context: { viewport }
               }
             ],

@@ -29,10 +29,10 @@ jobs:
       - name: Build website
         run: node --run build:website
       - name: Install Playwright Browsers
-        run: npx playwright install chromium firefox
+        run: npx playwright install --with-deps
       - name: Test
         run: node --run test
-        timeout-minutes: 4
+        timeout-minutes: 10
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
