@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.27.1",
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.2.6",
     "@eslint-react/eslint-plugin": "^2.0.2",
     "@eslint/markdown": "^7.3.0",
     "@faker-js/faker": "^10.0.0",
@@ -73,7 +73,7 @@
     "eslint": "^9.36.0",
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^6.1.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-sonarjs": "^3.0.5",
     "eslint-plugin-testing-library": "^7.10.0",
     "jspdf": "^3.0.1",
