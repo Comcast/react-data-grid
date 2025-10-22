@@ -43,13 +43,13 @@ const columns: readonly Column<Row>[] = [
 ];
 
 test('cannot resize or auto resize column when resizable is not specified', async () => {
-  setup<Row, unknown>({ columns, rows: [] });
+  await setup<Row, unknown>({ columns, rows: [] });
   await expect.element(getResizeHandle('col1')).not.toBeInTheDocument();
 });
 
 test('should resize column when dragging the handle', async () => {
   const onColumnResize = vi.fn();
-  setup<Row, unknown>({ columns, rows: [], onColumnResize });
+  await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   const grid = getGrid();
   expect(onColumnResize).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
@@ -59,7 +59,7 @@ test('should resize column when dragging the handle', async () => {
 });
 
 test('should use the maxWidth if specified when dragging the handle', async () => {
-  setup<Row, unknown>({ columns, rows: [] });
+  await setup<Row, unknown>({ columns, rows: [] });
   const grid = getGrid();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px ' });
   await resize('col2', 1000);
@@ -67,7 +67,7 @@ test('should use the maxWidth if specified when dragging the handle', async () =
 });
 
 test('should use the minWidth if specified when dragging the handle', async () => {
-  setup<Row, unknown>({ columns, rows: [] });
+  await setup<Row, unknown>({ columns, rows: [] });
   const grid = getGrid();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   await resize('col2', -150);
@@ -76,7 +76,7 @@ test('should use the minWidth if specified when dragging the handle', async () =
 
 test('should resize column using keboard', async () => {
   const onColumnResize = vi.fn();
-  setup<Row, unknown>({ columns, rows: [], onColumnResize });
+  await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   const grid = getGrid();
   expect(onColumnResize).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
@@ -95,7 +95,7 @@ test('should resize column using keboard', async () => {
 
 test('should use the maxWidth if specified when resizing using keyboard', async () => {
   const onColumnResize = vi.fn();
-  setup<Row, unknown>({ columns, rows: [], onColumnResize });
+  await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   const grid = getGrid();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px ' });
   const col2 = getHeaderCell('col2');
@@ -107,7 +107,7 @@ test('should use the maxWidth if specified when resizing using keyboard', async 
 
 test('should use the minWidth if specified resizing using keyboard', async () => {
   const onColumnResize = vi.fn();
-  setup<Row, unknown>({ columns, rows: [], onColumnResize });
+  await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   const grid = getGrid();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   const col2 = getHeaderCell('col2');
@@ -119,7 +119,7 @@ test('should use the minWidth if specified resizing using keyboard', async () =>
 
 test('should auto resize column when resize handle is double clicked', async () => {
   const onColumnResize = vi.fn();
-  setup<Row, unknown>({
+  await setup<Row, unknown>({
     columns,
     rows: [
       {
@@ -147,7 +147,7 @@ test('should auto resize column when resize handle is double clicked', async () 
 });
 
 test('should use the maxWidth if specified on auto resize', async () => {
-  setup<Row, unknown>({
+  await setup<Row, unknown>({
     columns,
     rows: [
       {
@@ -163,7 +163,7 @@ test('should use the maxWidth if specified on auto resize', async () => {
 });
 
 test('should use the minWidth if specified on auto resize', async () => {
-  setup<Row, unknown>({
+  await setup<Row, unknown>({
     columns,
     rows: [
       {
@@ -180,7 +180,7 @@ test('should use the minWidth if specified on auto resize', async () => {
 
 test('should remeasure flex columns when resizing a column', async () => {
   const onColumnResize = vi.fn();
-  setup<
+  await setup<
     {
       readonly col1: string;
       readonly col2: string;
