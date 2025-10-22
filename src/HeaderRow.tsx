@@ -1,8 +1,7 @@
 import { memo, useState } from 'react';
 import { css } from '@linaria/core';
-import clsx from 'clsx';
 
-import { getColSpan } from './utils';
+import { classnames, getColSpan } from './utils';
 import type { CalculatedColumn, Direction, Maybe, Position, ResizedWidth } from './types';
 import type { DataGridProps } from './DataGrid';
 import HeaderCell from './HeaderCell';
@@ -97,7 +96,7 @@ function HeaderRow<R, SR, K extends React.Key>({
     <div
       role="row"
       aria-rowindex={rowIdx} // aria-rowindex is 1 based
-      className={clsx(
+      className={classnames(
         headerRowClassname,
         {
           [rowSelectedClassname]: selectedCellIdx === -1

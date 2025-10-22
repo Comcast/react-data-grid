@@ -1,6 +1,6 @@
 import type { Column } from '../../src';
 import { rowClassname } from '../../src/style/row';
-import { getRowsNew, setup } from './utils';
+import { getRowByCellName, setup } from './utils';
 
 interface Row {
   id: number;
@@ -15,10 +15,15 @@ test('rowClass is undefined', async () => {
     rows,
     rowClass: undefined
   });
-  const [row1, row2, row3] = getRowsNew('0', '1', '2');
-  await expect.element(row1).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
-  await expect.element(row2).toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
-  await expect.element(row3).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect
+    .element(getRowByCellName('0'))
+    .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect
+    .element(getRowByCellName('1'))
+    .toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
+  await expect
+    .element(getRowByCellName('2'))
+    .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
 });
 
 test('rowClass returns a string', async () => {
@@ -27,10 +32,15 @@ test('rowClass returns a string', async () => {
     rows,
     rowClass: (row) => `my-row-${row.id}`
   });
-  const [row1, row2, row3] = getRowsNew('0', '1', '2');
-  await expect.element(row1).toHaveClass(`${rowClassname} rdg-row-even my-row-0`, { exact: true });
-  await expect.element(row2).toHaveClass(`${rowClassname} rdg-row-odd my-row-1`, { exact: true });
-  await expect.element(row3).toHaveClass(`${rowClassname} rdg-row-even my-row-2`, { exact: true });
+  await expect
+    .element(getRowByCellName('0'))
+    .toHaveClass(`${rowClassname} rdg-row-even my-row-0`, { exact: true });
+  await expect
+    .element(getRowByCellName('1'))
+    .toHaveClass(`${rowClassname} rdg-row-odd my-row-1`, { exact: true });
+  await expect
+    .element(getRowByCellName('2'))
+    .toHaveClass(`${rowClassname} rdg-row-even my-row-2`, { exact: true });
 });
 
 test('rowClass returns undefined', async () => {
@@ -39,8 +49,13 @@ test('rowClass returns undefined', async () => {
     rows,
     rowClass: () => undefined
   });
-  const [row1, row2, row3] = getRowsNew('0', '1', '2');
-  await expect.element(row1).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
-  await expect.element(row2).toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
-  await expect.element(row3).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect
+    .element(getRowByCellName('0'))
+    .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect
+    .element(getRowByCellName('1'))
+    .toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
+  await expect
+    .element(getRowByCellName('2'))
+    .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
 });

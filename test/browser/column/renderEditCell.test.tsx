@@ -4,7 +4,7 @@ import { commands, page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
-import { getCell, getCellsAtRowIndex, getGrid, getSelectedCell } from '../utils';
+import { getCell, getCellsAtRowIndex, getGrid, getSelectedCell, testCount } from '../utils';
 
 interface Row {
   col1: number;
@@ -98,15 +98,15 @@ describe('Editor', () => {
       .getByRole('row')
       .filter({ has: getSelectedCell() })
       .getByRole('gridcell');
-    await expect.poll(() => selectedRowCells.elements().length).toBe(2);
+    await testCount(selectedRowCells, 2);
     await commands.scrollGrid({ scrollTop: 2001 });
-    await expect.poll(() => selectedRowCells.elements().length).toBe(1);
+    await testCount(selectedRowCells, 1);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).not.toBeInTheDocument();
     expect(getGrid().element().scrollTop).toBe(2001);
     // TODO: await userEvent.keyboard('123'); fails in FF
     await userEvent.keyboard('{enter}123');
-    await expect.poll(() => selectedRowCells.elements().length).toBe(2);
+    await testCount(selectedRowCells, 2);
     await expect.element(editor).toHaveValue(123);
     expect(getGrid().element().scrollTop).toBe(0);
   });

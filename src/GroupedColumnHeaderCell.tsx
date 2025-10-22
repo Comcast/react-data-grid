@@ -1,7 +1,5 @@
-import clsx from 'clsx';
-
 import { useRovingTabIndex } from './hooks';
-import { getHeaderCellRowSpan, getHeaderCellStyle } from './utils';
+import { classnames, getHeaderCellRowSpan, getHeaderCellStyle } from './utils';
 import type { CalculatedColumnParent } from './types';
 import type { GroupedColumnHeaderRowProps } from './GroupedColumnHeaderRow';
 import { cellClassname } from './style/cell';
@@ -39,7 +37,7 @@ export default function GroupedColumnHeaderCell<R, SR>({
       aria-rowspan={rowSpan}
       aria-selected={isCellSelected}
       tabIndex={tabIndex}
-      className={clsx(cellClassname, column.headerCellClass)}
+      className={classnames(cellClassname, column.headerCellClass)}
       style={{
         ...getHeaderCellStyle(column, rowIdx, rowSpan),
         gridColumnStart: index,

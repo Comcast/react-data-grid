@@ -9,13 +9,16 @@ const isCI = process.env.CI === 'true';
 const isTest = process.env.NODE_ENV === 'test';
 
 // TODO: remove when `userEvent.pointer` is supported
-const resizeColumn: BrowserCommand<[resizeBy: number | readonly number[]]> = async (
+const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
   context,
+  name,
   resizeBy
 ) => {
   const page = context.page;
   const frame = await context.frame();
-  const resizeHandle = frame.locator('[role="columnheader"][aria-colindex="2"] div');
+  const resizeHandle = frame
+    .getByRole('columnheader', { name, exact: true })
+    .locator('.rdg-resize-handle');
   const { x, y } = (await resizeHandle.boundingBox())!;
   await resizeHandle.hover({
     position: { x: 5, y: 5 }
@@ -106,6 +109,7 @@ export default defineConfig(({ command, isPreview }) => ({
     sequence: {
       shuffle: true
     },
+    slowTestThreshold: 1000,
     projects: [
       {
         extends: true,

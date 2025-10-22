@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
-import clsx from 'clsx';
 
-import type { CalculatedColumn, CalculatedColumnOrColumnGroup } from '../types';
+import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
 import { cellClassname, cellFrozenClassname } from '../style/cell';
 
 export function getRowStyle(rowIdx: number): CSSProperties {
@@ -45,11 +44,33 @@ export function getCellStyle<R, SR>(
   };
 }
 
+type ClassValue = Maybe<string> | Record<string, boolean> | false;
+
+export function classnames(...args: readonly ClassValue[]) {
+  let classname = '';
+
+  for (const arg of args) {
+    if (arg) {
+      if (typeof arg === 'string') {
+        classname += ` ${arg}`;
+      } else if (typeof arg === 'object') {
+        for (const key in arg) {
+          if (arg[key]) {
+            classname += ` ${key}`;
+          }
+        }
+      }
+    }
+  }
+
+  return classname.trimStart();
+}
+
 export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
-  ...extraClasses: Parameters<typeof clsx>
+  ...extraClasses: readonly ClassValue[]
 ): string {
-  return clsx(
+  return classnames(
     cellClassname,
     {
       [cellFrozenClassname]: column.frozen

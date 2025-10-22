@@ -1,8 +1,7 @@
 import { memo } from 'react';
 import { css } from '@linaria/core';
-import clsx from 'clsx';
 
-import { getColSpan, getRowStyle } from './utils';
+import { classnames, getColSpan, getRowStyle } from './utils';
 import type { RenderRowProps } from './types';
 import { cell, cellFrozen } from './style/cell';
 import {
@@ -90,7 +89,7 @@ function SummaryRow<R, SR>({
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
-      className={clsx(
+      className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,

@@ -1,7 +1,7 @@
-import { page, userEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 
 import type { Column, DataGridProps } from '../../src';
-import { getRows, setup, tabIntoGrid } from './utils';
+import { getGrid, setup, tabIntoGrid, testRowCount } from './utils';
 
 type Row = number;
 
@@ -23,7 +23,7 @@ function setupGrid(rowHeight: DataGridProps<Row>['rowHeight']) {
 function expectGridRows(rowHeightFn: (row: number) => number, expected: string) {
   setupGrid(rowHeightFn);
 
-  const grid = page.getByRole('grid').element() as HTMLDivElement;
+  const grid = getGrid().element() as HTMLDivElement;
   const gridTemplateRows = grid.style.gridTemplateRows;
 
   expect(gridTemplateRows).toBe(expected);
@@ -32,33 +32,34 @@ function expectGridRows(rowHeightFn: (row: number) => number, expected: string) 
 test('rowHeight is number', async () => {
   setupGrid(40);
 
-  const grid = page.getByRole('grid').element();
-  expect(grid).toHaveStyle({
+  const grid = getGrid();
+  await expect.element(grid).toHaveStyle({
     gridTemplateRows:
       '40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px'
   });
-  expect(getRows()).toHaveLength(30);
-
+  await testRowCount(31);
   await tabIntoGrid();
-  expect(grid.scrollTop).toBe(0);
+  const gridEl = grid.element();
+  expect(gridEl.scrollTop).toBe(0);
   await userEvent.keyboard('{Control>}{end}');
-  expect(grid.scrollTop + grid.clientHeight).toBe(grid.scrollHeight);
+  expect(gridEl.scrollTop + gridEl.clientHeight).toBe(gridEl.scrollHeight);
 });
 
 test('rowHeight is function', async () => {
   setupGrid((row) => [40, 60, 80][row % 3]);
 
-  const grid = page.getByRole('grid').element();
-  expect(grid).toHaveStyle({
+  const grid = getGrid();
+  await expect.element(grid).toHaveStyle({
     gridTemplateRows:
       '35px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px'
   });
-  expect(getRows()).toHaveLength(22);
+  await testRowCount(23);
 
   await tabIntoGrid();
-  expect(grid.scrollTop).toBe(0);
+  const gridEl = grid.element();
+  expect(gridEl.scrollTop).toBe(0);
   await userEvent.keyboard('{Control>}{end}');
-  expect(grid.scrollTop + grid.clientHeight).toBe(grid.scrollHeight);
+  expect(gridEl.scrollTop + gridEl.clientHeight).toBe(gridEl.scrollHeight);
 });
 
 test('rowHeight with repeat pattern - multiple identical heights', () => {

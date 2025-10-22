@@ -2,7 +2,7 @@ import { commands, page, userEvent } from 'vitest/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import { getSelectedCell, setup, tabIntoGrid, validateCellPosition } from './utils';
+import { getSelectedCell, setup, tabIntoGrid, testCount, validateCellPosition } from './utils';
 
 type Row = undefined;
 
@@ -258,7 +258,7 @@ test('navigation when selected cell not in the viewport', async () => {
   // TODO: replace with `toHaveLength` when migrating to v4
   await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
   await commands.scrollGrid({ scrollTop: 0 });
-  await expect.poll(() => selectedRowCells.elements().length).toBe(1);
+  await testCount(selectedRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
   await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
