@@ -90,7 +90,7 @@ describe('Custom cell renderer', () => {
       );
     }
 
-    page.render(<Test />);
+    await page.render(<Test />);
 
     const [cell] = getCells();
     expect(cell).toHaveTextContent('value: 1');
@@ -135,7 +135,7 @@ test('Focus child if it sets tabIndex', async () => {
     }
   };
 
-  page.render(<DataGrid columns={[column]} rows={[{ id: 1 }]} />);
+  await page.render(<DataGrid columns={[column]} rows={[{ id: 1 }]} />);
 
   const button1 = page.getByRole('button', { name: 'Button 1' });
   const button2 = page.getByRole('button', { name: 'Button 2' });
@@ -190,7 +190,7 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
     );
   }
 
-  page.render(<FormatterTest />);
+  await page.render(<FormatterTest />);
 
   await userEvent.click(getCellsAtRowIndex(0)[0]);
   expect(getCellsAtRowIndex(0)[0]).toHaveFocus();

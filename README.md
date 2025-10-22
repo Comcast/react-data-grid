@@ -579,8 +579,8 @@ function MyGrid() {
   return <DataGrid aria-label="my-grid" columns={columns} rows={rows} />;
 }
 
-test('grid', () => {
-  render(<MyGrid />);
+test('grid', async () => {
+  await render(<MyGrid />);
   const grid = screen.getByRole('grid', { name: 'my-grid' });
 });
 ```

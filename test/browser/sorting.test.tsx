@@ -30,7 +30,7 @@ function TestGrid() {
 }
 
 function setup() {
-  page.render(<TestGrid />);
+  return page.render(<TestGrid />);
 }
 
 function testSortColumns(expectedValue: readonly SortColumn[]) {
@@ -40,7 +40,7 @@ function testSortColumns(expectedValue: readonly SortColumn[]) {
 }
 
 test('should not sort if sortable is false', async () => {
-  setup();
+  await setup();
   const headerCell = getHeaderCell('colD');
   await userEvent.click(headerCell);
   await expect.element(headerCell).not.toHaveAttribute('aria-sort');
@@ -48,7 +48,7 @@ test('should not sort if sortable is false', async () => {
 });
 
 test('single column sort', async () => {
-  setup();
+  await setup();
   const headerCell = getHeaderCell('colA');
   await userEvent.click(headerCell);
   await expect.element(headerCell).toHaveAttribute('aria-sort', 'ascending');
@@ -64,7 +64,7 @@ test('single column sort', async () => {
 });
 
 test('multi column sort', async () => {
-  setup();
+  await setup();
   const headerCell1 = getHeaderCell('colA', false);
   const headerCell2 = getHeaderCell('colB', false);
   const headerCell3 = getHeaderCell('colC', false);
@@ -108,7 +108,7 @@ test('multi column sort', async () => {
 });
 
 test('multi column sort with metakey', async () => {
-  setup();
+  await setup();
   const [headerCell1, headerCell2] = getHeaderCellsNew('colA', 'colB');
   await userEvent.click(headerCell1);
   await userEvent.keyboard('{Meta>}');
@@ -120,7 +120,7 @@ test('multi column sort with metakey', async () => {
 });
 
 test('multi column sort with keyboard', async () => {
-  setup();
+  await setup();
   const headerCell1 = getHeaderCell('colA');
   await userEvent.click(headerCell1);
   await userEvent.keyboard(' {arrowright}{Control>}{enter}');

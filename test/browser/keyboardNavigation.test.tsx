@@ -287,13 +287,13 @@ test('reset selected cell when column is removed', async () => {
     return <DataGrid columns={columns} rows={rows} />;
   }
 
-  const { rerender } = page.render(<Test columns={columns} />);
+  const { rerender } = await page.render(<Test columns={columns} />);
 
   await userEvent.tab();
   await userEvent.keyboard('{arrowdown}{arrowright}');
   await validateCellPosition(1, 1);
 
-  rerender(<Test columns={[columns[0]]} />);
+  await rerender(<Test columns={[columns[0]]} />);
 
   await expect.element(getSelectedCell()).not.toBeInTheDocument();
 });
@@ -309,13 +309,13 @@ test('reset selected cell when row is removed', async () => {
     return <DataGrid columns={columns} rows={rows} />;
   }
 
-  const { rerender } = page.render(<Test rows={rows} />);
+  const { rerender } = await page.render(<Test rows={rows} />);
 
   await userEvent.tab();
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowright}');
   await validateCellPosition(1, 2);
 
-  rerender(<Test rows={[rows[0]]} />);
+  await rerender(<Test rows={[rows[0]]} />);
 
   await expect.element(getSelectedCell()).not.toBeInTheDocument();
 });

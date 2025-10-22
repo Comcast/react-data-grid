@@ -55,7 +55,7 @@ async function testScroll(p: PartialPosition) {
 }
 
 test('scrollToCell', async () => {
-  page.render(<Grid />);
+  await page.render(<Grid />);
   await validateCellVisibility('0×0', true);
   await validateCellVisibility('40×30', false);
   await validateCellVisibility('0×51', true);

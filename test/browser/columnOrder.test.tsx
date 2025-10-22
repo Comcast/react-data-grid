@@ -32,9 +32,9 @@ test('column order', async () => {
   async function run(columns: readonly Column<unknown>[]) {
     let unmount;
     if (groupBy === undefined) {
-      ({ unmount } = page.render(<DataGrid columns={columns} rows={rows} />));
+      ({ unmount } = await page.render(<DataGrid columns={columns} rows={rows} />));
     } else {
-      ({ unmount } = page.render(
+      ({ unmount } = await page.render(
         <TreeDataGrid
           columns={columns}
           rows={rows}
@@ -49,7 +49,7 @@ test('column order', async () => {
     const headerCells = page.getByRole('columnheader');
     await testCount(headerCells, expected.length);
     expect(headerCells.elements().map((c) => c.textContent)).toStrictEqual(expected);
-    unmount();
+    await unmount();
   }
 
   let expected: readonly string[] = ['', 'frz1', 'frz2', 'std1', 'std2'];

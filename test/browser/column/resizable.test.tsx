@@ -276,7 +276,7 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
     );
   }
 
-  page.render(<TestGrid />);
+  await page.render(<TestGrid />);
 
   const grid = getGrid();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '101px 201px' });

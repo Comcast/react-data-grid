@@ -54,7 +54,7 @@ const rows: readonly Row[] = [
 
 describe('Events', () => {
   it('should not select cell if onCellMouseDown prevents grid default', async () => {
-    page.render(
+    await page.render(
       <EventTest
         onCellMouseDown={(args, event) => {
           if (args.column.key === 'col1') {
@@ -70,7 +70,7 @@ describe('Events', () => {
   });
 
   it('should be able to open editor editor on single click using onCellClick', async () => {
-    page.render(
+    await page.render(
       <EventTest
         onCellClick={(args, event) => {
           if (args.column.key === 'col2') {
@@ -87,7 +87,7 @@ describe('Events', () => {
   });
 
   it('should not open editor editor on double click if onCellDoubleClick prevents default', async () => {
-    page.render(
+    await page.render(
       <EventTest
         onCellDoubleClick={(args, event) => {
           if (args.column.key === 'col1') {
@@ -104,7 +104,7 @@ describe('Events', () => {
 
   it('should call onCellContextMenu when cell is right clicked', async () => {
     const onCellContextMenu = vi.fn();
-    page.render(<EventTest onCellContextMenu={onCellContextMenu} />);
+    await page.render(<EventTest onCellContextMenu={onCellContextMenu} />);
     expect(onCellContextMenu).not.toHaveBeenCalled();
     await userEvent.click(getCell('1'), { button: 'right' });
     expect(onCellContextMenu).toHaveBeenCalledExactlyOnceWith(
@@ -122,7 +122,7 @@ describe('Events', () => {
   it('should call onSelectedCellChange when cell selection is changed', async () => {
     const onSelectedCellChange = vi.fn();
 
-    page.render(<EventTest onSelectedCellChange={onSelectedCellChange} />);
+    await page.render(<EventTest onSelectedCellChange={onSelectedCellChange} />);
 
     expect(onSelectedCellChange).not.toHaveBeenCalled();
 
