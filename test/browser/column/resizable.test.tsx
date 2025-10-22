@@ -10,6 +10,7 @@ interface Row {
 }
 
 function getResizeHandle(name: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return getHeaderCell(name).getBySelector('.rdg-resize-handle');
 }
 
@@ -52,7 +53,6 @@ test('should resize column when dragging the handle', async () => {
   const grid = getGrid();
   expect(onColumnResize).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
-  const [, col2] = getHeaderCells();
   await resize('col2', -50);
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 150px' });
   expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(expect.objectContaining(columns[1]), 150);
