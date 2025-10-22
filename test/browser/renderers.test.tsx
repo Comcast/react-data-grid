@@ -17,14 +17,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
-import {
-  getCell,
-  getHeaderCell,
-  getRowByCellOrCellName,
-  setup,
-  testCount,
-  testRowCount
-} from './utils';
+import { getCell, getHeaderCell, getRowByCellName, setup, testCount, testRowCount } from './utils';
 
 interface Row {
   id: number;
@@ -262,7 +255,7 @@ test('renderCell defined using both contexts and renderers', async () => {
 test('renderRow defined using context', async () => {
   setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
 
-  const row = getRowByCellOrCellName('value 1');
+  const row = getRowByCellName('value 1');
   await expect.element(row).toHaveClass('global');
   await expect.element(row).not.toHaveClass('local');
 });
@@ -274,7 +267,7 @@ test('renderRow defined using both contexts and renderers', async () => {
     renderers: { renderRow: renderLocalRow }
   });
 
-  const row = getRowByCellOrCellName('value 1');
+  const row = getRowByCellName('value 1');
   await expect.element(row).toHaveClass('local');
   await expect.element(row).not.toHaveClass('global');
 });

@@ -1,6 +1,6 @@
 import type { Column } from '../../src';
 import { rowClassname } from '../../src/style/row';
-import { getRowByCellOrCellName, setup } from './utils';
+import { getRowByCellName, setup } from './utils';
 
 interface Row {
   id: number;
@@ -16,13 +16,13 @@ test('rowClass is undefined', async () => {
     rowClass: undefined
   });
   await expect
-    .element(getRowByCellOrCellName('0'))
+    .element(getRowByCellName('0'))
     .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('1'))
+    .element(getRowByCellName('1'))
     .toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('2'))
+    .element(getRowByCellName('2'))
     .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
 });
 
@@ -33,13 +33,13 @@ test('rowClass returns a string', async () => {
     rowClass: (row) => `my-row-${row.id}`
   });
   await expect
-    .element(getRowByCellOrCellName('0'))
+    .element(getRowByCellName('0'))
     .toHaveClass(`${rowClassname} rdg-row-even my-row-0`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('1'))
+    .element(getRowByCellName('1'))
     .toHaveClass(`${rowClassname} rdg-row-odd my-row-1`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('2'))
+    .element(getRowByCellName('2'))
     .toHaveClass(`${rowClassname} rdg-row-even my-row-2`, { exact: true });
 });
 
@@ -50,12 +50,12 @@ test('rowClass returns undefined', async () => {
     rowClass: () => undefined
   });
   await expect
-    .element(getRowByCellOrCellName('0'))
+    .element(getRowByCellName('0'))
     .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('1'))
+    .element(getRowByCellName('1'))
     .toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
   await expect
-    .element(getRowByCellOrCellName('2'))
+    .element(getRowByCellName('2'))
     .toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
 });

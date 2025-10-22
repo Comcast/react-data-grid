@@ -3,7 +3,7 @@ import { page, userEvent } from '@vitest/browser/context';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import { getCell, getRowByCellOrCellName, getSelectAllCheckbox } from './utils';
+import { getCell, getRowByCell, getSelectAllCheckbox } from './utils';
 
 interface Row {
   id: number;
@@ -49,7 +49,7 @@ function setup(initialRows = defaultRows) {
 }
 
 function getRowByText(rowIdx: number) {
-  return getRowByCellOrCellName(getCell(String(rowIdx + 1)));
+  return getRowByCell(getCell(String(rowIdx + 1)));
 }
 
 function testSelection(rowIdx: number, isSelected: boolean) {
