@@ -18,15 +18,15 @@ describe('renderValue', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should be used by default', () => {
-    setup({ columns, rows });
+  it('should be used by default', async () => {
+    await setup({ columns, rows });
     const [cell1, cell2] = getCells();
     expect(cell1).toHaveTextContent('101');
     expect(cell2).toBeEmptyDOMElement();
   });
 
-  it('should handle non-object values', () => {
-    setup({ columns, rows: [null] });
+  it('should handle non-object values', async () => {
+    await setup({ columns, rows: [null] });
     const [cell1, cell2] = getCells();
     expect(cell1).toBeEmptyDOMElement();
     expect(cell2).toBeEmptyDOMElement();
@@ -49,8 +49,8 @@ describe('Custom cell renderer', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should replace the default cell renderer', () => {
-    setup({ columns, rows });
+  it('should replace the default cell renderer', async () => {
+    await setup({ columns, rows });
     const [cell1, cell2] = getCells();
     expect(cell1).toHaveTextContent('#101');
     expect(cell2).toHaveTextContent('No name');

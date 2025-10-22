@@ -12,7 +12,7 @@ const columns: readonly Column<Row>[] = [{ key: 'id', name: 'ID' }];
 const rows: readonly Row[] = [];
 
 test('headerRowClass is undefined', async () => {
-  setup({
+  await setup({
     columns,
     rows,
     headerRowClass: undefined
@@ -22,7 +22,7 @@ test('headerRowClass is undefined', async () => {
 });
 
 test('headerRowClass is a string', async () => {
-  setup({
+  await setup({
     columns,
     rows,
     headerRowClass: 'my-header-row'

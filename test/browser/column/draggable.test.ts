@@ -27,7 +27,7 @@ const columns: readonly Column<never>[] = [
 
 test('draggable columns', async () => {
   const onColumnsReorder = vi.fn();
-  setup({ columns, rows: [], onColumnsReorder });
+  await setup({ columns, rows: [], onColumnsReorder });
   const [cell1, cell2, cell3, cell4] = getHeaderCellsNew('col1', 'col2', 'col3', 'col4');
 
   await expect.element(cell1).not.toHaveAttribute('draggable');
