@@ -23,9 +23,13 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
   await page.mouse.move(x + 5, y + 5);
   await page.mouse.down();
   resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
+  // https://github.com/vitest-dev/vitest/issues/8099#issuecomment-2959674792
+  const frameScale = Number.parseFloat(
+    (await page.locator('#vitest-tester').getAttribute('data-scale')) ?? '1'
+  );
   let newX = x + 5;
   for (const value of resizeBy) {
-    newX += value;
+    newX += value * frameScale;
     await page.mouse.move(newX, y + 5);
   }
   await page.mouse.up();
@@ -116,6 +120,7 @@ export default defineConfig(
             name: 'browser',
             include: ['test/browser/**/*.test.*'],
             browser: {
+              ui: false,
               // TODO: remove when FF tests are stable
               fileParallelism: false,
               enabled: true,
