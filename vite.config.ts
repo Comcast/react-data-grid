@@ -20,9 +20,7 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
   const { x, y } = (await resizeHandle.boundingBox())!;
-  await resizeHandle.hover({
-    position: { x: 5, y: 5 }
-  });
+  await page.mouse.move(x + 5, y);
   await page.mouse.down();
   resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
   let newX = x + 5;
@@ -121,6 +119,12 @@ export default defineConfig(({ command, isPreview }) => ({
             fileParallelism: false,
             enabled: true,
             provider: playwright(),
+            trace: isCI
+              ? undefined
+              : {
+                  mode: 'on',
+                  trace: 'retain-on-failure'
+                },
             instances: [
               {
                 browser: 'chromium',
