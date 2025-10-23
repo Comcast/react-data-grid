@@ -54,8 +54,11 @@ test('should resize column when dragging the handle', async () => {
   expect(onColumnResize).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   await resize('col2', -50);
-  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 150px' });
-  expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(expect.objectContaining(columns[1]), 150);
+  await testGridTemplateColumns('100px 150px', '100px 150.5px');
+  expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining(columns[1]),
+    satisfyRange(150)
+  );
 });
 
 test('should use the maxWidth if specified when dragging the handle', async () => {
@@ -302,8 +305,16 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
     ])
   );
   expect(onColumnResizeSpy).toHaveBeenCalledTimes(3);
-  expect(onColumnResizeSpy).toHaveBeenNthCalledWith(1, expect.objectContaining(columns[1]), 105);
-  expect(onColumnResizeSpy).toHaveBeenNthCalledWith(2, expect.objectContaining(columns[1]), 110);
+  expect(onColumnResizeSpy).toHaveBeenNthCalledWith(
+    1,
+    expect.objectContaining(columns[1]),
+    satisfyRange(105)
+  );
+  expect(onColumnResizeSpy).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining(columns[1]),
+    satisfyRange(110)
+  );
   expect(onColumnResizeSpy).toHaveBeenNthCalledWith(3, expect.objectContaining(columns[1]), 115);
   onColumnWidthsChangeSpy.mockClear();
   onColumnResizeSpy.mockClear();
@@ -313,10 +324,11 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   expect(onColumnResizeSpy).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '120px 120px' });
   await resize('col2', [5, 5]);
+  const col2Width = navigator.userAgent.includes('Chrome') ? 130 : 130.5;
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
     new Map([
       ['col1', { width: 120, type: 'measured' }],
-      ['col2', { width: 130, type: 'resized' }]
+      ['col2', { width: col2Width, type: 'resized' }]
     ])
   );
 });
@@ -333,4 +345,10 @@ async function testGridTemplateColumns(chrome: string, firefox: string, firefoxC
       ]);
     });
   }
+}
+
+// TODO: remove once scale is set to 1
+function satisfyRange(value: number) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return expect.toSatisfy((v: number) => v >= value - 1 && v <= value + 1);
 }
