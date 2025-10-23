@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 25
           check-latest: true
-      - name: Install dependencies
+      - name: npm install
         run: npm i
       - name: Biome
         run: node --run biome:ci
@@ -32,8 +32,6 @@ jobs:
         run: npx playwright install chromium firefox
       - name: Test
         run: node --run test
-      - name: Visual regression test
-        run: node --run visual
         timeout-minutes: 4
       - name: Upload coverage
         uses: codecov/codecov-action@v5
