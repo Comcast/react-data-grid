@@ -4,7 +4,7 @@ import type { Column } from '../../../src';
 import { getCellsAtRowIndex, getHeaderCells, setup, validateCellPosition } from '../utils';
 
 describe('colSpan', () => {
-  function setupColSpanG(colCount = 15) {
+  function setupColSpan(colCount = 15) {
     type Row = number;
     const columns: Column<Row, Row>[] = [];
     const rows: readonly Row[] = Array.from({ length: 10 }, (_, i) => i);
@@ -38,7 +38,7 @@ describe('colSpan', () => {
   }
 
   it('should merges cells', async () => {
-    await setupColSpanG();
+    await setupColSpan();
     // header
     expect(getHeaderCells()).toHaveLength(13);
 
@@ -93,7 +93,7 @@ describe('colSpan', () => {
   });
 
   it('should navigate between merged cells', async () => {
-    await setupColSpanG();
+    await setupColSpan();
     // header row
     await userEvent.click(getHeaderCells()[7]);
     await validateCellPosition(7, 0);
@@ -171,7 +171,7 @@ describe('colSpan', () => {
   });
 
   it('should scroll to the merged cell when selected', async () => {
-    await setupColSpanG(30);
+    await setupColSpan(30);
     await userEvent.click(getCellsAtRowIndex(10)[23]); // last visible cell (1920/80)
     const spy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
     const testScrollIntoView = () => {
