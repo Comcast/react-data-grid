@@ -141,6 +141,42 @@ export default defineConfig(({ command, isPreview }) => ({
       {
         extends: true,
         test: {
+          name: 'visual',
+          include: ['visual/*.test.*'],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [
+              {
+                browser: 'chromium',
+                context: { viewport }
+              },
+              {
+                browser: 'firefox',
+                context: { viewport }
+              }
+            ],
+            viewport,
+            headless: true,
+            screenshotFailures: false
+          },
+          setupFiles: ['test/setupBrowser.ts']
+        },
+        toMatchScreenshot: {
+          comparatorName: 'pixelmatch',
+          comparatorOptions: {
+            // TODO: finalize these values
+            // 0-1, how different can colors be?
+            threshold: 0.2,
+            // 1% of pixels can differ
+            allowedMismatchedPixelRatio: 0.01
+          }
+        },
+        setupFiles: ['test/setupBrowser.ts']
+      },
+      {
+        extends: true,
+        test: {
           name: 'node',
           include: ['test/node/**/*.test.*'],
           environment: 'node'

@@ -1,0 +1,54 @@
+name: Update Screenshots
+
+on:
+  pull_request:
+    types: [labeled]
+
+env:
+  AUTHOR_NAME: 'github-actions[bot]'
+  AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+  COMMIT_MESSAGE: |
+    Update screenshots
+
+    Co-authored-by: ${{ github.actor }}
+
+jobs:
+  update-screenshots:
+    if: ${{ github.event.label.name == 'Update Screenshots' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    # one at a time per branch
+    concurrency:
+      group: update-screenshots@${{ github.head_ref  }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24
+          check-latest: true
+      - name: Remove label
+        uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0
+        with:
+          labels: 'Update Screenshots'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: npm i
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium firefox
+      - name: Update screenshots
+        run: node --run visual:update
+      - name: Push new screenshots
+        run: |
+          git config --global user.name "${{ env.AUTHOR_NAME }}"
+          git config --global user.email "${{ env.AUTHOR_EMAIL }}"
+          git add visual/__screenshots__/.
+          git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
+          git push --set-upstream origin ${{ github.head_ref }}
