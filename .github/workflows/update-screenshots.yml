@@ -3,6 +3,7 @@ name: Update Screenshots
 on:
   pull_request:
     types: [labeled]
+  workflow_dispatch:
 
 env:
   AUTHOR_NAME: 'github-actions[bot]'
@@ -53,8 +54,3 @@ jobs:
           git add test/visual/__screenshots__/.
           git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push --set-upstream origin ${{ github.head_ref }}
-      - name: Trigger ci workflow
-        run: |
-          gh workflow run ci.yml --ref ${{ github.head_ref }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
