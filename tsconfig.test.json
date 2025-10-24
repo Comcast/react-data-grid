@@ -3,8 +3,8 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
-    "types":["test/**/*", "visual/**/*"],
+    "types": ["vitest/globals"]
   },
-  "include": ["test/**/*"],
+  "include": ["test/**/*", "visual/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
 }
