@@ -144,7 +144,11 @@ export default defineConfig(
             include: ['test/visual/*.test.*'],
             browser: {
               enabled: true,
-              provider: playwright(),
+              provider: playwright({
+                contextOptions: {
+                  viewport
+                }
+              }),
               instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
               viewport,
               headless: true,
