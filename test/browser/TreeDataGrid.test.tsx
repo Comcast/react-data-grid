@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
 import { SelectColumn, textEditor, TreeDataGrid } from '../../src';
@@ -136,7 +136,7 @@ function rowGrouper(rows: readonly Row[], columnKey: string) {
 }
 
 function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
-  page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
+  return page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
 }
 
 async function testHeaderCellsContent(expected: readonly string[]) {
@@ -147,27 +147,27 @@ async function testHeaderCellsContent(expected: readonly string[]) {
 }
 
 test('should not group if groupBy is empty', async () => {
-  setup([]);
+  await setup([]);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '7');
   await testHeaderCellsContent(['', 'Sport', 'Country', 'Year', 'Id']);
   await testRowCount(7);
 });
 
 test('should not group if column does not exist', async () => {
-  setup(['abc']);
+  await setup(['abc']);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '7');
   await testRowCount(7);
 });
 
 test('should group by single column', async () => {
-  setup(['country']);
+  await setup(['country']);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '9');
   await testHeaderCellsContent(['', 'Country', 'Sport', 'Year', 'Id']);
   await testRowCount(5);
 });
 
 test('should group by multiple columns', async () => {
-  setup(['country', 'year']);
+  await setup(['country', 'year']);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
   await testRowCount(5);
@@ -177,7 +177,7 @@ test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
     parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
   );
-  setup(['country', 'year'], groupIdGetter);
+  await setup(['country', 'year'], groupIdGetter);
   expect(groupIdGetter).toHaveBeenCalled();
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
@@ -193,20 +193,20 @@ test('should use groupIdGetter when provided', async () => {
 });
 
 test('should ignore duplicate groupBy columns', async () => {
-  setup(['year', 'year', 'year']);
+  await setup(['year', 'year', 'year']);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '10');
   await testRowCount(6);
 });
 
 test('should use groupBy order while grouping', async () => {
-  setup(['year', 'country']);
+  await setup(['year', 'country']);
   await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '14');
   await testHeaderCellsContent(['', 'Year', 'Country', 'Sport', 'Id']);
   await testRowCount(6);
 });
 
 test('should toggle group when group cell is clicked', async () => {
-  setup(['year']);
+  await setup(['year']);
   await testRowCount(6);
   const groupCell = getCell('2021');
   await userEvent.click(groupCell);
@@ -216,7 +216,7 @@ test('should toggle group when group cell is clicked', async () => {
 });
 
 test('should toggle group using keyboard', async () => {
-  setup(['year']);
+  await setup(['year']);
   await testRowCount(6);
   const groupCell = getCell('2021');
   await userEvent.click(groupCell);
@@ -231,7 +231,7 @@ test('should toggle group using keyboard', async () => {
 });
 
 test('should set aria-attributes', async () => {
-  setup(['year', 'country']);
+  await setup(['year', 'country']);
 
   const groupRow1 = getRowByCellName('2020');
   await expect.element(groupRow1).toHaveAttribute('aria-level', '1');
@@ -264,7 +264,7 @@ test('should set aria-attributes', async () => {
 });
 
 test('should select rows in a group', async () => {
-  setup(['year', 'country']);
+  await setup(['year', 'country']);
 
   const headerCheckbox = getSelectAllCheckbox();
   await expect.element(headerCheckbox).not.toBeChecked();
@@ -316,7 +316,7 @@ test('should select rows in a group', async () => {
 });
 
 test('cell navigation in a treegrid', async () => {
-  setup(['country', 'year']);
+  await setup(['country', 'year']);
   await testRowCount(5);
   const focusSink = page.getBySelector(`.${focusSinkClassname}`);
 
@@ -399,7 +399,7 @@ test('cell navigation in a treegrid', async () => {
 });
 
 test('copy/paste when grouping is enabled', async () => {
-  setup(['year']);
+  await setup(['year']);
   await userEvent.click(getCell('2021'));
   await userEvent.copy();
   expect(onCellCopySpy).not.toHaveBeenCalled();
@@ -434,7 +434,7 @@ test('copy/paste when grouping is enabled', async () => {
 });
 
 test('update row using cell renderer', async () => {
-  setup(['year']);
+  await setup(['year']);
   await userEvent.click(getCell('2021'));
   await userEvent.click(getCell('USA'));
   await userEvent.keyboard('{arrowright}{arrowright}');
@@ -444,7 +444,7 @@ test('update row using cell renderer', async () => {
 });
 
 test('custom renderGroupCell', async () => {
-  setup(['country']);
+  await setup(['country']);
   await expect.element(getRowByCellName('USA').getByRole('gridcell').nth(4)).toHaveTextContent('1');
   await expect
     .element(getRowByCellName('Canada').getByRole('gridcell').nth(4))

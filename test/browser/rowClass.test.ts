@@ -10,7 +10,7 @@ const columns: readonly Column<Row>[] = [{ key: 'id', name: 'ID' }];
 const rows: readonly Row[] = [{ id: 0 }, { id: 1 }, { id: 2 }];
 
 test('rowClass is undefined', async () => {
-  setup({
+  await setup({
     columns,
     rows,
     rowClass: undefined
@@ -27,7 +27,7 @@ test('rowClass is undefined', async () => {
 });
 
 test('rowClass returns a string', async () => {
-  setup({
+  await setup({
     columns,
     rows,
     rowClass: (row) => `my-row-${row.id}`
@@ -44,7 +44,7 @@ test('rowClass returns a string', async () => {
 });
 
 test('rowClass returns undefined', async () => {
-  setup({
+  await setup({
     columns,
     rows,
     rowClass: () => undefined

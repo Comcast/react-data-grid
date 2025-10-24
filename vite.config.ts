@@ -1,7 +1,8 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright';
 import wyw from '@wyw-in-js/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import type { BrowserCommand } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
@@ -19,15 +20,13 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
   const { x, y } = (await resizeHandle.boundingBox())!;
-  await resizeHandle.hover({
-    position: { x: 5, y: 5 }
-  });
+  await page.mouse.move(x + 5, y + 5);
   await page.mouse.down();
   resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
   let newX = x + 5;
   for (const value of resizeBy) {
     newX += value;
-    await page.mouse.move(newX, y);
+    await page.mouse.move(newX, y + 5);
   }
   await page.mouse.up();
 };
@@ -64,124 +63,105 @@ const scrollGrid: BrowserCommand<[{ scrollLeft?: number; scrollTop?: number }]> 
 
 const viewport = { width: 1920, height: 1080 } as const;
 
-export default defineConfig(({ command, isPreview }) => ({
-  base: '/react-data-grid/',
-  cacheDir: '.cache/vite',
-  clearScreen: false,
-  build: {
-    modulePreload: { polyfill: false },
-    sourcemap: true,
-    reportCompressedSize: false,
-    // https://github.com/parcel-bundler/lightningcss/issues/873
-    cssMinify: 'esbuild'
-  },
-  plugins: [
-    (!isTest || isPreview) &&
-      tanstackRouter({
-        target: 'react',
-        generatedRouteTree: 'website/routeTree.gen.ts',
-        routesDirectory: 'website/routes',
-        autoCodeSplitting: true,
-        verboseFileRoutes: false
+export default defineConfig(
+  ({ command, isPreview }): ViteUserConfig => ({
+    base: '/react-data-grid/',
+    cacheDir: '.cache/vite',
+    clearScreen: false,
+    build: {
+      modulePreload: { polyfill: false },
+      sourcemap: true,
+      reportCompressedSize: false,
+      // https://github.com/parcel-bundler/lightningcss/issues/873
+      cssMinify: 'esbuild'
+    },
+    plugins: [
+      (!isTest || isPreview) &&
+        tanstackRouter({
+          target: 'react',
+          generatedRouteTree: 'website/routeTree.gen.ts',
+          routesDirectory: 'website/routes',
+          autoCodeSplitting: true,
+          verboseFileRoutes: false
+        }),
+      react({
+        exclude: ['./.cache/**/*']
       }),
-    react({
-      exclude: ['./.cache/**/*']
-    }),
-    wyw({
-      exclude: ['./.cache/**/*', '**/*.d.ts', '**/*.gen.ts'],
-      preprocessor: 'none',
-      displayName: command === 'serve'
-    })
-  ],
-  server: {
-    open: true
-  },
-  test: {
-    globals: true,
-    coverage: {
-      provider: 'istanbul',
-      enabled: isCI,
-      include: ['src/**/*.{ts,tsx}'],
-      reporter: ['json']
+      wyw({
+        exclude: ['./.cache/**/*', '**/*.d.ts', '**/*.gen.ts'],
+        preprocessor: 'none',
+        displayName: command === 'serve'
+      })
+    ],
+    server: {
+      open: true
     },
-    restoreMocks: true,
-    sequence: {
-      shuffle: true
-    },
-    slowTestThreshold: 1000,
-    projects: [
-      {
-        extends: true,
-        test: {
-          name: 'browser',
-          include: ['test/browser/**/*.test.*'],
-          browser: {
-            // TODO: remove when FF tests are stable
-            fileParallelism: false,
-            enabled: true,
-            provider: 'playwright',
-            instances: [
-              {
-                browser: 'chromium',
-                context: { viewport }
-              },
-              {
-                browser: 'firefox',
-                context: { viewport }
-              }
-            ],
-            commands: { resizeColumn, dragFill, scrollGrid },
-            viewport,
-            headless: true,
-            screenshotFailures: !isCI
-          },
-          setupFiles: ['test/setupBrowser.ts']
-        }
+    test: {
+      globals: true,
+      coverage: {
+        provider: 'istanbul',
+        enabled: isCI,
+        include: ['src/**/*.{ts,tsx}'],
+        reporter: ['json']
       },
-      {
-        extends: true,
-        test: {
-          name: 'visual',
-          include: ['visual/*.test.*'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [
-              {
-                browser: 'chromium',
-                context: { viewport }
+      restoreMocks: true,
+      sequence: {
+        shuffle: true
+      },
+      slowTestThreshold: 1000,
+      projects: [
+        {
+          extends: true,
+          test: {
+            name: 'browser',
+            include: ['test/browser/**/*.test.*'],
+            browser: {
+              ui: false,
+              // TODO: remove when FF tests are stable
+              fileParallelism: false,
+              enabled: true,
+              provider: playwright({
+                contextOptions: {
+                  viewport
+                }
+              }),
+              trace: {
+                mode: isCI ? 'off' : 'retain-on-failure'
               },
-              {
-                browser: 'firefox',
-                context: { viewport }
-              }
-            ],
-            viewport,
-            headless: true,
-            screenshotFailures: false
-          },
-          setupFiles: ['test/setupBrowser.ts']
-        },
-        toMatchScreenshot: {
-          comparatorName: 'pixelmatch',
-          comparatorOptions: {
-            // TODO: finalize these values
-            // 0-1, how different can colors be?
-            threshold: 0.2,
-            // 1% of pixels can differ
-            allowedMismatchedPixelRatio: 0.01
+              instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
+              commands: { resizeColumn, dragFill, scrollGrid },
+              viewport,
+              headless: true,
+              screenshotFailures: !isCI
+            },
+            setupFiles: ['test/setupBrowser.ts']
           }
         },
-        setupFiles: ['test/setupBrowser.ts']
-      },
-      {
-        extends: true,
-        test: {
-          name: 'node',
-          include: ['test/node/**/*.test.*'],
-          environment: 'node'
+        {
+          extends: true,
+          test: {
+            name: 'visual',
+            include: ['visual/*.test.*'],
+            browser: {
+              enabled: true,
+              provider: playwright(),
+              instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
+              viewport,
+              headless: true,
+              screenshotFailures: false
+            },
+            setupFiles: ['test/setupBrowser.ts']
+          }
+        },
+        {
+          extends: true,
+          test: {
+            name: 'node',
+            include: ['test/node/**/*.test.*'],
+            environment: 'node'
+          }
         }
-      }
-    ]
-  }
-}));
+      ]
+    }
+  })
+);

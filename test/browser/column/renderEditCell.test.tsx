@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { commands, page, userEvent } from '@vitest/browser/context';
+import { commands, page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
@@ -13,7 +13,7 @@ interface Row {
 
 describe('Editor', () => {
   it('should open editor on double click', async () => {
-    page.render(<EditorTest />);
+    await page.render(<EditorTest />);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await userEvent.click(getCellsAtRowIndex(0)[0]);
     await expect.element(editor).not.toBeInTheDocument();
@@ -26,7 +26,7 @@ describe('Editor', () => {
   });
 
   it('should open and commit changes on enter', async () => {
-    page.render(<EditorTest />);
+    await page.render(<EditorTest />);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await userEvent.click(getCellsAtRowIndex(0)[0]);
     await expect.element(editor).not.toBeInTheDocument();
@@ -39,7 +39,7 @@ describe('Editor', () => {
   });
 
   it('should open editor when user types', async () => {
-    page.render(<EditorTest />);
+    await page.render(<EditorTest />);
     await userEvent.click(getCellsAtRowIndex(0)[0]);
     // TODO: await userEvent.keyboard('123{enter}'); fails in FF
     await userEvent.keyboard('{enter}123{enter}');
@@ -47,7 +47,7 @@ describe('Editor', () => {
   });
 
   it('should close editor and discard changes on escape', async () => {
-    page.render(<EditorTest />);
+    await page.render(<EditorTest />);
     await userEvent.dblClick(getCellsAtRowIndex(0)[0]);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).toHaveValue(1);
@@ -58,7 +58,7 @@ describe('Editor', () => {
   });
 
   it('should commit changes and close editor when clicked outside', async () => {
-    page.render(<EditorTest />);
+    await page.render(<EditorTest />);
     await userEvent.dblClick(getCellsAtRowIndex(0)[0]);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).toHaveValue(1);
@@ -70,7 +70,7 @@ describe('Editor', () => {
 
   it('should commit quickly enough on outside clicks so click event handlers access the latest rows state', async () => {
     const onSave = vi.fn();
-    page.render(<EditorTest onSave={onSave} />);
+    await page.render(<EditorTest onSave={onSave} />);
     await userEvent.dblClick(getCellsAtRowIndex(0)[0]);
     await userEvent.keyboard('234');
     expect(onSave).not.toHaveBeenCalled();
@@ -92,18 +92,18 @@ describe('Editor', () => {
       rows.push({ col1: i, col2: `${i}` });
     }
 
-    page.render(<EditorTest gridRows={rows} />);
+    await page.render(<EditorTest gridRows={rows} />);
     await userEvent.click(getCellsAtRowIndex(0)[0]);
     const selectedRowCells = page
       .getByRole('row')
       .filter({ has: getSelectedCell() })
       .getByRole('gridcell');
     await testCount(selectedRowCells, 2);
-    await commands.scrollGrid({ scrollTop: 2000 });
+    await commands.scrollGrid({ scrollTop: 2001 });
     await testCount(selectedRowCells, 1);
     const editor = page.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).not.toBeInTheDocument();
-    expect(getGrid().element().scrollTop).toBe(2000);
+    expect(getGrid().element().scrollTop).toBe(2001);
     // TODO: await userEvent.keyboard('123'); fails in FF
     await userEvent.keyboard('{enter}123');
     await testCount(selectedRowCells, 2);
@@ -113,7 +113,7 @@ describe('Editor', () => {
 
   describe('editable', () => {
     it('should be editable if an editor is specified and editable is undefined/null', async () => {
-      page.render(<EditorTest />);
+      await page.render(<EditorTest />);
       const cell = getCellsAtRowIndex(0)[1];
       expect(cell).not.toHaveAttribute('aria-readonly');
       await userEvent.dblClick(cell);
@@ -121,13 +121,13 @@ describe('Editor', () => {
     });
 
     it('should be editable if an editor is specified and editable is set to true', async () => {
-      page.render(<EditorTest editable />);
+      await page.render(<EditorTest editable />);
       await userEvent.dblClick(getCellsAtRowIndex(0)[1]);
       await expect.element(page.getByRole('textbox', { name: 'col2-editor' })).toBeInTheDocument();
     });
 
     it('should not be editable if editable is false', async () => {
-      page.render(<EditorTest editable={false} />);
+      await page.render(<EditorTest editable={false} />);
       const cell = getCellsAtRowIndex(0)[1];
       expect(cell).toHaveAttribute('aria-readonly', 'true');
       await userEvent.dblClick(cell);
@@ -138,7 +138,7 @@ describe('Editor', () => {
     });
 
     it('should not be editable if editable function returns false', async () => {
-      page.render(<EditorTest editable={(row) => row.col1 === 2} />);
+      await page.render(<EditorTest editable={(row) => row.col1 === 2} />);
       await userEvent.dblClick(getCellsAtRowIndex(0)[1]);
       const editor = page.getByRole('textbox', { name: 'col2-editor' });
       await expect.element(editor).not.toBeInTheDocument();
@@ -150,7 +150,9 @@ describe('Editor', () => {
 
   describe('editorOptions', () => {
     it('should detect outside click if editor is rendered in a portal', async () => {
-      page.render(<EditorTest createEditorPortal editorOptions={{ displayCellContent: true }} />);
+      await page.render(
+        <EditorTest createEditorPortal editorOptions={{ displayCellContent: true }} />
+      );
       await userEvent.dblClick(getCellsAtRowIndex(0)[1]);
       const editor1 = page.getByRole('textbox', { name: 'col2-editor' });
       await expect.element(editor1).toHaveValue('a1');
@@ -172,7 +174,7 @@ describe('Editor', () => {
     });
 
     it('should not commit on outside click if commitOnOutsideClick is false', async () => {
-      page.render(
+      await page.render(
         <EditorTest
           editorOptions={{
             commitOnOutsideClick: false
@@ -190,7 +192,7 @@ describe('Editor', () => {
     });
 
     it('should not open editor if onCellKeyDown prevents the default event', async () => {
-      page.render(
+      await page.render(
         <EditorTest
           onCellKeyDown={(args, event) => {
             if (args.mode === 'SELECT' && event.key === 'x') {
@@ -210,7 +212,7 @@ describe('Editor', () => {
     });
 
     it('should prevent navigation if onCellKeyDown prevents the default event', async () => {
-      page.render(
+      await page.render(
         <EditorTest
           onCellKeyDown={(args, event) => {
             if (args.mode === 'EDIT' && event.key === 'ArrowDown') {
@@ -226,7 +228,7 @@ describe('Editor', () => {
     });
 
     it('should close the editor when closeOnExternalRowChange is true or undefined and row is changed from outside', async () => {
-      page.render(
+      await page.render(
         <EditorTest
           editorOptions={{
             // needed to prevent editor from closing on update button click
@@ -242,7 +244,7 @@ describe('Editor', () => {
     });
 
     it('should not close the editor when closeOnExternalRowChange is false and row is changed from outside', async () => {
-      page.render(
+      await page.render(
         <EditorTest
           editorOptions={{
             commitOnOutsideClick: false,
@@ -265,7 +267,7 @@ describe('Editor', () => {
         rows.push({ col1: i, col2: `name${i}` });
       }
 
-      page.render(<EditorTest gridRows={rows} />);
+      await page.render(<EditorTest gridRows={rows} />);
 
       await userEvent.dblClick(getCell('name0'));
       await userEvent.keyboard('abc');
@@ -308,7 +310,7 @@ describe('Editor', () => {
         }
       ];
 
-      page.render(
+      await page.render(
         <>
           <input aria-label="outer-input" value="abc" readOnly />
           <DataGrid columns={columns} rows={[{}]} />

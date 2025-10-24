@@ -1,7 +1,7 @@
 import { getGrid, setup } from './utils';
 
 test('should set label and description', async () => {
-  setup({
+  await setup({
     rows: [],
     columns: [],
     'aria-label': 'label',

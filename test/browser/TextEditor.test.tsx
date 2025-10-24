@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, textEditor } from '../../src';
 import type { Column } from '../../src';
@@ -27,7 +27,7 @@ function Test() {
 }
 
 test('TextEditor', async () => {
-  page.render(<Test />);
+  await page.render(<Test />);
   const cell = page.getByRole('gridcell');
   await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);
   await userEvent.dblClick(cell);

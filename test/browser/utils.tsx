@@ -1,4 +1,4 @@
-import { page, userEvent, type Locator } from '@vitest/browser/context';
+import { page, userEvent, type Locator } from 'vitest/browser';
 import { css } from '@linaria/core';
 
 import { DataGrid } from '../../src';
@@ -19,7 +19,7 @@ export function setup<R, SR, K extends React.Key = React.Key>(
   );
 
   if (renderBeforeAfterButtons) {
-    page.render(
+    return page.render(
       <>
         <button type="button">Before</button>
         {grid}
@@ -27,9 +27,8 @@ export function setup<R, SR, K extends React.Key = React.Key>(
         <button type="button">After</button>
       </>
     );
-  } else {
-    page.render(grid);
   }
+  return page.render(grid);
 }
 
 export function getGrid() {

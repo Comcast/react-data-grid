@@ -1,4 +1,4 @@
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
 import {
@@ -95,7 +95,7 @@ const columns: readonly ColumnOrColumnGroup<NonNullable<unknown>>[] = [
 ];
 
 test('grouping', async () => {
-  setup({ columns, rows: [{}] });
+  await setup({ columns, rows: [{}] });
 
   const grid = getGrid();
   await expect.element(grid).toHaveAttribute('aria-colcount', '12');
@@ -253,7 +253,7 @@ test('grouping', async () => {
 });
 
 test('keyboard navigation', async () => {
-  setup({ columns, rows: [{}] }, true);
+  await setup({ columns, rows: [{}] }, true);
 
   // no initial selection
   await expect.element(getSelectedCell()).not.toBeInTheDocument();
