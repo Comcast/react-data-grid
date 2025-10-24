@@ -46,7 +46,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium firefox
       - name: Update screenshots
-        run: node --run visual:update
+        run: |
+          rmdir test/visual/__screenshots__
+          node --run visual:update
       - name: Push new screenshots
         run: |
           git config --global user.name "${{ env.AUTHOR_NAME }}"
