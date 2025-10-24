@@ -141,7 +141,7 @@ export default defineConfig(
           extends: true,
           test: {
             name: 'visual',
-            include: ['visual/*.test.*'],
+            include: ['test/visual/*.test.*'],
             browser: {
               enabled: true,
               provider: playwright(),

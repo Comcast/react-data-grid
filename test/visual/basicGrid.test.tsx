@@ -1,7 +1,7 @@
 import { page } from 'vitest/browser';
 
-import { DataGrid, SelectColumn, type Column } from '../src';
-import { getGrid } from '../test/browser/utils';
+import { DataGrid, SelectColumn, type Column } from '../../src';
+import { getGrid } from '../browser/utils';
 
 interface Row {
   id: number;

@@ -5,6 +5,6 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "types": ["vitest/globals"]
   },
-  "include": ["test/**/*", "visual/**/*"],
+  "include": ["test/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
 }
