@@ -37,8 +37,6 @@ jobs:
           check-latest: true
       - name: Remove label
         run: gh pr edit --remove-label 'Update Screenshots'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
         run: npm i
       - name: Install Playwright Browsers
