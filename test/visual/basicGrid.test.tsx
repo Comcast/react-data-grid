@@ -31,8 +31,8 @@ const topSummaryRows: readonly Row[] = [
 ];
 
 const bottomSummaryRows: readonly Row[] = [
-  { id: 4, name: 'Top Summary Row 1' },
-  { id: 5, name: 'Top Summary Row 2' }
+  { id: 6, name: 'Bottom Summary Row 1' },
+  { id: 7, name: 'Bottom Summary Row 2' }
 ];
 
 function rowKeyGetter(row: Row) {
