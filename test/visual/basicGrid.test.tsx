@@ -54,7 +54,7 @@ test('basic grid', async () => {
 });
 
 test('color', async () => {
-  await page.render(<div style={{ color: 'blue' }}>color test</div>);
+  await page.render(<div style={{ color: 'green' }}>color test</div>);
 
   await expect(page.getByText('color test')).toMatchScreenshot('color');
 });
