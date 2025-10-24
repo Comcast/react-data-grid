@@ -52,9 +52,3 @@ test('basic grid', async () => {
 
   await expect(getGrid()).toMatchScreenshot('basic-grid');
 });
-
-test('color', async () => {
-  await page.render(<div style={{ color: 'red' }}>color test</div>);
-
-  await expect(page.getByText('color test')).toMatchScreenshot('color');
-});
