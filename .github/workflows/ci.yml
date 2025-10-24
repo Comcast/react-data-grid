@@ -32,7 +32,7 @@ jobs:
         run: npx playwright install chromium firefox
       - name: Test
         run: node --run test
-        timeout-minutes: 4timeout-minutes: 4
+        timeout-minutes: 4
       - name: Visual regression test
         run: node --run visual
       - name: Upload coverage
