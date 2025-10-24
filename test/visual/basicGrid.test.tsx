@@ -40,7 +40,7 @@ function rowKeyGetter(row: Row) {
 }
 
 test('basic grid', async () => {
-  page.render(
+  await page.render(
     <DataGrid
       rowKeyGetter={rowKeyGetter}
       columns={columns}
