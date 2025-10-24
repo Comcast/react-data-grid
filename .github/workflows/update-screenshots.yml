@@ -47,7 +47,7 @@ jobs:
         run: npx playwright install chromium firefox
       - name: Update screenshots
         run: |
-          rmdir test/visual/__screenshots__
+          rm -r test/visual/__screenshots__
           node --run visual:update
       - name: Push new screenshots
         run: |
