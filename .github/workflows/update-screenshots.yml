@@ -49,6 +49,6 @@ jobs:
         run: |
           git config --global user.name "${{ env.AUTHOR_NAME }}"
           git config --global user.email "${{ env.AUTHOR_EMAIL }}"
-          git add visual/__screenshots__/.
+          git add test/visual/__screenshots__/.
           git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push --set-upstream origin ${{ github.head_ref }}
