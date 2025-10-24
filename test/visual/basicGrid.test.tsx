@@ -50,5 +50,5 @@ test('basic grid', async () => {
     />
   );
 
-  await expect(getGrid()).toMatchScreenshot('basic-grid-test');
+  await expect(getGrid()).toMatchScreenshot('basic-grid');
 });
