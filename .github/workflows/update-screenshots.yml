@@ -36,8 +36,9 @@ jobs:
           node-version: 25
           check-latest: true
       - name: Remove label
-        run: gh label delete 'Update Screenshots'
+        uses: actions-ecosystem/action-remove-labels@v1
         with:
+          labels: 'Update Screenshots'
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
         run: npm i
