@@ -3,6 +3,7 @@ name: Update Screenshots
 on:
   pull_request:
     types: [labeled]
+  workflow_dispatch:
 
 env:
   AUTHOR_NAME: 'github-actions[bot]'
