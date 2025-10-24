@@ -109,6 +109,7 @@ export default defineConfig(
         shuffle: true
       },
       slowTestThreshold: 1000,
+      maxWorkers: 4,
       projects: [
         {
           extends: true,
@@ -117,8 +118,6 @@ export default defineConfig(
             include: ['test/browser/**/*.test.*'],
             browser: {
               ui: false,
-              // TODO: remove when FF tests are stable
-              fileParallelism: false,
               enabled: true,
               provider: playwright({
                 contextOptions: {
