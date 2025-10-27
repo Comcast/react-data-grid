@@ -70,7 +70,7 @@ test('tree grid', async () => {
       bottomSummaryRows={bottomSummaryRows}
       groupBy={['country', 'year']}
       rowGrouper={rowGrouper}
-      expandedGroupIds={new Set(['USA', 'USA__2000'])}
+      expandedGroupIds={new Set(['USA', 'USA__2020'])}
       onExpandedGroupIdsChange={() => {}}
     />
   );
