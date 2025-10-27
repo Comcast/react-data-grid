@@ -24,7 +24,7 @@ jobs:
 
     # one at a time per branch
     concurrency:
-      group: update-screenshots@${{ github.head_ref  }}
+      group: update-screenshots@${{ github.head_ref }}
       cancel-in-progress: true
 
     steps:
