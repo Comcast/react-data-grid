@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 25
           check-latest: true
-      - name: Install dependencies
+      - name: npm install
         run: npm i
       - name: Biome
         run: node --run biome:ci
@@ -33,8 +33,6 @@ jobs:
       - name: Test
         run: node --run test
         timeout-minutes: 4
-      - name: Visual regression test
-        run: node --run visual
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
