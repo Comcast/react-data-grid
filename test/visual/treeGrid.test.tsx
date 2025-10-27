@@ -75,7 +75,7 @@ test('tree grid', async () => {
     />
   );
 
-  await expect(getGrid()).toMatchScreenshot('basic-grid');
+  await expect(getGrid()).toMatchScreenshot('tree-grid');
 });
 
 function rowKeyGetter(row: Row) {
