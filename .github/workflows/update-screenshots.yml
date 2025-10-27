@@ -36,6 +36,7 @@ jobs:
           node-version: 25
           check-latest: true
       - name: Remove label
+        if: github.event_name == 'pull_request'
         run: gh pr edit --remove-label 'Update Screenshots'
         env:
           GH_TOKEN: ${{ github.token }}
