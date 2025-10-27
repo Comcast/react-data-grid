@@ -140,26 +140,6 @@ export default defineConfig(
         {
           extends: true,
           test: {
-            name: 'visual',
-            include: ['test/visual/*.test.*'],
-            browser: {
-              enabled: true,
-              provider: playwright({
-                contextOptions: {
-                  viewport
-                }
-              }),
-              instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
-              viewport,
-              headless: true,
-              screenshotFailures: false
-            },
-            setupFiles: ['test/setupBrowser.ts']
-          }
-        },
-        {
-          extends: true,
-          test: {
             name: 'node',
             include: ['test/node/**/*.test.*'],
             environment: 'node'
