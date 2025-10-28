@@ -134,9 +134,7 @@ Set `--rdg-color-scheme: light/dark` at the `:root` to control the color theme. 
 
 ###### `columns: readonly Column<R, SR>[]`
 
-See [`Column`](#column).
-
-An array of column definitions. Each column should have a key and name.
+An array of column definitions. Each column should have a key and name. See the [`Column`](#columntrow-tsummaryrow) type for all available options.
 
 :warning: Passing a new `columns` array will trigger a re-render for the whole grid, avoid changing it as much as possible for optimal performance.
 
@@ -360,8 +358,6 @@ function onCellMouseDown(args: CellMouseDownArgs<R, SR>, event: CellMouseEvent) 
 <DataGrid rows={rows} columns={columns} onCellMouseDown={onCellMouseDown} />;
 ```
 
-See [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent)
-
 ###### `onCellClick?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
 
 Callback triggered when a cell is clicked.
@@ -386,8 +382,6 @@ function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 }
 ```
 
-See [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent)
-
 ###### `onCellDoubleClick?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
 
 Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable. Call `preventGridDefault` to prevent the default behavior.
@@ -401,8 +395,6 @@ function onCellDoubleClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 <DataGrid rows={rows} columns={columns} onCellDoubleClick={onCellDoubleClick} />;
 ```
-
-See [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent)
 
 ###### `onCellContextMenu?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
 
@@ -418,8 +410,6 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 <DataGrid rows={rows} columns={columns} onCellContextMenu={onCellContextMenu} />;
 ```
-
-See [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent)
 
 ###### `onCellKeyDown?: Maybe<(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>`
 
@@ -601,81 +591,304 @@ test('grid', async () => {
 
 ###### `groupIdGetter?: Maybe<(groupKey: string, parentId?: string) => string>`
 
-#### `<TextEditor />`
+#### `textEditor`
+
+The default text editor component for editing cells.
 
 ##### Props
 
-See [`RenderEditCellProps`](#rendereditcellprops)
+`RenderEditCellProps<TRow, TSummaryRow>` - See the Types section below.
+
+**Example:**
+
+```tsx
+import { textEditor } from 'react-data-grid';
+
+const columns: Column<Row>[] = [
+  {
+    key: 'title',
+    name: 'Title',
+    renderEditCell: textEditor
+  }
+];
+```
 
 #### `<Row />`
 
-See [`renderers`](#renderers-mayberenderersr-sr)
+The default row component. Can be wrapped via the `renderers.renderRow` prop.
 
 ##### Props
 
-See [`RenderRowProps`](#renderrowprops)
+`RenderRowProps<TRow, TSummaryRow>` - See the Types section below.
 
 The `ref` prop is supported.
 
-#### `<SortableHeaderCell />`
+#### `<Cell />`
+
+The default cell component. Can be wrapped via the `renderers.renderCell` prop.
 
 ##### Props
 
-###### `onSort: (ctrlClick: boolean) => void`
-
-###### `sortDirection: SortDirection | undefined`
-
-###### `priority: number | undefined`
-
-###### `tabIndex: number`
-
-###### `children: React.ReactNode`
-
-#### `<ValueFormatter />`
-
-##### Props
-
-See [`RenderCellProps`](#rendercellprops)
+`CellRendererProps<TRow, TSummaryRow>` - See the Types section below.
 
 #### `<SelectCellFormatter />`
+
+A formatter component for rendering selection checkboxes.
 
 ##### Props
 
 ###### `value: boolean`
 
+Whether the checkbox is checked.
+
 ###### `tabIndex: number`
+
+The tab index for keyboard navigation.
 
 ###### `disabled?: boolean | undefined`
 
+Whether the checkbox is disabled.
+
 ###### `onChange: (value: boolean, isShiftClick: boolean) => void`
+
+Callback when the checkbox state changes.
 
 ###### `onClick?: MouseEventHandler<T> | undefined`
 
+Optional click handler.
+
 ###### `'aria-label'?: string | undefined`
+
+Accessible label for the checkbox.
 
 ###### `'aria-labelledby'?: string | undefined`
 
-#### `<ToggleGroupFormatter />`
-
-##### Props
-
-See [`RenderGroupCellProps`](#rendergroupcellprops)
+ID of the element that labels the checkbox.
 
 ### Hooks
 
-#### `useHeaderRowSelection<R>(): { isIndeterminate, isRowSelected, onRowSelectionChange }`
+#### `useHeaderRowSelection<R>(): { isIndeterminate: boolean, isRowSelected: boolean, onRowSelectionChange: (event: SelectHeaderRowEvent) => void }`
 
-#### `useRowSelection<R>(): { isRowSelectionDisabled, isRowSelected, onRowSelectionChange }`
+Hook for managing header row selection state. Used within custom header cell renderers to implement "select all" functionality.
+
+**Returns:**
+
+- `isIndeterminate`: Whether some (but not all) rows are selected
+- `isRowSelected`: Whether all rows are selected
+- `onRowSelectionChange`: Callback to change selection state
+
+**Example:**
+
+```tsx
+function CustomHeaderCell() {
+  const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
+
+  return (
+    <input
+      type="checkbox"
+      checked={isRowSelected}
+      indeterminate={isIndeterminate}
+      onChange={(e) => onRowSelectionChange({ checked: e.target.checked })}
+    />
+  );
+}
+```
+
+#### `useRowSelection<R>(): { isRowSelectionDisabled: boolean, isRowSelected: boolean, onRowSelectionChange: (event: SelectRowEvent<R>) => void }`
+
+Hook for managing row selection state. Used within custom cell renderers to implement row selection.
+
+**Returns:**
+
+- `isRowSelectionDisabled`: Whether selection is disabled for this row
+- `isRowSelected`: Whether this row is selected
+- `onRowSelectionChange`: Callback to change selection state
+
+**Example:**
+
+```tsx
+function CustomSelectCell({ row }: RenderCellProps<Row>) {
+  const { isRowSelectionDisabled, isRowSelected, onRowSelectionChange } = useRowSelection();
+
+  return (
+    <input
+      type="checkbox"
+      disabled={isRowSelectionDisabled}
+      checked={isRowSelected}
+      onChange={(e) =>
+        onRowSelectionChange({
+          row,
+          checked: e.target.checked,
+          isShiftClick: e.nativeEvent.shiftKey
+        })
+      }
+    />
+  );
+}
+```
+
+### Render Functions
+
+#### `renderHeaderCell<R, SR>(props: RenderHeaderCellProps<R, SR>): ReactNode`
+
+The default header cell renderer. Renders sortable columns with sort indicators.
+
+**Example:**
+
+```tsx
+import { renderHeaderCell } from 'react-data-grid';
+
+const columns: Column<Row>[] = [
+  {
+    key: 'name',
+    name: 'Name',
+    sortable: true,
+    renderHeaderCell
+  }
+];
+```
+
+#### `renderSortIcon(props: RenderSortIconProps): ReactNode`
+
+Renders the sort direction arrow icon.
+
+**Props:**
+
+- `sortDirection: SortDirection | undefined` - 'ASC', 'DESC', or undefined
+
+#### `renderSortPriority(props: RenderSortPriorityProps): ReactNode`
+
+Renders the sort priority number for multi-column sorting.
+
+**Props:**
+
+- `priority: number | undefined` - The sort priority (1, 2, 3, etc.)
+
+#### `renderCheckbox(props: RenderCheckboxProps): ReactNode`
+
+Renders a checkbox input with proper styling and accessibility.
+
+**Props:**
+
+- `checked: boolean` - Whether the checkbox is checked
+- `indeterminate?: boolean` - Whether the checkbox is in indeterminate state
+- `disabled?: boolean` - Whether the checkbox is disabled
+- `onChange: (checked: boolean, shift: boolean) => void` - Change handler
+- `tabIndex: number` - Tab index for keyboard navigation
+- `aria-label?: string` - Accessible label
+- `aria-labelledby?: string` - ID of labeling element
+
+**Example:**
+
+```tsx
+import { renderCheckbox } from 'react-data-grid';
+
+const renderers = {
+  renderCheckbox: (props) => renderCheckbox({ ...props, 'aria-label': 'Select row' })
+};
+```
+
+#### `renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>): ReactNode`
+
+Renders the expand/collapse toggle for grouped rows.
+
+##### Props
+
+`RenderGroupCellProps<TRow, TSummaryRow>` - See the Types section below.
+
+**Example:**
+
+```tsx
+import { renderToggleGroup } from 'react-data-grid';
+
+const columns: Column<Row>[] = [
+  {
+    key: 'group',
+    name: 'Group',
+    renderGroupCell: renderToggleGroup
+  }
+];
+```
+
+#### `renderValue<R, SR>(props: RenderCellProps<R, SR>): ReactNode`
+
+A simple cell renderer that displays the cell value as text.
+
+**Example:**
+
+```tsx
+import { renderValue } from 'react-data-grid';
+
+const columns: Column<Row>[] = [
+  {
+    key: 'title',
+    name: 'Title',
+    renderCell: renderValue
+  }
+];
+```
+
+### Context
+
+#### `DataGridDefaultRenderersContext`
+
+Context for providing default renderers to the DataGrid. Used internally but can be useful for deeply nested custom components that need access to default renderers.
+
+**Example:**
+
+```tsx
+import { DataGridDefaultRenderersContext } from 'react-data-grid';
+import { useContext } from 'react';
+
+function CustomComponent() {
+  const renderers = useContext(DataGridDefaultRenderersContext);
+  return renderers?.renderCheckbox?.({ ... });
+}
+```
 
 ### Other
 
 #### `SelectColumn: Column<any, any>`
 
+A pre-configured column for row selection. Includes checkbox renderers for header, regular rows, and grouped rows.
+
+**Example:**
+
+```tsx
+import { DataGrid, SelectColumn } from 'react-data-grid';
+
+const columns = [SelectColumn, ...otherColumns];
+
+function MyGrid() {
+  return (
+    <DataGrid
+      columns={columns}
+      rows={rows}
+      rowKeyGetter={(row) => row.id}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+    />
+  );
+}
+```
+
 #### `SELECT_COLUMN_KEY = 'rdg-select-column'`
+
+The key used for the `SelectColumn`. Useful for identifying or filtering the select column.
+
+**Example:**
+
+```tsx
+import { SELECT_COLUMN_KEY } from 'react-data-grid';
+
+const nonSelectColumns = columns.filter((col) => col.key !== SELECT_COLUMN_KEY);
+```
 
 ### Types
 
-#### `Column`
+#### `Column<TRow, TSummaryRow>`
+
+Defines the configuration for a column in the grid.
 
 ##### `name: string | ReactElement`
 
@@ -712,7 +925,7 @@ Maximum column width in pixels.
 
 ##### `cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>`
 
-Class name(s) for the cell
+Class name(s) for the cell. Can be a string or a function that returns a class name based on the row.
 
 ##### `headerCellClass?: Maybe<string>`
 
@@ -720,7 +933,7 @@ Class name(s) for the header cell.
 
 ##### `summaryCellClass?: Maybe<string | ((row: TSummaryRow) => Maybe<string>)>`
 
-Class name(s) for the summary cell.
+Class name(s) for the summary cell. Can be a string or a function that returns a class name based on the summary row.
 
 ##### `renderCell?: Maybe<(props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>`
 
@@ -734,6 +947,10 @@ Render function to render the content of the header cell.
 
 Render function to render the content of summary cells
 
+##### `renderGroupCell?: Maybe<(props: RenderGroupCellProps<TRow, TSummaryRow>) => ReactNode>`
+
+Render function to render the content of group cells when using `TreeDataGrid`.
+
 ##### `renderEditCell?: Maybe<(props: RenderEditCellProps<TRow, TSummaryRow>) => ReactNode>`
 
 Render function to render the content of edit cells. When set, the column is automatically set to be editable
@@ -742,7 +959,26 @@ Render function to render the content of edit cells. When set, the column is aut
 
 Enables cell editing. If set and no editor property specified, then a text input will be used as the cell editor.
 
-##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>`
+##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryrow>) => Maybe<number>>`
+
+Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the `ColSpanArgs` type in the Types section below.
+
+**Example:**
+
+```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'title',
+    name: 'Title',
+    colSpan(args) {
+      if (args.type === 'ROW' && args.row.isFullWidth) {
+        return 5; // Span 5 columns for full-width rows
+      }
+      return undefined;
+    }
+  }
+];
+```
 
 ##### `frozen?: Maybe<boolean>`
 
@@ -796,41 +1032,637 @@ Commit changes when clicking outside the cell.
 
 Close the editor when the row changes externally.
 
-#### `CellMouseArgs`
+#### `CalculatedColumn<TRow, TSummaryRow>`
 
-##### `rowIdx: number`
+Extends `Column` with additional computed properties used internally by the grid. This is the type passed to render functions.
 
-Row index of the currently selected cell
+**Additional properties:**
 
-##### `row: TRow`
+- `idx: number` - The column index
+- `level: number` - Nesting level when using column groups
+- `parent: CalculatedColumnParent | undefined` - Parent column group if nested
+- All optional Column properties become required with default values
 
-row object of the currently selected cell
+#### `CalculatedColumnParent<TRow, TSummaryRow>`
+
+Represents a parent column group in the calculated column structure.
+
+```tsx
+interface CalculatedColumnParent<R, SR> {
+  readonly name: string | ReactElement;
+  readonly parent: CalculatedColumnParent<R, SR> | undefined;
+  readonly idx: number;
+  readonly colSpan: number;
+  readonly level: number;
+  readonly headerCellClass?: Maybe<string>;
+}
+```
+
+#### `CalculatedColumnOrColumnGroup<TRow, TSummaryRow>`
+
+Union type representing either a `CalculatedColumnParent` or a `CalculatedColumn`.
+
+```tsx
+type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnParent<R, SR> | CalculatedColumn<R, SR>;
+```
+
+#### `ColumnGroup<TRow, TSummaryRow>`
+
+Defines a group of columns that share a common header.
+
+```tsx
+interface ColumnGroup<R, SR = unknown> {
+  readonly name: string | ReactElement;
+  readonly headerCellClass?: Maybe<string>;
+  readonly children: readonly ColumnOrColumnGroup<R, SR>[];
+}
+```
+
+**Example:**
+
+```tsx
+const columns = [
+  {
+    name: 'Personal Info',
+    children: [
+      { key: 'firstName', name: 'First Name' },
+      { key: 'lastName', name: 'Last Name' }
+    ]
+  }
+];
+```
+
+#### `ColumnOrColumnGroup<TRow, TSummaryRow>`
+
+Union type representing either a `Column` or a `ColumnGroup`.
+
+#### `RowHeightArgs<TRow>`
+
+Arguments passed to the `rowHeight` function when it's a function.
+
+```tsx
+type RowHeightArgs<TRow> = { type: 'ROW'; row: TRow } | { type: 'GROUP'; row: GroupRow<TRow> };
+```
+
+**Example:**
+
+```tsx
+function getRowHeight(args: RowHeightArgs<Row>): number {
+  if (args.type === 'GROUP') {
+    return 40;
+  }
+  return args.row.isLarge ? 60 : 35;
+}
+
+<DataGrid rowHeight={getRowHeight} ... />
+```
+
+#### `RenderCellProps<TRow, TSummaryRow>`
+
+Props passed to custom cell renderers.
+
+```tsx
+interface RenderCellProps<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+  rowIdx: number;
+  isCellEditable: boolean;
+  tabIndex: number;
+  onRowChange: (row: TRow) => void;
+}
+```
+
+**Example:**
+
+```tsx
+function CustomCell({ row, column, onRowChange }: RenderCellProps<MyRow>) {
+  return (
+    <div>
+      {row[column.key]}
+      <button onClick={() => onRowChange({ ...row, updated: true })}>Update</button>
+    </div>
+  );
+}
+```
+
+#### `RenderHeaderCellProps<TRow, TSummaryRow>`
+
+Props passed to custom header cell renderers.
+
+```tsx
+interface RenderHeaderCellProps<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  sortDirection: SortDirection | undefined;
+  priority: number | undefined;
+  tabIndex: number;
+}
+```
+
+#### `RenderEditCellProps<TRow, TSummaryRow>`
+
+Props passed to custom edit cell renderers (editors).
+
+```tsx
+interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+  rowIdx: number;
+  onRowChange: (row: TRow, commitChanges?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+}
+```
+
+**Example:**
+
+```tsx
+function CustomEditor({ row, column, onRowChange, onClose }: RenderEditCellProps<MyRow>) {
+  return (
+    <input
+      autoFocus
+      value={row[column.key]}
+      onChange={(e) => onRowChange({ ...row, [column.key]: e.target.value })}
+      onBlur={() => onClose(true)}
+    />
+  );
+}
+```
+
+#### `RenderSummaryCellProps<TSummaryRow, TRow>`
+
+Props passed to summary cell renderers.
+
+```tsx
+interface RenderSummaryCellProps<TSummaryRow, TRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TSummaryRow;
+  tabIndex: number;
+}
+```
+
+#### `RenderGroupCellProps<TRow, TSummaryRow>`
+
+Props passed to group cell renderers when using `TreeDataGrid`.
+
+```tsx
+interface RenderGroupCellProps<TRow, TSummaryRow = unknown> {
+  groupKey: unknown;
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: GroupRow<TRow>;
+  childRows: readonly TRow[];
+  isExpanded: boolean;
+  tabIndex: number;
+  toggleGroup: () => void;
+}
+```
+
+#### `RenderRowProps<TRow, TSummaryRow>`
+
+Props passed to custom row renderers.
+
+```tsx
+interface RenderRowProps<TRow, TSummaryRow = unknown> {
+  row: TRow;
+  viewportColumns: readonly CalculatedColumn<TRow, TSummaryRow>[];
+  rowIdx: number;
+  selectedCellIdx: number | undefined;
+  isRowSelected: boolean;
+  isRowSelectionDisabled: boolean;
+  gridRowStart: number;
+  lastFrozenColumnIndex: number;
+  draggedOverCellIdx: number | undefined;
+  selectedCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
+  onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
+  rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
+  // ... and event handlers
+}
+```
+
+#### `CellRendererProps<TRow, TSummaryRow>`
+
+Props passed to the cell renderer when using `renderers.renderCell`.
+
+Extends `RenderRowProps` with cell-specific properties like `column`, `colSpan`, `isCellSelected`, etc.
+
+#### `Renderers<TRow, TSummaryRow>`
+
+Custom renderer configuration for the grid.
+
+```tsx
+interface Renderers<TRow, TSummaryRow> {
+  renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
+  renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
+  renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
+  renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;
+  noRowsFallback?: Maybe<ReactNode>;
+}
+```
+
+#### `CellMouseArgs<TRow, TSummaryRow>`
+
+Arguments passed to cell mouse event handlers.
+
+```tsx
+interface CellMouseArgs<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+  rowIdx: number;
+  selectCell: (enableEditor?: boolean) => void;
+}
+```
 
 ##### `column: CalculatedColumn<TRow, TSummaryRow>`
 
-column object of the currently selected cell
+The column object of the cell.
+
+##### `row: TRow`
+
+The row object of the cell.
+
+##### `rowIdx: number`
+
+The row index of the cell.
 
 ##### `selectCell: (enableEditor?: boolean) => void`
 
-function to manually select the cell and optionally pass `true` to start editing
+Function to manually select the cell. Pass `true` to immediately start editing.
+
+**Example:**
+
+```tsx
+function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
+  console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
+  args.selectCell(true); // Select and start editing
+}
+```
 
 #### `CellMouseEvent`
 
-Extends `React.MouseEvent<HTMLDivElement>`
+Extends `React.MouseEvent<HTMLDivElement>` with grid-specific methods.
 
-##### `event.preventGridDefault: () => void`
+##### `event.preventGridDefault(): void`
 
-##### `event.isGridDefaultPrevented: boolean`
+Prevents the default grid behavior for this event.
+
+##### `event.isGridDefaultPrevented(): boolean`
+
+Returns whether `preventGridDefault` was called.
+
+**Example:**
+
+```tsx
+function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
+  if (args.column.key === 'actions') {
+    event.preventGridDefault(); // Prevent cell selection
+  }
+}
+```
+
+#### `CellKeyboardEvent`
+
+Extends `React.KeyboardEvent<HTMLDivElement>` with grid-specific methods.
+
+##### `event.preventGridDefault(): void`
+
+Prevents the default grid behavior for this keyboard event.
+
+##### `event.isGridDefaultPrevented(): boolean`
+
+Returns whether `preventGridDefault` was called.
+
+#### `CellClipboardEvent`
+
+Type alias for `React.ClipboardEvent<HTMLDivElement>`. Used for copy and paste events.
+
+```tsx
+type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
+```
+
+#### `CellKeyDownArgs<TRow, TSummaryRow>`
+
+Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in SELECT or EDIT mode.
+
+**SELECT mode:**
+
+```tsx
+interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
+  mode: 'SELECT';
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+  rowIdx: number;
+  selectCell: (position: Position, options?: SelectCellOptions) => void;
+}
+```
+
+**EDIT mode:**
+
+```tsx
+interface EditCellKeyDownArgs<TRow, TSummaryRow> {
+  mode: 'EDIT';
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+  rowIdx: number;
+  navigate: () => void;
+  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+}
+```
+
+**Example:**
+
+```tsx
+function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
+  if (args.mode === 'EDIT' && event.key === 'Escape') {
+    args.onClose(false); // Close without committing
+    event.preventGridDefault();
+  }
+}
+```
+
+#### `CellSelectArgs<TRow, TSummaryRow>`
+
+Arguments passed to `onSelectedCellChange`.
+
+```tsx
+interface CellSelectArgs<TRow, TSummaryRow = unknown> {
+  rowIdx: number;
+  row: TRow | undefined;
+  column: CalculatedColumn<TRow, TSummaryRow>;
+}
+```
+
+#### `CellCopyArgs<TRow, TSummaryRow>`
+
+Arguments passed to `onCellCopy`.
+
+```tsx
+interface CellCopyArgs<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+}
+```
+
+#### `CellPasteArgs<TRow, TSummaryRow>`
+
+Arguments passed to `onCellPaste`.
+
+```tsx
+interface CellPasteArgs<TRow, TSummaryRow = unknown> {
+  column: CalculatedColumn<TRow, TSummaryRow>;
+  row: TRow;
+}
+```
+
+#### `ColSpanArgs<TRow, TSummaryRow>`
+
+Arguments passed to the `colSpan` function.
+
+```tsx
+type ColSpanArgs<TRow, TSummaryRow> =
+  | { type: 'HEADER' }
+  | { type: 'ROW'; row: TRow }
+  | { type: 'SUMMARY'; row: TSummaryRow };
+```
+
+**Example:**
+
+```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'title',
+    name: 'Title',
+    colSpan(args) {
+      if (args.type === 'ROW' && args.row.isFullWidth) {
+        return 3; // Span 3 columns
+      }
+      return undefined;
+    }
+  }
+];
+```
+
+#### `SortColumn`
+
+Describes a sorted column.
+
+```tsx
+interface SortColumn {
+  readonly columnKey: string;
+  readonly direction: SortDirection;
+}
+```
+
+#### `SortDirection`
+
+```tsx
+type SortDirection = 'ASC' | 'DESC';
+```
+
+#### `RowsChangeData<TRow, TSummaryRow>`
+
+Data provided to `onRowsChange` callback.
+
+```tsx
+interface RowsChangeData<R, SR = unknown> {
+  indexes: number[];
+  column: CalculatedColumn<R, SR>;
+}
+```
+
+- `indexes`: Array of row indexes that changed
+- `column`: The column where changes occurred
+
+#### `SelectRowEvent<TRow>`
+
+Event object for row selection changes.
+
+```tsx
+interface SelectRowEvent<TRow> {
+  row: TRow;
+  checked: boolean;
+  isShiftClick: boolean;
+}
+```
+
+#### `SelectHeaderRowEvent`
+
+Event object for header row selection changes.
+
+```tsx
+interface SelectHeaderRowEvent {
+  checked: boolean;
+}
+```
+
+#### `FillEvent<TRow>`
+
+Event object for drag-fill operations.
+
+```tsx
+interface FillEvent<TRow> {
+  columnKey: string;
+  sourceRow: TRow;
+  targetRow: TRow;
+}
+```
+
+Used with the `onFill` prop to handle cell value dragging.
+
+#### `GroupRow<TRow>`
+
+Represents a grouped row in `TreeDataGrid`.
+
+```tsx
+interface GroupRow<TRow> {
+  readonly childRows: readonly TRow[];
+  readonly id: string;
+  readonly parentId: unknown;
+  readonly groupKey: unknown;
+  readonly isExpanded: boolean;
+  readonly level: number;
+  readonly posInSet: number;
+  readonly setSize: number;
+  readonly startRowIndex: number;
+}
+```
+
+#### `ColumnWidths`
+
+A map of column widths.
+
+```tsx
+type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
+
+interface ColumnWidth {
+  readonly type: 'resized' | 'measured';
+  readonly width: number;
+}
+```
+
+Used with `columnWidths` and `onColumnWidthsChange` props to control column widths externally.
+
+#### `Position`
+
+Represents a cell position in the grid.
+
+```tsx
+interface Position {
+  readonly idx: number; // Column index
+  readonly rowIdx: number; // Row index
+}
+```
+
+#### `SelectCellOptions`
+
+Options for programmatically selecting a cell.
+
+```tsx
+interface SelectCellOptions {
+  enableEditor?: Maybe<boolean>;
+  shouldFocusCell?: Maybe<boolean>;
+}
+```
+
+#### `RenderCheckboxProps`
+
+Props for custom checkbox renderers.
+
+```tsx
+interface RenderCheckboxProps {
+  checked: boolean;
+  indeterminate?: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean, shift: boolean) => void;
+  tabIndex: number;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
+}
+```
+
+#### `RenderSortStatusProps`
+
+Props for custom sort status renderers.
+
+```tsx
+interface RenderSortStatusProps {
+  sortDirection: SortDirection | undefined;
+  priority: number | undefined;
+}
+```
+
+#### `RenderSortIconProps`
+
+Props for custom sort icon renderers.
+
+```tsx
+interface RenderSortIconProps {
+  sortDirection: SortDirection | undefined;
+}
+```
+
+#### `RenderSortPriorityProps`
+
+Props for custom sort priority renderers.
+
+```tsx
+interface RenderSortPriorityProps {
+  priority: number | undefined;
+}
+```
 
 #### `DataGridHandle`
 
-#### `RenderEditCellProps`
+Handle type returned by `useImperativeHandle` for programmatic grid control.
 
-#### `RenderRowProps`
+```tsx
+interface DataGridHandle {
+  element: HTMLDivElement | null;
+  scrollToCell: (position: Partial<Position>) => void;
+  selectCell: (position: Position, options?: SelectCellOptions) => void;
+}
+```
 
-#### `RenderCellProps`
+**Example:**
 
-#### `RenderGroupCellProps`
+```tsx
+import { useRef } from 'react';
+import { DataGrid, DataGridHandle } from 'react-data-grid';
+
+function MyGrid() {
+  const gridRef = useRef<DataGridHandle>(null);
+
+  function scrollToTop() {
+    gridRef.current?.scrollToCell({ rowIdx: 0 });
+  }
+
+  return <DataGrid ref={gridRef} columns={columns} rows={rows} />;
+}
+```
+
+#### `DefaultColumnOptions<TRow, TSummaryRow>`
+
+Default options applied to all columns.
+
+```tsx
+type DefaultColumnOptions<TRow, TSummaryRow> = Pick<
+  Column<TRow, TSummaryRow>,
+  'minWidth' | 'maxWidth' | 'resizable' | 'sortable' | 'draggable'
+>;
+```
+
+#### `Direction`
+
+Text direction for the grid.
+
+```tsx
+type Direction = 'ltr' | 'rtl';
+```
+
+#### `Maybe<T>`
+
+Utility type for optional values.
+
+```tsx
+type Maybe<T> = T | undefined | null;
+```
 
 ### Generics
 
