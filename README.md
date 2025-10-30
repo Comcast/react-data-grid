@@ -645,7 +645,7 @@ ID of the element that labels the checkbox.
 
 ### Hooks
 
-#### `useHeaderRowSelection<R>()`
+#### `useHeaderRowSelection()`
 
 Hook for managing header row selection state. Used within custom header cell renderers to implement "select all" functionality.
 
@@ -672,7 +672,7 @@ function CustomHeaderCell() {
 }
 ```
 
-#### `useRowSelection<R>()`
+#### `useRowSelection()`
 
 Hook for managing row selection state. Used within custom cell renderers to implement row selection.
 
