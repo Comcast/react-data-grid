@@ -647,7 +647,7 @@ ID of the element that labels the checkbox.
 
 #### `useHeaderRowSelection()`
 
-Hook for managing header row selection state. Used within custom header cell renderers to implement "select all" functionality.
+Hook for managing header row selection state. Used within custom header cell renderers to implement custom "select all" functionality.
 
 **Returns:**
 
@@ -674,7 +674,7 @@ function CustomHeaderCell() {
 
 #### `useRowSelection()`
 
-Hook for managing row selection state. Used within custom cell renderers to implement row selection.
+Hook for managing row selection state. Used within custom cell renderers to implement custom row selection.
 
 **Returns:**
 
@@ -728,7 +728,7 @@ const columns: readonly Column<Row>[] = [
 
 #### `textEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>)`
 
-The default text editor for editing cells. Returns a text input element.
+A basic text editor provided for convenience.
 
 **Example:**
 
