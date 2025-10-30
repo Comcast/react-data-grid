@@ -105,12 +105,12 @@ interface Row {
   title: string;
 }
 
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   { key: 'id', name: 'ID' },
   { key: 'title', name: 'Title' }
 ];
 
-const rows: Row[] = [
+const rows: readonly Row[] = [
   { id: 0, title: 'Example' },
   { id: 1, title: 'Demo' }
 ];
@@ -591,28 +591,6 @@ test('grid', async () => {
 
 ###### `groupIdGetter?: Maybe<(groupKey: string, parentId?: string) => string>`
 
-#### `textEditor`
-
-The default text editor component for editing cells.
-
-##### Props
-
-`RenderEditCellProps<TRow, TSummaryRow>` - See the Types section below.
-
-**Example:**
-
-```tsx
-import { textEditor } from 'react-data-grid';
-
-const columns: Column<Row>[] = [
-  {
-    key: 'title',
-    name: 'Title',
-    renderEditCell: textEditor
-  }
-];
-```
-
 #### `<Row />`
 
 The default row component. Can be wrapped via the `renderers.renderRow` prop.
@@ -738,12 +716,30 @@ The default header cell renderer. Renders sortable columns with sort indicators.
 ```tsx
 import { renderHeaderCell } from 'react-data-grid';
 
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   {
     key: 'name',
     name: 'Name',
     sortable: true,
     renderHeaderCell
+  }
+];
+```
+
+#### `textEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>): ReactElement`
+
+The default text editor for editing cells. Returns a text input element.
+
+**Example:**
+
+```tsx
+import { textEditor } from 'react-data-grid';
+
+const columns: readonly Column<Row>[] = [
+  {
+    key: 'title',
+    name: 'Title',
+    renderEditCell: textEditor
   }
 ];
 ```
@@ -801,7 +797,7 @@ Renders the expand/collapse toggle for grouped rows.
 ```tsx
 import { renderToggleGroup } from 'react-data-grid';
 
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   {
     key: 'group',
     name: 'Group',
@@ -819,7 +815,7 @@ A simple cell renderer that displays the cell value as text.
 ```tsx
 import { renderValue } from 'react-data-grid';
 
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   {
     key: 'title',
     name: 'Title',
@@ -857,7 +853,7 @@ A pre-configured column for row selection. Includes checkbox renderers for heade
 ```tsx
 import { DataGrid, SelectColumn } from 'react-data-grid';
 
-const columns = [SelectColumn, ...otherColumns];
+const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
 
 function MyGrid() {
   return (
@@ -966,7 +962,7 @@ Function to determine how many columns this cell should span. Returns the number
 **Example:**
 
 ```tsx
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   {
     key: 'title',
     name: 'Title',
@@ -1081,7 +1077,7 @@ interface ColumnGroup<R, SR = unknown> {
 **Example:**
 
 ```tsx
-const columns = [
+const columns: readonly ColumnOrColumnGroup<Row>[] = [
   {
     name: 'Personal Info',
     children: [
@@ -1425,7 +1421,7 @@ type ColSpanArgs<TRow, TSummaryRow> =
 **Example:**
 
 ```tsx
-const columns: Column<Row>[] = [
+const columns: readonly Column<Row>[] = [
   {
     key: 'title',
     name: 'Title',
