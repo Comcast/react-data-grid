@@ -645,15 +645,15 @@ ID of the element that labels the checkbox.
 
 ### Hooks
 
-#### `useHeaderRowSelection<R>(): { isIndeterminate: boolean, isRowSelected: boolean, onRowSelectionChange: (event: SelectHeaderRowEvent) => void }`
+#### `useHeaderRowSelection<R>()`
 
 Hook for managing header row selection state. Used within custom header cell renderers to implement "select all" functionality.
 
 **Returns:**
 
-- `isIndeterminate`: Whether some (but not all) rows are selected
-- `isRowSelected`: Whether all rows are selected
-- `onRowSelectionChange`: Callback to change selection state
+- `isIndeterminate: boolean` - Whether some (but not all) rows are selected
+- `isRowSelected: boolean` - Whether all rows are selected
+- `onRowSelectionChange: (event: SelectHeaderRowEvent) => void` - Callback to change selection state
 
 **Example:**
 
@@ -672,15 +672,15 @@ function CustomHeaderCell() {
 }
 ```
 
-#### `useRowSelection<R>(): { isRowSelectionDisabled: boolean, isRowSelected: boolean, onRowSelectionChange: (event: SelectRowEvent<R>) => void }`
+#### `useRowSelection<R>()`
 
 Hook for managing row selection state. Used within custom cell renderers to implement row selection.
 
 **Returns:**
 
-- `isRowSelectionDisabled`: Whether selection is disabled for this row
-- `isRowSelected`: Whether this row is selected
-- `onRowSelectionChange`: Callback to change selection state
+- `isRowSelectionDisabled: boolean` - Whether selection is disabled for this row
+- `isRowSelected: boolean` - Whether this row is selected
+- `onRowSelectionChange: (event: SelectRowEvent<R>) => void` - Callback to change selection state
 
 **Example:**
 
@@ -707,7 +707,7 @@ function CustomSelectCell({ row }: RenderCellProps<Row>) {
 
 ### Render Functions
 
-#### `renderHeaderCell<R, SR>(props: RenderHeaderCellProps<R, SR>): ReactNode`
+#### `renderHeaderCell<R, SR>(props: RenderHeaderCellProps<R, SR>)`
 
 The default header cell renderer. Renders sortable columns with sort indicators.
 
@@ -726,7 +726,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-#### `textEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>): ReactElement`
+#### `textEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>)`
 
 The default text editor for editing cells. Returns a text input element.
 
@@ -744,7 +744,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-#### `renderSortIcon(props: RenderSortIconProps): ReactNode`
+#### `renderSortIcon(props: RenderSortIconProps)`
 
 Renders the sort direction arrow icon.
 
@@ -752,7 +752,7 @@ Renders the sort direction arrow icon.
 
 - `sortDirection: SortDirection | undefined` - 'ASC', 'DESC', or undefined
 
-#### `renderSortPriority(props: RenderSortPriorityProps): ReactNode`
+#### `renderSortPriority(props: RenderSortPriorityProps)`
 
 Renders the sort priority number for multi-column sorting.
 
@@ -760,7 +760,7 @@ Renders the sort priority number for multi-column sorting.
 
 - `priority: number | undefined` - The sort priority (1, 2, 3, etc.)
 
-#### `renderCheckbox(props: RenderCheckboxProps): ReactNode`
+#### `renderCheckbox(props: RenderCheckboxProps)`
 
 Renders a checkbox input with proper styling and accessibility.
 
@@ -784,7 +784,7 @@ const renderers = {
 };
 ```
 
-#### `renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>): ReactNode`
+#### `renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>)`
 
 Renders the expand/collapse toggle for grouped rows.
 
@@ -806,7 +806,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-#### `renderValue<R, SR>(props: RenderCellProps<R, SR>): ReactNode`
+#### `renderValue<R, SR>(props: RenderCellProps<R, SR>)`
 
 A simple cell renderer that displays the cell value as text.
 
