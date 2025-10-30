@@ -666,7 +666,7 @@ function CustomHeaderCell() {
       type="checkbox"
       checked={isRowSelected}
       indeterminate={isIndeterminate}
-      onChange={(e) => onRowSelectionChange({ checked: e.target.checked })}
+      onChange={(event) => onRowSelectionChange({ checked: event.target.checked })}
     />
   );
 }
@@ -693,11 +693,11 @@ function CustomSelectCell({ row }: RenderCellProps<Row>) {
       type="checkbox"
       disabled={isRowSelectionDisabled}
       checked={isRowSelected}
-      onChange={(e) =>
+      onChange={(event) =>
         onRowSelectionChange({
           row,
-          checked: e.target.checked,
-          isShiftClick: e.nativeEvent.shiftKey
+          checked: event.target.checked,
+          isShiftClick: event.nativeEvent.shiftKey
         })
       }
     />
@@ -1176,7 +1176,7 @@ function CustomEditor({ row, column, onRowChange, onClose }: RenderEditCellProps
     <input
       autoFocus
       value={row[column.key]}
-      onChange={(e) => onRowChange({ ...row, [column.key]: e.target.value })}
+      onChange={(event) => onRowChange({ ...row, [column.key]: event.target.value })}
       onBlur={() => onClose(true)}
     />
   );
