@@ -611,7 +611,7 @@ The default cell component. Can be wrapped via the `renderers.renderCell` prop.
 
 #### `<SelectCellFormatter />`
 
-A formatter component for rendering selection checkboxes.
+A formatter component for rendering row selection checkboxes.
 
 ##### Props
 
