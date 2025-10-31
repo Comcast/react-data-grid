@@ -777,11 +777,13 @@ Renders a checkbox input with proper styling and accessibility.
 **Example:**
 
 ```tsx
-import { renderCheckbox } from 'react-data-grid';
+import { DataGrid, renderCheckbox } from 'react-data-grid';
 
-const renderers = {
-  renderCheckbox: (props) => renderCheckbox({ ...props, 'aria-label': 'Select row' })
-};
+<DataGrid
+  renderers={{
+    renderCheckbox: (props) => renderCheckbox({ ...props, 'aria-label': 'Select row' })
+  }}
+/>;
 ```
 
 #### `renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>)`
