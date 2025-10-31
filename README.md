@@ -714,7 +714,7 @@ The default header cell renderer. Renders sortable columns with sort indicators.
 **Example:**
 
 ```tsx
-import { renderHeaderCell } from 'react-data-grid';
+import { renderHeaderCell, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [
   {
@@ -733,7 +733,7 @@ A basic text editor provided for convenience.
 **Example:**
 
 ```tsx
-import { textEditor } from 'react-data-grid';
+import { textEditor, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [
   {
@@ -797,7 +797,7 @@ Renders the expand/collapse toggle for grouped rows.
 **Example:**
 
 ```tsx
-import { renderToggleGroup } from 'react-data-grid';
+import { renderToggleGroup, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [
   {
@@ -815,7 +815,7 @@ A simple cell renderer that displays the cell value as text.
 **Example:**
 
 ```tsx
-import { renderValue } from 'react-data-grid';
+import { renderValue, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [
   {
@@ -853,7 +853,7 @@ A pre-configured column for row selection. Includes checkbox renderers for heade
 **Example:**
 
 ```tsx
-import { DataGrid, SelectColumn } from 'react-data-grid';
+import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
 
@@ -964,6 +964,8 @@ Function to determine how many columns this cell should span. Returns the number
 **Example:**
 
 ```tsx
+import type { Column } from 'react-data-grid';
+
 const columns: readonly Column<Row>[] = [
   {
     key: 'title',
@@ -1079,6 +1081,8 @@ interface ColumnGroup<R, SR = unknown> {
 **Example:**
 
 ```tsx
+import type { ColumnOrColumnGroup } from 'react-data-grid';
+
 const columns: readonly ColumnOrColumnGroup<Row>[] = [
   {
     name: 'Personal Info',
@@ -1133,6 +1137,8 @@ interface RenderCellProps<TRow, TSummaryRow = unknown> {
 **Example:**
 
 ```tsx
+import type { RenderCellProps } from 'react-data-grid';
+
 function CustomCell({ row, column, onRowChange }: RenderCellProps<MyRow>) {
   return (
     <div>
@@ -1173,6 +1179,8 @@ interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
 **Example:**
 
 ```tsx
+import type { RenderEditCellProps } from 'react-data-grid';
+
 function CustomEditor({ row, column, onRowChange, onClose }: RenderEditCellProps<MyRow>) {
   return (
     <input
@@ -1287,6 +1295,8 @@ Function to manually select the cell. Pass `true` to immediately start editing.
 **Example:**
 
 ```tsx
+import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
+
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
   args.selectCell(true); // Select and start editing
@@ -1308,6 +1318,8 @@ Returns whether `preventGridDefault` was called.
 **Example:**
 
 ```tsx
+import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
+
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   if (args.column.key === 'actions') {
     event.preventGridDefault(); // Prevent cell selection
@@ -1367,6 +1379,8 @@ interface EditCellKeyDownArgs<TRow, TSummaryRow> {
 **Example:**
 
 ```tsx
+import type { CellKeyDownArgs, CellKeyboardEvent } from 'react-data-grid';
+
 function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
   if (args.mode === 'EDIT' && event.key === 'Escape') {
     args.onClose(false); // Close without committing
@@ -1423,6 +1437,8 @@ type ColSpanArgs<TRow, TSummaryRow> =
 **Example:**
 
 ```tsx
+import type { Column } from 'react-data-grid';
+
 const columns: readonly Column<Row>[] = [
   {
     key: 'title',
