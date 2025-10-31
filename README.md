@@ -252,6 +252,14 @@ const columns: readonly Column<Row>[] = [
   // other columns
 ];
 
+function rowKeyGetter(row: Row) {
+  return row.id;
+}
+
+function isRowSelectionDisabled(row: Row) {
+  return !row.isActive;
+}
+
 function MyGrid() {
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
 
@@ -265,14 +273,6 @@ function MyGrid() {
       onSelectedRowsChange={setSelectedRows}
     />
   );
-}
-
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
-function isRowSelectionDisabled(row: Row) {
-  return !row.isActive;
 }
 ```
 
@@ -856,7 +856,8 @@ function AppProvider({ children }) {
 
 #### `SelectColumn: Column<any, any>`
 
-A pre-configured column for row selection. Includes checkbox renderers for header, regular rows, and grouped rows.
+A pre-configured column for row selection.
+Includes checkbox renderers for header, regular rows, and grouped rows.
 
 **Example:**
 
@@ -865,12 +866,16 @@ import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
 
+function rowKeyGetter(row: Row) {
+  return row.id;
+}
+
 function MyGrid() {
   return (
     <DataGrid
       columns={columns}
       rows={rows}
-      rowKeyGetter={(row) => row.id}
+      rowKeyGetter={rowKeyGetter}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
     />
@@ -887,7 +892,7 @@ The key used for the `SelectColumn`. Useful for identifying or filtering the sel
 ```tsx
 import { SELECT_COLUMN_KEY } from 'react-data-grid';
 
-const nonSelectColumns = columns.filter((col) => col.key !== SELECT_COLUMN_KEY);
+const nonSelectColumns = columns.filter((column) => column.key !== SELECT_COLUMN_KEY);
 ```
 
 ### Types
@@ -931,7 +936,7 @@ Maximum column width in pixels.
 
 ##### `cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>`
 
-Class name(s) for the cell. Can be a string or a function that returns a class name based on the row.
+Class name(s) for cells. Can be a string or a function that returns a class name based on the row.
 
 ##### `headerCellClass?: Maybe<string>`
 
@@ -939,7 +944,7 @@ Class name(s) for the header cell.
 
 ##### `summaryCellClass?: Maybe<string | ((row: TSummaryRow) => Maybe<string>)>`
 
-Class name(s) for the summary cell. Can be a string or a function that returns a class name based on the summary row.
+Class name(s) for summary cells. Can be a string or a function that returns a class name based on the summary row.
 
 ##### `renderCell?: Maybe<(props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>`
 
@@ -963,7 +968,7 @@ Render function to render the content of edit cells. When set, the column is aut
 
 ##### `editable?: Maybe<boolean | ((row: TRow) => boolean)>`
 
-Enables cell editing. If set and no editor property specified, then a text input will be used as the cell editor.
+Control whether cells can be edited with `renderEditCell`.
 
 ##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryrow>) => Maybe<number>>`
 

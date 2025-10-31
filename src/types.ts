@@ -25,11 +25,11 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly minWidth?: Maybe<number>;
   /** Maximum column width in pixels */
   readonly maxWidth?: Maybe<number>;
-  /** Class name(s) for the cell */
+  /** Class name(s) for cells */
   readonly cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>;
   /** Class name(s) for the header cell */
   readonly headerCellClass?: Maybe<string>;
-  /** Class name(s) for the summary cell */
+  /** Class name(s) for summary cells */
   readonly summaryCellClass?: Maybe<string | ((row: TSummaryRow) => Maybe<string>)>;
   /** Render function to render the content of cells */
   readonly renderCell?: Maybe<(props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>;
