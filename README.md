@@ -810,7 +810,7 @@ const columns: readonly Column<Row>[] = [
 
 #### `renderValue<R, SR>(props: RenderCellProps<R, SR>)`
 
-A simple cell renderer that displays the cell value as text.
+The default cell renderer that renders the value of `row[column.key]`.
 
 **Example:**
 
@@ -830,17 +830,25 @@ const columns: readonly Column<Row>[] = [
 
 #### `DataGridDefaultRenderersContext`
 
-Context for providing default renderers to the DataGrid. Used internally but can be useful for deeply nested custom components that need access to default renderers.
+Context for providing default renderers to DataGrids in your app.
 
 **Example:**
 
 ```tsx
-import { DataGridDefaultRenderersContext } from 'react-data-grid';
-import { useContext } from 'react';
+import { DataGridDefaultRenderersContext, type Renderers } from 'react-data-grid';
 
-function CustomComponent() {
-  const renderers = useContext(DataGridDefaultRenderersContext);
-  return renderers?.renderCheckbox?.({ ... });
+// custom implementations of renderers
+const defaultGridRenderers: Renderers<unknown, unknown> = {
+  renderCheckbox,
+  renderSortStatus
+};
+
+function AppProvider({ children }) {
+  return (
+    <DataGridDefaultRenderersContext value={defaultGridRenderers}>
+      {children}
+    </DataGridDefaultRenderersContext>
+  );
 }
 ```
 
@@ -1379,7 +1387,7 @@ interface EditCellKeyDownArgs<TRow, TSummaryRow> {
 **Example:**
 
 ```tsx
-import type { CellKeyDownArgs, CellKeyboardEvent } from 'react-data-grid';
+import type { CellKeyboardEvent, CellKeyDownArgs } from 'react-data-grid';
 
 function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
   if (args.mode === 'EDIT' && event.key === 'Escape') {
