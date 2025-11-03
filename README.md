@@ -1031,7 +1031,7 @@ Options for cell editing.
 
 **Default**: `false`
 
-Render the cell content in addition to the edit cell. Enable this option when the editor is rendered outside the grid, like a modal for example.
+Render the cell content in addition to the edit cell content. Enable this option when the editor is rendered outside the grid, like a modal for example.
 
 ###### `commitOnOutsideClick?: Maybe<boolean>`
 
@@ -1043,41 +1043,7 @@ Commit changes when clicking outside the cell.
 
 **Default**: `true`
 
-Close the editor when the row changes externally.
-
-#### `CalculatedColumn<TRow, TSummaryRow>`
-
-Extends `Column` with additional computed properties used internally by the grid. This is the type passed to render functions.
-
-**Additional properties:**
-
-- `idx: number` - The column index
-- `level: number` - Nesting level when using column groups
-- `parent: CalculatedColumnParent | undefined` - Parent column group if nested
-- All optional Column properties become required with default values
-
-#### `CalculatedColumnParent<TRow, TSummaryRow>`
-
-Represents a parent column group in the calculated column structure.
-
-```tsx
-interface CalculatedColumnParent<R, SR> {
-  readonly name: string | ReactElement;
-  readonly parent: CalculatedColumnParent<R, SR> | undefined;
-  readonly idx: number;
-  readonly colSpan: number;
-  readonly level: number;
-  readonly headerCellClass?: Maybe<string>;
-}
-```
-
-#### `CalculatedColumnOrColumnGroup<TRow, TSummaryRow>`
-
-Union type representing either a `CalculatedColumnParent` or a `CalculatedColumn`.
-
-```tsx
-type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnParent<R, SR> | CalculatedColumn<R, SR>;
-```
+Close the editor when the row value changes externally.
 
 #### `ColumnGroup<TRow, TSummaryRow>`
 
@@ -1110,6 +1076,40 @@ const columns: readonly ColumnOrColumnGroup<Row>[] = [
 #### `ColumnOrColumnGroup<TRow, TSummaryRow>`
 
 Union type representing either a `Column` or a `ColumnGroup`.
+
+#### `CalculatedColumn<TRow, TSummaryRow>`
+
+Extends `Column` with additional computed properties used internally by the grid. This is the type passed to render functions.
+
+**Additional properties:**
+
+- `idx: number` - The column index
+- `level: number` - Nesting level when using column groups
+- `parent: CalculatedColumnParent | undefined` - Parent column group if nested
+- Multiple Column properties have their values set to their default value
+
+#### `CalculatedColumnParent<TRow, TSummaryRow>`
+
+Represents a parent column group in the calculated column structure.
+
+```tsx
+interface CalculatedColumnParent<R, SR> {
+  readonly name: string | ReactElement;
+  readonly parent: CalculatedColumnParent<R, SR> | undefined;
+  readonly idx: number;
+  readonly colSpan: number;
+  readonly level: number;
+  readonly headerCellClass?: Maybe<string>;
+}
+```
+
+#### `CalculatedColumnOrColumnGroup<TRow, TSummaryRow>`
+
+Union type representing either a `CalculatedColumnParent` or a `CalculatedColumn`.
+
+```tsx
+type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnParent<R, SR> | CalculatedColumn<R, SR>;
+```
 
 #### `RowHeightArgs<TRow>`
 

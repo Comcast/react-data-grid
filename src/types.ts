@@ -59,7 +59,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Options for cell editing */
   readonly editorOptions?: Maybe<{
     /**
-     * Render the cell content in addition to the edit cell.
+     * Render the cell content in addition to the edit cell content.
      * Enable this option when the editor is rendered outside the grid, like a modal for example.
      * By default, the cell content is not rendered when the edit cell is open.
      * @default false
@@ -71,7 +71,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
      */
     readonly commitOnOutsideClick?: Maybe<boolean>;
     /**
-     * Close the editor when the row changes externally
+     * Close the editor when the row value changes externally
      * @default true
      */
     readonly closeOnExternalRowChange?: Maybe<boolean>;
