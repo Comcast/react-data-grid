@@ -136,11 +136,26 @@ Set `--rdg-color-scheme: light/dark` at the `:root` to control the color theme. 
 
 An array of column definitions. Each column should have a key and name. See the [`Column`](#columntrow-tsummaryrow) type for all available options.
 
-:warning: Passing a new `columns` array will trigger a re-render for the whole grid, avoid changing it as much as possible for optimal performance.
+:warning: **Performance:** Passing a new `columns` array will trigger a re-render and recalculation for the entire grid. Always memoize this prop using `useMemo` or define it outside the component to avoid unnecessary re-renders.
 
 ###### `rows: readonly R[]`
 
 An array of rows, the rows data can be of any type.
+
+:bulb: **Performance:** The grid is optimized for efficient rendering:
+
+- **Virtualization**: Only visible rows are rendered in the DOM
+- **Individual row updates**: Row components are memoized, so updating a single row object will only re-render that specific row, not all rows
+- **Array reference matters**: Changing the array reference itself (e.g., `setRows([...rows])`) triggers viewport and layout recalculations, even if the row objects are unchanged
+- **Best practice**: When updating rows, create a new array but reuse unchanged row objects. For example:
+
+  ```tsx
+  // ✅ Good: Only changed row is re-rendered
+  setRows(rows.map((row, idx) => (idx === targetIdx ? { ...row, updated: true } : row)));
+
+  // ❌ Avoid: Creates new references for all rows, causing all visible rows to re-render
+  setRows(rows.map((row) => ({ ...row })));
+  ```
 
 ###### `topSummaryRows?: Maybe<readonly SR[]>`
 
@@ -173,6 +188,8 @@ function MyGrid() {
 
 :bulb: While optional, setting this prop is recommended for optimal performance as the returned value is used to set the `key` prop on the row elements.
 
+:warning: **Performance:** Define this function outside your component or memoize it with `useCallback` to prevent unnecessary re-renders.
+
 ###### `onRowsChange?: Maybe<(rows: R[], data: RowsChangeData<R, SR>) => void>`
 
 Callback triggered when rows are changed.
@@ -196,6 +213,8 @@ function MyGrid() {
 **Default:** `35` pixels
 
 Height of each row in pixels. A function can be used to set different row heights.
+
+:warning: **Performance:** When using a function, the height of all rows is calculated upfront on every render. For large datasets (1000+ rows), this can cause performance issues. Consider using a fixed height when possible, or memoize the `rowHeight` function.
 
 ###### `headerRowHeight?: Maybe<number>`
 
@@ -507,8 +526,6 @@ function MyGrid() {
 }
 ```
 
-:warning: To prevent all rows from being unmounted on re-renders, make sure to pass a static or memoized render function to `renderRow`.
-
 ###### `rowClass?: Maybe<(row: R, rowIdx: number) => Maybe<string>>`
 
 Function to apply custom class names to rows.
@@ -524,6 +541,8 @@ function rowClass(row: Row, rowIdx: number) {
   return rowIdx % 2 === 0 ? 'even' : 'odd';
 }
 ```
+
+:warning: **Performance:** Define this function outside your component or memoize it with `useCallback` to avoid re-rendering all rows on every render.
 
 ###### `headerRowClass?: Maybe<string>>`
 
