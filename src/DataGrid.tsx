@@ -531,20 +531,25 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
   }, [shouldFocusCell, focusCell, selectedPosition.idx]);
 
-  useImperativeHandle(ref, () => ({
-    element: gridRef.current,
-    scrollToCell({ idx, rowIdx }) {
-      const scrollToIdx =
-        idx !== undefined && idx > lastFrozenColumnIndex && idx < columns.length ? idx : undefined;
-      const scrollToRowIdx =
-        rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
+  useImperativeHandle(
+    ref,
+    (): DataGridHandle => ({
+      element: gridRef.current,
+      scrollToCell({ idx, rowIdx }) {
+        const scrollToIdx =
+          idx !== undefined && idx > lastFrozenColumnIndex && idx < columns.length
+            ? idx
+            : undefined;
+        const scrollToRowIdx =
+          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
 
-      if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
-        setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
-      }
-    },
-    selectCell
-  }));
+        if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
+          setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
+        }
+      },
+      selectCell
+    })
+  );
 
   /**
    * event handlers

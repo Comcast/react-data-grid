@@ -1152,7 +1152,7 @@ interface RenderCellProps<TRow, TSummaryRow = unknown> {
 ```tsx
 import type { RenderCellProps } from 'react-data-grid';
 
-function CustomCell({ row, column, onRowChange }: RenderCellProps<MyRow>) {
+function renderCell({ row, column, onRowChange }: RenderCellProps<MyRow>) {
   return (
     <div>
       {row[column.key]}
@@ -1637,7 +1637,7 @@ interface RenderSortPriorityProps {
 
 #### `DataGridHandle`
 
-Handle type returned by `useImperativeHandle` for programmatic grid control.
+Handle type assigned to a grid's `ref` for programmatic grid control.
 
 ```tsx
 interface DataGridHandle {
@@ -1677,7 +1677,7 @@ type DefaultColumnOptions<TRow, TSummaryRow> = Pick<
 
 #### `Direction`
 
-Text direction for the grid.
+Grid layout bidirectionality.
 
 ```tsx
 type Direction = 'ltr' | 'rtl';
