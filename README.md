@@ -616,7 +616,7 @@ The default row component. Can be wrapped via the `renderers.renderRow` prop.
 
 ##### Props
 
-`RenderRowProps<TRow, TSummaryRow>` - See the Types section below.
+[`RenderRowProps<TRow, TSummaryRow>`](#renderrowpropstrow-tsummaryrow)
 
 #### `<Cell />`
 
@@ -624,7 +624,7 @@ The default cell component. Can be wrapped via the `renderers.renderCell` prop.
 
 ##### Props
 
-`CellRendererProps<TRow, TSummaryRow>` - See the Types section below.
+[`CellRendererProps<TRow, TSummaryRow>`](#cellrendererpropstrow-tsummaryrow)
 
 #### `<SelectCellFormatter />`
 
@@ -809,7 +809,7 @@ Renders the expand/collapse toggle for grouped rows.
 
 ##### Props
 
-`RenderGroupCellProps<TRow, TSummaryRow>` - See the Types section below.
+[`RenderGroupCellProps<TRow, TSummaryRow>`](#rendergroupcellpropstrow-tsummaryrow)
 
 **Example:**
 
