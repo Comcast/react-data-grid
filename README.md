@@ -805,7 +805,7 @@ import { DataGrid, renderCheckbox } from 'react-data-grid';
 
 #### `renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>)`
 
-Renders the expand/collapse toggle for grouped rows.
+The default group cell renderer used by the columns used for grouping (`groupBy` prop). This renders the expand/collapse toggle.
 
 ##### Props
 
