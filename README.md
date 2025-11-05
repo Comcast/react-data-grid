@@ -618,8 +618,6 @@ The default row component. Can be wrapped via the `renderers.renderRow` prop.
 
 `RenderRowProps<TRow, TSummaryRow>` - See the Types section below.
 
-The `ref` prop is supported.
-
 #### `<Cell />`
 
 The default cell component. Can be wrapped via the `renderers.renderCell` prop.
