@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import { DataGrid, textEditor } from '../../src';
+import { DataGrid, renderTextEditor } from '../../src';
 import type { Column } from '../../src';
 
 interface Row {
@@ -12,7 +12,7 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'name',
     name: 'Name',
-    renderEditCell: textEditor,
+    renderEditCell: renderTextEditor,
     editorOptions: {
       commitOnOutsideClick: false
     }
@@ -26,7 +26,7 @@ function Test() {
   return <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />;
 }
 
-test('TextEditor', async () => {
+test('renderTextEditor', async () => {
   await page.render(<Test />);
   const cell = page.getByRole('gridcell');
   await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);

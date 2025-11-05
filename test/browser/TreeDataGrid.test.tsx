@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
-import { SelectColumn, textEditor, TreeDataGrid } from '../../src';
+import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { focusSinkClassname } from '../../src/style/core';
 import { rowSelected } from '../../src/style/row';
 import {
@@ -40,7 +40,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   {
     key: 'country',
     name: 'Country',
-    renderEditCell: textEditor
+    renderEditCell: renderTextEditor
   },
   {
     key: 'year',

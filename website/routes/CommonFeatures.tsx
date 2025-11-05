@@ -5,15 +5,15 @@ import { css } from '@linaria/core';
 
 import {
   DataGrid,
+  renderTextEditor,
   SelectCellFormatter,
   SelectColumn,
-  textEditor,
   type Column,
   type DataGridHandle,
+  type Direction,
   type SortColumn
 } from '../../src';
-import { textEditorClassname } from '../../src/editors/textEditor';
-import type { Direction } from '../../src/types';
+import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { exportToCsv, exportToPdf } from '../utils';
 import { useDirection } from '../directionContext';
 
@@ -96,7 +96,7 @@ function getColumns(
       key: 'title',
       name: 'Task',
       frozen: true,
-      renderEditCell: textEditor,
+      renderEditCell: renderTextEditor,
       renderSummaryCell({ row }) {
         return `${row.totalCount} records`;
       }
@@ -106,12 +106,12 @@ function getColumns(
       name: 'Client',
       width: 'max-content',
       draggable: true,
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'area',
       name: 'Area',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'country',
@@ -132,12 +132,12 @@ function getColumns(
     {
       key: 'contact',
       name: 'Contact',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'assignee',
       name: 'Assignee',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'progress',
@@ -219,7 +219,7 @@ function getColumns(
     {
       key: 'version',
       name: 'Version',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'available',

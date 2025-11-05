@@ -743,20 +743,20 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-#### `textEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>)`
+#### `renderTextEditor<TRow, TSummaryRow>(props: RenderEditCellProps<TRow, TSummaryRow>)`
 
 A basic text editor provided for convenience.
 
 **Example:**
 
 ```tsx
-import { textEditor, type Column } from 'react-data-grid';
+import { renderTextEditor, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [
   {
     key: 'title',
     name: 'Title',
-    renderEditCell: textEditor
+    renderEditCell: renderTextEditor
   }
 ];
 ```
