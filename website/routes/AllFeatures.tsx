@@ -3,16 +3,8 @@ import { faker } from '@faker-js/faker';
 import { css } from '@linaria/core';
 import clsx from 'clsx';
 
-import {
-  DataGrid,
-  renderTextEditor,
-  SelectColumn,
-  type CalculatedColumn,
-  type CellCopyArgs,
-  type CellPasteArgs,
-  type Column,
-  type FillEvent
-} from '../../src';
+import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
+import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { useDirection } from '../directionContext';
 
