@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { css } from '@linaria/core';
 
-import { DataGrid } from '../../src';
-import type { Column } from '../../src';
+import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute({
