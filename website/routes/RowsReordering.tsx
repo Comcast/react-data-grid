@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { DataGrid, renderTextEditor } from '../../src';
-import type { CellRendererProps, Column } from '../../src';
+import { DataGrid, renderTextEditor, type CellRendererProps, type Column } from '../../src';
 import { DraggableCellRenderer } from '../components';
 import { startViewTransition } from '../utils';
 import { useDirection } from '../directionContext';
