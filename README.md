@@ -622,6 +622,7 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 
 - Group columns cannot be rendered under one column
 - Group columns are automatically frozen and cannot be unfrozen
+- Cell copy/paste does not work on group rows
 
 ##### TreeDataGridProps
 
