@@ -618,7 +618,7 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 - `onFill` - Drag-fill is disabled for tree grids
 - `isRowSelectionDisabled` - Row selection disabling is not available
 
-**Current Limitations:**
+**Caveats:**
 
 - Group columns cannot be rendered under one column
 - Group columns are automatically frozen and cannot be unfrozen
