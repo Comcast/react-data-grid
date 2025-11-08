@@ -710,7 +710,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       return;
     }
 
-    if (isCellEditable(selectedPosition) && isDefaultCellInput(event, onCellPaste != null)) {
+    const column = columns[selectedPosition.idx];
+
+    if (
+      isCellEditable(selectedPosition) &&
+      column.renderEditCell != null &&
+      isDefaultCellInput(event, onCellPaste != null)
+    ) {
       setSelectedPosition(({ idx, rowIdx }) => ({
         idx,
         rowIdx,
@@ -839,7 +845,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const samePosition = isSamePosition(selectedPosition, position);
 
-    if (options?.enableEditor && isCellEditable(position)) {
+    const column = columns[selectedPosition.idx];
+    if (options?.enableEditor && isCellEditable(position) && column.renderEditCell != null) {
       const row = rows[position.rowIdx];
       setSelectedPosition({ ...position, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
@@ -973,10 +980,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { idx, rowIdx } = selectedPosition;
     const column = columns[idx];
-    if (column.renderEditCell == null || column.editable === false) {
+    if (!isCellEditable(selectedPosition)) {
       return;
     }
-
     const isLastRow = rowIdx === maxRowIdx;
     const columnWidth = getColumnWidth(column);
     const colSpan = column.colSpan?.({ type: 'ROW', row: rows[rowIdx] }) ?? 1;
