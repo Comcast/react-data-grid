@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 import clsx from 'clsx';
 
 import { DataGrid, type Column, type DataGridHandle } from '../../src';

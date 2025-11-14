@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
 import { useDirection } from '../directionContext';

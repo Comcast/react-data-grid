@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid, type Column, type Direction, type RowsChangeData } from '../../src';
 import { CellExpanderFormatter } from '../components';

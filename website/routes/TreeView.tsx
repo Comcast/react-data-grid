@@ -1,5 +1,5 @@
 import { useMemo, useReducer, useState } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid, type Column } from '../../src';
 import { CellExpanderFormatter, ChildRowDeleteButton } from '../components';

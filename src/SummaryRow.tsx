@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { classnames, getColSpan, getRowStyle } from './utils';
 import type { RenderRowProps } from './types';

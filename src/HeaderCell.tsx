@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { useRovingTabIndex } from './hooks';
 import {

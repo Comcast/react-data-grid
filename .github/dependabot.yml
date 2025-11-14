@@ -11,13 +11,6 @@ updates:
         patterns:
           - 'react'
           - 'react-dom'
-      babel:
-        patterns:
-          - '@babel/*'
-      linaria:
-        patterns:
-          - '@linaria/*'
-          - '@wyw-in-js/*'
       typescript-eslint:
         patterns:
           - '@typescript-eslint/*'

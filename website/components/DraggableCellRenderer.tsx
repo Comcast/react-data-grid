@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 import clsx from 'clsx';
 
 import { Cell, type CellRendererProps } from '../../src';

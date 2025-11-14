@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 const cellExpandClassname = css`
   block-size: 100%;

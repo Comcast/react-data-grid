@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 const childRowActionCrossClassname = css`
   block-size: 100%;

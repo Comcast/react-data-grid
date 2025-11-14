@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import type { RenderHeaderCellProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';

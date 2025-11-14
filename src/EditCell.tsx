@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type {

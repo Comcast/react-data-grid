@@ -1,5 +1,5 @@
 import { page, userEvent, type Locator } from 'vitest/browser';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';

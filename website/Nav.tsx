@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import type { Direction } from '../src/types';
 import { startViewTransition } from './utils';

@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import type { RenderSortIconProps, RenderSortPriorityProps, RenderSortStatusProps } from './types';
 

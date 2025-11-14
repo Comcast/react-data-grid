@@ -9,7 +9,7 @@
     "^react-dom",
     "^react",
     "<THIRD_PARTY_MODULES>",
-    "^@linaria/core$",
+    "^@nstep/ecis$",
     "^clsx$",
     "",
     "./src",

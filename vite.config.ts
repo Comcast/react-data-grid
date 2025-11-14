@@ -1,7 +1,7 @@
+import { ecis } from '@nstep/ecis/plugin';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
-import wyw from '@wyw-in-js/vite';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import type { BrowserCommand } from 'vitest/node';
 
@@ -64,7 +64,7 @@ const scrollGrid: BrowserCommand<[{ scrollLeft?: number; scrollTop?: number }]> 
 const viewport = { width: 1920, height: 1080 } as const;
 
 export default defineConfig(
-  ({ command, isPreview }): ViteUserConfig => ({
+  ({ isPreview }): ViteUserConfig => ({
     base: '/react-data-grid/',
     cacheDir: '.cache/vite',
     clearScreen: false,
@@ -76,6 +76,7 @@ export default defineConfig(
       cssMinify: 'esbuild'
     },
     plugins: [
+      ecis(),
       (!isTest || isPreview) &&
         tanstackRouter({
           target: 'react',
@@ -85,12 +86,7 @@ export default defineConfig(
           verboseFileRoutes: false
         }),
       react({
-        exclude: ['./.cache/**/*']
-      }),
-      wyw({
-        exclude: ['./.cache/**/*', '**/*.d.ts', '**/*.gen.ts'],
-        preprocessor: 'none',
-        displayName: command === 'serve'
+        exclude: ['./.cache/**/*', './node_modules/**/*', './website/routeTree.gen.ts']
       })
     ],
     server: {

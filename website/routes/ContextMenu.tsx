@@ -1,7 +1,7 @@
 import { useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { faker } from '@faker-js/faker';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';

@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';

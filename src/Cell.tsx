@@ -1,5 +1,5 @@
 import { memo, type MouseEvent } from 'react';
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';

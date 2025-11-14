@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from '@nstep/ecis';
 
 import { cell } from './cell';
 import { bottomSummaryRowClassname, row, topSummaryRowClassname } from './row';
