@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { faker } from '@faker-js/faker';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import {
   DataGrid,

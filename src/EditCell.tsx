@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type {

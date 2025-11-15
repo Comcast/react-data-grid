@@ -1,4 +1,4 @@
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 export const row = css`
   @layer rdg.Row {

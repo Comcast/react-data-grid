@@ -1,4 +1,4 @@
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';

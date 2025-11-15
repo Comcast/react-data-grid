@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type {

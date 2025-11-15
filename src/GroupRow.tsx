@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames, getRowStyle } from './utils';

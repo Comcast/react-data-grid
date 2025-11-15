@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { classnames, getColSpan, getRowStyle } from './utils';
 import type { RenderRowProps } from './types';

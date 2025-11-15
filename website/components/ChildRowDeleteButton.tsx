@@ -1,4 +1,4 @@
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 const childRowActionCrossClassname = css`
   block-size: 100%;

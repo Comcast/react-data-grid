@@ -1,5 +1,5 @@
 import { memo, type MouseEvent } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';

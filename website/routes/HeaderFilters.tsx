@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { DataGrid, type Column, type RenderHeaderCellProps } from '../../src';
 import type { Omit } from '../../src/types';

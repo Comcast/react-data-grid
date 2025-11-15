@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { classnames, getColSpan } from './utils';
 import type { CalculatedColumn, Direction, Maybe, Position, ResizedWidth } from './types';

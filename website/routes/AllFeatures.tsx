@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { faker } from '@faker-js/faker';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 import clsx from 'clsx';
 
 import { DataGrid, renderTextEditor, SelectColumn } from '../../src';

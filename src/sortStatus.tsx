@@ -1,4 +1,4 @@
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import type { RenderSortIconProps, RenderSortPriorityProps, RenderSortStatusProps } from './types';
 

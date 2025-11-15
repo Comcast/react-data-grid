@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
 import { useDirection } from '../directionContext';

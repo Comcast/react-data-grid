@@ -1,7 +1,7 @@
-import { ecis } from '@nstep/ecis/plugin';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
+import { ecij } from 'ecij/plugin';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import type { BrowserCommand } from 'vitest/node';
 
@@ -76,7 +76,7 @@ export default defineConfig(
       cssMinify: 'esbuild'
     },
     plugins: [
-      ecis(),
+      ecij(),
       (!isTest || isPreview) &&
         tanstackRouter({
           target: 'react',

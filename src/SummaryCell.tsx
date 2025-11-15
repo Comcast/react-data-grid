@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { css } from '@nstep/ecis';
+import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
