@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import type { RenderGroupCellProps } from '../types';
 

@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 export const cell = css`
   @layer rdg.Cell {
