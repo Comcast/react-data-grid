@@ -25,10 +25,7 @@ export function isSelectedCellEditable<R, SR>({
 
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
-  return (
-    column.renderEditCell != null &&
-    (typeof column.editable === 'function' ? column.editable(row) : column.editable) !== false
-  );
+  return !!(typeof column.editable === 'function' ? column.editable(row) : column.editable);
 }
 
 interface GetNextSelectedCellPositionOpts<R, SR> {
