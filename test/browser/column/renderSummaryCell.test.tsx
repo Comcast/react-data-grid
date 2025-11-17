@@ -21,8 +21,8 @@ const columns: readonly Column<never, SummaryRow>[] = [
   }
 ];
 
-test('renderSummaryCell', () => {
-  setup({
+test('renderSummaryCell', async () => {
+  await setup({
     columns,
     rows: [],
     topSummaryRows: [

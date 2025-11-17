@@ -8,7 +8,6 @@ import {
 } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
-import clsx from 'clsx';
 
 import {
   HeaderRowSelectionChangeContext,
@@ -26,6 +25,7 @@ import {
   abs,
   assertIsValidKeyGetter,
   canExitGrid,
+  classnames,
   createCellEvent,
   getCellStyle,
   getColSpan,
@@ -531,20 +531,25 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
   }, [shouldFocusCell, focusCell, selectedPosition.idx]);
 
-  useImperativeHandle(ref, () => ({
-    element: gridRef.current,
-    scrollToCell({ idx, rowIdx }) {
-      const scrollToIdx =
-        idx !== undefined && idx > lastFrozenColumnIndex && idx < columns.length ? idx : undefined;
-      const scrollToRowIdx =
-        rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
+  useImperativeHandle(
+    ref,
+    (): DataGridHandle => ({
+      element: gridRef.current,
+      scrollToCell({ idx, rowIdx }) {
+        const scrollToIdx =
+          idx !== undefined && idx > lastFrozenColumnIndex && idx < columns.length
+            ? idx
+            : undefined;
+        const scrollToRowIdx =
+          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
 
-      if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
-        setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
-      }
-    },
-    selectCell
-  }));
+        if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
+          setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
+        }
+      },
+      selectCell
+    })
+  );
 
   /**
    * event handlers
@@ -997,7 +1002,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     return (
       <div
         style={dragHandleStyle}
-        className={clsx(cellDragHandleClassname, column.frozen && cellDragHandleFrozenClassname)}
+        className={classnames(
+          cellDragHandleClassname,
+          column.frozen && cellDragHandleFrozenClassname
+        )}
         onPointerDown={handleDragHandlePointerDown}
         onPointerMove={isDragging ? handleDragHandlePointerMove : undefined}
         onLostPointerCapture={isDragging ? handleDragHandleLostPointerCapture : undefined}
@@ -1191,7 +1199,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // Scrollable containers without tabIndex are keyboard focusable in Chrome only if there is no focusable element inside
       // whereas they are always focusable in Firefox. We need to set tabIndex to have a consistent behavior across browsers.
       tabIndex={-1}
-      className={clsx(
+      className={classnames(
         rootClassname,
         {
           [viewportDraggingClassname]: isDragging
@@ -1335,7 +1343,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         <div
           ref={focusSinkRef}
           tabIndex={isGroupRowFocused ? 0 : -1}
-          className={clsx(focusSinkClassname, {
+          className={classnames(focusSinkClassname, {
             [focusSinkHeaderAndSummaryClassname]: !isRowIdxWithinViewportBounds(
               selectedPosition.rowIdx
             ),

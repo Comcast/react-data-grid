@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "files": {
     "includes": [
       "**",
@@ -16,9 +17,7 @@
     ]
   },
   "formatter": {
-    "includes": ["**", "!**/*.ts", "!**/*.tsx", "!package.json"],
-    "indentStyle": "space",
-    "lineWidth": 100
+    "enabled": false
   },
   "json": {
     "parser": {
@@ -26,23 +25,11 @@
       "allowTrailingCommas": true
     }
   },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "trailingCommas": "none"
-    }
-  },
-  "css": {
-    "formatter": {
-      "quoteStyle": "single"
-    }
-  },
   "linter": {
     "domains": {
       "project": "recommended"
     },
     "rules": {
-      "recommended": false,
       "a11y": {
         "noAccessKey": "warn",
         "noAriaHiddenOnFocusable": "warn",
@@ -193,8 +180,8 @@
         "useSingleJsDocAsterisk": "warn",
         "useUniqueElementIds": "off",
         "useValidForDirection": "warn",
-        "useYield": "warn",
-        "useValidTypeof": "warn"
+        "useValidTypeof": "warn",
+        "useYield": "warn"
       },
       "performance": {
         "noAccumulatingSpread": "warn",
@@ -206,6 +193,7 @@
         "noReExportAll": "off",
         "useTopLevelRegex": "warn"
       },
+      "recommended": false,
       "security": {
         "noBlankTarget": "warn",
         "noDangerouslySetInnerHtml": "warn",
@@ -215,8 +203,8 @@
       "style": {
         "noDefaultExport": "off",
         "noDoneCallback": "warn",
-        "noExportedImports": "off",
         "noEnum": "off",
+        "noExportedImports": "off",
         "noImplicitBoolean": "off",
         "noInferrableTypes": "warn",
         "noNamespace": "warn",
@@ -224,6 +212,7 @@
         "noNonNullAssertion": "off",
         "noParameterAssign": "off",
         "noParameterProperties": "warn",
+        "noRestrictedGlobals": "warn",
         "noRestrictedImports": {
           "level": "warn",
           "options": {
@@ -239,7 +228,6 @@
             }
           }
         },
-        "noRestrictedGlobals": "warn",
         "noShoutyConstants": "warn",
         "noSubstr": "off",
         "noUnusedTemplateLiteral": "warn",
@@ -250,8 +238,8 @@
         "useAtIndex": "off",
         "useBlockStatements": "off",
         "useCollapsedElseIf": "warn",
-        "useComponentExportOnlyModules": "off",
         "useCollapsedIf": "warn",
+        "useComponentExportOnlyModules": "off",
         "useConsistentArrayType": "warn",
         "useConsistentBuiltinInstantiation": "warn",
         "useConsistentObjectDefinitions": "warn",
@@ -361,7 +349,6 @@
       }
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "overrides": [
     {
       "includes": ["**/*.test.*"],
@@ -385,6 +372,14 @@
           }
         }
       }
+    },
+    {
+      "assist": {
+        "actions": {
+          "source": { "useSortedKeys": "on" }
+        }
+      },
+      "includes": ["./biome.json"]
     }
   ]
 }

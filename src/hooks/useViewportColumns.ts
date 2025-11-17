@@ -36,7 +36,6 @@ export function useViewportColumns<R, SR>({
 
     const updateStartIdx = (colIdx: number, colSpan: number | undefined) => {
       if (colSpan !== undefined && colIdx + colSpan > colOverscanStartIdx) {
-        // eslint-disable-next-line react-compiler/react-compiler
         startIdx = colIdx;
         return true;
       }

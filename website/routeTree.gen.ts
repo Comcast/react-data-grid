@@ -307,137 +307,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/AllFeatures': {
-      id: '/AllFeatures'
-      path: '/AllFeatures'
-      fullPath: '/AllFeatures'
-      preLoaderRoute: typeof AllFeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/Animation': {
-      id: '/Animation'
-      path: '/Animation'
-      fullPath: '/Animation'
-      preLoaderRoute: typeof AnimationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/CellNavigation': {
-      id: '/CellNavigation'
-      path: '/CellNavigation'
-      fullPath: '/CellNavigation'
-      preLoaderRoute: typeof CellNavigationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ColumnGrouping': {
-      id: '/ColumnGrouping'
-      path: '/ColumnGrouping'
-      fullPath: '/ColumnGrouping'
-      preLoaderRoute: typeof ColumnGroupingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ColumnSpanning': {
-      id: '/ColumnSpanning'
-      path: '/ColumnSpanning'
-      fullPath: '/ColumnSpanning'
-      preLoaderRoute: typeof ColumnSpanningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ColumnsReordering': {
-      id: '/ColumnsReordering'
-      path: '/ColumnsReordering'
-      fullPath: '/ColumnsReordering'
-      preLoaderRoute: typeof ColumnsReorderingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/CommonFeatures': {
-      id: '/CommonFeatures'
-      path: '/CommonFeatures'
-      fullPath: '/CommonFeatures'
-      preLoaderRoute: typeof CommonFeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ContextMenu': {
-      id: '/ContextMenu'
-      path: '/ContextMenu'
-      fullPath: '/ContextMenu'
-      preLoaderRoute: typeof ContextMenuRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/CustomizableRenderers': {
-      id: '/CustomizableRenderers'
-      path: '/CustomizableRenderers'
-      fullPath: '/CustomizableRenderers'
-      preLoaderRoute: typeof CustomizableRenderersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/HeaderFilters': {
-      id: '/HeaderFilters'
-      path: '/HeaderFilters'
-      fullPath: '/HeaderFilters'
-      preLoaderRoute: typeof HeaderFiltersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/InfiniteScrolling': {
-      id: '/InfiniteScrolling'
-      path: '/InfiniteScrolling'
-      fullPath: '/InfiniteScrolling'
-      preLoaderRoute: typeof InfiniteScrollingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/MasterDetail': {
-      id: '/MasterDetail'
-      path: '/MasterDetail'
-      fullPath: '/MasterDetail'
-      preLoaderRoute: typeof MasterDetailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/MillionCells': {
-      id: '/MillionCells'
-      path: '/MillionCells'
-      fullPath: '/MillionCells'
-      preLoaderRoute: typeof MillionCellsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/NoRows': {
-      id: '/NoRows'
-      path: '/NoRows'
-      fullPath: '/NoRows'
-      preLoaderRoute: typeof NoRowsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ResizableGrid': {
-      id: '/ResizableGrid'
-      path: '/ResizableGrid'
-      fullPath: '/ResizableGrid'
-      preLoaderRoute: typeof ResizableGridRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/RowGrouping': {
-      id: '/RowGrouping'
-      path: '/RowGrouping'
-      fullPath: '/RowGrouping'
-      preLoaderRoute: typeof RowGroupingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/RowsReordering': {
-      id: '/RowsReordering'
-      path: '/RowsReordering'
-      fullPath: '/RowsReordering'
-      preLoaderRoute: typeof RowsReorderingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ScrollToCell': {
-      id: '/ScrollToCell'
-      path: '/ScrollToCell'
-      fullPath: '/ScrollToCell'
-      preLoaderRoute: typeof ScrollToCellRouteImport
+    '/VariableRowHeight': {
+      id: '/VariableRowHeight'
+      path: '/VariableRowHeight'
+      fullPath: '/VariableRowHeight'
+      preLoaderRoute: typeof VariableRowHeightRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/TreeView': {
@@ -447,11 +321,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TreeViewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/VariableRowHeight': {
-      id: '/VariableRowHeight'
-      path: '/VariableRowHeight'
-      fullPath: '/VariableRowHeight'
-      preLoaderRoute: typeof VariableRowHeightRouteImport
+    '/ScrollToCell': {
+      id: '/ScrollToCell'
+      path: '/ScrollToCell'
+      fullPath: '/ScrollToCell'
+      preLoaderRoute: typeof ScrollToCellRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RowsReordering': {
+      id: '/RowsReordering'
+      path: '/RowsReordering'
+      fullPath: '/RowsReordering'
+      preLoaderRoute: typeof RowsReorderingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RowGrouping': {
+      id: '/RowGrouping'
+      path: '/RowGrouping'
+      fullPath: '/RowGrouping'
+      preLoaderRoute: typeof RowGroupingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ResizableGrid': {
+      id: '/ResizableGrid'
+      path: '/ResizableGrid'
+      fullPath: '/ResizableGrid'
+      preLoaderRoute: typeof ResizableGridRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/NoRows': {
+      id: '/NoRows'
+      path: '/NoRows'
+      fullPath: '/NoRows'
+      preLoaderRoute: typeof NoRowsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/MillionCells': {
+      id: '/MillionCells'
+      path: '/MillionCells'
+      fullPath: '/MillionCells'
+      preLoaderRoute: typeof MillionCellsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/MasterDetail': {
+      id: '/MasterDetail'
+      path: '/MasterDetail'
+      fullPath: '/MasterDetail'
+      preLoaderRoute: typeof MasterDetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/InfiniteScrolling': {
+      id: '/InfiniteScrolling'
+      path: '/InfiniteScrolling'
+      fullPath: '/InfiniteScrolling'
+      preLoaderRoute: typeof InfiniteScrollingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/HeaderFilters': {
+      id: '/HeaderFilters'
+      path: '/HeaderFilters'
+      fullPath: '/HeaderFilters'
+      preLoaderRoute: typeof HeaderFiltersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CustomizableRenderers': {
+      id: '/CustomizableRenderers'
+      path: '/CustomizableRenderers'
+      fullPath: '/CustomizableRenderers'
+      preLoaderRoute: typeof CustomizableRenderersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ContextMenu': {
+      id: '/ContextMenu'
+      path: '/ContextMenu'
+      fullPath: '/ContextMenu'
+      preLoaderRoute: typeof ContextMenuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CommonFeatures': {
+      id: '/CommonFeatures'
+      path: '/CommonFeatures'
+      fullPath: '/CommonFeatures'
+      preLoaderRoute: typeof CommonFeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ColumnsReordering': {
+      id: '/ColumnsReordering'
+      path: '/ColumnsReordering'
+      fullPath: '/ColumnsReordering'
+      preLoaderRoute: typeof ColumnsReorderingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ColumnSpanning': {
+      id: '/ColumnSpanning'
+      path: '/ColumnSpanning'
+      fullPath: '/ColumnSpanning'
+      preLoaderRoute: typeof ColumnSpanningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ColumnGrouping': {
+      id: '/ColumnGrouping'
+      path: '/ColumnGrouping'
+      fullPath: '/ColumnGrouping'
+      preLoaderRoute: typeof ColumnGroupingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CellNavigation': {
+      id: '/CellNavigation'
+      path: '/CellNavigation'
+      fullPath: '/CellNavigation'
+      preLoaderRoute: typeof CellNavigationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Animation': {
+      id: '/Animation'
+      path: '/Animation'
+      fullPath: '/Animation'
+      preLoaderRoute: typeof AnimationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/AllFeatures': {
+      id: '/AllFeatures'
+      path: '/AllFeatures'
+      fullPath: '/AllFeatures'
+      preLoaderRoute: typeof AllFeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

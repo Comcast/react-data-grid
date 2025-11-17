@@ -1,4 +1,2 @@
-*.js
-*.json
-*.css
+package.json
 /website/routeTree.gen.ts

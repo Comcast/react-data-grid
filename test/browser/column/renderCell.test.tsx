@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column } from '../../../src';
@@ -18,15 +18,15 @@ describe('renderValue', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should be used by default', () => {
-    setup({ columns, rows });
+  it('should be used by default', async () => {
+    await setup({ columns, rows });
     const [cell1, cell2] = getCells();
     expect(cell1).toHaveTextContent('101');
     expect(cell2).toBeEmptyDOMElement();
   });
 
-  it('should handle non-object values', () => {
-    setup({ columns, rows: [null] });
+  it('should handle non-object values', async () => {
+    await setup({ columns, rows: [null] });
     const [cell1, cell2] = getCells();
     expect(cell1).toBeEmptyDOMElement();
     expect(cell2).toBeEmptyDOMElement();
@@ -49,8 +49,8 @@ describe('Custom cell renderer', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should replace the default cell renderer', () => {
-    setup({ columns, rows });
+  it('should replace the default cell renderer', async () => {
+    await setup({ columns, rows });
     const [cell1, cell2] = getCells();
     expect(cell1).toHaveTextContent('#101');
     expect(cell2).toHaveTextContent('No name');
@@ -90,7 +90,7 @@ describe('Custom cell renderer', () => {
       );
     }
 
-    page.render(<Test />);
+    await page.render(<Test />);
 
     const [cell] = getCells();
     expect(cell).toHaveTextContent('value: 1');
@@ -135,7 +135,7 @@ test('Focus child if it sets tabIndex', async () => {
     }
   };
 
-  page.render(<DataGrid columns={[column]} rows={[{ id: 1 }]} />);
+  await page.render(<DataGrid columns={[column]} rows={[{ id: 1 }]} />);
 
   const button1 = page.getByRole('button', { name: 'Button 1' });
   const button2 = page.getByRole('button', { name: 'Button 2' });
@@ -190,7 +190,7 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
     );
   }
 
-  page.render(<FormatterTest />);
+  await page.render(<FormatterTest />);
 
   await userEvent.click(getCellsAtRowIndex(0)[0]);
   expect(getCellsAtRowIndex(0)[0]).toHaveFocus();

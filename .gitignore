@@ -4,8 +4,11 @@
 /lib
 /node_modules
 /package-lock.json
-__screenshots__
+test/browser/**/__screenshots__
 
 npm-debug.log
 **.orig
 .idea
+.vitest-attachments
+
+__traces__

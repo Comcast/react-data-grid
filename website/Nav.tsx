@@ -109,28 +109,28 @@ export default function Nav({ direction, onDirectionChange }: Props) {
       <nav aria-labelledby={linksNavId} className={navClassname}>
         <h2 id={linksNavId}>Links</h2>
         <a
-          href="https://github.com/adazzle/react-data-grid/blob/main/README.md"
+          href="https://github.com/Comcast/react-data-grid/blob/main/README.md"
           target="_blank"
           rel="noreferrer"
         >
           Documentation
         </a>
         <a
-          href="https://github.com/adazzle/react-data-grid/blob/main/CHANGELOG.md"
+          href="https://github.com/Comcast/react-data-grid/blob/main/CHANGELOG.md"
           target="_blank"
           rel="noreferrer"
         >
           Changelog
         </a>
         <a
-          href="https://github.com/adazzle/react-data-grid/discussions"
+          href="https://github.com/Comcast/react-data-grid/discussions"
           target="_blank"
           rel="noreferrer"
         >
           Discussions
         </a>
         <a
-          href="https://github.com/adazzle/react-data-grid/issues"
+          href="https://github.com/Comcast/react-data-grid/issues"
           target="_blank"
           rel="noreferrer"
         >

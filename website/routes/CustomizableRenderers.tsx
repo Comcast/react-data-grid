@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { css } from '@linaria/core';
 
-import { Row as BaseRow, Cell, DataGrid, SelectColumn, textEditor } from '../../src';
+import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type {
   CellRendererProps,
   Column,
@@ -69,7 +69,7 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'task',
     name: 'Title',
-    renderEditCell: textEditor,
+    renderEditCell: renderTextEditor,
     sortable: true
   },
   {

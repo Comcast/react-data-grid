@@ -1,15 +1,14 @@
+import reactX from '@eslint-react/eslint-plugin';
+import markdown from '@eslint/markdown';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import vitest from '@vitest/eslint-plugin';
-import { defineConfig, globalIgnores } from 'eslint/config';
 import jestDom from 'eslint-plugin-jest-dom';
 import react from 'eslint-plugin-react';
-import reactCompiler from 'eslint-plugin-react-compiler';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactHooksExtra from 'eslint-plugin-react-hooks-extra';
 import sonarjs from 'eslint-plugin-sonarjs';
 import testingLibrary from 'eslint-plugin-testing-library';
-import markdown from '@eslint/markdown';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['.cache', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
@@ -26,9 +25,8 @@ export default defineConfig([
 
     plugins: {
       react,
-      'react-compiler': reactCompiler,
       'react-hooks': reactHooks,
-      'react-hooks-extra': reactHooksExtra,
+      'react-x': reactX,
       sonarjs,
       '@typescript-eslint': typescriptEslint
     },
@@ -249,6 +247,7 @@ export default defineConfig([
       'prefer-rest-params': 1,
       'prefer-spread': 1,
       'prefer-template': 1,
+      'preserve-caught-error': 1,
       radix: 1,
       'require-await': 0, // replaced by @typescript-eslint/require-await
       'require-unicode-regexp': 0,
@@ -382,21 +381,32 @@ export default defineConfig([
       'react/style-prop-object': 0,
       'react/void-dom-elements-no-children': 1,
 
-      // React Compiler
-      // https://react.dev/learn/react-compiler#installing-eslint-plugin-react-compiler
-      'react-compiler/react-compiler': 1,
-
       // React Hooks
       // https://www.npmjs.com/package/eslint-plugin-react-hooks
       'react-hooks/rules-of-hooks': 1,
       'react-hooks/exhaustive-deps': 1,
+      'react-hooks/component-hook-factories': 1,
+      'react-hooks/config': 1,
+      'react-hooks/error-boundaries': 1,
+      'react-hooks/gating': 1,
+      'react-hooks/globals': 1,
+      'react-hooks/immutability': 0,
+      'react-hooks/incompatible-library': 1,
+      'react-hooks/preserve-manual-memoization': 1,
+      'react-hooks/purity': 1,
+      'react-hooks/refs': 1,
+      'react-hooks/set-state-in-effect': 1,
+      'react-hooks/set-state-in-render': 1,
+      'react-hooks/static-components': 1,
+      'react-hooks/unsupported-syntax': 1,
+      'react-hooks/use-memo': 1,
 
       // React Hooks Extra
       // https://eslint-react.xyz/
-      'react-hooks-extra/no-unnecessary-use-callback': 1,
-      'react-hooks-extra/no-unnecessary-use-memo': 1,
-      'react-hooks-extra/no-unnecessary-use-prefix': 1,
-      'react-hooks-extra/prefer-use-state-lazy-initialization': 1,
+      'react-x/no-unnecessary-use-callback': 1,
+      'react-x/no-unnecessary-use-memo': 1,
+      'react-x/no-unnecessary-use-prefix': 1,
+      'react-x/prefer-use-state-lazy-initialization': 1,
 
       // SonarJS rules
       // https://github.com/SonarSource/eslint-plugin-sonarjs#rules
@@ -606,6 +616,7 @@ export default defineConfig([
       'vitest/consistent-test-filename': 0,
       'vitest/consistent-test-it': 1,
       'vitest/expect-expect': 0,
+      'vitest/hoisted-apis-on-top': 1,
       'vitest/max-expects': 0,
       'vitest/max-nested-describe': 0,
       'vitest/no-alias-methods': 1,
@@ -755,7 +766,10 @@ export default defineConfig([
       'markdown/no-missing-atx-heading-space': 1,
       'markdown/no-missing-label-refs': 1,
       'markdown/no-missing-link-fragments': 1,
+      'markdown/no-multiple-h1': 1,
+      'markdown/no-reference-like-urls': 1,
       'markdown/no-reversed-media-syntax': 1,
+      'markdown/no-space-in-emphasis': 1,
       'markdown/no-unused-definitions': 1,
       'markdown/require-alt-text': 1,
       'markdown/table-column-count': 1

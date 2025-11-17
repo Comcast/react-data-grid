@@ -1,7 +1,7 @@
 import type { Column } from '../../../src';
-import { getHeaderCells, setup } from '../utils';
+import { getHeaderCellsNew, setup } from '../utils';
 
-test('name is either a string or an element', () => {
+test('name is either a string or an element', async () => {
   function Header() {
     return 'Fancy';
   }
@@ -17,8 +17,8 @@ test('name is either a string or an element', () => {
     }
   ];
 
-  setup({ columns, rows: [] });
-  const [cell1, cell2] = getHeaderCells();
-  expect(cell1).toHaveTextContent('ID');
-  expect(cell2).toHaveTextContent('Fancy');
+  await setup({ columns, rows: [] });
+  const [cell1, cell2] = getHeaderCellsNew('ID', 'Fancy');
+  await expect.element(cell1).toBeVisible();
+  await expect.element(cell2).toBeVisible();
 });

@@ -1,5 +1,4 @@
-import { DataGrid } from '../../src';
-import type { ColumnOrColumnGroup } from '../../src';
+import { DataGrid, type ColumnOrColumnGroup } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 

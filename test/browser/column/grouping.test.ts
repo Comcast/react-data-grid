@@ -1,7 +1,14 @@
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
-import { getSelectedCell, setup, validateCellPosition } from '../utils';
+import {
+  getGrid,
+  getSelectedCell,
+  setup,
+  tabIntoGrid,
+  testCount,
+  validateCellPosition
+} from '../utils';
 
 const columns: readonly ColumnOrColumnGroup<NonNullable<unknown>>[] = [
   { key: 'col1', name: 'col 1' },
@@ -88,33 +95,31 @@ const columns: readonly ColumnOrColumnGroup<NonNullable<unknown>>[] = [
 ];
 
 test('grouping', async () => {
-  setup({ columns, rows: [{}] });
+  await setup({ columns, rows: [{}] });
 
-  const grid = page.getByRole('grid');
+  const grid = getGrid();
   await expect.element(grid).toHaveAttribute('aria-colcount', '12');
   await expect.element(grid).toHaveAttribute('aria-rowcount', '5');
 
-  const rows = page.getByRole('row').all();
-  expect(rows).toHaveLength(5);
+  const rows = page.getByRole('row');
+  await testCount(rows, 5);
 
-  await expect.element(rows[0]).toHaveAttribute('aria-rowindex', '1');
-  await expect.element(rows[1]).toHaveAttribute('aria-rowindex', '2');
-  await expect.element(rows[2]).toHaveAttribute('aria-rowindex', '3');
-  await expect.element(rows[3]).toHaveAttribute('aria-rowindex', '4');
-  await expect.element(rows[4]).toHaveAttribute('aria-rowindex', '5');
+  await expect.element(rows.nth(0)).toHaveAttribute('aria-rowindex', '1');
+  await expect.element(rows.nth(1)).toHaveAttribute('aria-rowindex', '2');
+  await expect.element(rows.nth(2)).toHaveAttribute('aria-rowindex', '3');
+  await expect.element(rows.nth(3)).toHaveAttribute('aria-rowindex', '4');
+  await expect.element(rows.nth(4)).toHaveAttribute('aria-rowindex', '5');
 
-  expect(rows[0].getByRole('columnheader').all()).toHaveLength(2);
-  expect(rows[1].getByRole('columnheader').all()).toHaveLength(2);
-  expect(rows[2].getByRole('columnheader').all()).toHaveLength(4);
-  expect(rows[3].getByRole('columnheader').all()).toHaveLength(12);
-  expect(rows[4].getByRole('columnheader').all()).toHaveLength(0);
+  await testCount(rows.nth(0).getByRole('columnheader'), 2);
+  await testCount(rows.nth(1).getByRole('columnheader'), 2);
+  await testCount(rows.nth(2).getByRole('columnheader'), 4);
+  await testCount(rows.nth(3).getByRole('columnheader'), 12);
+  await testCount(rows.nth(4).getByRole('columnheader'), 0);
 
-  const headerCells = page.getByRole('columnheader').all();
-  expect(headerCells).toHaveLength(20);
+  const headerCells = page.getByRole('columnheader');
+  await testCount(headerCells, 20);
 
-  const headerCellDetails = headerCells.map((cellLocator) => {
-    const cell = cellLocator.element();
-
+  const headerCellDetails = headerCells.elements().map((cell) => {
     return {
       text: cell.textContent,
       colIndex: cell.getAttribute('aria-colindex'),
@@ -248,92 +253,92 @@ test('grouping', async () => {
 });
 
 test('keyboard navigation', async () => {
-  setup({ columns, rows: [{}] });
+  await setup({ columns, rows: [{}] }, true);
 
   // no initial selection
   await expect.element(getSelectedCell()).not.toBeInTheDocument();
 
-  await userEvent.tab();
-  validateCellPosition(0, 3);
+  await tabIntoGrid();
+  await validateCellPosition(0, 3);
 
   // arrow navigation
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(0, 3);
+  await validateCellPosition(0, 3);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(1, 3);
+  await validateCellPosition(1, 3);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(1, 2);
+  await validateCellPosition(1, 2);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(1, 2);
+  await validateCellPosition(1, 2);
   await userEvent.keyboard('{arrowleft}');
-  validateCellPosition(0, 3);
+  await validateCellPosition(0, 3);
   await userEvent.keyboard('{arrowright}{arrowright}');
-  validateCellPosition(2, 3);
+  await validateCellPosition(2, 3);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(1, 2);
+  await validateCellPosition(1, 2);
   await userEvent.keyboard('{arrowdown}');
-  validateCellPosition(1, 3);
+  await validateCellPosition(1, 3);
   await userEvent.keyboard('{arrowright}{arrowright}');
-  validateCellPosition(3, 3);
+  await validateCellPosition(3, 3);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(4, 3);
+  await validateCellPosition(4, 3);
   await userEvent.keyboard('{arrowdown}');
-  validateCellPosition(4, 4);
+  await validateCellPosition(4, 4);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 3);
+  await validateCellPosition(4, 3);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 2);
+  await validateCellPosition(4, 2);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 1);
+  await validateCellPosition(4, 1);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 0);
+  await validateCellPosition(4, 0);
   await userEvent.keyboard('{arrowdown}');
-  validateCellPosition(4, 1);
+  await validateCellPosition(4, 1);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(5, 3);
+  await validateCellPosition(5, 3);
   await userEvent.keyboard('{arrowleft}');
-  validateCellPosition(4, 3);
+  await validateCellPosition(4, 3);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 2);
+  await validateCellPosition(4, 2);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(5, 3);
+  await validateCellPosition(5, 3);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(6, 3);
+  await validateCellPosition(6, 3);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(7, 3);
+  await validateCellPosition(7, 3);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(7, 2);
+  await validateCellPosition(7, 2);
   await userEvent.keyboard('{arrowup}');
-  validateCellPosition(4, 0);
+  await validateCellPosition(4, 0);
   await userEvent.keyboard('{arrowright}');
-  validateCellPosition(8, 0);
+  await validateCellPosition(8, 0);
   await userEvent.keyboard('{arrowleft}');
-  validateCellPosition(4, 0);
+  await validateCellPosition(4, 0);
 
   // home/end navigation
   await userEvent.keyboard('{home}');
-  validateCellPosition(0, 3);
+  await validateCellPosition(0, 3);
   await userEvent.keyboard('{end}');
-  validateCellPosition(11, 3);
+  await validateCellPosition(11, 3);
   await userEvent.keyboard('{arrowleft}');
-  validateCellPosition(10, 3);
+  await validateCellPosition(10, 3);
 
   // tab navigation
   await userEvent.tab();
-  validateCellPosition(11, 3);
+  await validateCellPosition(11, 3);
   await userEvent.tab({ shift: true });
   await userEvent.tab({ shift: true });
   await userEvent.tab({ shift: true });
-  validateCellPosition(8, 3);
+  await validateCellPosition(8, 3);
   await userEvent.keyboard('{arrowup}');
   await userEvent.tab({ shift: true });
-  validateCellPosition(4, 0);
+  await validateCellPosition(4, 0);
   await userEvent.tab();
-  validateCellPosition(8, 0);
+  await validateCellPosition(8, 0);
 
   await userEvent.keyboard('{home}{end}');
   await userEvent.tab();
-  validateCellPosition(0, 4);
+  await validateCellPosition(0, 4);
   await userEvent.tab({ shift: true });
-  validateCellPosition(11, 3);
+  await validateCellPosition(11, 3);
 });

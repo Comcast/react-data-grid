@@ -9,7 +9,7 @@ test('key is escaped in query selectors', () => {
     }
   ];
 
-  expect(() => {
-    setup({ columns, rows: [] });
+  expect(async () => {
+    await setup({ columns, rows: [] });
   }).not.toThrow();
 });

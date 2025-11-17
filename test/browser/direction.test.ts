@@ -1,7 +1,7 @@
-import { userEvent } from '@vitest/browser/context';
+import { userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
-import { getGrid, getSelectedCell, setup } from './utils';
+import { getGrid, getSelectedCell, setup, tabIntoGrid } from './utils';
 
 interface Row {
   id: number;
@@ -22,27 +22,27 @@ const columns: readonly Column<Row>[] = [
 const rows: readonly Row[] = [];
 
 test('should use left to right direction by default', async () => {
-  setup({ rows, columns });
+  await setup({ rows, columns }, true);
   await expect.element(getGrid()).toHaveAttribute('dir', 'ltr');
-  await userEvent.tab();
+  await tabIntoGrid();
   await expect.element(getSelectedCell()).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(getSelectedCell()).toHaveTextContent('Name');
 });
 
 test('should use left to right direction if direction prop is set to ltr', async () => {
-  setup({ rows, columns, direction: 'ltr' });
+  await setup({ rows, columns, direction: 'ltr' }, true);
   await expect.element(getGrid()).toHaveAttribute('dir', 'ltr');
-  await userEvent.tab();
+  await tabIntoGrid();
   await expect.element(getSelectedCell()).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(getSelectedCell()).toHaveTextContent('Name');
 });
 
 test('should use right to left direction if direction prop is set to rtl', async () => {
-  setup({ rows, columns, direction: 'rtl' });
+  await setup({ rows, columns, direction: 'rtl' }, true);
   await expect.element(getGrid()).toHaveAttribute('dir', 'rtl');
-  await userEvent.tab();
+  await tabIntoGrid();
   await expect.element(getSelectedCell()).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowLeft}');
   await expect.element(getSelectedCell()).toHaveTextContent('Name');

@@ -3,8 +3,7 @@ import { createPortal } from 'react-dom';
 import { faker } from '@faker-js/faker';
 import { css } from '@linaria/core';
 
-import { DataGrid } from '../../src';
-import type { Column } from '../../src';
+import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute({

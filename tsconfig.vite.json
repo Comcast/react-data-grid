@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "skipLibCheck": true,
-    "types": ["@vitest/browser/providers/playwright"]
+    "lib": ["ESNext", "DOM"]
   },
   "include": ["package.json", "rolldown.config.ts", "vite.config.ts"]
 }

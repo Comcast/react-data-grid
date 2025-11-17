@@ -11,10 +11,6 @@ updates:
         patterns:
           - 'react'
           - 'react-dom'
-      react-dnd:
-        patterns:
-          - 'react-dnd'
-          - 'react-dnd-html5-backend'
       babel:
         patterns:
           - '@babel/*'

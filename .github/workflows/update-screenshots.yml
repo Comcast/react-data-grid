@@ -1,0 +1,57 @@
+name: Update Screenshots
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+env:
+  AUTHOR_NAME: 'github-actions[bot]'
+  AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+  COMMIT_MESSAGE: |
+    Update screenshots
+
+    Co-authored-by: ${{ github.actor }}
+
+jobs:
+  update-screenshots:
+    if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    # one at a time per branch
+    concurrency:
+      group: update-screenshots@${{ github.head_ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          check-latest: true
+      - name: Remove label
+        if: github.event_name == 'pull_request'
+        run: gh pr edit --remove-label 'Update Screenshots'
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Install dependencies
+        run: npm i
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium firefox
+      - name: Update screenshots
+        run: |
+          rm -r test/visual/__screenshots__
+          node --run visual:update
+      - name: Push new screenshots
+        run: |
+          git config --global user.name "${{ env.AUTHOR_NAME }}"
+          git config --global user.email "${{ env.AUTHOR_EMAIL }}"
+          git add test/visual/__screenshots__/.
+          git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
+          git push

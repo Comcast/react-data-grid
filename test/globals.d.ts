@@ -1,7 +1,12 @@
-declare module '@vitest/browser/context' {
+declare module 'vitest/browser' {
   interface BrowserCommands {
-    resizeColumn: (resizeBy: number | readonly number[]) => Promise<void>;
     dragFill: (from: string, to: string) => Promise<void>;
+    resizeColumn: (name: string, resizeBy: number | readonly number[]) => Promise<void>;
+    scrollGrid: (position: { scrollLeft?: number; scrollTop?: number }) => Promise<void>;
+  }
+
+  interface LocatorSelectors {
+    getBySelector: (selector: string) => Locator;
   }
 }
 

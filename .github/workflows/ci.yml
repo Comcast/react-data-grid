@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 25
           check-latest: true
-      - name: npm install
+      - name: Install dependencies
         run: npm i
       - name: Biome
         run: node --run biome:ci
@@ -29,10 +29,12 @@ jobs:
       - name: Build website
         run: node --run build:website
       - name: Install Playwright Browsers
-        run: npx playwright install chromium
+        run: npx playwright install chromium firefox
       - name: Test
         run: node --run test
         timeout-minutes: 4
+      - name: Visual regression test
+        run: node --run visual
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
@@ -50,4 +52,4 @@ jobs:
           touch .nojekyll
           git add .
           git commit -m "gh-pages deployment" || echo "Nothing to commit"
-          git push -f https://adazzle:${{secrets.GITHUB_TOKEN}}@github.com/adazzle/react-data-grid.git
+          git push -f https://comcast:${{secrets.GITHUB_TOKEN}}@github.com/Comcast/react-data-grid.git

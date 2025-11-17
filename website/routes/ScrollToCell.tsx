@@ -2,8 +2,7 @@ import { useRef, useState } from 'react';
 import { css } from '@linaria/core';
 import clsx from 'clsx';
 
-import { DataGrid } from '../../src';
-import type { Column, DataGridHandle } from '../../src';
+import { DataGrid, type Column, type DataGridHandle } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 

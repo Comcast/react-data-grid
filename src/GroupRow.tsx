@@ -1,9 +1,8 @@
 import { memo, useMemo } from 'react';
 import { css } from '@linaria/core';
-import clsx from 'clsx';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
-import { getRowStyle } from './utils';
+import { classnames, getRowStyle } from './utils';
 import type { BaseRenderRowProps, GroupRow } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
@@ -65,7 +64,7 @@ function GroupedRow<R, SR>({
         aria-setsize={row.setSize}
         aria-posinset={row.posInSet + 1} // aria-posinset is 1-based
         aria-expanded={row.isExpanded}
-        className={clsx(
+        className={classnames(
           rowClassname,
           groupRowClassname,
           `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,

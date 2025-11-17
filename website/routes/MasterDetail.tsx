@@ -2,9 +2,7 @@ import { useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { css } from '@linaria/core';
 
-import { DataGrid } from '../../src';
-import type { Column, RowsChangeData } from '../../src';
-import type { Direction } from '../../src/types';
+import { DataGrid, type Column, type Direction, type RowsChangeData } from '../../src';
 import { CellExpanderFormatter } from '../components';
 import { useDirection } from '../directionContext';
 

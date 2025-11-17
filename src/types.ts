@@ -25,11 +25,11 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly minWidth?: Maybe<number>;
   /** Maximum column width in pixels */
   readonly maxWidth?: Maybe<number>;
-  /** Class name(s) for the cell */
+  /** Class name(s) for cells */
   readonly cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>;
   /** Class name(s) for the header cell */
   readonly headerCellClass?: Maybe<string>;
-  /** Class name(s) for the summary cell */
+  /** Class name(s) for summary cells */
   readonly summaryCellClass?: Maybe<string | ((row: TSummaryRow) => Maybe<string>)>;
   /** Render function to render the content of cells */
   readonly renderCell?: Maybe<(props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>;
@@ -59,7 +59,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Options for cell editing */
   readonly editorOptions?: Maybe<{
     /**
-     * Render the cell content in addition to the edit cell.
+     * Render the cell content in addition to the edit cell content.
      * Enable this option when the editor is rendered outside the grid, like a modal for example.
      * By default, the cell content is not rendered when the edit cell is open.
      * @default false
@@ -71,7 +71,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
      */
     readonly commitOnOutsideClick?: Maybe<boolean>;
     /**
-     * Close the editor when the row changes externally
+     * Close the editor when the row value changes externally
      * @default true
      */
     readonly closeOnExternalRowChange?: Maybe<boolean>;

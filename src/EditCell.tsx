@@ -1,7 +1,6 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { css } from '@linaria/core';
 
-import { useLatestFunc } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type {
   CellKeyboardEvent,
@@ -81,7 +80,7 @@ export default function EditCell<R, SR>({
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
   // To that end we instead access the latest props via useLatestFunc.
-  const commitOnOutsideMouseDown = useLatestFunc(() => {
+  const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
 
@@ -123,7 +122,7 @@ export default function EditCell<R, SR>({
       removeEventListener('mousedown', onWindowMouseDown);
       cancelTask();
     };
-  }, [commitOnOutsideClick, commitOnOutsideMouseDown]);
+  }, [commitOnOutsideClick]);
 
   function cancelTask() {
     captureEventRef.current = undefined;
