@@ -11,6 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/Comcast/react-data-grid.git"
   },
+  "homepage": "https://github.com/Comcast/react-data-grid#readme",
   "bugs": "https://github.com/Comcast/react-data-grid/issues",
   "type": "module",
   "exports": {
