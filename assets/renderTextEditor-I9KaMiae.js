@@ -1,2 +1,0 @@
-import{l as e,m as t}from"./index-CxisarJ9.js";var n=t(e(),1);const r=`rdg-text-editor css-2f8db206`;function i(e){e?.focus(),e?.select()}function a({row:e,column:t,onRowChange:a,onClose:o}){return(0,n.jsx)(`input`,{className:r,ref:i,value:e[t.key],onChange:n=>a({...e,[t.key]:n.target.value}),onBlur:()=>o(!0,!1)})}export{a as n,r as t};
-//# sourceMappingURL=renderTextEditor-I9KaMiae.js.map

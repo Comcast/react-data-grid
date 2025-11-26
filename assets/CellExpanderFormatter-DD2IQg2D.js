@@ -1,2 +1,0 @@
-import{l as e,m as t}from"./index-CxisarJ9.js";var n=t(e(),1),r=`css-9c1b520f`;function i({tabIndex:e,expanded:t,onCellExpand:i}){function a(e){(e.key===` `||e.key===`Enter`)&&(e.preventDefault(),i())}return(0,n.jsx)(`div`,{className:r,onClick:i,onKeyDown:a,children:(0,n.jsx)(`span`,{tabIndex:e,children:t?`▼`:`▶`})})}export{i as t};
-//# sourceMappingURL=CellExpanderFormatter-DD2IQg2D.js.map
