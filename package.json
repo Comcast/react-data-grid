@@ -52,7 +52,7 @@
     "postpublish": "git push --follow-tags origin HEAD"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.7",
+    "@biomejs/biome": "2.3.8",
     "@eslint-react/eslint-plugin": "^2.0.2",
     "@eslint/markdown": "^7.3.0",
     "@faker-js/faker": "^10.0.0",
