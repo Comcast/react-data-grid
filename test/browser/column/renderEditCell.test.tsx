@@ -337,7 +337,8 @@ describe('Editor', () => {
 });
 
 interface EditorTestProps
-  extends Pick<Column<Row>, 'editorOptions' | 'editable'>,
+  extends
+    Pick<Column<Row>, 'editorOptions' | 'editable'>,
     Pick<DataGridProps<Row>, 'onCellKeyDown'> {
   onSave?: (rows: readonly Row[]) => void;
   gridRows?: readonly Row[];

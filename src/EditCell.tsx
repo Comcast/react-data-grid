@@ -53,7 +53,8 @@ const cellEditing = css`
 type SharedCellRendererProps<R, SR> = Pick<CellRendererProps<R, SR>, 'colSpan'>;
 
 interface EditCellProps<R, SR>
-  extends Omit<RenderEditCellProps<R, SR>, 'onRowChange' | 'onClose'>,
+  extends
+    Omit<RenderEditCellProps<R, SR>, 'onRowChange' | 'onClose'>,
     SharedCellRendererProps<R, SR> {
   rowIdx: number;
   onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;

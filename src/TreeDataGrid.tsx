@@ -25,11 +25,10 @@ import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import GroupedRow from './GroupRow';
 import { defaultRenderRow } from './Row';
 
-export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key>
-  extends Omit<
-    DataGridProps<R, SR, K>,
-    'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
-  > {
+export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
+  DataGridProps<R, SR, K>,
+  'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
+> {
   columns: readonly Column<NoInfer<R>, NoInfer<SR>>[];
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
   groupBy: readonly string[];
