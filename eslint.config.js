@@ -102,7 +102,7 @@ export default defineConfig([
       'no-unsafe-finally': 1,
       'no-unsafe-negation': [1, { enforceForOrderingRelations: true }],
       'no-unsafe-optional-chaining': [1, { disallowArithmeticOperators: true }],
-      'no-unused-private-class-members': 0,
+      'no-unused-private-class-members': 0, // replaced by @typescript-eslint/no-unused-vars
       'no-unused-vars': 0, // replaced by @typescript-eslint/no-unused-vars
       'no-use-before-define': 0,
       'no-useless-backreference': 1,
@@ -588,6 +588,7 @@ export default defineConfig([
       ],
       '@typescript-eslint/no-shadow': 0,
       '@typescript-eslint/no-unused-expressions': 0,
+      '@typescript-eslint/no-unused-private-class-members': 0,
       '@typescript-eslint/no-unused-vars': [1, { ignoreRestSiblings: true }],
       '@typescript-eslint/no-use-before-define': 0,
       '@typescript-eslint/no-useless-constructor': 0,
@@ -673,6 +674,7 @@ export default defineConfig([
       'vitest/prefer-to-have-length': 1,
       'vitest/prefer-todo': 1,
       'vitest/prefer-vi-mocked': 1,
+      'vitest/require-awaited-expect-poll': 1,
       'vitest/require-hook': 0,
       'vitest/require-local-test-context-for-concurrent-snapshots': 0,
       'vitest/require-mock-type-parameters': 0,
