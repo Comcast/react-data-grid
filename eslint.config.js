@@ -676,6 +676,7 @@ export default defineConfig([
       'vitest/prefer-vi-mocked': 1,
       'vitest/require-awaited-expect-poll': 1,
       'vitest/require-hook': 0,
+      'vitest/require-import-vi-mock': 1,
       'vitest/require-local-test-context-for-concurrent-snapshots': 0,
       'vitest/require-mock-type-parameters': 0,
       'vitest/require-to-throw-message': 0,
