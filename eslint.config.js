@@ -102,7 +102,7 @@ export default defineConfig([
       'no-unsafe-finally': 1,
       'no-unsafe-negation': [1, { enforceForOrderingRelations: true }],
       'no-unsafe-optional-chaining': [1, { disallowArithmeticOperators: true }],
-      'no-unused-private-class-members': 0, // replaced by @typescript-eslint/no-unused-vars
+      'no-unused-private-class-members': 0, // replaced by @typescript-eslint/no-unused-private-class-members
       'no-unused-vars': 0, // replaced by @typescript-eslint/no-unused-vars
       'no-use-before-define': 0,
       'no-useless-backreference': 1,
