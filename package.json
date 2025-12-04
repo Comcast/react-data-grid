@@ -47,9 +47,7 @@
     "eslint:fix": "node --run eslint -- --fix",
     "prettier:check": "prettier --check .",
     "prettier:format": "prettier --write .",
-    "typecheck": "tsc --build",
-    "prepublishOnly": "npm install && node --run build",
-    "postpublish": "git push --follow-tags origin HEAD"
+    "typecheck": "tsc --build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",

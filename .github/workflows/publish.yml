@@ -66,10 +66,10 @@ jobs:
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --tag latest
 
-      - name: Push commit and tag
-        run: git push origin main --follow-tags
+      - name: Push tag
+        run: git push origin v${{ inputs.version }}
 
       - name: Create GitHub Release
         run: gh release create v${{ inputs.version }} --title "v${{ inputs.version }}" --generate-notes
