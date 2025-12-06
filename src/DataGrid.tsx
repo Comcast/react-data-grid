@@ -111,6 +111,7 @@ export interface DataGridHandle {
   element: HTMLDivElement | null;
   scrollToCell: (position: PartialPosition) => void;
   selectCell: (position: Position, options?: SelectCellOptions) => void;
+  unselectCell: () => void;
 }
 
 type SharedDivProps = Pick<
@@ -547,7 +548,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
         }
       },
-      selectCell
+      selectCell,
+      unselectCell
     })
   );
 
@@ -857,6 +859,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         column: columns[position.idx]
       });
     }
+  }
+
+  function unselectCell(): void {
+    commitEditorChanges();
+
+    setShouldFocusCell(false);
+    setSelectedPosition({ idx: -1, rowIdx: minRowIdx - 1, mode: 'SELECT' });
   }
 
   function selectHeaderCell({ idx, rowIdx }: Position): void {
