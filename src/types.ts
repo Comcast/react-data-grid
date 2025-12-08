@@ -120,6 +120,11 @@ export interface Position {
   readonly rowIdx: number;
 }
 
+export interface PositionByKey {
+  readonly columnKey: string;
+  readonly rowIdx: number;
+}
+
 export interface RenderCellProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;

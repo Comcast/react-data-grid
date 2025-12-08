@@ -55,6 +55,7 @@ import type {
   FillEvent,
   Maybe,
   Position,
+  PositionByKey,
   Renderers,
   RowsChangeData,
   SelectCellOptions,
@@ -111,6 +112,7 @@ export interface DataGridHandle {
   element: HTMLDivElement | null;
   scrollToCell: (position: PartialPosition) => void;
   selectCell: (position: Position, options?: SelectCellOptions) => void;
+  selectCellByKey: (position: PositionByKey, options?: SelectCellOptions) => void;
 }
 
 type SharedDivProps = Pick<
@@ -547,7 +549,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
         }
       },
-      selectCell
+      selectCell,
+      selectCellByKey
     })
   );
 
@@ -857,6 +860,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         column: columns[position.idx]
       });
     }
+  }
+
+  function selectCellByKey(position: PositionByKey, options?: SelectCellOptions): void {
+    const columnIdx = columns.findIndex((col) => col.key === position.columnKey);
+    if (columnIdx === -1) {
+      throw new Error(`Column with key "${position.columnKey}" not found`);
+    }
+    selectCell({ idx: columnIdx, rowIdx: position.rowIdx }, options);
   }
 
   function selectHeaderCell({ idx, rowIdx }: Position): void {
