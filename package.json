@@ -67,7 +67,7 @@
     "@vitest/coverage-istanbul": "^4.0.15",
     "@vitest/eslint-plugin": "^1.5.1",
     "clsx": "^2.1.1",
-    "ecij": "^0.2.0",
+    "ecij": "^0.3.0",
     "eslint": "^9.39.1",
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-react": "^7.37.5",
