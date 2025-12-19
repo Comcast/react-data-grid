@@ -31,14 +31,12 @@ const root = css`
     --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
 
     &.rdg-dark {
-      --rdg-color-scheme: dark;
+      color-scheme: dark;
     }
 
     &.rdg-light {
-      --rdg-color-scheme: light;
+      color-scheme: light;
     }
-
-    color-scheme: var(--rdg-color-scheme, light dark);
 
     &:dir(rtl) {
       --rdg-cell-frozen-box-shadow: -2px 0 5px -2px rgba(136, 136, 136, 0.3);
