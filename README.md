@@ -202,14 +202,14 @@ Example of customizing colors:
 
 ### Standard Props
 
-The DataGrid accepts standard `className` and `style` props:
+The DataGrid accepts standard [`className`](#classname-string--undefined) and [`style`](#style-cssproperties--undefined) props:
 
 ```tsx
 <DataGrid
   columns={columns}
   rows={rows}
   className="my-grid custom-theme"
-  style={{ height: '600px', border: '2px solid navy' }}
+  style={{ width: 800, height: 600 }}
 />
 ```
 
@@ -217,202 +217,23 @@ The DataGrid accepts standard `className` and `style` props:
 
 #### Row Heights
 
-Control row heights using the [`rowHeight`](#rowheight-maybenumber--row-r--number) prop:
-
-```tsx
-// Fixed height for all rows
-<DataGrid columns={columns} rows={rows} rowHeight={50} />
-
-// Dynamic height per row
-<DataGrid
-  columns={columns}
-  rows={rows}
-  rowHeight={(row) => row.isExpanded ? 100 : 35}
-/>
-```
-
-You can also customize header and summary row heights:
-
-```tsx
-<DataGrid
-  columns={columns}
-  rows={rows}
-  rowHeight={35}
-  headerRowHeight={45}
-  summaryRowHeight={40}
-  topSummaryRows={topSummaryRows}
-/>
-```
+Control row heights using the [`rowHeight`](#rowheight-maybenumber--row-r--number), [`headerRowHeight`](#headerrowheight-maybenumber), and [`summaryRowHeight`](#summaryrowheight-maybenumber) props. The `rowHeight` prop supports both fixed heights and dynamic heights per row.
 
 #### Row Classes
 
-Apply custom CSS classes to rows using the [`rowClass`](#rowclass-mayberow-r-rowidx-number--maybestring) prop:
-
-```tsx
-<DataGrid
-  columns={columns}
-  rows={rows}
-  rowClass={(row, rowIdx) => {
-    if (row.status === 'error') return 'row-error';
-    if (rowIdx % 2 === 0) return 'row-even';
-    return 'row-odd';
-  }}
-/>
-```
-
-```css
-.row-error {
-  background-color: #fee;
-  color: #c00;
-}
-
-.row-even {
-  background-color: #f9f9f9;
-}
-```
-
-For header rows, use the [`headerRowClass`](#headerrowclass-maybestring) prop:
-
-```tsx
-<DataGrid columns={columns} rows={rows} headerRowClass="sticky-header" />
-```
+Apply custom CSS classes to rows using the [`rowClass`](#rowclass-mayberow-r-rowidx-number--maybestring) prop, and to header rows using the [`headerRowClass`](#headerrowclass-maybestring) prop.
 
 #### Cell Classes
 
-Apply custom CSS classes to cells using the `cellClass` property in column definitions:
-
-```tsx
-const columns: Column<Row>[] = [
-  {
-    key: 'status',
-    name: 'Status',
-    cellClass: (row) => `status-${row.status.toLowerCase()}`
-  },
-  {
-    key: 'price',
-    name: 'Price',
-    cellClass: 'text-right' // Static class
-  }
-];
-```
-
-```css
-.status-active {
-  color: green;
-  font-weight: bold;
-}
-
-.status-inactive {
-  color: gray;
-}
-
-.text-right {
-  text-align: right;
-}
-```
-
-You can also use `headerCellClass` and `summaryCellClass` for header and summary cells respectively.
+Apply custom CSS classes to cells using the [`cellClass`](#cellclass-maybestring--row-trow--maybestring) property in column definitions. You can also use [`headerCellClass`](#headercellclass-maybestring) and [`summaryCellClass`](#summarycellclass-maybestring--row-tsummaryrow--maybestring) for header and summary cells respectively.
 
 #### Column Widths
 
-Control column widths using the `width`, `minWidth`, and `maxWidth` properties:
-
-```tsx
-const columns: Column<Row>[] = [
-  {
-    key: 'id',
-    name: 'ID',
-    width: 80, // Fixed width
-    resizable: false
-  },
-  {
-    key: 'name',
-    name: 'Name',
-    width: '30%', // Percentage width
-    minWidth: 100,
-    maxWidth: 400
-  },
-  {
-    key: 'description',
-    name: 'Description'
-    // No width specified - automatically sized
-  }
-];
-```
-
-Enable column resizing by setting `resizable: true` on individual columns or use [`defaultColumnOptions`](#defaultcolumnoptions-maybedefaultcolumnoptionsr-sr) to apply it to all columns:
-
-```tsx
-<DataGrid
-  columns={columns}
-  rows={rows}
-  defaultColumnOptions={{
-    resizable: true,
-    sortable: true
-  }}
-/>
-```
+Control column widths using the [`width`](#width-maybenumber--string), [`minWidth`](#minwidth-maybenumber), and [`maxWidth`](#maxwidth-maybenumber) properties in column definitions. Enable column resizing using the [`resizable`](#resizable-maybeboolean) property, or use [`defaultColumnOptions`](#defaultcolumnoptions-maybedefaultcolumnoptionsr-sr) to apply it to all columns.
 
 ### Custom Renderers
 
-Replace default components with custom implementations using the [`renderers`](#renderers-mayberendererstrow-tsummaryrow) prop:
-
-```tsx
-const customRenderers = {
-  // Custom row component
-  renderRow(key, props) {
-    return <CustomRow key={key} {...props} />;
-  },
-
-  // Custom cell component
-  renderCell(key, props) {
-    return <CustomCell key={key} {...props} />;
-  },
-
-  // Custom checkbox component
-  renderCheckbox(props) {
-    return <CustomCheckbox {...props} />;
-  },
-
-  // Custom sort status indicator
-  renderSortStatus(props) {
-    return <CustomSortIcon {...props} />;
-  },
-
-  // Custom empty state
-  noRowsFallback: <div>No data available</div>
-};
-
-<DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
-```
-
-Columns can also have custom renderers:
-
-```tsx
-const columns: Column<Row>[] = [
-  {
-    key: 'avatar',
-    name: 'Avatar',
-    renderCell(props) {
-      return <img src={props.row.avatarUrl} alt={props.row.name} />;
-    }
-  },
-  {
-    key: 'status',
-    name: 'Status',
-    renderHeaderCell(props) {
-      return (
-        <div>
-          <strong>{props.column.name}</strong>
-          <InfoIcon />
-        </div>
-      );
-    }
-  }
-];
-```
-
-See the [Renderers section](#renderers-mayberendererstrow-tsummaryrow) for full type definitions and examples.
+Replace default components with custom implementations using the [`renderers`](#renderers-mayberenderersr-sr) prop. Columns can also have custom renderers using the [`renderCell`](#rendercell-maybeprops-rendercellpropstrow-tsummaryrow--reactnode), [`renderHeaderCell`](#renderheadercell-maybeprops-renderheadercellpropstrow-tsummaryrow--reactnode), [`renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellpropstsummaryrow-trow--reactnode), [`renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellpropstrow-tsummaryrow--reactnode), and [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellpropstrow-tsummaryrow--reactnode) properties.
 
 ## API Reference
 
@@ -504,6 +325,18 @@ function MyGrid() {
 
 Height of each row in pixels. A function can be used to set different row heights.
 
+```tsx
+// Fixed height for all rows
+<DataGrid columns={columns} rows={rows} rowHeight={50} />
+
+// Dynamic height per row
+<DataGrid
+  columns={columns}
+  rows={rows}
+  rowHeight={(row) => row.isExpanded ? 100 : 35}
+/>
+```
+
 :warning: **Performance:** When using a function, the height of all rows is calculated upfront on every render. For large datasets (1000+ rows), this can cause performance issues. Consider using a fixed height when possible, or memoize the `rowHeight` function.
 
 ###### `headerRowHeight?: Maybe<number>`
@@ -517,6 +350,17 @@ Height of the header row in pixels.
 **Default:** `35` pixels
 
 Height of each summary row in pixels.
+
+```tsx
+<DataGrid
+  columns={columns}
+  rows={rows}
+  rowHeight={35}
+  headerRowHeight={45}
+  summaryRowHeight={40}
+  topSummaryRows={topSummaryRows}
+/>
+```
 
 ###### `columnWidths?: Maybe<ColumnWidths>`
 
@@ -798,7 +642,40 @@ interface Renderers<TRow, TSummaryRow> {
 }
 ```
 
-For example, the default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props
+Example of replacing default components:
+
+```tsx
+import { DataGrid, type Renderers } from 'react-data-grid';
+
+const customRenderers: Renderers<Row, SummaryRow> = {
+  // Custom row render function
+  renderRow(key, props) {
+    return <CustomRow key={key} {...props} />;
+  },
+
+  // Custom cell render function
+  renderCell(key, props) {
+    return <CustomCell key={key} {...props} />;
+  },
+
+  // Custom checkbox render function
+  renderCheckbox(props) {
+    return <CustomCheckbox {...props} />;
+  },
+
+  // Custom sort status indicator
+  renderSortStatus(props) {
+    return <CustomSortIcon {...props} />;
+  },
+
+  // Custom empty state
+  noRowsFallback: <div>No data available</div>
+};
+
+<DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
+```
+
+The default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props:
 
 ```tsx
 import { DataGrid, RenderRowProps, Row } from 'react-data-grid';
@@ -823,12 +700,12 @@ Function to apply custom class names to rows.
 ```tsx
 import { DataGrid } from 'react-data-grid';
 
-function MyGrid() {
-  return <DataGrid columns={columns} rows={rows} rowClass={rowClass} />;
-}
-
 function rowClass(row: Row, rowIdx: number) {
   return rowIdx % 2 === 0 ? 'even' : 'odd';
+}
+
+function MyGrid() {
+  return <DataGrid columns={columns} rows={rows} rowClass={rowClass} />;
 }
 ```
 
@@ -837,6 +714,10 @@ function rowClass(row: Row, rowIdx: number) {
 ###### `headerRowClass?: Maybe<string>>`
 
 Custom class name for the header row.
+
+```tsx
+<DataGrid columns={columns} rows={rows} headerRowClass="sticky-header" />
+```
 
 ###### `direction?: Maybe<'ltr' | 'rtl'>`
 
@@ -1327,6 +1208,31 @@ A unique key to distinguish each column
 Width can be any valid css grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
 
 ```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'id',
+    name: 'ID',
+    width: 80, // Fixed width in pixels
+    resizable: false
+  },
+  {
+    key: 'name',
+    name: 'Name',
+    width: '30%', // Percentage width
+    minWidth: 100,
+    maxWidth: 400
+  },
+  {
+    key: 'description',
+    name: 'Description'
+    // No width specified - automatically sized
+  }
+];
+```
+
+Other examples:
+
+```tsx
 width: 80, // pixels
 width: '25%',
 width: 'max-content',
@@ -1348,6 +1254,36 @@ Maximum column width in pixels.
 ##### `cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>`
 
 Class name(s) for cells. Can be a string or a function that returns a class name based on the row.
+
+```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'status',
+    name: 'Status',
+    cellClass: (row) => `status-${row.status}`
+  },
+  {
+    key: 'price',
+    name: 'Price',
+    cellClass: 'text-right' // Static class
+  }
+];
+```
+
+```css
+.status-active {
+  color: green;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: grey;
+}
+
+.text-right {
+  text-align: right;
+}
+```
 
 ##### `headerCellClass?: Maybe<string>`
 
