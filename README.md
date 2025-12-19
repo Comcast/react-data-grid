@@ -120,9 +120,120 @@ function App() {
 }
 ```
 
-## Theming
+## Styling and Customization
 
-Set `--rdg-color-scheme: light/dark` at the `:root` to control the color theme. The light or dark themes can be enforced using the `rdg-light` or `rdg-dark` classes.
+The DataGrid provides multiple ways to customize its appearance and behavior.
+
+### Light/Dark Themes
+
+The DataGrid supports both light and dark color schemes out of the box using CSS's `light-dark()` function. The theme automatically adapts based on the user's system preference when `color-scheme: light dark;` is set.
+
+To enforce a specific theme, we recommend setting the standard `color-scheme` CSS property on the `:root`:
+
+```css
+:root {
+  color-scheme: light; /* or 'dark', or 'light dark' for auto */
+}
+```
+
+Alternatively, you can add the `rdg-light` or `rdg-dark` class to individual grids:
+
+```tsx
+// Force light theme
+<DataGrid className="rdg-light" columns={columns} rows={rows} />
+
+// Force dark theme
+<DataGrid className="rdg-dark" columns={columns} rows={rows} />
+```
+
+### CSS Variables
+
+The DataGrid supports the following CSS variables for customization:
+
+```css
+.rdg {
+  /* Selection */
+  --rdg-selection-width: 2px;
+  --rdg-selection-color: hsl(207, 75%, 66%);
+
+  /* Typography */
+  --rdg-font-size: 14px;
+
+  /* Colors (using light-dark() for automatic theme switching) */
+  --rdg-color: light-dark(#000, #ddd);
+  --rdg-background-color: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 13%));
+
+  /* Header */
+  --rdg-header-background-color: light-dark(hsl(0deg 0% 97.5%), hsl(0deg 0% 10.5%));
+  --rdg-header-draggable-background-color: light-dark(hsl(0deg 0% 90.5%), hsl(0deg 0% 17.5%));
+
+  /* Rows */
+  --rdg-row-hover-background-color: light-dark(hsl(0deg 0% 96%), hsl(0deg 0% 9%));
+  --rdg-row-selected-background-color: light-dark(hsl(207deg 76% 92%), hsl(207deg 76% 42%));
+  --rdg-row-selected-hover-background-color: light-dark(hsl(207deg 76% 88%), hsl(207deg 76% 38%));
+
+  /* Borders */
+  --rdg-border-width: 1px;
+  --rdg-border-color: light-dark(#ddd, #444);
+  --rdg-summary-border-width: calc(var(--rdg-border-width) * 2);
+  --rdg-summary-border-color: light-dark(#aaa, #555);
+
+  /* Frozen columns */
+  --rdg-cell-frozen-box-shadow: 2px 0 5px -2px rgba(136, 136, 136, 0.3);
+
+  /* Checkboxes */
+  --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
+}
+```
+
+Example of customizing colors:
+
+```css
+.my-custom-grid {
+  --rdg-background-color: #f0f0f0;
+  --rdg-selection-color: #ff6b6b;
+  --rdg-font-size: 16px;
+}
+```
+
+```tsx
+<DataGrid className="my-custom-grid" columns={columns} rows={rows} />
+```
+
+### Standard Props
+
+The DataGrid accepts standard [`className`](#classname-string--undefined) and [`style`](#style-cssproperties--undefined) props:
+
+```tsx
+<DataGrid
+  columns={columns}
+  rows={rows}
+  className="my-grid custom-theme"
+  style={{ width: 800, height: 600 }}
+/>
+```
+
+### Row and Cell Styling
+
+#### Row Heights
+
+Control row heights using the [`rowHeight`](#rowheight-maybenumber--row-r--number), [`headerRowHeight`](#headerrowheight-maybenumber), and [`summaryRowHeight`](#summaryrowheight-maybenumber) props. The `rowHeight` prop supports both fixed heights and dynamic heights per row.
+
+#### Row Classes
+
+Apply custom CSS classes to rows using the [`rowClass`](#rowclass-mayberow-r-rowidx-number--maybestring) prop, and to header rows using the [`headerRowClass`](#headerrowclass-maybestring) prop.
+
+#### Cell Classes
+
+Apply custom CSS classes to cells using the [`cellClass`](#cellclass-maybestring--row-trow--maybestring) property in column definitions. You can also use [`headerCellClass`](#headercellclass-maybestring) and [`summaryCellClass`](#summarycellclass-maybestring--row-tsummaryrow--maybestring) for header and summary cells respectively.
+
+#### Column Widths
+
+Control column widths using the [`width`](#width-maybenumber--string), [`minWidth`](#minwidth-maybenumber), and [`maxWidth`](#maxwidth-maybenumber) properties in column definitions. Enable column resizing using the [`resizable`](#resizable-maybeboolean) property, or use [`defaultColumnOptions`](#defaultcolumnoptions-maybedefaultcolumnoptionsr-sr) to apply it to all columns.
+
+### Custom Renderers
+
+Replace default components with custom implementations using the [`renderers`](#renderers-mayberenderersr-sr) prop. Columns can also have custom renderers using the [`renderCell`](#rendercell-maybeprops-rendercellpropstrow-tsummaryrow--reactnode), [`renderHeaderCell`](#renderheadercell-maybeprops-renderheadercellpropstrow-tsummaryrow--reactnode), [`renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellpropstsummaryrow-trow--reactnode), [`renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellpropstrow-tsummaryrow--reactnode), and [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellpropstrow-tsummaryrow--reactnode) properties.
 
 ## API Reference
 
@@ -214,6 +325,18 @@ function MyGrid() {
 
 Height of each row in pixels. A function can be used to set different row heights.
 
+```tsx
+// Fixed height for all rows
+<DataGrid columns={columns} rows={rows} rowHeight={50} />
+
+// Dynamic height per row
+<DataGrid
+  columns={columns}
+  rows={rows}
+  rowHeight={(row) => row.isExpanded ? 100 : 35}
+/>
+```
+
 :warning: **Performance:** When using a function, the height of all rows is calculated upfront on every render. For large datasets (1000+ rows), this can cause performance issues. Consider using a fixed height when possible, or memoize the `rowHeight` function.
 
 ###### `headerRowHeight?: Maybe<number>`
@@ -227,6 +350,17 @@ Height of the header row in pixels.
 **Default:** `35` pixels
 
 Height of each summary row in pixels.
+
+```tsx
+<DataGrid
+  columns={columns}
+  rows={rows}
+  rowHeight={35}
+  headerRowHeight={45}
+  summaryRowHeight={40}
+  topSummaryRows={topSummaryRows}
+/>
+```
 
 ###### `columnWidths?: Maybe<ColumnWidths>`
 
@@ -508,7 +642,40 @@ interface Renderers<TRow, TSummaryRow> {
 }
 ```
 
-For example, the default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props
+Example of replacing default components:
+
+```tsx
+import { DataGrid, type Renderers } from 'react-data-grid';
+
+const customRenderers: Renderers<Row, SummaryRow> = {
+  // Custom row render function
+  renderRow(key, props) {
+    return <CustomRow key={key} {...props} />;
+  },
+
+  // Custom cell render function
+  renderCell(key, props) {
+    return <CustomCell key={key} {...props} />;
+  },
+
+  // Custom checkbox render function
+  renderCheckbox(props) {
+    return <CustomCheckbox {...props} />;
+  },
+
+  // Custom sort status indicator
+  renderSortStatus(props) {
+    return <CustomSortIcon {...props} />;
+  },
+
+  // Custom empty state
+  noRowsFallback: <div>No data available</div>
+};
+
+<DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
+```
+
+The default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props:
 
 ```tsx
 import { DataGrid, RenderRowProps, Row } from 'react-data-grid';
@@ -533,12 +700,12 @@ Function to apply custom class names to rows.
 ```tsx
 import { DataGrid } from 'react-data-grid';
 
-function MyGrid() {
-  return <DataGrid columns={columns} rows={rows} rowClass={rowClass} />;
-}
-
 function rowClass(row: Row, rowIdx: number) {
   return rowIdx % 2 === 0 ? 'even' : 'odd';
+}
+
+function MyGrid() {
+  return <DataGrid columns={columns} rows={rows} rowClass={rowClass} />;
 }
 ```
 
@@ -547,6 +714,10 @@ function rowClass(row: Row, rowIdx: number) {
 ###### `headerRowClass?: Maybe<string>>`
 
 Custom class name for the header row.
+
+```tsx
+<DataGrid columns={columns} rows={rows} headerRowClass="sticky-header" />
+```
 
 ###### `direction?: Maybe<'ltr' | 'rtl'>`
 
@@ -1037,6 +1208,31 @@ A unique key to distinguish each column
 Width can be any valid css grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
 
 ```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'id',
+    name: 'ID',
+    width: 80, // Fixed width in pixels
+    resizable: false
+  },
+  {
+    key: 'name',
+    name: 'Name',
+    width: '30%', // Percentage width
+    minWidth: 100,
+    maxWidth: 400
+  },
+  {
+    key: 'description',
+    name: 'Description'
+    // No width specified - automatically sized
+  }
+];
+```
+
+Other examples:
+
+```tsx
 width: 80, // pixels
 width: '25%',
 width: 'max-content',
@@ -1058,6 +1254,36 @@ Maximum column width in pixels.
 ##### `cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>`
 
 Class name(s) for cells. Can be a string or a function that returns a class name based on the row.
+
+```tsx
+const columns: Column<Row>[] = [
+  {
+    key: 'status',
+    name: 'Status',
+    cellClass: (row) => `status-${row.status}`
+  },
+  {
+    key: 'price',
+    name: 'Price',
+    cellClass: 'text-right' // Static class
+  }
+];
+```
+
+```css
+.status-active {
+  color: green;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: grey;
+}
+
+.text-right {
+  text-align: right;
+}
+```
 
 ##### `headerCellClass?: Maybe<string>`
 
