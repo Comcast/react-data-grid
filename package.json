@@ -82,7 +82,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "rolldown": "^1.0.0-beta.51",
-    "rolldown-plugin-dts": "^0.18.0",
+    "rolldown-plugin-dts": "^0.19.2",
     "typescript": "~5.9.2",
     "vite": "npm:rolldown-vite@^7.2.5",
     "vitest": "^4.0.15",
