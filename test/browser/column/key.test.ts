@@ -1,7 +1,7 @@
 import type { Column } from '../../../src';
 import { setup } from '../utils';
 
-test('key is escaped in query selectors', () => {
+test('key is escaped in query selectors', async () => {
   const columns: readonly Column<never>[] = [
     {
       key: '!@#%$#%$#()%$#&\n123234\n',
@@ -9,7 +9,5 @@ test('key is escaped in query selectors', () => {
     }
   ];
 
-  expect(async () => {
-    await setup({ columns, rows: [] });
-  }).not.toThrowError();
+  await expect(setup({ columns, rows: [] })).resolves.not.toThrowError();
 });
