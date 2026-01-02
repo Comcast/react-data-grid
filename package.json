@@ -63,9 +63,9 @@
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.1",
     "@vitejs/plugin-react": "^5.1.1",
-    "@vitest/browser-playwright": "^4.0.15",
-    "@vitest/coverage-istanbul": "^4.0.15",
-    "@vitest/eslint-plugin": "^1.5.1",
+    "@vitest/browser-playwright": "^4.0.16",
+    "@vitest/coverage-istanbul": "^4.0.16",
+    "@vitest/eslint-plugin": "^1.6.4",
     "clsx": "^2.1.1",
     "ecij": "^0.3.0",
     "eslint": "^9.39.1",
@@ -84,8 +84,8 @@
     "rolldown": "^1.0.0-beta.51",
     "rolldown-plugin-dts": "^0.19.1",
     "typescript": "~5.9.2",
-    "vite": "npm:rolldown-vite@^7.2.5",
-    "vitest": "^4.0.15",
+    "vite": "^8.0.0-beta.5",
+    "vitest": "^4.0.16",
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
