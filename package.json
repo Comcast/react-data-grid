@@ -74,7 +74,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-sonarjs": "^3.0.5",
     "eslint-plugin-testing-library": "^7.13.5",
-    "jspdf": "^3.0.1",
+    "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.2",
     "playwright": "~1.57.0",
     "postcss": "^8.5.2",
