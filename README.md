@@ -327,17 +327,17 @@ Height of each row in pixels. A function can be used to set different row height
 
 ```tsx
 // Fixed height for all rows
-<DataGrid columns={columns} rows={rows} rowHeight={50} />
+<DataGrid columns={columns} rows={rows} rowHeight={50} />;
 
 // Dynamic height per row
-<DataGrid
-  columns={columns}
-  rows={rows}
-  rowHeight={(row) => row.isExpanded ? 100 : 35}
-/>
+function getRowHeight(row) {
+  return row.isExpanded ? 100 : 35;
+}
+
+<DataGrid columns={columns} rows={rows} rowHeight={getRowHeight} />;
 ```
 
-:warning: **Performance:** When using a function, the height of all rows is calculated upfront on every render. For large datasets (1000+ rows), this can cause performance issues. Consider using a fixed height when possible, or memoize the `rowHeight` function.
+:warning: **Performance:** When using a function, the heights of all rows are processed upfront. For large datasets (1000+ rows), this can cause performance issues if the identity of the function changes and invalidates internal memoization. Consider using a static function when possible, or memoize the `rowHeight` function.
 
 ###### `headerRowHeight?: Maybe<number>`
 
