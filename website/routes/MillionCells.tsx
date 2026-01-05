@@ -34,6 +34,7 @@ function MillionCells() {
       rowHeight={22}
       className="fill-grid"
       direction={direction}
+      enableVirtualization={{rows: {overscanThreshold: 4}, columns: true}}
     />
   );
 }

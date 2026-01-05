@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 
 import { floor, max, min } from '../utils';
+import type { VirtualizationOptions } from '../types';
 
 interface ViewportRowsArgs<R> {
   rows: readonly R[];
   rowHeight: number | ((row: R) => number);
   clientHeight: number;
   scrollTop: number;
-  enableVirtualization: boolean;
+  enableVirtualization: VirtualizationOptions
 }
 
 export function useViewportRows<R>({
@@ -107,8 +108,8 @@ export function useViewportRows<R>({
   let rowOverscanStartIdx = 0;
   let rowOverscanEndIdx = rows.length - 1;
 
-  if (enableVirtualization) {
-    const overscanThreshold = 4;
+  if (enableVirtualization.rows !== false) {    
+    const overscanThreshold = (enableVirtualization.rows === true || enableVirtualization.rows === undefined) ? 4 : enableVirtualization.rows.overscanThreshold;
     const rowVisibleStartIdx = findRowIdx(scrollTop);
     const rowVisibleEndIdx = findRowIdx(scrollTop + clientHeight);
     rowOverscanStartIdx = max(0, rowVisibleStartIdx - overscanThreshold);
