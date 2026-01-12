@@ -113,8 +113,6 @@ export default defineConfig(
             include: ['test/browser/**/*.test.*'],
             browser: {
               ui: false,
-              // TODO: remove when FF tests are stable
-              fileParallelism: false,
               enabled: true,
               provider: playwright({
                 contextOptions: {
@@ -124,7 +122,14 @@ export default defineConfig(
               trace: {
                 mode: isCI ? 'off' : 'retain-on-failure'
               },
-              instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
+              instances: [
+                { browser: 'chromium' },
+                {
+                  browser: 'firefox',
+                  // TODO: remove when FF tests are stable
+                  fileParallelism: false
+                }
+              ],
               commands: { resizeColumn, dragFill, scrollGrid },
               viewport,
               headless: true,
