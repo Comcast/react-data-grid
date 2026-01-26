@@ -76,7 +76,7 @@
     "eslint-plugin-testing-library": "^7.13.5",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.2",
-    "playwright": "~1.57.0",
+    "playwright": "~1.58.0",
     "postcss": "^8.5.2",
     "prettier": "3.8.1",
     "react": "^19.2.1",
