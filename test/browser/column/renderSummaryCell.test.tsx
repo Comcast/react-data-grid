@@ -37,13 +37,13 @@ test('renderSummaryCell', async () => {
 
   const cells = getCells();
   expect(cells).toHaveLength(8);
-  expect(cells[0]).toHaveTextContent('Summary: 1');
-  expect(cells[2]).toHaveTextContent('Summary: 2');
-  expect(cells[4]).toHaveTextContent('Summary: 3');
-  expect(cells[6]).toHaveTextContent('Summary: 4');
+  await expect.element(cells[0]).toHaveTextContent('Summary: 1');
+  await expect.element(cells[2]).toHaveTextContent('Summary: 2');
+  await expect.element(cells[4]).toHaveTextContent('Summary: 3');
+  await expect.element(cells[6]).toHaveTextContent('Summary: 4');
   // nothing is rendered when renderSummaryCell is not defined
-  expect(cells[1]).toBeEmptyDOMElement();
-  expect(cells[3]).toBeEmptyDOMElement();
-  expect(cells[5]).toBeEmptyDOMElement();
-  expect(cells[7]).toBeEmptyDOMElement();
+  await expect.element(cells[1]).toBeEmptyDOMElement();
+  await expect.element(cells[3]).toBeEmptyDOMElement();
+  await expect.element(cells[5]).toBeEmptyDOMElement();
+  await expect.element(cells[7]).toBeEmptyDOMElement();
 });

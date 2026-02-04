@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
-import type { BrowserCommand } from 'vitest/node';
+import type { BrowserCommand, BrowserInstanceOption } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
 const isTest = process.env.NODE_ENV === 'test';
@@ -63,6 +63,35 @@ const scrollGrid: BrowserCommand<[{ scrollLeft?: number; scrollTop?: number }]> 
 
 const viewport = { width: 1920, height: 1080 } as const;
 
+// vitest modifies the instance objects, so we cannot rely on static objects
+function getInstances(): BrowserInstanceOption[] {
+  return [
+    {
+      browser: 'chromium',
+      provider: playwright({
+        actionTimeout: 1000,
+        contextOptions: {
+          viewport
+        },
+        launchOptions: {
+          channel: 'chromium'
+        }
+      })
+    },
+    {
+      browser: 'firefox',
+      provider: playwright({
+        actionTimeout: 1000,
+        contextOptions: {
+          viewport
+        }
+      }),
+      // TODO: remove when FF tests are stable
+      fileParallelism: false
+    }
+  ];
+}
+
 export default defineConfig(
   ({ isPreview }): ViteUserConfig => ({
     base: '/react-data-grid/',
@@ -93,6 +122,7 @@ export default defineConfig(
       open: true
     },
     test: {
+      dir: 'test',
       globals: true,
       coverage: {
         provider: 'istanbul',
@@ -108,28 +138,19 @@ export default defineConfig(
       projects: [
         {
           extends: true,
+          define: {
+            __IS_CI__: JSON.stringify(isCI)
+          },
           test: {
             name: 'browser',
-            include: ['test/browser/**/*.test.*'],
+            include: ['browser/**/*.test.*'],
             browser: {
               ui: false,
               enabled: true,
-              provider: playwright({
-                contextOptions: {
-                  viewport
-                }
-              }),
               trace: {
                 mode: isCI ? 'off' : 'retain-on-failure'
               },
-              instances: [
-                { browser: 'chromium' },
-                {
-                  browser: 'firefox',
-                  // TODO: remove when FF tests are stable
-                  fileParallelism: false
-                }
-              ],
+              instances: getInstances(),
               commands: { resizeColumn, dragFill, scrollGrid },
               viewport,
               headless: true,
@@ -142,15 +163,10 @@ export default defineConfig(
           extends: true,
           test: {
             name: 'visual',
-            include: ['test/visual/*.test.*'],
+            include: ['visual/*.test.*'],
             browser: {
               enabled: true,
-              provider: playwright({
-                contextOptions: {
-                  viewport
-                }
-              }),
-              instances: [{ browser: 'chromium' }, { browser: 'firefox' }],
+              instances: getInstances(),
               viewport,
               headless: true,
               screenshotFailures: false
@@ -162,7 +178,7 @@ export default defineConfig(
           extends: true,
           test: {
             name: 'node',
-            include: ['test/node/**/*.test.*'],
+            include: ['node/**/*.test.*'],
             environment: 'node'
           }
         }

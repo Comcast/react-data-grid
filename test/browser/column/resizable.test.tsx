@@ -323,14 +323,12 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
 
 async function testGridTemplateColumns(chrome: string, firefox: string, firefoxCI = firefox) {
   const grid = getGrid();
-  if (navigator.userAgent.includes('Chrome')) {
-    await expect.element(grid).toHaveStyle({ gridTemplateColumns: chrome });
-  } else {
-    await vi.waitFor(() => {
-      expect((grid.element() as HTMLDivElement).style.gridTemplateColumns).toBeOneOf([
-        firefox,
-        firefoxCI
-      ]);
-    });
-  }
+
+  const gridTemplateColumns = navigator.userAgent.includes('Chrome')
+    ? chrome
+    : __IS_CI__
+      ? firefoxCI
+      : firefox;
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }

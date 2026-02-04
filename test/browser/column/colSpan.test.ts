@@ -46,9 +46,9 @@ describe('colSpan', () => {
     const topSummarryRow1 = getCellsAtRowIndex(0);
     expect(topSummarryRow1).toHaveLength(14);
     // 7th-8th cells are merged
-    expect(topSummarryRow1[7]).toHaveAttribute('aria-colindex', '8');
-    expect(topSummarryRow1[7]).toHaveAttribute('aria-colspan', '2');
-    expect(topSummarryRow1[7]).toHaveStyle({
+    await expect.element(topSummarryRow1[7]).toHaveAttribute('aria-colindex', '8');
+    await expect.element(topSummarryRow1[7]).toHaveAttribute('aria-colspan', '2');
+    await expect.element(topSummarryRow1[7]).toHaveStyle({
       gridColumnStart: '8',
       gridColumnEnd: '10'
     });
@@ -58,31 +58,31 @@ describe('colSpan', () => {
     const row1 = getCellsAtRowIndex(3);
     expect(row1).toHaveLength(14);
     // 7th-8th cells are merged
-    expect(row1[6]).toHaveAttribute('aria-colindex', '7');
-    expect(row1[6]).toHaveAttribute('aria-colspan', '2');
-    expect(row1[6]).toHaveStyle({
+    await expect.element(row1[6]).toHaveAttribute('aria-colindex', '7');
+    await expect.element(row1[6]).toHaveAttribute('aria-colspan', '2');
+    await expect.element(row1[6]).toHaveStyle({
       gridTemplateColumns: '7',
       gridColumnEnd: '9'
     });
-    expect(row1[7]).toHaveAttribute('aria-colindex', '9');
-    expect(row1[7]).not.toHaveAttribute('aria-colspan');
+    await expect.element(row1[7]).toHaveAttribute('aria-colindex', '9');
+    await expect.element(row1[7]).not.toHaveAttribute('aria-colspan');
 
     // 3rd-5th, 7th-8th cells are merged
     const row2 = getCellsAtRowIndex(4);
     expect(row2).toHaveLength(12);
-    expect(row2[2]).toHaveAttribute('aria-colindex', '3');
-    expect(row2[2]).toHaveStyle({
+    await expect.element(row2[2]).toHaveAttribute('aria-colindex', '3');
+    await expect.element(row2[2]).toHaveStyle({
       gridColumnStart: '3',
       gridColumnEnd: '6'
     });
-    expect(row2[2]).toHaveAttribute('aria-colspan', '3');
-    expect(row2[3]).toHaveAttribute('aria-colindex', '6');
-    expect(row2[4]).toHaveAttribute('aria-colindex', '7');
-    expect(row2[4]).toHaveStyle({
+    await expect.element(row2[2]).toHaveAttribute('aria-colspan', '3');
+    await expect.element(row2[3]).toHaveAttribute('aria-colindex', '6');
+    await expect.element(row2[4]).toHaveAttribute('aria-colindex', '7');
+    await expect.element(row2[4]).toHaveStyle({
       gridColumnStart: '7',
       gridColumnEnd: '9'
     });
-    expect(row2[5]).toHaveAttribute('aria-colindex', '9');
+    await expect.element(row2[5]).toHaveAttribute('aria-colindex', '9');
 
     expect(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
     expect(getCellsAtRowIndex(7)).toHaveLength(10);

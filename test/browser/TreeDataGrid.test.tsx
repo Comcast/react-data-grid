@@ -322,7 +322,7 @@ test('cell navigation in a treegrid', async () => {
 
   // expand group
   const groupCell1 = getCell('USA');
-  expect(document.body).toHaveFocus();
+  await expect.element(document.body).toHaveFocus();
   await expect.element(focusSink).toHaveAttribute('tabIndex', '-1');
   await userEvent.click(groupCell1);
   await expect.element(focusSink).toHaveFocus();
@@ -351,23 +351,23 @@ test('cell navigation in a treegrid', async () => {
 
   // select cell
   await userEvent.click(getCellsAtRowIndex(5)[1]);
-  expect(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'true');
+  await expect.element(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'true');
   await expect.element(focusSink).toHaveAttribute('tabIndex', '-1');
 
   // select the previous cell
   await userEvent.keyboard('{arrowleft}');
-  expect(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'false');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
+  await expect.element(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'false');
+  await expect.element(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
 
   // if the first cell is selected then arrowleft should select the row
   await userEvent.keyboard('{arrowleft}');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'false');
+  await expect.element(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'false');
   await expect.element(getRows()[4]).toHaveClass(rowSelectedClassname);
   await expect.element(focusSink).toHaveFocus();
 
   // if the row is selected then arrowright should select the first cell on the same row
   await userEvent.keyboard('{arrowright}');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
+  await expect.element(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
 
   await userEvent.keyboard('{arrowleft}{arrowup}');
 
@@ -390,7 +390,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(getRows()[5]).toHaveClass(rowSelectedClassname);
 
   await userEvent.keyboard('{home}');
-  await expect.element(page.getByRole('row').all()[0]).toHaveClass(rowSelectedClassname);
+  await expect.element(page.getByRole('row').nth(0)).toHaveClass(rowSelectedClassname);
 
   // collpase parent group
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowleft}');
