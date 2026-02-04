@@ -20,8 +20,8 @@ test('summaryCellClass is undefined', async () => {
   ];
   await setup({ columns, topSummaryRows, bottomSummaryRows, rows: [] });
   const [cell1, cell2] = getCells();
-  expect(cell1).toHaveClass(cellClassname, { exact: true });
-  expect(cell2).toHaveClass(cellClassname, { exact: true });
+  await expect.element(cell1).toHaveClass(cellClassname, { exact: true });
+  await expect.element(cell2).toHaveClass(cellClassname, { exact: true });
 });
 
 test('summaryCellClass is a string', async () => {
@@ -35,7 +35,7 @@ test('summaryCellClass is a string', async () => {
   await setup({ columns, topSummaryRows, bottomSummaryRows, rows: [] });
   const cells = getCells();
   for (const cell of cells) {
-    expect(cell).toHaveClass(`${cellClassname} my-cell`, { exact: true });
+    await expect.element(cell).toHaveClass(`${cellClassname} my-cell`, { exact: true });
   }
 });
 
@@ -49,10 +49,10 @@ test('summaryCellClass returns a string', async () => {
   ];
   await setup({ columns, topSummaryRows, bottomSummaryRows, rows: [] });
   const [cell1, cell2, cell3, cell4] = getCells();
-  expect(cell1).toHaveClass(`${cellClassname} my-cell-0`, { exact: true });
-  expect(cell2).toHaveClass(`${cellClassname} my-cell-1`, { exact: true });
-  expect(cell3).toHaveClass(`${cellClassname} my-cell-2`, { exact: true });
-  expect(cell4).toHaveClass(`${cellClassname} my-cell-3`, { exact: true });
+  await expect.element(cell1).toHaveClass(`${cellClassname} my-cell-0`, { exact: true });
+  await expect.element(cell2).toHaveClass(`${cellClassname} my-cell-1`, { exact: true });
+  await expect.element(cell3).toHaveClass(`${cellClassname} my-cell-2`, { exact: true });
+  await expect.element(cell4).toHaveClass(`${cellClassname} my-cell-3`, { exact: true });
 });
 
 test('summaryCellClass returns undefined', async () => {
@@ -66,6 +66,6 @@ test('summaryCellClass returns undefined', async () => {
   await setup({ columns, topSummaryRows, bottomSummaryRows, rows: [] });
   const cells = getCells();
   for (const cell of cells) {
-    expect(cell).toHaveClass(cellClassname, { exact: true });
+    await expect.element(cell).toHaveClass(cellClassname, { exact: true });
   }
 });

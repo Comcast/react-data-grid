@@ -92,7 +92,7 @@ test('should focus the cell when drag handle is clicked', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0)[0]);
   await userEvent.click(document.body);
-  expect(document.body).toHaveFocus();
+  await expect.element(document.body).toHaveFocus();
   await userEvent.click(getDragHandle()!);
   await expect.element(getCellsAtRowIndex(0)[0]).toHaveFocus();
 });

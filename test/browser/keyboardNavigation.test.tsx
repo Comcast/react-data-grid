@@ -255,13 +255,12 @@ test('navigation when selected cell not in the viewport', async () => {
 
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(99, 100);
-  // TODO: replace with `toHaveLength` when migrating to v4
-  await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
+  await expect.element(selectedRowCells).not.toHaveLength(1);
   await commands.scrollGrid({ scrollTop: 0 });
   await testCount(selectedRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
-  await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
+  await expect.element(selectedRowCells).not.toHaveLength(1);
 
   await commands.scrollGrid({ scrollLeft: 0 });
   await userEvent.keyboard('{arrowdown}');

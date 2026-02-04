@@ -1,3 +1,7 @@
+declare global {
+  const __IS_CI__: boolean;
+}
+
 declare module 'vitest/browser' {
   interface BrowserCommands {
     dragFill: (from: string, to: string) => Promise<void>;

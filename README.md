@@ -760,8 +760,8 @@ function MyGrid() {
 }
 
 test('grid', async () => {
-  await render(<MyGrid />);
-  const grid = screen.getByRole('grid', { name: 'my-grid' });
+  await page.render(<MyGrid />);
+  const grid = page.getByRole('grid', { name: 'my-grid' });
 });
 ```
 
