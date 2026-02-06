@@ -9,7 +9,7 @@ export function useGridDimensions() {
   const [isMeasured, setIsMeasured] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isDocumentVisible, setIsDocumentVisible] = useState(false);
-  const activityMode: ActivityProps['mode'] =
+  const activityMode: NonNullable<ActivityProps['mode']> =
     isMeasured && isVisible && isDocumentVisible ? 'visible' : 'hidden';
 
   useLayoutEffect(() => {
