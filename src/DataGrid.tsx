@@ -596,7 +596,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       previousRowIdx < rows.length
     ) {
       const step = sign(rowIdx - previousRowIdx);
-      for (let i = previousRowIdx + step; i !== rowIdx; i += step) {
+      for (let i = previousRowIdx + step; i < rowIdx; i += step) {
         const row = rows[i];
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {

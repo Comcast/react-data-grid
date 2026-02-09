@@ -6,11 +6,11 @@ import { getSelectedCell, setup, tabIntoGrid, testCount, validateCellPosition } 
 
 type Row = undefined;
 
-const rows: readonly Row[] = new Array(100);
+const rows: readonly Row[] = Array.from({ length: 100 });
 const topSummaryRows: readonly Row[] = [undefined];
 const bottomSummaryRows: readonly Row[] = [undefined, undefined];
 
-const columns = [
+const columns: readonly Column<Row, Row>[] = [
   SelectColumn,
   { key: 'col2', name: 'col2' },
   { key: 'col3', name: 'col3' },
@@ -18,7 +18,7 @@ const columns = [
   { key: 'col5', name: 'col5' },
   { key: 'col6', name: 'col6' },
   { key: 'col7', name: 'col7' }
-] as const satisfies Column<Row, Row>[];
+];
 
 test('keyboard navigation', async () => {
   await setup({ columns, rows, topSummaryRows, bottomSummaryRows }, true);
@@ -122,7 +122,7 @@ test('arrow and tab navigation', async () => {
 });
 
 test('grid enter/exit', async () => {
-  await setup({ columns, rows: new Array(5), bottomSummaryRows }, true);
+  await setup<Row, Row>({ columns, rows: Array.from({ length: 5 }), bottomSummaryRows }, true);
 
   const beforeButton = page.getByRole('button', { name: 'Before' });
   const afterButton = page.getByRole('button', { name: 'After' });
@@ -164,7 +164,7 @@ test('grid enter/exit', async () => {
 });
 
 test('navigation with focusable cell renderer', async () => {
-  await setup({ columns, rows: new Array(1), bottomSummaryRows }, true);
+  await setup<Row, Row>({ columns, rows: Array.from({ length: 1 }), bottomSummaryRows }, true);
   await tabIntoGrid();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 1);
@@ -205,7 +205,10 @@ test('navigation when header and summary rows have focusable elements', async ()
     }
   ];
 
-  await setup({ columns, rows: new Array(2), bottomSummaryRows: [1, 2] }, true);
+  await setup<Row, number>(
+    { columns, rows: Array.from({ length: 2 }), bottomSummaryRows: [1, 2] },
+    true
+  );
   await tabIntoGrid();
 
   // should set focus on the header filter
@@ -320,7 +323,7 @@ test('reset selected cell when row is removed', async () => {
 });
 
 test('should not change the left and right arrow behavior for right to left languages', async () => {
-  await setup({ rows, columns, direction: 'rtl' }, true);
+  await setup<Row, Row>({ columns, rows, direction: 'rtl' }, true);
   await tabIntoGrid();
   await validateCellPosition(0, 0);
   await userEvent.tab();
