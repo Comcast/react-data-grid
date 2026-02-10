@@ -10,13 +10,11 @@ const isTest = process.env.NODE_ENV === 'test';
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
-  context,
+  { page, iframe },
   name,
   resizeBy
 ) => {
-  const { page } = context;
-  const frame = await context.frame();
-  const resizeHandle = frame
+  const resizeHandle = iframe
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
   const { x, y } = (await resizeHandle.boundingBox())!;
@@ -32,13 +30,11 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
 };
 
 // TODO: remove when `userEvent.pointer` is supported
-const dragFill: BrowserCommand<[from: string, to: string]> = async (context, from, to) => {
-  const { page } = context;
-  const frame = await context.frame();
-  await frame.getByRole('gridcell', { name: from }).click();
-  await frame.locator('.rdg-cell-drag-handle').hover();
+const dragFill: BrowserCommand<[from: string, to: string]> = async ({ page, iframe }, from, to) => {
+  await iframe.getByRole('gridcell', { name: from, exact: true }).click();
+  await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  const toCell = frame.getByRole('gridcell', { name: to });
+  const toCell = iframe.getByRole('gridcell', { name: to, exact: true });
   await toCell.hover();
   await page.mouse.up();
 };
