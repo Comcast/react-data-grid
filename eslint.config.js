@@ -25,9 +25,11 @@ export default defineConfig([
 
     plugins: {
       react,
+      // @ts-expect-error
       'react-hooks': reactHooks,
       'react-x': reactX,
       sonarjs,
+      // @ts-expect-error
       '@typescript-eslint': typescriptEslint
     },
 

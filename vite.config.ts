@@ -145,7 +145,6 @@ export default defineConfig(
             name: 'browser',
             include: ['browser/**/*.test.*'],
             browser: {
-              ui: false,
               enabled: true,
               trace: {
                 mode: isCI ? 'off' : 'retain-on-failure'
@@ -154,6 +153,7 @@ export default defineConfig(
               commands: { resizeColumn, dragFill, scrollGrid },
               viewport,
               headless: true,
+              ui: false,
               screenshotFailures: !isCI
             },
             setupFiles: ['test/setupBrowser.ts']

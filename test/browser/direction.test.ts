@@ -1,7 +1,10 @@
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
-import { getGrid, getSelectedCell, setup, tabIntoGrid } from './utils';
+import { setup, tabIntoGrid } from './utils';
+
+const grid = page.getGrid();
+const selectedCell = grid.getSelectedCell();
 
 interface Row {
   id: number;
@@ -23,27 +26,27 @@ const rows: readonly Row[] = [];
 
 test('should use left to right direction by default', async () => {
   await setup({ rows, columns }, true);
-  await expect.element(getGrid()).toHaveAttribute('dir', 'ltr');
+  await expect.element(grid).toHaveAttribute('dir', 'ltr');
   await tabIntoGrid();
-  await expect.element(getSelectedCell()).toHaveTextContent('ID');
+  await expect.element(selectedCell).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowRight}');
-  await expect.element(getSelectedCell()).toHaveTextContent('Name');
+  await expect.element(selectedCell).toHaveTextContent('Name');
 });
 
 test('should use left to right direction if direction prop is set to ltr', async () => {
   await setup({ rows, columns, direction: 'ltr' }, true);
-  await expect.element(getGrid()).toHaveAttribute('dir', 'ltr');
+  await expect.element(grid).toHaveAttribute('dir', 'ltr');
   await tabIntoGrid();
-  await expect.element(getSelectedCell()).toHaveTextContent('ID');
+  await expect.element(selectedCell).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowRight}');
-  await expect.element(getSelectedCell()).toHaveTextContent('Name');
+  await expect.element(selectedCell).toHaveTextContent('Name');
 });
 
 test('should use right to left direction if direction prop is set to rtl', async () => {
   await setup({ rows, columns, direction: 'rtl' }, true);
-  await expect.element(getGrid()).toHaveAttribute('dir', 'rtl');
+  await expect.element(grid).toHaveAttribute('dir', 'rtl');
   await tabIntoGrid();
-  await expect.element(getSelectedCell()).toHaveTextContent('ID');
+  await expect.element(selectedCell).toHaveTextContent('ID');
   await userEvent.keyboard('{ArrowLeft}');
-  await expect.element(getSelectedCell()).toHaveTextContent('Name');
+  await expect.element(selectedCell).toHaveTextContent('Name');
 });

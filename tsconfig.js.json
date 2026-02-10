@@ -2,10 +2,10 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "allowJs": true,
+    "checkJs": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "skipLibCheck": true
+    "moduleResolution": "NodeNext"
   },
-  "include": ["**/*.js", ".github/**/*.js", "package.json"],
+  "include": ["**/*.js"],
   "exclude": ["./coverage/**/*", "./dist/**/*", "./lib/**/*"]
 }

@@ -8,10 +8,6 @@ declare module 'vitest/browser' {
     resizeColumn: (name: string, resizeBy: number | readonly number[]) => Promise<void>;
     scrollGrid: (position: { scrollLeft?: number; scrollTop?: number }) => Promise<void>;
   }
-
-  interface LocatorSelectors {
-    getBySelector: (selector: string) => Locator;
-  }
 }
 
 // somehow required to make `declare global` work
