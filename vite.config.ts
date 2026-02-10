@@ -43,24 +43,6 @@ const dragFill: BrowserCommand<[from: string, to: string]> = async (context, fro
   await page.mouse.up();
 };
 
-const scrollGrid: BrowserCommand<[{ scrollLeft?: number; scrollTop?: number }]> = async (
-  context,
-  { scrollLeft, scrollTop }
-) => {
-  const frame = await context.frame();
-  await frame.getByRole('grid').evaluate(
-    (grid: HTMLDivElement, { scrollLeft, scrollTop }) => {
-      if (scrollLeft !== undefined) {
-        grid.scrollLeft = scrollLeft;
-      }
-      if (scrollTop !== undefined) {
-        grid.scrollTop = scrollTop;
-      }
-    },
-    { scrollLeft, scrollTop }
-  );
-};
-
 const viewport = { width: 1920, height: 1080 } as const;
 
 // vitest modifies the instance objects, so we cannot rely on static objects
@@ -150,7 +132,7 @@ export default defineConfig(
                 mode: isCI ? 'off' : 'retain-on-failure'
               },
               instances: getInstances(),
-              commands: { resizeColumn, dragFill, scrollGrid },
+              commands: { resizeColumn, dragFill },
               viewport,
               headless: true,
               ui: false,

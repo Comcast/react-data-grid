@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { commands, page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
-import { getCellsAtRowIndex, getRowWithCell, testCount } from '../utils';
+import { getCellsAtRowIndex, getRowWithCell, scrollGrid, testCount } from '../utils';
 
 const grid = page.getGrid();
 
@@ -98,7 +98,7 @@ describe('Editor', () => {
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
     const selectedRowCells = getRowWithCell(page.getSelectedCell()).getCell();
     await testCount(selectedRowCells, 2);
-    await commands.scrollGrid({ scrollTop: 2001 });
+    await scrollGrid({ top: 2001 });
     await testCount(selectedRowCells, 1);
     const editor = grid.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).not.toBeInTheDocument();
@@ -271,10 +271,10 @@ describe('Editor', () => {
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
       await userEvent.keyboard('abc');
 
-      await commands.scrollGrid({ scrollTop: 1500 });
+      await scrollGrid({ top: 1500 });
       await userEvent.click(page.getCell({ name: 'name43' }));
       await expect.element(page.getSelectedCell()).toHaveTextContent(/^name43$/);
-      await commands.scrollGrid({ scrollTop: 0 });
+      await scrollGrid({ top: 0 });
       await expect.element(page.getCell({ name: 'name0abc' })).toBeVisible();
     });
 

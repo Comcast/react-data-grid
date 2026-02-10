@@ -1,8 +1,15 @@
-import { commands, page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import { getRowWithCell, setup, tabIntoGrid, testCount, validateCellPosition } from './utils';
+import {
+  getRowWithCell,
+  scrollGrid,
+  setup,
+  tabIntoGrid,
+  testCount,
+  validateCellPosition
+} from './utils';
 
 const selectedCell = page.getSelectedCell();
 
@@ -255,13 +262,13 @@ test('navigation when selected cell not in the viewport', async () => {
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(99, 100);
   await expect.element(selectedRowCells).not.toHaveLength(1);
-  await commands.scrollGrid({ scrollTop: 0 });
+  await scrollGrid({ top: 0 });
   await testCount(selectedRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
   await expect.element(selectedRowCells).not.toHaveLength(1);
 
-  await commands.scrollGrid({ scrollLeft: 0 });
+  await scrollGrid({ left: 0 });
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(99, 100);
 
@@ -269,7 +276,7 @@ test('navigation when selected cell not in the viewport', async () => {
     '{home}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}'
   );
   await validateCellPosition(7, 100);
-  await commands.scrollGrid({ scrollLeft: 2000 });
+  await scrollGrid({ left: 2000 });
   await userEvent.keyboard('{arrowleft}');
   await validateCellPosition(6, 100);
 });
