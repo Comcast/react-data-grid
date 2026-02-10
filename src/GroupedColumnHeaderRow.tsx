@@ -23,13 +23,13 @@ function GroupedColumnHeaderRow<R, SR>({
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
   for (const column of columns) {
-    let { parent } = column;
+    if (column.parent === undefined) continue;
 
-    if (parent === undefined) continue;
+    let { parent } = column;
 
     while (parent.level > level) {
       if (parent.parent === undefined) break;
-      parent = parent.parent;
+      ({ parent } = parent);
     }
 
     if (parent.level === level && !renderedParents.has(parent)) {

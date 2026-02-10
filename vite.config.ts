@@ -14,7 +14,7 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
   name,
   resizeBy
 ) => {
-  const page = context.page;
+  const { page } = context;
   const frame = await context.frame();
   const resizeHandle = frame
     .getByRole('columnheader', { name, exact: true })
@@ -33,7 +33,7 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
 
 // TODO: remove when `userEvent.pointer` is supported
 const dragFill: BrowserCommand<[from: string, to: string]> = async (context, from, to) => {
-  const page = context.page;
+  const { page } = context;
   const frame = await context.frame();
   await frame.getByRole('gridcell', { name: from }).click();
   await frame.locator('.rdg-cell-drag-handle').hover();

@@ -526,7 +526,7 @@ export default defineConfig([
       '@typescript-eslint/non-nullable-type-assertion-style': 1,
       '@typescript-eslint/parameter-properties': 1,
       '@typescript-eslint/prefer-as-const': 1,
-      '@typescript-eslint/prefer-destructuring': [1, { array: false }],
+      '@typescript-eslint/prefer-destructuring': [1, { array: false, object: true }],
       '@typescript-eslint/prefer-enum-initializers': 0,
       '@typescript-eslint/prefer-find': 1,
       '@typescript-eslint/prefer-for-of': 1,
