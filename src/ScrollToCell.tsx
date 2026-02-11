@@ -17,30 +17,36 @@ export default function ScrollToCell({
   setScrollToCellPosition: (cell: null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // A threshold of 1 may not be met when only scrolling to a row or column,
+  // as the target div can be wider/taller than the grid,
+  // so the intersectionRatio will never be 1 in those cases.
+  const threshold = idx === undefined || rowIdx === undefined ? 0 : 1;
 
   useLayoutEffect(() => {
-    // scroll until the cell is completely visible
-    // this is needed if the grid has auto-sized columns
-    // setting the behavior to auto so it can be overridden
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setScrollToCellPosition(null);
+        } else {
+          // scroll until the cell is completely visible
+          // this is needed if the grid has auto-sized columns
+          // setting the behavior to auto so it can be overridden
+          scrollIntoView(ref.current, 'auto');
+        }
+      },
+      {
+        root: gridRef.current!,
+        threshold
+      }
+    );
+
     scrollIntoView(ref.current, 'auto');
-  });
-
-  useLayoutEffect(() => {
-    function removeScrollToCell() {
-      setScrollToCellPosition(null);
-    }
-
-    const observer = new IntersectionObserver(removeScrollToCell, {
-      root: gridRef.current!,
-      threshold: 1.0
-    });
-
     observer.observe(ref.current!);
 
     return () => {
       observer.disconnect();
     };
-  }, [gridRef, setScrollToCellPosition]);
+  }, [gridRef, setScrollToCellPosition, threshold]);
 
   return (
     <div
