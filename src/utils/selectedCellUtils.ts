@@ -146,19 +146,19 @@ export function getNextSelectedCellPosition<R, SR>({
     if (moveNext) {
       // find the parent at the same row level
       const nextColumn = columns[nextIdx];
-      let parent = nextColumn.parent;
+      let { parent } = nextColumn;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
         if (nextRowIdx === parentRowIdx) {
           nextIdx = parent.idx + parent.colSpan;
           break;
         }
-        parent = parent.parent;
+        ({ parent } = parent);
       }
     } else if (moveUp) {
       // find the first reachable parent
       const nextColumn = columns[nextIdx];
-      let parent = nextColumn.parent;
+      let { parent } = nextColumn;
       let found = false;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
@@ -168,7 +168,7 @@ export function getNextSelectedCellPosition<R, SR>({
           found = true;
           break;
         }
-        parent = parent.parent;
+        ({ parent } = parent);
       }
 
       // keep the current position if there is no parent matching the new row position
@@ -212,7 +212,7 @@ export function getNextSelectedCellPosition<R, SR>({
     // This check is needed when navigating to a column
     // that does not have a parent matching the new rowIdx
     const nextColumn = columns[nextIdx];
-    let parent = nextColumn.parent;
+    let { parent } = nextColumn;
     const nextParentRowIdx = nextRowIdx;
     nextRowIdx = mainHeaderRowIdx;
     while (parent !== undefined) {
@@ -221,7 +221,7 @@ export function getNextSelectedCellPosition<R, SR>({
         nextRowIdx = parentRowIdx;
         nextIdx = parent.idx;
       }
-      parent = parent.parent;
+      ({ parent } = parent);
     }
   }
 

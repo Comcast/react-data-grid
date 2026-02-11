@@ -2,7 +2,6 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, DataGridProps } from '../../src';
-import { getCell } from './utils';
 
 interface Row {
   col1: number;
@@ -63,10 +62,10 @@ describe('Events', () => {
         }}
       />
     );
-    await userEvent.click(getCell('1'));
-    await expect.element(getCell('1')).toHaveAttribute('aria-selected', 'false');
-    await userEvent.click(getCell('a1'));
-    await expect.element(getCell('a1')).toHaveAttribute('aria-selected', 'true');
+    await userEvent.click(page.getCell({ name: '1' }));
+    await expect.element(page.getCell({ name: '1' })).toHaveAttribute('aria-selected', 'false');
+    await userEvent.click(page.getCell({ name: 'a1' }));
+    await expect.element(page.getCell({ name: 'a1' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('should be able to open editor editor on single click using onCellClick', async () => {
@@ -80,9 +79,9 @@ describe('Events', () => {
         }}
       />
     );
-    await userEvent.click(getCell('1'));
+    await userEvent.click(page.getCell({ name: '1' }));
     await expect.element(page.getByLabelText('col1-editor')).not.toBeInTheDocument();
-    await userEvent.click(getCell('a1'));
+    await userEvent.click(page.getCell({ name: 'a1' }));
     await expect.element(page.getByRole('textbox', { name: 'col2-editor' })).toBeInTheDocument();
   });
 
@@ -96,9 +95,9 @@ describe('Events', () => {
         }}
       />
     );
-    await userEvent.dblClick(getCell('1'));
+    await userEvent.dblClick(page.getCell({ name: '1' }));
     await expect.element(page.getByLabelText('col1-editor')).not.toBeInTheDocument();
-    await userEvent.dblClick(getCell('a1'));
+    await userEvent.dblClick(page.getCell({ name: 'a1' }));
     await expect.element(page.getByRole('textbox', { name: 'col2-editor' })).toBeInTheDocument();
   });
 
@@ -106,7 +105,7 @@ describe('Events', () => {
     const onCellContextMenu = vi.fn();
     await page.render(<EventTest onCellContextMenu={onCellContextMenu} />);
     expect(onCellContextMenu).not.toHaveBeenCalled();
-    await userEvent.click(getCell('1'), { button: 'right' });
+    await userEvent.click(page.getCell({ name: '1' }), { button: 'right' });
     expect(onCellContextMenu).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         column: expect.objectContaining(columns[0]),
@@ -127,7 +126,7 @@ describe('Events', () => {
     expect(onSelectedCellChange).not.toHaveBeenCalled();
 
     // Selected by click
-    await userEvent.click(getCell('a1'));
+    await userEvent.click(page.getCell({ name: 'a1' }));
     expect(onSelectedCellChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],
@@ -136,7 +135,7 @@ describe('Events', () => {
     expect(onSelectedCellChange).toHaveBeenCalledOnce();
 
     // Selected by double click
-    await userEvent.dblClick(getCell('1'));
+    await userEvent.dblClick(page.getCell({ name: '1' }));
     expect(onSelectedCellChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[0]),
       row: rows[0],
@@ -145,7 +144,7 @@ describe('Events', () => {
     expect(onSelectedCellChange).toHaveBeenCalledTimes(2);
 
     // Selected by right-click
-    await userEvent.click(getCell('2'), { button: 'right' });
+    await userEvent.click(page.getCell({ name: '2' }), { button: 'right' });
     expect(onSelectedCellChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[0]),
       row: rows[1],

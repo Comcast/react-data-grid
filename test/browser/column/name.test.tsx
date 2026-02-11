@@ -1,5 +1,9 @@
+import { page } from 'vitest/browser';
+
 import type { Column } from '../../../src';
-import { getHeaderCellsNew, setup } from '../utils';
+import { setup } from '../utils';
+
+const headerCells = page.getHeaderCell();
 
 test('name is either a string or an element', async () => {
   function Header() {
@@ -18,7 +22,6 @@ test('name is either a string or an element', async () => {
   ];
 
   await setup({ columns, rows: [] });
-  const [cell1, cell2] = getHeaderCellsNew('ID', 'Fancy');
-  await expect.element(cell1).toBeVisible();
-  await expect.element(cell2).toBeVisible();
+  await expect.element(headerCells.nth(0)).toBeVisible();
+  await expect.element(headerCells.nth(1)).toBeVisible();
 });

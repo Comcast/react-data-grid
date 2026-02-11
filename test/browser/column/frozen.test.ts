@@ -2,7 +2,9 @@ import { page } from 'vitest/browser';
 
 import type { Column } from '../../../src';
 import { cellClassname, cellFrozenClassname } from '../../../src/style/cell';
-import { getHeaderCellsNew, setup } from '../utils';
+import { setup } from '../utils';
+
+const headerCells = page.getHeaderCell();
 
 test('frozen column have a specific class, and are stable-sorted before non-frozen columns', async () => {
   const columns: readonly Column<never>[] = [
@@ -28,15 +30,20 @@ test('frozen column have a specific class, and are stable-sorted before non-froz
   ];
 
   await setup({ columns, rows: [] });
-  await expect.element(page.getByRole('row')).toHaveTextContent('col1col3col2col4');
-  const [cell1, cell2, cell3, cell4] = getHeaderCellsNew('col1', 'col2', 'col3', 'col4');
+
+  const [cell1, cell2, cell3, cell4] = headerCells.all();
+
+  await expect.element(cell1).toHaveTextContent('col1');
+  await expect.element(cell2).toHaveTextContent('col3');
+  await expect.element(cell3).toHaveTextContent('col2');
+  await expect.element(cell4).toHaveTextContent('col4');
 
   await expect
     .element(cell1)
     .toHaveClass(`${cellClassname} ${cellFrozenClassname}`, { exact: true });
   await expect
-    .element(cell3)
+    .element(cell2)
     .toHaveClass(`${cellClassname} ${cellFrozenClassname}`, { exact: true });
-  await expect.element(cell2).toHaveClass(cellClassname, { exact: true });
+  await expect.element(cell3).toHaveClass(cellClassname, { exact: true });
   await expect.element(cell4).toHaveClass(cellClassname, { exact: true });
 });

@@ -3,7 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
-import { getCellsAtRowIndex, getSelectedCell } from './utils';
+import { getCellsAtRowIndex } from './utils';
 
 interface Row {
   col: string;
@@ -70,7 +70,7 @@ function setup() {
 
 test('should call onCellCopy on cell copy', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(0)[0]);
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.copy();
   expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -83,7 +83,7 @@ test('should call onCellCopy on cell copy', async () => {
 
 test('should call onCellPaste on cell paste', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(0)[0]);
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.paste();
   expect(onCellPasteSpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -96,14 +96,14 @@ test('should call onCellPaste on cell paste', async () => {
 
 test('should not allow paste on readonly cells', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(2)[0]);
+  await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.paste();
   expect(onCellPasteSpy).not.toHaveBeenCalled();
 });
 
 test('should allow copying a readonly cell', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(2)[0]);
+  await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.copy();
   expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -131,7 +131,7 @@ test('should not allow copy/paste on header or summary cells', async () => {
 
 test('should not start editing when pressing ctrl+<input key>', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(1)[0]);
+  await userEvent.click(getCellsAtRowIndex(1).nth(0));
   await userEvent.keyboard('{Control>}b');
-  await expect.element(getSelectedCell()).not.toHaveClass('rdg-editor-container');
+  await expect.element(page.getSelectedCell()).not.toHaveClass('rdg-editor-container');
 });

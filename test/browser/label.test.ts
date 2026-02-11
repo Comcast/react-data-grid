@@ -1,4 +1,8 @@
-import { getGrid, setup } from './utils';
+import { page } from 'vitest/browser';
+
+import { setup } from './utils';
+
+const grid = page.getGrid();
 
 test('should set label and description', async () => {
   await setup({
@@ -12,7 +16,6 @@ test('should set label and description', async () => {
     'data-cy': 'cy'
   });
 
-  const grid = getGrid();
   await expect.element(grid).toHaveAttribute('aria-label', 'label');
   await expect.element(grid).toHaveAttribute('aria-labelledby', 'labelledby');
   await expect.element(grid).toHaveAttribute('aria-description', 'description');

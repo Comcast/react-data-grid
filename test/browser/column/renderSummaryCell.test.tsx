@@ -1,5 +1,9 @@
+import { page } from 'vitest/browser';
+
 import type { Column } from '../../../src';
-import { getCells, setup } from '../utils';
+import { setup } from '../utils';
+
+const cells = page.getCell();
 
 interface SummaryRow {
   id: number;
@@ -35,15 +39,14 @@ test('renderSummaryCell', async () => {
     ]
   });
 
-  const cells = getCells();
-  expect(cells).toHaveLength(8);
-  await expect.element(cells[0]).toHaveTextContent('Summary: 1');
-  await expect.element(cells[2]).toHaveTextContent('Summary: 2');
-  await expect.element(cells[4]).toHaveTextContent('Summary: 3');
-  await expect.element(cells[6]).toHaveTextContent('Summary: 4');
+  await expect.element(cells).toHaveLength(8);
+  await expect.element(cells.nth(0)).toHaveTextContent('Summary: 1');
+  await expect.element(cells.nth(2)).toHaveTextContent('Summary: 2');
+  await expect.element(cells.nth(4)).toHaveTextContent('Summary: 3');
+  await expect.element(cells.nth(6)).toHaveTextContent('Summary: 4');
   // nothing is rendered when renderSummaryCell is not defined
-  await expect.element(cells[1]).toBeEmptyDOMElement();
-  await expect.element(cells[3]).toBeEmptyDOMElement();
-  await expect.element(cells[5]).toBeEmptyDOMElement();
-  await expect.element(cells[7]).toBeEmptyDOMElement();
+  await expect.element(cells.nth(1)).toBeEmptyDOMElement();
+  await expect.element(cells.nth(3)).toBeEmptyDOMElement();
+  await expect.element(cells.nth(5)).toBeEmptyDOMElement();
+  await expect.element(cells.nth(7)).toBeEmptyDOMElement();
 });
