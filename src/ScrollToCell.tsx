@@ -17,10 +17,10 @@ export default function ScrollToCell({
   setScrollToCellPosition: (cell: null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  // A threshold of 1 may not be met when only scrolling to a row or column,
-  // as the target div can be wider/taller than the grid,
-  // so the intersectionRatio will never be 1 in those cases.
-  const threshold = idx === undefined || rowIdx === undefined ? 0 : 1;
+  // When scrolling to a specific cell, we need threshold: 1 to ensure it's fully visible.
+  // When scrolling to just a row or column, the div spans the full width/height,
+  // so threshold: 1 would never be met. Use threshold: 0 instead.
+  const threshold = idx !== undefined && rowIdx !== undefined ? 1 : 0;
 
   useLayoutEffect(() => {
     const observer = new IntersectionObserver(
@@ -53,7 +53,7 @@ export default function ScrollToCell({
       ref={ref}
       style={{
         gridColumn: idx === undefined ? '1/-1' : idx + 1,
-        gridRow: rowIdx === undefined ? '1/-1' : rowIdx + 2
+        gridRow: rowIdx === undefined ? '1/-1' : rowIdx + 1
       }}
     />
   );
