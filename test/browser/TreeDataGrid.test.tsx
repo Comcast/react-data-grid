@@ -11,7 +11,7 @@ const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
 const headerCells = treeGrid.getHeaderCell();
 const rows = treeGrid.getRow();
-const selectedCell = page.getSelectedCell();
+const selectedCell = treeGrid.getSelectedCell();
 
 const rowSelectedClassname = 'rdg-row-selected';
 
