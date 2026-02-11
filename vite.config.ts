@@ -124,6 +124,7 @@ export default defineConfig(
     test: {
       dir: 'test',
       globals: true,
+      printConsoleTrace: true,
       coverage: {
         provider: 'istanbul',
         enabled: isCI,
@@ -156,7 +157,7 @@ export default defineConfig(
               headless: true,
               screenshotFailures: !isCI
             },
-            setupFiles: ['test/setupBrowser.ts']
+            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
         {
@@ -171,7 +172,7 @@ export default defineConfig(
               headless: true,
               screenshotFailures: false
             },
-            setupFiles: ['test/setupBrowser.ts']
+            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
         {
@@ -179,7 +180,8 @@ export default defineConfig(
           test: {
             name: 'node',
             include: ['node/**/*.test.*'],
-            environment: 'node'
+            environment: 'node',
+            setupFiles: ['test/failOnConsole.ts']
           }
         }
       ]
