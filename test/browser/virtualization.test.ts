@@ -54,15 +54,15 @@ async function assertElements(
 }
 
 async function assertIndexes(
-  cells: Locator,
+  locator: Locator,
   indexes: number[],
   attribute: string,
   indexOffset: number
 ) {
-  await expect.element(cells).toHaveLength(indexes.length);
+  await expect.element(locator).toHaveLength(indexes.length);
 
   for (const [n, index] of indexes.entries()) {
-    await expect.element(cells.nth(n)).toHaveAttribute(attribute, String(index + indexOffset));
+    await expect.element(locator.nth(n)).toHaveAttribute(attribute, String(index + indexOffset));
   }
 }
 
