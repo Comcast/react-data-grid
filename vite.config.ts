@@ -102,7 +102,7 @@ export default defineConfig(
       sourcemap: true,
       reportCompressedSize: false,
       // https://github.com/parcel-bundler/lightningcss/issues/873
-      cssMinify: 'esbuild'
+      cssTarget: 'esnext'
     },
     plugins: [
       ecij(),
