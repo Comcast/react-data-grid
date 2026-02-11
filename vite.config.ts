@@ -47,7 +47,7 @@ function getInstances(): BrowserInstanceOption[] {
     {
       browser: 'chromium',
       provider: playwright({
-        actionTimeout: 2000,
+        actionTimeout: 1000,
         contextOptions: {
           viewport
         },
@@ -59,7 +59,7 @@ function getInstances(): BrowserInstanceOption[] {
     {
       browser: 'firefox',
       provider: playwright({
-        actionTimeout: 2000,
+        actionTimeout: 1000,
         contextOptions: {
           viewport
         }
