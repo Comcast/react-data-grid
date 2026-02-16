@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-
 import { DataGrid, renderTextEditor, type CellRendererProps, type Column } from '../../src';
 import { DraggableCellRenderer } from '../components';
 import { startViewTransition } from '../utils';

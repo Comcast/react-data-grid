@@ -1,5 +1,4 @@
 import { css } from 'ecij';
-
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';

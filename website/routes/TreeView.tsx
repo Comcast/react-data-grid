@@ -1,6 +1,5 @@
 import { useMemo, useReducer, useState } from 'react';
 import { css } from 'ecij';
-
 import { DataGrid, type Column } from '../../src';
 import { CellExpanderFormatter, ChildRowDeleteButton } from '../components';
 import { useDirection } from '../directionContext';

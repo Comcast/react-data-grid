@@ -1,5 +1,4 @@
 import { css } from 'ecij';
-
 import type { RenderEditCellProps } from '../types';
 
 const textEditorInternalClassname = css`

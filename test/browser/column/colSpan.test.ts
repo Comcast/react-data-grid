@@ -1,5 +1,4 @@
 import { userEvent } from 'vitest/browser';
-
 import type { Column } from '../../../src';
 import { getCellsAtRowIndex, getHeaderCells, setup, validateCellPosition } from '../utils';
 

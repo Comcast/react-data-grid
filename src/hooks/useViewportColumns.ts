@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-
 import { getColSpan } from '../utils';
 import type { CalculatedColumn, Maybe } from '../types';
 

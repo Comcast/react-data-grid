@@ -1,5 +1,4 @@
 import { memo, useMemo } from 'react';
-
 import { RowSelectionContext, useLatestFunc, type RowSelectionContextValue } from './hooks';
 import { classnames, getColSpan, getRowStyle } from './utils';
 import type { CalculatedColumn, RenderRowProps } from './types';

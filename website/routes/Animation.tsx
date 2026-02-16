@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { css } from 'ecij';
-
 import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';
 

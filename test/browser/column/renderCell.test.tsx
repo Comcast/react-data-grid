@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
-
 import { DataGrid } from '../../../src';
 import type { Column } from '../../../src';
 import defaultRenderHeaderCell from '../../../src/renderHeaderCell';

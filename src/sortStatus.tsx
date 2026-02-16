@@ -1,5 +1,4 @@
 import { css } from 'ecij';
-
 import type { RenderSortIconProps, RenderSortPriorityProps, RenderSortStatusProps } from './types';
 
 const arrow = css`

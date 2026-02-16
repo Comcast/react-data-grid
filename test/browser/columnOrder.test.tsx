@@ -1,5 +1,4 @@
 import { page } from 'vitest/browser';
-
 import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
 import type { Column } from '../../src';
 import { testCount } from './utils';

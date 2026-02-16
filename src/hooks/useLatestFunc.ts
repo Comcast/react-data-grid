@@ -1,5 +1,4 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
-
 import type { Maybe } from '../types';
 
 // https://reactjs.org/docs/hooks-faq.html#what-can-i-do-if-my-effect-dependencies-change-too-often

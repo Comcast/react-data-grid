@@ -1,5 +1,4 @@
 import { renderToString } from 'react-dom/server';
-
 import { DataGrid } from '../../src';
 import type { Column } from '../../src';
 

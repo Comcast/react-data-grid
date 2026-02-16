@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef } from 'react';
-
 import { scrollIntoView } from './utils';
 
 export interface PartialPosition {

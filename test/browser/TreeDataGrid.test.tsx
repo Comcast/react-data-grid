@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
-
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { focusSinkClassname } from '../../src/style/core';

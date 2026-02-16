@@ -1,5 +1,4 @@
 import { css } from 'ecij';
-
 import type { RenderCheckboxProps } from '../types';
 
 const checkbox = css`

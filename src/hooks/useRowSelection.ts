@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react';
-
 import type { SelectHeaderRowEvent, SelectRowEvent } from '../types';
 
 export interface RowSelectionContextValue {

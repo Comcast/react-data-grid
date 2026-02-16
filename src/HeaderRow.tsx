@@ -1,6 +1,5 @@
 import { memo, useState } from 'react';
 import { css } from 'ecij';
-
 import { classnames, getColSpan } from './utils';
 import type { CalculatedColumn, Direction, Maybe, Position, ResizedWidth } from './types';
 import type { DataGridProps } from './DataGrid';

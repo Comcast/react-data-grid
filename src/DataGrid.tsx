@@ -8,7 +8,6 @@ import {
 } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
-
 import {
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,

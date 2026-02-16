@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { css } from 'ecij';
 import clsx from 'clsx';
-
 import { DataGrid, type Column, type DataGridHandle } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';

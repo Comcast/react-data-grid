@@ -1,5 +1,4 @@
 import { css } from 'ecij';
-
 import type { CalculatedColumn } from '../types';
 
 const measuringCellClassname = css`
