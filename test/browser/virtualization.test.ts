@@ -16,10 +16,10 @@ function setupGrid(
   frozenColumnCount = 0,
   summaryRowCount = 0
 ) {
-  const columns: Column<unknown>[] = [];
-  const rows = new Array(rowCount);
-  const topSummaryRows = new Array(summaryRowCount).fill(null);
-  const bottomSummaryRows = new Array(summaryRowCount).fill(null);
+  const columns: Column<unknown, null>[] = [];
+  const rows = Array.from({ length: rowCount });
+  const topSummaryRows = Array.from({ length: summaryRowCount }, () => null);
+  const bottomSummaryRows = Array.from({ length: summaryRowCount }, () => null);
 
   for (let i = 0; i < columnCount; i++) {
     const key = String(i);
