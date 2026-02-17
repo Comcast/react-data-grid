@@ -1,4 +1,4 @@
-import { useHeaderRowSelection, useRowSelection } from './hooks/useRowSelection';
+import { useHeaderRowSelection, useRowSelection } from './hooks';
 import type { Column, RenderCellProps, RenderGroupCellProps, RenderHeaderCellProps } from './types';
 import { SelectCellFormatter } from './cellRenderers';
 
