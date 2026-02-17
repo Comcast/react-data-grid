@@ -61,16 +61,6 @@ The DataGrid component is designed to handle large datasets efficiently while of
   - [Source code](website)
 - [Changelog](CHANGELOG.md)
 
-> **Important** <br />
-> `rolldown-vite` by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can switch to `esbuild` as a workaround
-
-```ts
-build: {
-  ....,
-  cssMinify: 'esbuild'
-}
-```
-
 ## Installation
 
 Install `react-data-grid` using your favorite package manager:
@@ -98,6 +88,17 @@ import 'react-data-grid/lib/styles.css';
 ```
 
 `react-data-grid` is published as ECMAScript modules for evergreen browsers, bundlers, and server-side rendering.
+
+> **Important** <br />
+> Vite 8+ by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
+
+```ts
+build: {
+  cssMinify: 'esbuild',
+  // or
+  cssTarget: 'esnext'
+}
+```
 
 ## Getting started
 
