@@ -1,5 +1,6 @@
 import { memo, type MouseEvent } from 'react';
 import { css } from 'ecij';
+
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';
 import type { CellMouseEventHandler, CellRendererProps } from './types';

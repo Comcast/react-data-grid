@@ -1,5 +1,6 @@
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { css } from 'ecij';
+
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
 

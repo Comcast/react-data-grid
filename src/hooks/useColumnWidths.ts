@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
+
 import type { CalculatedColumn, ColumnWidths, ResizedWidth } from '../types';
 import type { DataGridProps } from '../DataGrid';
 

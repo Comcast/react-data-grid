@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
+
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
 import { getCellsAtRowIndex, getSelectedCell } from './utils';

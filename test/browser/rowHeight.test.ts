@@ -1,4 +1,5 @@
 import { userEvent } from 'vitest/browser';
+
 import type { Column, DataGridProps } from '../../src';
 import { getGrid, setup, tabIntoGrid, testRowCount } from './utils';
 

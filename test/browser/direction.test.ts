@@ -1,4 +1,5 @@
 import { userEvent } from 'vitest/browser';
+
 import type { Column } from '../../src';
 import { getGrid, getSelectedCell, setup, tabIntoGrid } from './utils';
 

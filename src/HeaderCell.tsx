@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { css } from 'ecij';
+
 import { useRovingTabIndex } from './hooks';
 import {
   clampColumnWidth,

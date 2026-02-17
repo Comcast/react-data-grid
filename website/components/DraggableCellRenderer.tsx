@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { css } from 'ecij';
 import clsx from 'clsx';
+
 import { Cell, type CellRendererProps } from '../../src';
 
 const rowDraggingClassname = css`

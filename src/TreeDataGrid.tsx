@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
+
 import { useLatestFunc } from './hooks';
 import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
 import type {

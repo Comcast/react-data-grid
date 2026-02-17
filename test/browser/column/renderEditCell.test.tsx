@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { commands, page, userEvent } from 'vitest/browser';
+
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
 import { getCell, getCellsAtRowIndex, getGrid, getSelectedCell, testCount } from '../utils';

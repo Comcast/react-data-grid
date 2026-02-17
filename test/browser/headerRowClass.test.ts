@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+
 import type { Column } from '../../src';
 import { headerRowClassname } from '../../src/HeaderRow';
 import { setup } from './utils';

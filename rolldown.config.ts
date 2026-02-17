@@ -2,6 +2,7 @@ import { isAbsolute } from 'node:path';
 import { ecij } from 'ecij/plugin';
 import { defineConfig } from 'rolldown';
 import { dts } from 'rolldown-plugin-dts';
+
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({

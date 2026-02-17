@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { css } from 'ecij';
+
 import type { Direction } from '../../src/types';
 import { DirectionContext } from '../directionContext';
 import Nav from '../Nav';

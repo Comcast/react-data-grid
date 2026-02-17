@@ -45,11 +45,13 @@
     "groups": [
       "side_effect_style",
       "side_effect",
+      { "newlinesBetween": true },
       "builtin",
       "react",
       "external",
       "ecij",
       "clsx",
+      { "newlinesBetween": true },
       "./src",
       "./renderers",
       "./components",

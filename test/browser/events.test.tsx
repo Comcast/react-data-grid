@@ -1,4 +1,5 @@
 import { page, userEvent } from 'vitest/browser';
+
 import { DataGrid } from '../../src';
 import type { Column, DataGridProps } from '../../src';
 import { getCell } from './utils';

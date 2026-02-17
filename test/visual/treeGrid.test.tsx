@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
 import { getTreeGrid } from '../browser/utils';
 

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
 import { cellClassname, cellFrozenClassname } from '../style/cell';
 

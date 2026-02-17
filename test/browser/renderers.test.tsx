@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
+
 import {
   Cell,
   DataGrid,

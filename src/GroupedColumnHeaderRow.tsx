@@ -1,4 +1,5 @@
 import { memo } from 'react';
+
 import type { CalculatedColumn, CalculatedColumnParent, Position } from './types';
 import GroupedColumnHeaderCell from './GroupedColumnHeaderCell';
 import { headerRowClassname } from './HeaderRow';

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { page, userEvent } from 'vitest/browser';
+
 import { DataGrid } from '../../src';
 import type { Column, DataGridHandle } from '../../src';
 import type { PartialPosition } from '../../src/ScrollToCell';

@@ -1,4 +1,5 @@
 import { commands, page, userEvent } from 'vitest/browser';
+
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
 import { getSelectedCell, setup, tabIntoGrid, testCount, validateCellPosition } from './utils';

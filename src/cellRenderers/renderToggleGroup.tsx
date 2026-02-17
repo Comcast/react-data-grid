@@ -1,4 +1,5 @@
 import { css } from 'ecij';
+
 import type { RenderGroupCellProps } from '../types';
 
 const groupCellContent = css`

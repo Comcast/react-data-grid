@@ -1,4 +1,5 @@
 import { page, userEvent } from 'vitest/browser';
+
 import type { ColumnOrColumnGroup } from '../../../src';
 import {
   getGrid,

@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { css } from 'ecij';
+
 import type { Direction } from '../src/types';
 import { startViewTransition } from './utils';
 
