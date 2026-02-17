@@ -18,6 +18,15 @@
 
 The DataGrid component is designed to handle large datasets efficiently while offering a rich set of features for customization and interactivity.
 
+## Table of contents
+
+- [Features](#features)
+- [Links](#links)
+- [Installation](#installation)
+- [Getting started](#getting-started)
+- [Styling and Customization](#styling-and-customization)
+- [API Reference](#api-reference)
+
 ## Features
 
 - [React 19.2+](package.json) support
@@ -26,7 +35,7 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - Great performance thanks to virtualization: columns and rows outside the viewport are not rendered
 - Strictly typed with TypeScript
 - [Keyboard accessibility](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- Light and dark mode support out of the box.
+- Light and dark mode support out of the box via `color-scheme`.
 - [Frozen columns](https://comcast.github.io/react-data-grid/#/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
 - [Column resizing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
 - [Multi-column sorting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
@@ -51,17 +60,6 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - [Examples website](https://comcast.github.io/react-data-grid/)
   - [Source code](website)
 - [Changelog](CHANGELOG.md)
-- [Contributing](CONTRIBUTING.md)
-
-> **Important** <br />
-> `rolldown-vite` by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can switch to `esbuild` as a workaround
-
-```ts
-build: {
-  ....,
-  cssMinify: 'esbuild'
-}
-```
 
 ## Installation
 
@@ -90,6 +88,17 @@ import 'react-data-grid/lib/styles.css';
 ```
 
 `react-data-grid` is published as ECMAScript modules for evergreen browsers, bundlers, and server-side rendering.
+
+> **Important** <br />
+> Vite 8+ by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
+
+```ts
+build: {
+  cssMinify: 'esbuild',
+  // or
+  cssTarget: 'esnext'
+}
+```
 
 ## Getting started
 
@@ -126,7 +135,7 @@ The DataGrid provides multiple ways to customize its appearance and behavior.
 
 ### Light/Dark Themes
 
-The DataGrid supports both light and dark color schemes out of the box using CSS's `light-dark()` function. The theme automatically adapts based on the user's system preference when `color-scheme: light dark;` is set.
+The DataGrid supports both light and dark color schemes out of the box using the `light-dark()` CSS function. The theme automatically adapts based on the user's system preference when `color-scheme: light dark;` is set.
 
 To enforce a specific theme, we recommend setting the standard `color-scheme` CSS property on the `:root`:
 
@@ -243,9 +252,9 @@ Replace default components with custom implementations using the [`renderers`](#
 
 ##### DataGridProps
 
-###### `columns: readonly Column<R, SR>[]`
+###### `columns: readonly ColumnOrColumnGroup<R, SR>[]`
 
-An array of column definitions. Each column should have a key and name. See the [`Column`](#columntrow-tsummaryrow) type for all available options.
+An array of column definitions and/or column groups. See the [`ColumnOrColumnGroup`](#columnorcolumngrouptrow-tsummaryrow) type for all available options.
 
 :warning: **Performance:** Passing a new `columns` array will trigger a re-render and recalculation for the entire grid. Always memoize this prop using `useMemo` or define it outside the component to avoid unnecessary re-renders.
 
@@ -267,6 +276,10 @@ An array of rows, the rows data can be of any type.
   // ❌ Avoid: Creates new references for all rows, causing all visible rows to re-render
   setRows(rows.map((row) => ({ ...row })));
   ```
+
+###### `ref?: Maybe<React.Ref<DataGridHandle>>`
+
+Optional ref for imperative APIs like scrolling/selecting a cell. See [`DataGridHandle`](#datagridhandle).
 
 ###### `topSummaryRows?: Maybe<readonly SR[]>`
 
@@ -341,13 +354,13 @@ function getRowHeight(row) {
 
 ###### `headerRowHeight?: Maybe<number>`
 
-**Default:** `35` pixels
+**Default:** `rowHeight` when it is a number, otherwise `35` pixels
 
 Height of the header row in pixels.
 
 ###### `summaryRowHeight?: Maybe<number>`
 
-**Default:** `35` pixels
+**Default:** `rowHeight` when it is a number, otherwise `35` pixels
 
 Height of each summary row in pixels.
 
@@ -398,7 +411,7 @@ Callback triggered when the selection changes.
 import { useState } from 'react';
 import { DataGrid, SelectColumn } from 'react-data-grid';
 
-const rows: readonly Rows[] = [...];
+const rows: readonly Row[] = [...];
 
 const columns: readonly Column<Row>[] = [
   SelectColumn,
@@ -433,6 +446,8 @@ function MyGrid() {
 
 An array of sorted columns.
 
+Sorting is controlled: the grid does not reorder `rows` for you. Apply the sorting to your `rows` state (or derived rows) based on `sortColumns`.
+
 ###### `onSortColumnsChange?: Maybe<(sortColumns: SortColumn[]) => void>`
 
 Callback triggered when sorting changes.
@@ -441,7 +456,7 @@ Callback triggered when sorting changes.
 import { useState } from 'react';
 import { DataGrid, SelectColumn } from 'react-data-grid';
 
-const rows: readonly Rows[] = [...];
+const rows: readonly Row[] = [...];
 
 const columns: readonly Column<Row>[] = [
   {
@@ -497,12 +512,12 @@ function MyGrid() {
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
-###### `onCellMouseDown: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
+###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
 Callback triggered when a pointer becomes active in a cell. The default behavior is to select the cell. Call `preventGridDefault` to prevent the default behavior.
 
 ```tsx
-function onCellMouseDown(args: CellMouseDownArgs<R, SR>, event: CellMouseEvent) {
+function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
     event.preventGridDefault();
   }
@@ -511,7 +526,7 @@ function onCellMouseDown(args: CellMouseDownArgs<R, SR>, event: CellMouseEvent) 
 <DataGrid rows={rows} columns={columns} onCellMouseDown={onCellMouseDown} />;
 ```
 
-###### `onCellClick?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
+###### `onCellClick?: CellMouseEventHandler<R, SR>`
 
 Callback triggered when a cell is clicked.
 
@@ -535,7 +550,7 @@ function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 }
 ```
 
-###### `onCellDoubleClick?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
+###### `onCellDoubleClick?: CellMouseEventHandler<R, SR>`
 
 Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable. Call `preventGridDefault` to prevent the default behavior.
 
@@ -549,7 +564,7 @@ function onCellDoubleClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellDoubleClick={onCellDoubleClick} />;
 ```
 
-###### `onCellContextMenu?: Maybe<(args: CellMouseArgs<R, SR>, event: CellMouseEvent) => void>`
+###### `onCellContextMenu?: CellMouseEventHandler<R, SR>`
 
 Callback triggered when a cell is right-clicked.
 
@@ -596,18 +611,20 @@ Check [more examples](website/routes/CellNavigation.tsx)
 
 Callback triggered when a cell's content is copied.
 
-###### `onCellPaste?: Maybe<(args: CellPasteArgs<NoInfer<R>, NoInfer<SR>>, event: CellClipboardEvent) => void>`
+###### `onCellPaste?: Maybe<(args: CellPasteArgs<NoInfer<R>, NoInfer<SR>>, event: CellClipboardEvent) => R>`
 
 Callback triggered when content is pasted into a cell.
 
-###### `onSelectedCellChange?: Maybe<(args: CellSelectArgs<R, SR>) => void>;`
+Return the updated row; the grid will call `onRowsChange` with it.
+
+###### `onSelectedCellChange?: Maybe<(args: CellSelectArgs<R, SR>) => void>`
 
 Triggered when the selected cell is changed.
 
 Arguments:
 
 - `args.rowIdx`: `number` - row index
-- `args.row`: `R` - row object of the currently selected cell
+- `args.row`: `R | undefined` - row object of the currently selected cell
 - `args.column`: `CalculatedColumn<TRow, TSummaryRow>` - column object of the currently selected cell
 
 ###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
@@ -632,15 +649,7 @@ This prop can be used to disable virtualization.
 
 Custom renderers for cells, rows, and other components.
 
-```tsx
-interface Renderers<TRow, TSummaryRow> {
-  renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
-  renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
-  renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
-  renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;
-  noRowsFallback?: Maybe<ReactNode>;
-}
-```
+See the [`Renderers`](#rendererstrow-tsummaryrow) type for the full shape.
 
 Example of replacing default components:
 
@@ -678,9 +687,13 @@ const customRenderers: Renderers<Row, SummaryRow> = {
 The default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props:
 
 ```tsx
-import { DataGrid, RenderRowProps, Row } from 'react-data-grid';
+import { DataGrid, Row, type RenderRowProps } from 'react-data-grid';
 
-function myRowRenderer(key: React.Key, props: RenderRowProps<Row>) {
+interface MyRow {
+  id: number;
+}
+
+function myRowRenderer(key: React.Key, props: RenderRowProps<MyRow>) {
   return (
     <MyContext key={key} value={123}>
       <Row {...props} />
@@ -711,7 +724,7 @@ function MyGrid() {
 
 :warning: **Performance:** Define this function outside your component or memoize it with `useCallback` to avoid re-rendering all rows on every render.
 
-###### `headerRowClass?: Maybe<string>>`
+###### `headerRowClass?: Maybe<string>`
 
 Custom class name for the header row.
 
@@ -736,6 +749,10 @@ Custom class name for the grid.
 
 Custom styles for the grid.
 
+###### `role?: string | undefined`
+
+ARIA role for the grid container. Defaults to `grid`.
+
 ###### `'aria-label'?: string | undefined`
 
 The label of the grid. We recommend providing a label using `aria-label` or `aria-labelledby`
@@ -743,6 +760,10 @@ The label of the grid. We recommend providing a label using `aria-label` or `ari
 ###### `'aria-labelledby'?: string | undefined`
 
 The id of the element containing a label for the grid. We recommend providing a label using `aria-label` or `aria-labelledby`
+
+###### `'aria-rowcount'?: number | undefined`
+
+Total number of rows for assistive technologies.
 
 ###### `'aria-description'?: string | undefined`
 
@@ -752,7 +773,7 @@ If the grid has a caption or description, `aria-describedby` can be set on the g
 
 ###### `'data-testid'?: Maybe<string>`
 
-This prop can be used to add a testid for testing. We recommend querying the grid by by its `role` and `name`.
+This prop can be used to add a testid for testing. We recommend querying the grid by its `role` and `name`.
 
 ```tsx
 function MyGrid() {
@@ -764,6 +785,10 @@ test('grid', async () => {
   const grid = page.getByRole('grid', { name: 'my-grid' });
 });
 ```
+
+###### `'data-cy'?: Maybe<string>`
+
+Optional attribute to help with Cypress (or similar) selectors.
 
 #### `<TreeDataGrid />`
 
@@ -788,16 +813,19 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 
 - `onFill` - Drag-fill is disabled for tree grids
 - `isRowSelectionDisabled` - Row selection disabling is not available
+- `role` - `TreeDataGrid` manages the ARIA role
+- `aria-rowcount` - `TreeDataGrid` manages the ARIA row count
 
 **Caveats:**
 
 - Group columns cannot be rendered under one column
 - Group columns are automatically frozen and cannot be unfrozen
 - Cell copy/paste does not work on group rows
+- Column groups are not supported; `columns` must be `Column[]`
 
 ##### TreeDataGridProps
 
-All [`DataGridProps`](#datagridprops) are supported except those listed above, plus the following additional props:
+All [`DataGridProps`](#datagridprops) are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives [`RowHeightArgs`](#rowheightargstrow) instead of just the row. Additional props are listed below:
 
 ###### `groupBy: readonly string[]`
 
@@ -836,7 +864,7 @@ function MyGrid() {
 **Required.** A function that groups rows by the specified column key. Returns an object where keys are the group values and values are arrays of rows belonging to that group.
 
 ```tsx
-function rowGrouper(rows: Row[], columnKey: string) {
+function rowGrouper(rows: readonly Row[], columnKey: string): Record<string, readonly Row[]> {
   return Object.groupBy(rows, (row) => row[columnKey]);
 }
 ```
@@ -911,21 +939,21 @@ A formatter component for rendering row selection checkboxes.
 
 Whether the checkbox is checked.
 
-###### `tabIndex: number`
+###### `tabIndex?: number | undefined`
 
 The tab index for keyboard navigation.
+
+###### `indeterminate?: boolean | undefined`
+
+Whether the checkbox is in an indeterminate state.
 
 ###### `disabled?: boolean | undefined`
 
 Whether the checkbox is disabled.
 
-###### `onChange: (value: boolean, isShiftClick: boolean) => void`
+###### `onChange: (checked: boolean, shift: boolean) => void`
 
 Callback when the checkbox state changes.
-
-###### `onClick?: MouseEventHandler<T> | undefined`
-
-Optional click handler.
 
 ###### `'aria-label'?: string | undefined`
 
@@ -934,6 +962,10 @@ Accessible label for the checkbox.
 ###### `'aria-labelledby'?: string | undefined`
 
 ID of the element that labels the checkbox.
+
+#### `<ToggleGroup />`
+
+Low-level component used by `renderToggleGroup` to render the expand/collapse control. Useful if you build a custom group cell renderer.
 
 ### Hooks
 
@@ -950,14 +982,23 @@ Hook for managing header row selection state. Used within custom header cell ren
 **Example:**
 
 ```tsx
+import { useLayoutEffect, useRef } from 'react';
+
 function CustomHeaderCell() {
   const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useLayoutEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = isIndeterminate && !isRowSelected;
+    }
+  }, [isIndeterminate, isRowSelected]);
 
   return (
     <input
+      ref={checkboxRef}
       type="checkbox"
       checked={isRowSelected}
-      indeterminate={isIndeterminate}
       onChange={(event) => onRowSelectionChange({ checked: event.target.checked })}
     />
   );
@@ -988,7 +1029,7 @@ function CustomSelectCell({ row }: RenderCellProps<Row>) {
       onChange={(event) =>
         onRowSelectionChange({
           row,
-          checked: event.target.checked,
+          checked: event.currentTarget.checked,
           isShiftClick: event.nativeEvent.shiftKey
         })
       }
@@ -1127,12 +1168,25 @@ Context for providing default renderers to DataGrids in your app.
 **Example:**
 
 ```tsx
-import { DataGridDefaultRenderersContext, type Renderers } from 'react-data-grid';
+import {
+  DataGridDefaultRenderersContext,
+  renderCheckbox,
+  renderSortIcon,
+  renderSortPriority,
+  type Renderers
+} from 'react-data-grid';
 
 // custom implementations of renderers
 const defaultGridRenderers: Renderers<unknown, unknown> = {
   renderCheckbox,
-  renderSortStatus
+  renderSortStatus(props) {
+    return (
+      <>
+        {renderSortIcon(props)}
+        {renderSortPriority(props)}
+      </>
+    );
+  }
 };
 
 function AppProvider({ children }) {
@@ -1317,7 +1371,7 @@ Render function to render the content of edit cells. When set, the column is aut
 
 Control whether cells can be edited with `renderEditCell`.
 
-##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryrow>) => Maybe<number>>`
+##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>`
 
 Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the `ColSpanArgs` type in the Types section below.
 
@@ -1344,7 +1398,7 @@ const columns: readonly Column<Row>[] = [
 
 **Default**: `false`
 
-Determines whether column is frozen. Frozen columns are pinned on the left. At the moment we do not support pinning columns on the right.
+Determines whether column is frozen. Frozen columns are pinned to the start edge (left in LTR, right in RTL). Per-column pinning to the end edge is not supported at the moment.
 
 ##### `resizable?: Maybe<boolean>`
 
@@ -1460,7 +1514,7 @@ type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnParent<R, SR> | Calc
 
 #### `RowHeightArgs<TRow>`
 
-Arguments passed to the `rowHeight` function when it's a function.
+Arguments passed to `TreeDataGrid`'s `rowHeight` prop when it is a function.
 
 ```tsx
 type RowHeightArgs<TRow> = { type: 'ROW'; row: TRow } | { type: 'GROUP'; row: GroupRow<TRow> };
@@ -1476,7 +1530,7 @@ function getRowHeight(args: RowHeightArgs<Row>): number {
   return args.row.isLarge ? 60 : 35;
 }
 
-<DataGrid rowHeight={getRowHeight} ... />
+<TreeDataGrid rowHeight={getRowHeight} ... />
 ```
 
 #### `RenderCellProps<TRow, TSummaryRow>`
@@ -1607,7 +1661,7 @@ interface RenderRowProps<TRow, TSummaryRow = unknown> {
 
 Props passed to the cell renderer when using `renderers.renderCell`.
 
-Extends `RenderRowProps` with cell-specific properties like `column`, `colSpan`, `isCellSelected`, etc.
+Shares a base type with row render props (DOM props and cell event handlers) but only includes cell-specific fields like `column`, `row`, `rowIdx`, `colSpan`, and selection state.
 
 #### `Renderers<TRow, TSummaryRow>`
 
@@ -1661,6 +1715,16 @@ function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
   args.selectCell(true); // Select and start editing
 }
+```
+
+#### `CellMouseEventHandler<TRow, TSummaryRow>` (internal)
+
+Handler type used by `onCellMouseDown`, `onCellClick`, `onCellDoubleClick`, and `onCellContextMenu`. This helper type is not exported; the shape is shown for reference.
+
+```tsx
+type CellMouseEventHandler<TRow, TSummaryRow> = Maybe<
+  (args: CellMouseArgs<TRow, TSummaryRow>, event: CellMouseEvent) => void
+>;
 ```
 
 #### `CellMouseEvent`
@@ -1880,9 +1944,9 @@ interface FillEvent<TRow> {
 
 Used with the `onFill` prop to handle cell value dragging.
 
-#### `GroupRow<TRow>`
+#### `GroupRow<TRow>` (internal)
 
-Represents a grouped row in `TreeDataGrid`.
+Represents a grouped row in `TreeDataGrid`. This helper type is not exported; the shape is shown for reference.
 
 ```tsx
 interface GroupRow<TRow> {
@@ -2018,7 +2082,14 @@ Default options applied to all columns.
 ```tsx
 type DefaultColumnOptions<TRow, TSummaryRow> = Pick<
   Column<TRow, TSummaryRow>,
-  'minWidth' | 'maxWidth' | 'resizable' | 'sortable' | 'draggable'
+  | 'renderCell'
+  | 'renderHeaderCell'
+  | 'width'
+  | 'minWidth'
+  | 'maxWidth'
+  | 'resizable'
+  | 'sortable'
+  | 'draggable'
 >;
 ```
 
@@ -2030,9 +2101,9 @@ Grid layout bidirectionality.
 type Direction = 'ltr' | 'rtl';
 ```
 
-#### `Maybe<T>`
+#### `Maybe<T>` (internal)
 
-Utility type for optional values.
+Utility type for optional values. This helper type is not exported; the shape is shown for reference.
 
 ```tsx
 type Maybe<T> = T | undefined | null;

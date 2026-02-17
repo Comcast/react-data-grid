@@ -361,6 +361,16 @@
       }
     },
     {
+      "includes": ["test/failOnConsole.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.js", "**/rolldown.config.ts"],
       "linter": {
         "rules": {
