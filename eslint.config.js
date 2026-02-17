@@ -630,8 +630,8 @@ export default defineConfig([
       'vitest/no-disabled-tests': 0,
       'vitest/no-done-callback': 1,
       'vitest/no-duplicate-hooks': 1,
-      'vitest/no-focused-tests': 1,
-      'vitest/no-hooks': 1,
+      'vitest/no-focused-tests': [1, { fixable: false }],
+      'vitest/no-hooks': 0,
       'vitest/no-identical-title': 1,
       'vitest/no-import-node-test': 1,
       'vitest/no-importing-vitest-globals': 1,
@@ -738,6 +738,16 @@ export default defineConfig([
       'testing-library/prefer-screen-queries': 0,
       'testing-library/prefer-user-event': 1,
       'testing-library/render-result-naming-convention': 0
+    }
+  },
+
+  {
+    name: 'tools',
+
+    files: ['test/failOnConsole.ts'],
+
+    rules: {
+      'no-console': 0
     }
   },
 
