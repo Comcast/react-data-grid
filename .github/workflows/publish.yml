@@ -39,8 +39,8 @@ jobs:
       - name: ESLint
         run: node --run eslint
 
-      - name: Prettier
-        run: node --run prettier:check
+      - name: Oxfmt
+        run: node --run format:check
 
       - name: Bundle
         run: node --run build
