@@ -1,7 +1,9 @@
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../../src';
-import { getCellsAtRowIndex, getHeaderCells, setup, validateCellPosition } from '../utils';
+import { getCellsAtRowIndex, setup, validateCellPosition } from '../utils';
+
+const headerCells = page.getHeaderCell();
 
 describe('colSpan', () => {
   function setupColSpan(colCount = 15) {
@@ -40,62 +42,62 @@ describe('colSpan', () => {
   it('should merges cells', async () => {
     await setupColSpan();
     // header
-    expect(getHeaderCells()).toHaveLength(13);
+    await expect.element(headerCells).toHaveLength(13);
 
     // top summary rows
     const topSummarryRow1 = getCellsAtRowIndex(0);
-    expect(topSummarryRow1).toHaveLength(14);
+    await expect.element(topSummarryRow1).toHaveLength(14);
     // 7th-8th cells are merged
-    await expect.element(topSummarryRow1[7]).toHaveAttribute('aria-colindex', '8');
-    await expect.element(topSummarryRow1[7]).toHaveAttribute('aria-colspan', '2');
-    await expect.element(topSummarryRow1[7]).toHaveStyle({
+    await expect.element(topSummarryRow1.nth(7)).toHaveAttribute('aria-colindex', '8');
+    await expect.element(topSummarryRow1.nth(7)).toHaveAttribute('aria-colspan', '2');
+    await expect.element(topSummarryRow1.nth(7)).toHaveStyle({
       gridColumnStart: '8',
       gridColumnEnd: '10'
     });
-    expect(getCellsAtRowIndex(1)).toHaveLength(15);
+    await expect.element(getCellsAtRowIndex(1)).toHaveLength(15);
 
     // rows
     const row1 = getCellsAtRowIndex(3);
-    expect(row1).toHaveLength(14);
+    await expect.element(row1).toHaveLength(14);
     // 7th-8th cells are merged
-    await expect.element(row1[6]).toHaveAttribute('aria-colindex', '7');
-    await expect.element(row1[6]).toHaveAttribute('aria-colspan', '2');
-    await expect.element(row1[6]).toHaveStyle({
+    await expect.element(row1.nth(6)).toHaveAttribute('aria-colindex', '7');
+    await expect.element(row1.nth(6)).toHaveAttribute('aria-colspan', '2');
+    await expect.element(row1.nth(6)).toHaveStyle({
       gridTemplateColumns: '7',
       gridColumnEnd: '9'
     });
-    await expect.element(row1[7]).toHaveAttribute('aria-colindex', '9');
-    await expect.element(row1[7]).not.toHaveAttribute('aria-colspan');
+    await expect.element(row1.nth(7)).toHaveAttribute('aria-colindex', '9');
+    await expect.element(row1.nth(7)).not.toHaveAttribute('aria-colspan');
 
     // 3rd-5th, 7th-8th cells are merged
     const row2 = getCellsAtRowIndex(4);
-    expect(row2).toHaveLength(12);
-    await expect.element(row2[2]).toHaveAttribute('aria-colindex', '3');
-    await expect.element(row2[2]).toHaveStyle({
+    await expect.element(row2).toHaveLength(12);
+    await expect.element(row2.nth(2)).toHaveAttribute('aria-colindex', '3');
+    await expect.element(row2.nth(2)).toHaveStyle({
       gridColumnStart: '3',
       gridColumnEnd: '6'
     });
-    await expect.element(row2[2]).toHaveAttribute('aria-colspan', '3');
-    await expect.element(row2[3]).toHaveAttribute('aria-colindex', '6');
-    await expect.element(row2[4]).toHaveAttribute('aria-colindex', '7');
-    await expect.element(row2[4]).toHaveStyle({
+    await expect.element(row2.nth(2)).toHaveAttribute('aria-colspan', '3');
+    await expect.element(row2.nth(3)).toHaveAttribute('aria-colindex', '6');
+    await expect.element(row2.nth(4)).toHaveAttribute('aria-colindex', '7');
+    await expect.element(row2.nth(4)).toHaveStyle({
       gridColumnStart: '7',
       gridColumnEnd: '9'
     });
-    await expect.element(row2[5]).toHaveAttribute('aria-colindex', '9');
+    await expect.element(row2.nth(5)).toHaveAttribute('aria-colindex', '9');
 
-    expect(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
-    expect(getCellsAtRowIndex(7)).toHaveLength(10);
+    await expect.element(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
+    await expect.element(getCellsAtRowIndex(7)).toHaveLength(10);
 
     // bottom summary row
-    expect(getCellsAtRowIndex(12)).toHaveLength(14);
-    expect(getCellsAtRowIndex(13)).toHaveLength(15);
+    await expect.element(getCellsAtRowIndex(12)).toHaveLength(14);
+    await expect.element(getCellsAtRowIndex(13)).toHaveLength(15);
   });
 
   it('should navigate between merged cells', async () => {
     await setupColSpan();
     // header row
-    await userEvent.click(getHeaderCells()[7]);
+    await userEvent.click(headerCells.nth(7));
     await validateCellPosition(7, 0);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(8, 0);
@@ -107,7 +109,7 @@ describe('colSpan', () => {
     await validateCellPosition(7, 0);
 
     // top summary rows
-    await userEvent.click(getCellsAtRowIndex(0)[6]);
+    await userEvent.click(getCellsAtRowIndex(0).nth(6));
     await validateCellPosition(6, 1);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(7, 1);
@@ -119,7 +121,7 @@ describe('colSpan', () => {
     await validateCellPosition(6, 1);
 
     // viewport rows
-    await userEvent.click(getCellsAtRowIndex(3)[1]);
+    await userEvent.click(getCellsAtRowIndex(3).nth(1));
     await validateCellPosition(1, 4);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(2, 4);
@@ -148,7 +150,7 @@ describe('colSpan', () => {
     await validateCellPosition(14, 7);
     await userEvent.tab();
     await validateCellPosition(0, 8);
-    await userEvent.click(getCellsAtRowIndex(10)[11]);
+    await userEvent.click(getCellsAtRowIndex(10).nth(11));
     await validateCellPosition(11, 11);
     await userEvent.tab();
     await validateCellPosition(12, 11);
@@ -158,7 +160,7 @@ describe('colSpan', () => {
     await validateCellPosition(12, 11);
 
     // bottom summary rows
-    await userEvent.click(getCellsAtRowIndex(12)[6]);
+    await userEvent.click(getCellsAtRowIndex(12).nth(6));
     await validateCellPosition(6, 13);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(7, 13);
@@ -172,7 +174,7 @@ describe('colSpan', () => {
 
   it('should scroll to the merged cell when selected', async () => {
     await setupColSpan(30);
-    await userEvent.click(getCellsAtRowIndex(10)[23]); // last visible cell (1920/80)
+    await userEvent.click(getCellsAtRowIndex(10).nth(23)); // last visible cell (1920/80)
     const spy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
     const testScrollIntoView = () => {
       expect(spy).toHaveBeenCalled();

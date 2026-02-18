@@ -28,7 +28,7 @@ function Test() {
 
 test('renderTextEditor', async () => {
   await page.render(<Test />);
-  const cell = page.getByRole('gridcell');
+  const cell = page.getCell();
   await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);
   await userEvent.dblClick(cell);
   const input = page.getByRole('textbox');

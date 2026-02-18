@@ -541,7 +541,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
             ? idx
             : undefined;
         const scrollToRowIdx =
-          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
+          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx)
+            ? rowIdx + headerAndTopSummaryRowsCount
+            : undefined;
 
         if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });

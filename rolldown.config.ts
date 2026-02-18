@@ -13,7 +13,7 @@ export default defineConfig({
     sourcemap: true,
     cleanDir: true
   },
-  platform: 'browser',
+  platform: 'neutral',
   external: (id) => !id.startsWith('.') && !isAbsolute(id),
   plugins: [
     ecij({
