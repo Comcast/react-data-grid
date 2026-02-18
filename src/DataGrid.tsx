@@ -541,7 +541,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
             ? idx
             : undefined;
         const scrollToRowIdx =
-          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx) ? rowIdx : undefined;
+          rowIdx !== undefined && isRowIdxWithinViewportBounds(rowIdx)
+            ? rowIdx + headerAndTopSummaryRowsCount
+            : undefined;
 
         if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
@@ -596,7 +598,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       previousRowIdx < rows.length
     ) {
       const step = sign(rowIdx - previousRowIdx);
-      for (let i = previousRowIdx + step; i !== rowIdx; i += step) {
+      for (let i = previousRowIdx + step; i < rowIdx; i += step) {
         const row = rows[i];
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {

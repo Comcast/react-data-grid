@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "skipLibCheck": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "skipLibCheck": true,
     "types": ["vitest/globals"]
   },
   "include": ["test/**/*"],

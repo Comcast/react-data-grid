@@ -1,7 +1,8 @@
 import { page } from 'vitest/browser';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
-import { getTreeGrid } from '../browser/utils';
+
+const treeGrid = page.getTreeGrid();
 
 interface Row {
   id: number;
@@ -75,7 +76,7 @@ test('tree grid', async () => {
     />
   );
 
-  await expect.element(getTreeGrid()).toMatchScreenshot('tree-grid');
+  await expect.element(treeGrid).toMatchScreenshot('tree-grid');
 });
 
 function rowKeyGetter(row: Row) {

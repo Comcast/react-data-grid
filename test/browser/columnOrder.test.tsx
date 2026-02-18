@@ -4,6 +4,8 @@ import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
 import type { Column } from '../../src';
 import { testCount } from './utils';
 
+const headerCells = page.getHeaderCell();
+
 const frozen1: Column<unknown> = {
   key: 'f1',
   name: 'frz1',
@@ -46,9 +48,10 @@ test('column order', async () => {
       ));
     }
 
-    const headerCells = page.getByRole('columnheader');
     await testCount(headerCells, expected.length);
-    expect(headerCells.elements().map((c) => c.textContent)).toStrictEqual(expected);
+    for (const [n, text] of expected.entries()) {
+      await expect.element(headerCells.nth(n)).toHaveTextContent(text);
+    }
     await unmount();
   }
 

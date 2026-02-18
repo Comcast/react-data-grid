@@ -19,35 +19,23 @@ export default function ScrollToCell({
   const ref = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
+    const grid = gridRef.current!;
+    const { scrollLeft, scrollTop } = grid;
     // scroll until the cell is completely visible
     // this is needed if the grid has auto-sized columns
     // setting the behavior to auto so it can be overridden
     scrollIntoView(ref.current, 'auto');
-  });
-
-  useLayoutEffect(() => {
-    function removeScrollToCell() {
+    if (grid.scrollLeft === scrollLeft && grid.scrollTop === scrollTop) {
       setScrollToCellPosition(null);
     }
-
-    const observer = new IntersectionObserver(removeScrollToCell, {
-      root: gridRef.current!,
-      threshold: 1.0
-    });
-
-    observer.observe(ref.current!);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [gridRef, setScrollToCellPosition]);
+  });
 
   return (
     <div
       ref={ref}
       style={{
         gridColumn: idx === undefined ? '1/-1' : idx + 1,
-        gridRow: rowIdx === undefined ? '1/-1' : rowIdx + 2
+        gridRow: rowIdx === undefined ? '1/-1' : rowIdx + 1
       }}
     />
   );
