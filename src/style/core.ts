@@ -93,19 +93,3 @@ const viewportDragging = css`
 `;
 
 export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDragging}`;
-
-export const focusSinkClassname = css`
-  @layer rdg.FocusSink {
-    grid-column: 1/-1;
-    pointer-events: none;
-    /* Should have a higher value than 1 to show up above regular frozen cells */
-    z-index: 1;
-  }
-`;
-
-export const focusSinkHeaderAndSummaryClassname = css`
-  @layer rdg.FocusSink {
-    /* Should have a higher value than 3 to show up above header and summary rows */
-    z-index: 3;
-  }
-`;

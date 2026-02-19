@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { RowSelectionContext, useLatestFunc, type RowSelectionContextValue } from './hooks';
-import { classnames, getColSpan, getRowStyle } from './utils';
+import { classnames, getColSpan } from './utils';
 import type { CalculatedColumn, RenderRowProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import { rowClassname, rowSelectedClassname } from './style/row';
@@ -34,12 +34,12 @@ function Row<R, SR>({
     onRowChange(column, rowIdx, newRow);
   });
 
+  const isPositionOnRow = selectedCellIdx === -1;
+
   className = classnames(
     rowClassname,
     `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-    {
-      [rowSelectedClassname]: selectedCellIdx === -1
-    },
+    isPositionOnRow && rowSelectedClassname,
     rowClass?.(row, rowIdx),
     className
   );
@@ -87,9 +87,10 @@ function Row<R, SR>({
     <RowSelectionContext value={selectionValue}>
       <div
         role="row"
+        tabIndex={isPositionOnRow ? 0 : -1}
         className={className}
         style={{
-          ...getRowStyle(gridRowStart),
+          gridRowStart,
           ...style
         }}
         {...props}

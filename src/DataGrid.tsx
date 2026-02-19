@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useImperativeHandle,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react';
+import { useCallback, useImperativeHandle, useLayoutEffect, useMemo, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -76,13 +69,7 @@ import type { PartialPosition } from './ScrollToCell';
 import ScrollToCell from './ScrollToCell';
 import { default as defaultRenderSortStatus } from './sortStatus';
 import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/cell';
-import {
-  focusSinkClassname,
-  focusSinkHeaderAndSummaryClassname,
-  rootClassname,
-  viewportDraggingClassname
-} from './style/core';
-import { rowSelected, rowSelectedWithFrozenCell } from './style/row';
+import { rootClassname, viewportDraggingClassname } from './style/core';
 import SummaryRow from './SummaryRow';
 
 export interface SelectCellState extends Position {
@@ -387,11 +374,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
 
   /**
-   * refs
-   */
-  const focusSinkRef = useRef<HTMLDivElement>(null);
-
-  /**
    * computed values
    */
   const isTreeGrid = role === 'treegrid';
@@ -500,36 +482,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const selectHeaderCellLatest = useLatestFunc(selectHeaderCell);
 
   /**
-   * callbacks
-   */
-  const focusCell = useCallback(
-    (shouldScroll = true) => {
-      const cell = getCellToScroll(gridRef.current!);
-      if (cell === null) return;
-
-      if (shouldScroll) {
-        scrollIntoView(cell);
-      }
-
-      cell.focus({ preventScroll: true });
-    },
-    [gridRef]
-  );
-
-  /**
    * effects
    */
   useLayoutEffect(() => {
     if (shouldFocusCell) {
-      if (focusSinkRef.current !== null && selectedPosition.idx === -1) {
-        focusSinkRef.current.focus({ preventScroll: true });
-        scrollIntoView(focusSinkRef.current);
+      if (selectedPosition.idx === -1) {
+        focusRow(gridRef.current!);
       } else {
-        focusCell();
+        focusCell(gridRef.current!);
       }
       setShouldFocusCell(false);
     }
-  }, [shouldFocusCell, focusCell, selectedPosition.idx]);
+  }, [shouldFocusCell, selectedPosition.idx, gridRef]);
 
   useImperativeHandle(
     ref,
@@ -632,9 +596,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       if (cellEvent.isGridDefaultPrevented()) return;
     }
 
-    if (!(event.target instanceof Element)) return;
-    const isCellEvent = event.target.closest('.rdg-cell') !== null;
-    const isRowEvent = isTreeGrid && event.target === focusSinkRef.current;
+    const { target } = event;
+
+    if (!(target instanceof Element)) return;
+
+    const isCellEvent = target.closest('.rdg-cell') !== null;
+    const isRowEvent = isTreeGrid && target.role === 'row';
+
     if (!isCellEvent && !isRowEvent) return;
 
     switch (event.key) {
@@ -774,7 +742,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
   function handleDragHandleClick() {
     // keep the focus on the cell but do not scroll
-    focusCell(false);
+    focusCell(gridRef.current!, false);
   }
 
   function handleDragHandleDoubleClick(event: React.MouseEvent<HTMLDivElement>) {
@@ -870,20 +838,32 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const isRowSelected = selectedCellIsWithinSelectionBounds && idx === -1;
 
     switch (key) {
-      case 'ArrowUp':
-        return { idx, rowIdx: rowIdx - 1 };
+      case 'ArrowUp': {
+        const nextRowIdx = rowIdx - 1;
+        return {
+          // avoid selecting header rows
+          idx: idx === -1 && nextRowIdx < -topSummaryRowsCount ? 0 : idx,
+          rowIdx: nextRowIdx
+        };
+      }
       case 'ArrowDown':
         return { idx, rowIdx: rowIdx + 1 };
-      case leftKey:
-        return { idx: idx - 1, rowIdx };
+      case leftKey: {
+        const nextIdx = idx - 1;
+        return {
+          // avoid selecting header rows
+          idx: rowIdx < -topSummaryRowsCount && nextIdx < 0 ? 0 : nextIdx,
+          rowIdx
+        };
+      }
       case rightKey:
         return { idx: idx + 1, rowIdx };
       case 'Tab':
         return { idx: idx + (shiftKey ? -1 : 1), rowIdx };
       case 'Home':
-        // If row is selected then move focus to the first row
-        if (isRowSelected) return { idx, rowIdx: minRowIdx };
-        return { idx: 0, rowIdx: ctrlKey ? minRowIdx : rowIdx };
+        // If row is selected then move focus to the first header row's cell.
+        if (isRowSelected || ctrlKey) return { idx: 0, rowIdx: minRowIdx };
+        return { idx: 0, rowIdx };
       case 'End':
         // If row is selected then move focus to the last row.
         if (isRowSelected) return { idx, rowIdx: maxRowIdx };
@@ -1179,9 +1159,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     templateRows += ` repeat(${bottomSummaryRowsCount}, ${summaryRowHeight}px)`;
   }
 
-  const isGroupRowFocused =
-    selectedPosition.idx === -1 && selectedPosition.rowIdx !== minRowIdx - 1;
-
   return (
     <div
       role={role}
@@ -1204,18 +1181,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       )}
       style={{
         ...style,
-        // set scrollPadding to correctly position non-sticky cells after scrolling
-        scrollPaddingInlineStart:
-          selectedPosition.idx > lastFrozenColumnIndex || scrollToPosition?.idx !== undefined
-            ? `${totalFrozenColumnWidth}px`
-            : undefined,
-        scrollPaddingBlock:
-          isRowIdxWithinViewportBounds(selectedPosition.rowIdx) ||
-          scrollToPosition?.rowIdx !== undefined
-            ? `${headerRowsHeight + topSummaryRowsCount * summaryRowHeight}px ${
-                bottomSummaryRowsCount * summaryRowHeight
-              }px`
-            : undefined,
+        // set scrollPadding to correctly scroll to non-sticky cells/rows
+        scrollPaddingInlineStart: totalFrozenColumnWidth,
+        scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
+        scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
@@ -1334,24 +1303,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
       {renderMeasuringCells(viewportColumns)}
 
-      {/* extra div is needed for row navigation in a treegrid */}
-      {isTreeGrid && (
-        <div
-          ref={focusSinkRef}
-          tabIndex={isGroupRowFocused ? 0 : -1}
-          className={classnames(focusSinkClassname, {
-            [focusSinkHeaderAndSummaryClassname]: !isRowIdxWithinViewportBounds(
-              selectedPosition.rowIdx
-            ),
-            [rowSelected]: isGroupRowFocused,
-            [rowSelectedWithFrozenCell]: isGroupRowFocused && lastFrozenColumnIndex !== -1
-          })}
-          style={{
-            gridRowStart: selectedPosition.rowIdx + headerAndTopSummaryRowsCount + 1
-          }}
-        />
-      )}
-
       {scrollToPosition !== null && (
         <ScrollToCell
           scrollToPosition={scrollToPosition}
@@ -1363,10 +1314,32 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
 }
 
+function getRowToScroll(gridEl: HTMLDivElement) {
+  return gridEl.querySelector<HTMLDivElement>(':scope > [role="row"][tabindex="0"]');
+}
+
 function getCellToScroll(gridEl: HTMLDivElement) {
   return gridEl.querySelector<HTMLDivElement>(':scope > [role="row"] > [tabindex="0"]');
 }
 
 function isSamePosition(p1: Position, p2: Position) {
   return p1.idx === p2.idx && p1.rowIdx === p2.rowIdx;
+}
+
+function focusElement(element: HTMLDivElement | null, shouldScroll: boolean) {
+  if (element === null) return;
+
+  if (shouldScroll) {
+    scrollIntoView(element);
+  }
+
+  element.focus({ preventScroll: true });
+}
+
+function focusRow(gridEl: HTMLDivElement) {
+  focusElement(getRowToScroll(gridEl), true);
+}
+
+function focusCell(gridEl: HTMLDivElement, shouldScroll = true) {
+  focusElement(getCellToScroll(gridEl), shouldScroll);
 }
