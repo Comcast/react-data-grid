@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - name: Oxfmt
+        run: node --run format:check
+
       - name: Biome
         run: node --run biome:ci
 
@@ -27,9 +30,6 @@ jobs:
 
       - name: ESLint
         run: node --run eslint
-
-      - name: Oxfmt
-        run: node --run format:check
 
       - name: Bundle
         run: node --run build
