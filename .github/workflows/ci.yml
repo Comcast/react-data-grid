@@ -62,6 +62,7 @@ jobs:
           cd gh-pages
           git rm -r .
           mv ../dist/* .
+          cp ../robots.txt .
           touch .nojekyll
           git add .
           git commit -m "gh-pages deployment" || echo "Nothing to commit"
