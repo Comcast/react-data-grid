@@ -31,29 +31,31 @@ import {
   scrollIntoView,
   sign
 } from './utils';
-import type {
-  CalculatedColumn,
-  CellClipboardEvent,
-  CellCopyArgs,
-  CellKeyboardEvent,
-  CellKeyDownArgs,
-  CellMouseEventHandler,
-  CellNavigationMode,
-  CellPasteArgs,
-  CellSelectArgs,
-  Column,
-  ColumnOrColumnGroup,
-  ColumnWidths,
-  Direction,
-  FillEvent,
-  Maybe,
-  Position,
-  Renderers,
-  RowsChangeData,
-  SelectCellOptions,
-  SelectHeaderRowEvent,
-  SelectRowEvent,
-  SortColumn
+import {
+  type CalculatedColumn,
+  type CellClipboardEvent,
+  type CellCopyArgs,
+  type CellKeyboardEvent,
+  type CellKeyDownArgs,
+  type CellMouseEventHandler,
+  type CellNavigationMode,
+  type CellPasteArgs,
+  type CellSelectArgs,
+  type Column,
+  type ColumnOrColumnGroup,
+  type ColumnWidths,
+  type Direction,
+  type FillEvent,
+  type Maybe,
+  type Position,
+  type Renderers,
+  type RowsChangeData,
+  type SelectCellOptions,
+  type SelectHeaderRowEvent,
+  type SelectRowEvent,
+  type SortColumn,
+  type VirtualizationOptions,  
+  isVirtualizationOptions
 } from './types';
 import { defaultRenderCell } from './Cell';
 import { renderCheckbox as defaultRenderCheckbox } from './cellRenderers';
@@ -206,7 +208,9 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
    * Toggles and modes
    */
   /** @default true */
-  enableVirtualization?: Maybe<boolean>;
+  enableVirtualization?: Maybe<boolean | VirtualizationOptions>;
+
+
 
   /**
    * Miscellaneous
@@ -304,7 +308,22 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const renderCheckbox =
     renderers?.renderCheckbox ?? defaultRenderers?.renderCheckbox ?? defaultRenderCheckbox;
   const noRowsFallback = renderers?.noRowsFallback ?? defaultRenderers?.noRowsFallback;
-  const enableVirtualization = rawEnableVirtualization ?? true;
+  
+  const enableVirtualization = useMemo(() => {
+
+    if(isVirtualizationOptions(rawEnableVirtualization)) {
+      return rawEnableVirtualization;
+    }
+    if(typeof rawEnableVirtualization === 'boolean') {
+      if(!rawEnableVirtualization) {
+         return {rows: false, columns: false, rowsOverscanThreshold: 4};
+      }
+    }
+
+    return {rows: true, columns: true, rowsOverscanThreshold: 4};
+
+  }, [rawEnableVirtualization]);
+
   const direction = rawDirection ?? 'ltr';
 
   /**
@@ -429,7 +448,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     rowHeight,
     clientHeight,
     scrollTop,
-    enableVirtualization
+    enableVirtualization    
   });
 
   const viewportColumns = useViewportColumns({
