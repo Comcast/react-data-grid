@@ -1,8 +1,8 @@
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { css } from 'ecij';
 
-import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
+import { DataGrid } from '../../src';
 
 export function setup<R, SR, K extends React.Key = React.Key>(
   props: DataGridProps<R, SR, K>,

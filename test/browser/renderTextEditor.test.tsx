@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import { DataGrid, renderTextEditor } from '../../src';
 import type { Column } from '../../src';
+import { DataGrid, renderTextEditor } from '../../src';
 
 interface Row {
   readonly name: string;
