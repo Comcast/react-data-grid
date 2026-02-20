@@ -18,6 +18,7 @@ function Row<R, SR>({
   row,
   viewportColumns,
   selectedCellEditor,
+  isTreeGrid,
   onCellMouseDown,
   onCellClick,
   onCellDoubleClick,
@@ -87,7 +88,7 @@ function Row<R, SR>({
     <RowSelectionContext value={selectionValue}>
       <div
         role="row"
-        tabIndex={isPositionOnRow ? 0 : -1}
+        tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
         className={className}
         style={{
           gridRowStart,

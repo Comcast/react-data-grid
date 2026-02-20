@@ -1129,7 +1129,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           lastFrozenColumnIndex,
           onRowChange: handleFormatterRowChangeLatest,
           selectCell: selectCellLatest,
-          selectedCellEditor: getCellEditor(rowIdx)
+          selectedCellEditor: getCellEditor(rowIdx),
+          isTreeGrid
         })
       );
     }
@@ -1258,6 +1259,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
                   isTop
                   selectCell={selectCellLatest}
+                  isTreeGrid={isTreeGrid}
                 />
               );
             })}
@@ -1291,6 +1293,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
                   isTop={false}
                   selectCell={selectCellLatest}
+                  isTreeGrid={isTreeGrid}
                 />
               );
             })}

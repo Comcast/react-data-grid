@@ -13,7 +13,7 @@ import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
   RenderRowProps<R, SR>,
-  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell'
+  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell' | 'isTreeGrid'
 >;
 
 interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
@@ -46,6 +46,7 @@ function SummaryRow<R, SR>({
   selectedCellIdx,
   isTop,
   selectCell,
+  isTreeGrid,
   'aria-rowindex': ariaRowIndex
 }: SummaryRowProps<R, SR>) {
   const isPositionOnRow = selectedCellIdx === -1;
@@ -78,7 +79,7 @@ function SummaryRow<R, SR>({
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
-      tabIndex={isPositionOnRow ? 0 : -1}
+      tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
       className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
