@@ -40,19 +40,18 @@ function GroupCell<R, SR>({
 
   return (
     <div
+      key={column.key}
       role="gridcell"
       aria-colindex={column.idx + 1}
       aria-selected={isCellSelected}
-      tabIndex={tabIndex}
-      key={column.key}
+      // tabIndex={undefined} prevents clicks on the cell
+      // from stealing focus from the row.
+      // onMouseDown={preventDefault} would break mousewheel clicks
+      tabIndex={tabIndex === -1 ? undefined : tabIndex}
       className={getCellClassname(column)}
       style={{
         ...getCellStyle(column),
         cursor: isLevelMatching ? 'pointer' : 'default'
-      }}
-      onMouseDown={(event) => {
-        // prevents clicking on the cell from stealing focus from the row
-        event.preventDefault();
       }}
       onClick={isLevelMatching ? toggleGroup : undefined}
       onFocus={onFocus}
