@@ -12,7 +12,7 @@ export { default as Row } from './Row';
 export { default as Cell } from './Cell';
 export * from './Columns';
 export * from './cellRenderers';
-export { default as renderTextEditor } from './editors/renderTextEditor';
+export { renderTextEditor } from './editors/renderTextEditor';
 export { default as renderHeaderCell } from './renderHeaderCell';
 export { renderSortIcon, renderSortPriority } from './sortStatus';
 export { useRowSelection, useHeaderRowSelection } from './hooks';
