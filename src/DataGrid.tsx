@@ -1,4 +1,11 @@
-import { useCallback, useImperativeHandle, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  Activity,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -340,7 +347,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [columnWidths]
   );
 
-  const [gridRef, gridWidth, gridHeight, horizontalScrollbarHeight] = useGridDimensions();
+  const [gridRef, activityMode, gridWidth, gridHeight, horizontalScrollbarHeight] =
+    useGridDimensions();
   const {
     columns,
     colSpanColumns,
@@ -1201,118 +1209,120 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-testid={testId}
       data-cy={dataCy}
     >
-      <DataGridDefaultRenderersContext value={defaultGridComponents}>
-        <HeaderRowSelectionChangeContext value={selectHeaderRowLatest}>
-          <HeaderRowSelectionContext value={headerSelectionValue}>
-            {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
-              <GroupedColumnHeaderRow
-                key={index}
-                rowIdx={index + 1}
-                level={-groupedColumnHeaderRowsCount + index}
-                columns={getRowViewportColumns(minRowIdx + index)}
+      <Activity mode={activityMode}>
+        <DataGridDefaultRenderersContext value={defaultGridComponents}>
+          <HeaderRowSelectionChangeContext value={selectHeaderRowLatest}>
+            <HeaderRowSelectionContext value={headerSelectionValue}>
+              {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
+                <GroupedColumnHeaderRow
+                  key={index}
+                  rowIdx={index + 1}
+                  level={-groupedColumnHeaderRowsCount + index}
+                  columns={getRowViewportColumns(minRowIdx + index)}
+                  selectedCellIdx={
+                    selectedPosition.rowIdx === minRowIdx + index ? selectedPosition.idx : undefined
+                  }
+                  selectCell={selectHeaderCellLatest}
+                />
+              ))}
+              <HeaderRow
+                headerRowClass={headerRowClass}
+                rowIdx={headerRowsCount}
+                columns={getRowViewportColumns(mainHeaderRowIdx)}
+                onColumnResize={handleColumnResizeLatest}
+                onColumnResizeEnd={handleColumnResizeEndLatest}
+                onColumnsReorder={onColumnsReorderLastest}
+                sortColumns={sortColumns}
+                onSortColumnsChange={onSortColumnsChangeLatest}
+                lastFrozenColumnIndex={lastFrozenColumnIndex}
                 selectedCellIdx={
-                  selectedPosition.rowIdx === minRowIdx + index ? selectedPosition.idx : undefined
+                  selectedPosition.rowIdx === mainHeaderRowIdx ? selectedPosition.idx : undefined
                 }
                 selectCell={selectHeaderCellLatest}
+                shouldFocusGrid={!selectedCellIsWithinSelectionBounds}
+                direction={direction}
               />
-            ))}
-            <HeaderRow
-              headerRowClass={headerRowClass}
-              rowIdx={headerRowsCount}
-              columns={getRowViewportColumns(mainHeaderRowIdx)}
-              onColumnResize={handleColumnResizeLatest}
-              onColumnResizeEnd={handleColumnResizeEndLatest}
-              onColumnsReorder={onColumnsReorderLastest}
-              sortColumns={sortColumns}
-              onSortColumnsChange={onSortColumnsChangeLatest}
-              lastFrozenColumnIndex={lastFrozenColumnIndex}
-              selectedCellIdx={
-                selectedPosition.rowIdx === mainHeaderRowIdx ? selectedPosition.idx : undefined
-              }
-              selectCell={selectHeaderCellLatest}
-              shouldFocusGrid={!selectedCellIsWithinSelectionBounds}
-              direction={direction}
-            />
-          </HeaderRowSelectionContext>
-        </HeaderRowSelectionChangeContext>
-        {rows.length === 0 && noRowsFallback ? (
-          noRowsFallback
-        ) : (
-          <>
-            {topSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerRowsCount + 1 + rowIdx;
-              const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
-              const isSummaryRowSelected = selectedPosition.rowIdx === summaryRowIdx;
-              const top = headerRowsHeight + summaryRowHeight * rowIdx;
+            </HeaderRowSelectionContext>
+          </HeaderRowSelectionChangeContext>
+          {rows.length === 0 && noRowsFallback ? (
+            noRowsFallback
+          ) : (
+            <>
+              {topSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerRowsCount + 1 + rowIdx;
+                const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
+                const isSummaryRowSelected = selectedPosition.rowIdx === summaryRowIdx;
+                const top = headerRowsHeight + summaryRowHeight * rowIdx;
 
-              return (
-                <SummaryRow
-                  key={rowIdx}
-                  aria-rowindex={gridRowStart}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={undefined}
-                  viewportColumns={getRowViewportColumns(summaryRowIdx)}
-                  lastFrozenColumnIndex={lastFrozenColumnIndex}
-                  selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
-                  isTop
-                  selectCell={selectCellLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-            <RowSelectionChangeContext value={selectRowLatest}>
-              {getViewportRows()}
-            </RowSelectionChangeContext>
-            {bottomSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
-              const summaryRowIdx = rows.length + rowIdx;
-              const isSummaryRowSelected = selectedPosition.rowIdx === summaryRowIdx;
-              const top =
-                clientHeight > totalRowHeight
-                  ? gridHeight - summaryRowHeight * (bottomSummaryRows.length - rowIdx)
-                  : undefined;
-              const bottom =
-                top === undefined
-                  ? summaryRowHeight * (bottomSummaryRows.length - 1 - rowIdx)
-                  : undefined;
+                return (
+                  <SummaryRow
+                    key={rowIdx}
+                    aria-rowindex={gridRowStart}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={undefined}
+                    viewportColumns={getRowViewportColumns(summaryRowIdx)}
+                    lastFrozenColumnIndex={lastFrozenColumnIndex}
+                    selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
+                    isTop
+                    selectCell={selectCellLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+              <RowSelectionChangeContext value={selectRowLatest}>
+                {getViewportRows()}
+              </RowSelectionChangeContext>
+              {bottomSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
+                const summaryRowIdx = rows.length + rowIdx;
+                const isSummaryRowSelected = selectedPosition.rowIdx === summaryRowIdx;
+                const top =
+                  clientHeight > totalRowHeight
+                    ? gridHeight - summaryRowHeight * (bottomSummaryRows.length - rowIdx)
+                    : undefined;
+                const bottom =
+                  top === undefined
+                    ? summaryRowHeight * (bottomSummaryRows.length - 1 - rowIdx)
+                    : undefined;
 
-              return (
-                <SummaryRow
-                  aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
-                  key={rowIdx}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={bottom}
-                  viewportColumns={getRowViewportColumns(summaryRowIdx)}
-                  lastFrozenColumnIndex={lastFrozenColumnIndex}
-                  selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
-                  isTop={false}
-                  selectCell={selectCellLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-          </>
+                return (
+                  <SummaryRow
+                    aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
+                    key={rowIdx}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={bottom}
+                    viewportColumns={getRowViewportColumns(summaryRowIdx)}
+                    lastFrozenColumnIndex={lastFrozenColumnIndex}
+                    selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
+                    isTop={false}
+                    selectCell={selectCellLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+            </>
+          )}
+        </DataGridDefaultRenderersContext>
+
+        {getDragHandle()}
+
+        {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
+        {renderMeasuringCells(viewportColumns)}
+
+        {scrollToPosition !== null && (
+          <ScrollToCell
+            scrollToPosition={scrollToPosition}
+            setScrollToCellPosition={setScrollToPosition}
+            gridRef={gridRef}
+          />
         )}
-      </DataGridDefaultRenderersContext>
-
-      {getDragHandle()}
-
-      {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
-      {renderMeasuringCells(viewportColumns)}
-
-      {scrollToPosition !== null && (
-        <ScrollToCell
-          scrollToPosition={scrollToPosition}
-          setScrollToCellPosition={setScrollToPosition}
-          gridRef={gridRef}
-        />
-      )}
+      </Activity>
     </div>
   );
 }
