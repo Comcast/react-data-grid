@@ -45,21 +45,15 @@ const resizeHandleClassname = `rdg-resize-handle ${resizeHandle}`;
 
 const cellDraggableClassname = 'rdg-cell-draggable';
 
-const cellDragging = css`
+const cellDraggingOrOver = css`
   @layer rdg.HeaderCell {
     background-color: var(--rdg-header-draggable-background-color);
   }
 `;
 
-const cellDraggingClassname = `rdg-cell-dragging ${cellDragging}`;
+const cellDraggingClassname = `rdg-cell-dragging ${cellDraggingOrOver}`;
 
-const cellOver = css`
-  @layer rdg.HeaderCell {
-    background-color: var(--rdg-header-draggable-background-color);
-  }
-`;
-
-const cellOverClassname = `rdg-cell-drag-over ${cellOver}`;
+const cellOverClassname = `rdg-cell-drag-over ${cellDraggingOrOver}`;
 
 const dragImageClassname = css`
   @layer rdg.HeaderCell {
@@ -336,7 +330,7 @@ function ResizeHandle<R, SR>({
   const isRtl = direction === 'rtl';
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === 'mouse' && event.buttons !== 1) {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
 
