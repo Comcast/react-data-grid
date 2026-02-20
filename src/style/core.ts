@@ -62,7 +62,7 @@ const root = css`
     /* needed on Firefox to fix scrollbars */
     &::before {
       content: '';
-      grid-area: 1 / 1 / -1 / -1;
+      grid-area: -2 / -2 / -1 / -1;
     }
 
     > :nth-last-child(1 of .${topSummaryRowClassname}) {
