@@ -21,7 +21,6 @@ export const row = css`
       &::after {
         content: '';
         grid-column: 1 / -1;
-        grid-row: 1;
         z-index: 1;
         pointer-events: none;
         border: var(--rdg-selection-width) solid var(--rdg-selection-color);
