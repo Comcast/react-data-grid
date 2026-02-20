@@ -330,7 +330,7 @@ function ResizeHandle<R, SR>({
   const isRtl = direction === 'rtl';
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === 'mouse' && event.buttons !== 1) {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
 

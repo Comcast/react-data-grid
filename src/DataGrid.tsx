@@ -702,7 +702,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function handleDragHandlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
     // keep the focus on the cell
     event.preventDefault();
-    if (event.pointerType === 'mouse' && event.buttons !== 1) {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
     setDragging(true);
