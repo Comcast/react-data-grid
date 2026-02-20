@@ -10,7 +10,7 @@ export {
   type DefaultColumnOptions
 } from './DataGrid';
 export { DataGridDefaultRenderersContext } from './DataGridDefaultRenderersContext';
-export { default as renderTextEditor } from './editors/renderTextEditor';
+export { renderTextEditor } from './editors/renderTextEditor';
 export { useHeaderRowSelection, useRowSelection } from './hooks';
 export { default as renderHeaderCell } from './renderHeaderCell';
 export { default as Row } from './Row';
