@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { page, userEvent } from 'vitest/browser';
 
-import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
+import { DataGrid } from '../../../src';
 import { getCellsAtRowIndex, getRowWithCell, scrollGrid, testCount } from '../utils';
 
 const grid = page.getGrid();
