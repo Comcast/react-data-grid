@@ -1,11 +1,5 @@
-import type { CSSProperties } from 'react';
-
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
 import { cellClassname, cellFrozenClassname } from '../style/cell';
-
-export function getRowStyle(rowIdx: number): CSSProperties {
-  return { '--rdg-grid-row-start': rowIdx };
-}
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,

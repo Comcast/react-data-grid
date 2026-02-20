@@ -1,9 +1,8 @@
 import { memo } from 'react';
 import { css } from 'ecij';
 
-import { classnames, getColSpan, getRowStyle } from './utils';
+import { classnames, getColSpan } from './utils';
 import type { RenderRowProps } from './types';
-import { cell, cellFrozen } from './style/cell';
 import {
   bottomSummaryRowClassname,
   rowClassname,
@@ -14,7 +13,7 @@ import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
   RenderRowProps<R, SR>,
-  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell'
+  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell' | 'isTreeGrid'
 >;
 
 interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
@@ -29,21 +28,8 @@ interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
 
 const summaryRow = css`
   @layer rdg.SummaryRow {
-    > .${cell} {
-      position: sticky;
-    }
-  }
-`;
-
-const topSummaryRow = css`
-  @layer rdg.SummaryRow {
-    > .${cell} {
-      z-index: 2;
-    }
-
-    > .${cellFrozen} {
-      z-index: 3;
-    }
+    position: sticky;
+    z-index: 2;
   }
 `;
 
@@ -60,9 +46,13 @@ function SummaryRow<R, SR>({
   selectedCellIdx,
   isTop,
   selectCell,
+  isTreeGrid,
   'aria-rowindex': ariaRowIndex
 }: SummaryRowProps<R, SR>) {
+  const isPositionOnRow = selectedCellIdx === -1;
+
   const cells = [];
+
   for (let index = 0; index < viewportColumns.length; index++) {
     const column = viewportColumns[index];
     const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'SUMMARY', row });
@@ -89,20 +79,18 @@ function SummaryRow<R, SR>({
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
+      tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
       className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
-        {
-          [rowSelectedClassname]: selectedCellIdx === -1,
-          [`${topSummaryRowClassname} ${topSummaryRow}`]: isTop,
-          [bottomSummaryRowClassname]: !isTop
-        }
+        isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
+        isPositionOnRow && rowSelectedClassname
       )}
       style={{
-        ...getRowStyle(gridRowStart),
-        '--rdg-summary-row-top': top !== undefined ? `${top}px` : undefined,
-        '--rdg-summary-row-bottom': bottom !== undefined ? `${bottom}px` : undefined
+        gridRowStart,
+        top,
+        bottom
       }}
     >
       {cells}

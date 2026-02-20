@@ -13,7 +13,6 @@ export const cell = css`
     padding-inline: 8px;
     border-inline-end: var(--rdg-border-width) solid var(--rdg-border-color);
     border-block-end: var(--rdg-border-width) solid var(--rdg-border-color);
-    grid-row-start: var(--rdg-grid-row-start);
     align-content: center;
     background-color: inherit;
 

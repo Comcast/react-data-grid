@@ -17,7 +17,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
-import { getCell, getHeaderCell, getRowByCellName, setup, testCount, testRowCount } from './utils';
+import { getRowWithCell, setup, testCount, testRowCount } from './utils';
 
 interface Row {
   id: number;
@@ -116,21 +116,21 @@ function setupContext<R, SR, K extends React.Key>(props: DataGridProps<R, SR, K>
 test('fallback defined using renderers prop with no rows', async () => {
   await setup({ columns, rows: noRows, renderers: { noRowsFallback: <NoRowsFallback /> } });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Local no rows fallback')).toBeInTheDocument();
 });
 
 test('fallback defined using context with no rows', async () => {
   await setupContext({ columns, rows: noRows });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Global no rows fallback')).toBeInTheDocument();
 });
 
 test('fallback defined using both context and renderers with no rows', async () => {
   await setupContext({ columns, rows: noRows, renderers: { noRowsFallback: <NoRowsFallback /> } });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Local no rows fallback')).toBeInTheDocument();
 });
 
@@ -141,14 +141,14 @@ test('fallback defined using renderers prop with a row', async () => {
     renderers: { noRowsFallback: <NoRowsFallback /> }
   });
 
-  await testRowCount(2);
+  await testRowCount(1);
   await expect.element(page.getByText('Local no rows fallback')).not.toBeInTheDocument();
 });
 
 test('fallback defined using context with a row', async () => {
   await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
 
-  await testRowCount(2);
+  await testRowCount(1);
   await expect.element(page.getByText('Global no rows fallback')).not.toBeInTheDocument();
 });
 
@@ -159,7 +159,7 @@ test('fallback defined using both context and renderers with a row', async () =>
     renderers: { noRowsFallback: <NoRowsFallback /> }
   });
 
-  await testRowCount(2);
+  await testRowCount(1);
   await expect.element(page.getByText('Global no rows fallback')).not.toBeInTheDocument();
   await expect.element(page.getByText('Local no rows fallback')).not.toBeInTheDocument();
 });
@@ -167,21 +167,21 @@ test('fallback defined using both context and renderers with a row', async () =>
 test('checkbox defined using renderers prop', async () => {
   await setup({ columns, rows: noRows, renderers: { renderCheckbox: renderLocalCheckbox } });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Local checkbox')).toBeInTheDocument();
 });
 
 test('checkbox defined using context', async () => {
   await setupContext({ columns, rows: noRows });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Global checkbox')).toBeInTheDocument();
 });
 
 test('checkbox defined using both context and renderers', async () => {
   await setupContext({ columns, rows: noRows, renderers: { renderCheckbox: renderLocalCheckbox } });
 
-  await testRowCount(1);
+  await testRowCount(0);
   await expect.element(page.getByText('Local checkbox')).toBeInTheDocument();
   await expect.element(page.getByText('Global checkbox')).not.toBeInTheDocument();
 });
@@ -189,8 +189,8 @@ test('checkbox defined using both context and renderers', async () => {
 test('sortPriority defined using both contexts', async () => {
   await setupContext({ columns, rows: noRows });
 
-  const column1 = getHeaderCell('Column1');
-  const column2 = getHeaderCell('Column2');
+  const column1 = page.getHeaderCell({ name: 'Column1' });
+  const column2 = page.getHeaderCell({ name: 'Column2' });
   await userEvent.click(column1);
   await userEvent.keyboard('{Control>}');
   await userEvent.click(column2);
@@ -210,8 +210,8 @@ test('sortPriority defined using both contexts and renderers', async () => {
     renderers: { renderSortStatus: renderLocalSortStatus }
   });
 
-  const column1 = getHeaderCell('Column1');
-  const column2 = getHeaderCell('Column2');
+  const column1 = page.getHeaderCell({ name: 'Column1' });
+  const column2 = page.getHeaderCell({ name: 'Column2' });
   await userEvent.click(column2);
   await userEvent.keyboard('{Control>}');
   await userEvent.click(column1);
@@ -227,8 +227,8 @@ test('sortPriority defined using both contexts and renderers', async () => {
 test('renderCell defined using context', async () => {
   await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
 
-  const cell1 = getCell('value 1');
-  const cell2 = getCell('value 2');
+  const cell1 = page.getCell({ name: 'value 1' });
+  const cell2 = page.getCell({ name: 'value 2' });
   await expect.element(cell1).toHaveClass('global');
   await expect.element(cell1).not.toHaveClass('local');
   await expect.element(cell1).toHaveStyle({ fontStyle: 'italic' });
@@ -245,8 +245,8 @@ test('renderCell defined using both contexts and renderers', async () => {
     renderers: { renderCell: renderLocalCell }
   });
 
-  const cell1 = getCell('value 1');
-  const cell2 = getCell('value 2');
+  const cell1 = page.getCell({ name: 'value 1' });
+  const cell2 = page.getCell({ name: 'value 2' });
   await expect.element(cell1).toHaveClass('local');
   await expect.element(cell1).not.toHaveClass('global');
   await expect.element(cell1).toHaveStyle({ fontStyle: 'normal' });
@@ -259,7 +259,7 @@ test('renderCell defined using both contexts and renderers', async () => {
 test('renderRow defined using context', async () => {
   await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
 
-  const row = getRowByCellName('value 1');
+  const row = getRowWithCell(page.getCell({ name: 'value 1' }));
   await expect.element(row).toHaveClass('global');
   await expect.element(row).not.toHaveClass('local');
 });
@@ -271,7 +271,7 @@ test('renderRow defined using both contexts and renderers', async () => {
     renderers: { renderRow: renderLocalRow }
   });
 
-  const row = getRowByCellName('value 1');
+  const row = getRowWithCell(page.getCell({ name: 'value 1' }));
   await expect.element(row).toHaveClass('local');
   await expect.element(row).not.toHaveClass('global');
 });

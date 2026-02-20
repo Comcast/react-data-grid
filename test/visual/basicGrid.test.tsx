@@ -1,7 +1,8 @@
 import { page } from 'vitest/browser';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
-import { getGrid } from '../browser/utils';
+
+const grid = page.getGrid();
 
 interface Row {
   id: number;
@@ -50,5 +51,5 @@ test('basic grid', async () => {
     />
   );
 
-  await expect.element(getGrid()).toMatchScreenshot('basic-grid');
+  await expect.element(grid).toMatchScreenshot('basic-grid');
 });

@@ -1,16 +1,8 @@
 import { memo } from 'react';
-import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
 import type { CellRendererProps } from './types';
-
-export const summaryCellClassname = css`
-  @layer rdg.SummaryCell {
-    inset-block-start: var(--rdg-summary-row-top);
-    inset-block-end: var(--rdg-summary-row-bottom);
-  }
-`;
 
 type SharedCellRendererProps<R, SR> = Pick<
   CellRendererProps<R, SR>,
@@ -33,7 +25,6 @@ function SummaryCell<R, SR>({
   const { summaryCellClass } = column;
   const className = getCellClassname(
     column,
-    summaryCellClassname,
     typeof summaryCellClass === 'function' ? summaryCellClass(row) : summaryCellClass
   );
 

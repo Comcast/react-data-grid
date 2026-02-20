@@ -1,7 +1,9 @@
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import type { Column, DataGridProps } from '../../src';
-import { getGrid, setup, tabIntoGrid, testRowCount } from './utils';
+import { setup, tabIntoGrid, testRowCount } from './utils';
+
+const grid = page.getGrid();
 
 type Row = number;
 
@@ -23,42 +25,37 @@ function setupGrid(rowHeight: DataGridProps<Row>['rowHeight']) {
 async function expectGridRows(rowHeightFn: (row: number) => number, expected: string) {
   await setupGrid(rowHeightFn);
 
-  const grid = getGrid().element() as HTMLDivElement;
-  const gridTemplateRows = grid.style.gridTemplateRows;
-
-  expect(gridTemplateRows).toBe(expected);
+  expect(grid.element().style.gridTemplateRows).toBe(expected);
 }
 
 test('rowHeight is number', async () => {
   await setupGrid(40);
 
-  const grid = getGrid();
   await expect.element(grid).toHaveStyle({
     gridTemplateRows:
       '40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px'
   });
-  await testRowCount(31);
+  await testRowCount(30);
   await tabIntoGrid();
-  const gridEl = grid.element();
-  expect(gridEl.scrollTop).toBe(0);
+  await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
+  const gridEl = grid.element();
   expect(gridEl.scrollTop + gridEl.clientHeight).toBe(gridEl.scrollHeight);
 });
 
 test('rowHeight is function', async () => {
   await setupGrid((row) => [40, 60, 80][row % 3]);
 
-  const grid = getGrid();
   await expect.element(grid).toHaveStyle({
     gridTemplateRows:
       '35px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px 80px 40px 60px'
   });
-  await testRowCount(23);
+  await testRowCount(22);
 
   await tabIntoGrid();
-  const gridEl = grid.element();
-  expect(gridEl.scrollTop).toBe(0);
+  await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
+  const gridEl = grid.element();
   expect(gridEl.scrollTop + gridEl.clientHeight).toBe(gridEl.scrollHeight);
 });
 

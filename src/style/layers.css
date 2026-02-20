@@ -1,6 +1,5 @@
 @layer rdg {
   @layer Defaults,
-    FocusSink,
     CheckboxInput,
     CheckboxIcon,
     CheckboxLabel,

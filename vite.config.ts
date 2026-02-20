@@ -10,13 +10,11 @@ const isTest = process.env.NODE_ENV === 'test';
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
-  context,
+  { page, iframe },
   name,
   resizeBy
 ) => {
-  const page = context.page;
-  const frame = await context.frame();
-  const resizeHandle = frame
+  const resizeHandle = iframe
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
   const { x, y } = (await resizeHandle.boundingBox())!;
@@ -32,33 +30,13 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
 };
 
 // TODO: remove when `userEvent.pointer` is supported
-const dragFill: BrowserCommand<[from: string, to: string]> = async (context, from, to) => {
-  const page = context.page;
-  const frame = await context.frame();
-  await frame.getByRole('gridcell', { name: from }).click();
-  await frame.locator('.rdg-cell-drag-handle').hover();
+const dragFill: BrowserCommand<[from: string, to: string]> = async ({ page, iframe }, from, to) => {
+  await iframe.getByRole('gridcell', { name: from, exact: true }).click();
+  await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  const toCell = frame.getByRole('gridcell', { name: to });
+  const toCell = iframe.getByRole('gridcell', { name: to, exact: true });
   await toCell.hover();
   await page.mouse.up();
-};
-
-const scrollGrid: BrowserCommand<[{ scrollLeft?: number; scrollTop?: number }]> = async (
-  context,
-  { scrollLeft, scrollTop }
-) => {
-  const frame = await context.frame();
-  await frame.getByRole('grid').evaluate(
-    (grid: HTMLDivElement, { scrollLeft, scrollTop }) => {
-      if (scrollLeft !== undefined) {
-        grid.scrollLeft = scrollLeft;
-      }
-      if (scrollTop !== undefined) {
-        grid.scrollTop = scrollTop;
-      }
-    },
-    { scrollLeft, scrollTop }
-  );
 };
 
 const viewport = { width: 1920, height: 1080 } as const;
@@ -102,7 +80,7 @@ export default defineConfig(
       sourcemap: true,
       reportCompressedSize: false,
       // https://github.com/parcel-bundler/lightningcss/issues/873
-      cssMinify: 'esbuild'
+      cssTarget: 'esnext'
     },
     plugins: [
       ecij(),
@@ -124,6 +102,7 @@ export default defineConfig(
     test: {
       dir: 'test',
       globals: true,
+      printConsoleTrace: true,
       coverage: {
         provider: 'istanbul',
         enabled: isCI,
@@ -145,18 +124,18 @@ export default defineConfig(
             name: 'browser',
             include: ['browser/**/*.test.*'],
             browser: {
-              ui: false,
               enabled: true,
               trace: {
                 mode: isCI ? 'off' : 'retain-on-failure'
               },
               instances: getInstances(),
-              commands: { resizeColumn, dragFill, scrollGrid },
+              commands: { resizeColumn, dragFill },
               viewport,
               headless: true,
+              ui: false,
               screenshotFailures: !isCI
             },
-            setupFiles: ['test/setupBrowser.ts']
+            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
         {
@@ -171,7 +150,7 @@ export default defineConfig(
               headless: true,
               screenshotFailures: false
             },
-            setupFiles: ['test/setupBrowser.ts']
+            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
         {
@@ -179,7 +158,8 @@ export default defineConfig(
           test: {
             name: 'node',
             include: ['node/**/*.test.*'],
-            environment: 'node'
+            environment: 'node',
+            setupFiles: ['test/failOnConsole.ts']
           }
         }
       ]

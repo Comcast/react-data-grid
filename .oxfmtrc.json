@@ -1,0 +1,69 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["/website/routeTree.gen.ts"],
+  "singleQuote": true,
+  "trailingComma": "none",
+  "experimentalSortImports": {
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react", "react/**", "react-dom", "react-dom/**"]
+      },
+      {
+        "groupName": "ecij",
+        "elementNamePattern": ["ecij"]
+      },
+      {
+        "groupName": "clsx",
+        "elementNamePattern": ["clsx"]
+      },
+      {
+        "groupName": "./src",
+        "elementNamePattern": ["**/src", "**/src/**"]
+      },
+      {
+        "groupName": "./renderers",
+        "elementNamePattern": ["**/renderers", "**/renderers/**"]
+      },
+      {
+        "groupName": "./components",
+        "elementNamePattern": ["**/components", "**/components/**"]
+      },
+      {
+        "groupName": "./hooks",
+        "elementNamePattern": ["**/hooks", "**/hooks/**"]
+      },
+      {
+        "groupName": "./utils",
+        "elementNamePattern": ["**/utils", "**/utils/**"]
+      },
+      {
+        "groupName": "./types",
+        "elementNamePattern": ["**/types", "**/types/**"]
+      }
+    ],
+    "groups": [
+      "side_effect_style",
+      "side_effect",
+      { "newlinesBetween": true },
+      "builtin",
+      "react",
+      "external",
+      "ecij",
+      "clsx",
+      { "newlinesBetween": true },
+      "./src",
+      "./renderers",
+      "./components",
+      "./hooks",
+      "./utils",
+      "./types",
+      "index",
+      "sibling",
+      "parent",
+      "unknown"
+    ],
+    "newlinesBetween": false
+  },
+  "experimentalSortPackageJson": false
+}
