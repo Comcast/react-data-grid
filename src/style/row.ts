@@ -18,6 +18,7 @@ export const row = css`
     }
 
     &[tabindex='0'] {
+      /* we render the outline in a pseudo element as otherwise cells render above it */
       &::after {
         content: '';
         grid-column: 1 / -1;
