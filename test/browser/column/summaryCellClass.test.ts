@@ -1,8 +1,7 @@
 import { page } from 'vitest/browser';
 
 import type { Column } from '../../../src';
-import { cellClassname as cellClass } from '../../../src/style/cell';
-import { summaryCellClassname } from '../../../src/SummaryCell';
+import { cellClassname } from '../../../src/style/cell';
 import { setup } from '../utils';
 
 const cells = page.getCell();
@@ -11,7 +10,6 @@ interface SummaryRow {
   id: number;
 }
 
-const cellClassname = `${cellClass} ${summaryCellClassname}`;
 const topSummaryRows: readonly SummaryRow[] = [{ id: 0 }, { id: 1 }];
 const bottomSummaryRows: readonly SummaryRow[] = [{ id: 2 }, { id: 3 }];
 

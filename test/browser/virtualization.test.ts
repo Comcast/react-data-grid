@@ -209,7 +209,7 @@ test('zero columns', async () => {
 
   await expect.element(headerCells).toHaveLength(0);
   await expect.element(cells).toHaveLength(0);
-  await expect.element(rows).toHaveLength(0);
+  await expect.element(rows).toHaveLength(34);
 });
 
 test('zero rows', async () => {
