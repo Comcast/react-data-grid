@@ -2,14 +2,14 @@ import { memo } from 'react';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
-import type { CellRendererProps } from './types';
+import type { RenderCellProps } from './types';
 
-type SharedCellRendererProps<R, SR> = Pick<
-  CellRendererProps<R, SR>,
+type SharedRenderCellProps<R, SR> = Pick<
+  RenderCellProps<R, SR>,
   'rowIdx' | 'column' | 'colSpan' | 'isCellSelected' | 'selectCell'
 >;
 
-interface SummaryCellProps<R, SR> extends SharedCellRendererProps<R, SR> {
+interface SummaryCellProps<R, SR> extends SharedRenderCellProps<R, SR> {
   row: SR;
 }
 

@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { css } from 'ecij';
 
 import { DataGrid, type Column, type Direction, type RowsChangeData } from '../../src';
-import { CellExpanderFormatter } from '../components';
+import { CellExpander } from '../components';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute({
@@ -93,7 +93,7 @@ function MasterDetail() {
           }
 
           return (
-            <CellExpanderFormatter
+            <CellExpander
               expanded={row.expanded}
               tabIndex={tabIndex}
               onCellExpand={() => {

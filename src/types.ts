@@ -32,17 +32,23 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Class name(s) for summary cells */
   readonly summaryCellClass?: Maybe<string | ((row: TSummaryRow) => Maybe<string>)>;
   /** Render function to render the content of cells */
-  readonly renderCell?: Maybe<(props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderCell?: Maybe<(props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode>;
   /** Render function to render the content of the header cell */
-  readonly renderHeaderCell?: Maybe<(props: RenderHeaderCellProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderHeaderCell?: Maybe<
+    (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode
+  >;
   /** Render function to render the content of summary cells */
   readonly renderSummaryCell?: Maybe<
-    (props: RenderSummaryCellProps<TSummaryRow, TRow>) => ReactNode
+    (props: RenderSummaryCellContentProps<TSummaryRow, TRow>) => ReactNode
   >;
   /** Render function to render the content of group cells */
-  readonly renderGroupCell?: Maybe<(props: RenderGroupCellProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderGroupCell?: Maybe<
+    (props: RenderGroupCellContentProps<TRow, TSummaryRow>) => ReactNode
+  >;
   /** Render function to render the content of edit cells. When set, the column is automatically set to be editable */
-  readonly renderEditCell?: Maybe<(props: RenderEditCellProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderEditCell?: Maybe<
+    (props: RenderEditCellContentProps<TRow, TSummaryRow>) => ReactNode
+  >;
   /** Enables cell editing. If set and no editor property specified, then a textinput will be used as the cell editor */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
@@ -89,8 +95,8 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly sortable: boolean;
   readonly draggable: boolean;
   readonly frozen: boolean;
-  readonly renderCell: (props: RenderCellProps<TRow, TSummaryRow>) => ReactNode;
-  readonly renderHeaderCell: (props: RenderHeaderCellProps<TRow, TSummaryRow>) => ReactNode;
+  readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
+  readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
 }
 
 export interface ColumnGroup<R, SR = unknown> {
@@ -120,7 +126,7 @@ export interface Position {
   readonly rowIdx: number;
 }
 
-export interface RenderCellProps<TRow, TSummaryRow = unknown> {
+export interface RenderCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
@@ -129,13 +135,13 @@ export interface RenderCellProps<TRow, TSummaryRow = unknown> {
   onRowChange: (row: TRow) => void;
 }
 
-export interface RenderSummaryCellProps<TSummaryRow, TRow = unknown> {
+export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TSummaryRow;
   tabIndex: number;
 }
 
-export interface RenderGroupCellProps<TRow, TSummaryRow = unknown> {
+export interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
   groupKey: unknown;
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: GroupRow<TRow>;
@@ -145,7 +151,7 @@ export interface RenderGroupCellProps<TRow, TSummaryRow = unknown> {
   toggleGroup: () => void;
 }
 
-export interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
+export interface RenderEditCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
@@ -153,14 +159,14 @@ export interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
   onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
 }
 
-export interface RenderHeaderCellProps<TRow, TSummaryRow = unknown> {
+export interface RenderHeaderCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   sortDirection: SortDirection | undefined;
   priority: number | undefined;
   tabIndex: number;
 }
 
-interface BaseCellRendererProps<TRow, TSummaryRow = unknown>
+interface BaseRenderCellProps<TRow, TSummaryRow = unknown>
   extends
     Omit<React.ComponentProps<'div'>, 'children'>,
     Pick<
@@ -171,10 +177,7 @@ interface BaseCellRendererProps<TRow, TSummaryRow = unknown>
   selectCell: (position: Position, options?: SelectCellOptions) => void;
 }
 
-export interface CellRendererProps<TRow, TSummaryRow> extends BaseCellRendererProps<
-  TRow,
-  TSummaryRow
-> {
+export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<TRow, TSummaryRow> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   colSpan: number | undefined;
@@ -232,7 +235,7 @@ export type CellMouseEventHandler<R, SR> = Maybe<
   (args: CellMouseArgs<NoInfer<R>, NoInfer<SR>>, event: CellMouseEvent) => void
 >;
 
-export interface BaseRenderRowProps<TRow, TSummaryRow = unknown> extends BaseCellRendererProps<
+export interface BaseRenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderCellProps<
   TRow,
   TSummaryRow
 > {
@@ -251,7 +254,7 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
   row: TRow;
   lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
+  selectedCellEditor: ReactElement<RenderEditCellContentProps<TRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
   isTreeGrid: boolean;
@@ -334,7 +337,7 @@ export interface RenderCheckboxProps extends Pick<
 }
 
 export interface Renderers<TRow, TSummaryRow> {
-  renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
+  renderCell?: Maybe<(key: Key, props: RenderCellProps<TRow, TSummaryRow>) => ReactNode>;
   renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
   renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
   renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;

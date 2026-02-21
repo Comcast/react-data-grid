@@ -115,27 +115,29 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const [groupedRows, rowsCount] = useMemo(() => {
     if (groupBy.length === 0) return [undefined, rawRows.length];
 
-    const groupRows = (
+    function groupRows(
       rows: readonly R[],
-      [groupByKey, ...remainingGroupByKeys]: readonly string[],
+      groupByIndex: number,
       startRowIndex: number
-    ): [Readonly<GroupByDictionary<R>>, number] => {
+    ): [Readonly<GroupByDictionary<R>>, number] {
       let groupRowsCount = 0;
+      const groupByKey = groupBy[groupByIndex];
+      const isLastGroupBy = groupByIndex === groupBy.length - 1;
       const groups: GroupByDictionary<R> = {};
+
       for (const [key, childRows] of Object.entries(rowGrouper(rows, groupByKey))) {
         // Recursively group each parent group
-        const [childGroups, childRowsCount] =
-          remainingGroupByKeys.length === 0
-            ? [childRows, childRows.length]
-            : groupRows(childRows, remainingGroupByKeys, startRowIndex + groupRowsCount + 1); // 1 for parent row
+        const [childGroups, childRowsCount] = isLastGroupBy
+          ? [childRows, childRows.length]
+          : groupRows(childRows, groupByIndex + 1, startRowIndex + groupRowsCount + 1); // 1 for parent row
         groups[key] = { childRows, childGroups, startRowIndex: startRowIndex + groupRowsCount };
         groupRowsCount += childRowsCount + 1; // 1 for parent row
       }
 
       return [groups, groupRowsCount];
-    };
+    }
 
-    return groupRows(rawRows, groupBy, 0);
+    return groupRows(rawRows, 0, 0);
   }, [groupBy, rowGrouper, rawRows]);
 
   const [rows, isGroupRow] = useMemo((): [

@@ -97,9 +97,7 @@ function TestGrid({
 }) {
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> => new Set<unknown>([])
-  );
+  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set([]));
 
   return (
     <TreeDataGrid
@@ -449,7 +447,7 @@ test('copy/paste when grouping is enabled', async () => {
   );
 });
 
-test('update row using cell renderer', async () => {
+test('update row using cell content renderer', async () => {
   await setup(['year']);
   await userEvent.click(page.getCell({ name: '2021' }));
   await userEvent.click(page.getCell({ name: 'USA' }));

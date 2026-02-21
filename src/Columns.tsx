@@ -1,14 +1,19 @@
 import { useHeaderRowSelection, useRowSelection } from './hooks';
-import type { Column, RenderCellProps, RenderGroupCellProps, RenderHeaderCellProps } from './types';
-import { SelectCellFormatter } from './cellRenderers';
+import type {
+  Column,
+  RenderCellContentProps,
+  RenderGroupCellContentProps,
+  RenderHeaderCellContentProps
+} from './types';
+import { SelectCheckbox } from './cellRenderers';
 
 export const SELECT_COLUMN_KEY = 'rdg-select-column';
 
-function HeaderRenderer(props: RenderHeaderCellProps<unknown>) {
+function SelectAllCell(props: RenderHeaderCellContentProps<unknown>) {
   const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select All"
       tabIndex={props.tabIndex}
       indeterminate={isIndeterminate}
@@ -20,11 +25,11 @@ function HeaderRenderer(props: RenderHeaderCellProps<unknown>) {
   );
 }
 
-function SelectFormatter(props: RenderCellProps<unknown>) {
+function RowSelectCell(props: RenderCellContentProps<unknown>) {
   const { isRowSelectionDisabled, isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select"
       tabIndex={props.tabIndex}
       disabled={isRowSelectionDisabled}
@@ -36,11 +41,11 @@ function SelectFormatter(props: RenderCellProps<unknown>) {
   );
 }
 
-function SelectGroupFormatter(props: RenderGroupCellProps<unknown>) {
+function GroupSelectCell(props: RenderGroupCellContentProps<unknown>) {
   const { isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select Group"
       tabIndex={props.tabIndex}
       value={isRowSelected}
@@ -62,12 +67,12 @@ export const SelectColumn: Column<any, any> = {
   sortable: false,
   frozen: true,
   renderHeaderCell(props) {
-    return <HeaderRenderer {...props} />;
+    return <SelectAllCell {...props} />;
   },
   renderCell(props) {
-    return <SelectFormatter {...props} />;
+    return <RowSelectCell {...props} />;
   },
   renderGroupCell(props) {
-    return <SelectGroupFormatter {...props} />;
+    return <GroupSelectCell {...props} />;
   }
 };

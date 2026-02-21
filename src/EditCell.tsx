@@ -4,11 +4,11 @@ import { css } from 'ecij';
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type {
   CellKeyboardEvent,
-  CellRendererProps,
+  RenderCellProps,
   EditCellKeyDownArgs,
   Maybe,
   Omit,
-  RenderEditCellProps
+  RenderEditCellContentProps
 } from './types';
 
 declare global {
@@ -50,12 +50,12 @@ const cellEditing = css`
   }
 `;
 
-type SharedCellRendererProps<R, SR> = Pick<CellRendererProps<R, SR>, 'colSpan'>;
+type SharedRenderCellProps<R, SR> = Pick<RenderCellProps<R, SR>, 'colSpan'>;
 
 interface EditCellProps<R, SR>
   extends
-    Omit<RenderEditCellProps<R, SR>, 'onRowChange' | 'onClose'>,
-    SharedCellRendererProps<R, SR> {
+    Omit<RenderEditCellContentProps<R, SR>, 'onRowChange' | 'onClose'>,
+    SharedRenderCellProps<R, SR> {
   rowIdx: number;
   onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;
   closeEditor: (shouldFocusCell: boolean) => void;

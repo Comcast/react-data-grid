@@ -5,7 +5,7 @@ import type { CalculatedColumn, CalculatedColumnParent, ColumnOrColumnGroup, Omi
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
 import type { DataGridProps } from '../DataGrid';
-import renderHeaderCell from '../renderHeaderCell';
+import { renderHeaderCell } from '../renderHeaderCell';
 
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P] extends ReadonlyArray<infer V> ? Mutable<V>[] : T[P];

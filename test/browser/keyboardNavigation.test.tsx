@@ -172,13 +172,13 @@ test('grid enter/exit', async () => {
   await expect.element(afterButton).toHaveFocus();
 });
 
-test('navigation with focusable cell renderer', async () => {
+test('navigation with focusable cell content', async () => {
   await setup<Row, Row>({ columns, rows: Array.from({ length: 1 }), bottomSummaryRows }, true);
   await tabIntoGrid();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 1);
 
-  // cell should not set tabIndex to 0 if it contains a focusable cell renderer
+  // cell should not set tabIndex to 0 if it contains a focusable cell content
   await expect.element(selectedCell).toHaveAttribute('tabIndex', '-1');
   const checkbox = selectedCell.getByRole('checkbox');
   await expect.element(checkbox).toHaveFocus();
@@ -186,7 +186,7 @@ test('navigation with focusable cell renderer', async () => {
 
   await userEvent.tab();
   await validateCellPosition(1, 1);
-  // cell should set tabIndex to 0 if it does not have focusable cell renderer
+  // cell should set tabIndex to 0 if it does not have focusable cell content
   await expect.element(selectedCell).toHaveAttribute('tabIndex', '0');
 });
 
