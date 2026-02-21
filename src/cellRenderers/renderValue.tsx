@@ -1,6 +1,6 @@
-import type { RenderCellProps } from '../types';
+import type { RenderCellContentProps } from '../types';
 
-export function renderValue<R, SR>(props: RenderCellProps<R, SR>) {
+export function renderValue<R, SR>(props: RenderCellContentProps<R, SR>) {
   try {
     return props.row[props.column.key as keyof R] as React.ReactNode;
   } catch {

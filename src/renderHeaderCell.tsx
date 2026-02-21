@@ -1,6 +1,6 @@
 import { css } from 'ecij';
 
-import type { RenderHeaderCellProps } from './types';
+import type { RenderHeaderCellContentProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 
 const headerSortCellClassname = css`
@@ -19,11 +19,11 @@ const headerSortName = css`
 
 const headerSortNameClassname = `rdg-header-sort-name ${headerSortName}`;
 
-export default function renderHeaderCell<R, SR>({
+export function renderHeaderCell<R, SR>({
   column,
   sortDirection,
   priority
-}: RenderHeaderCellProps<R, SR>) {
+}: RenderHeaderCellContentProps<R, SR>) {
   if (!column.sortable) return column.name;
 
   return (
@@ -34,7 +34,7 @@ export default function renderHeaderCell<R, SR>({
 }
 
 type SharedHeaderCellProps<R, SR> = Pick<
-  RenderHeaderCellProps<R, SR>,
+  RenderHeaderCellContentProps<R, SR>,
   'sortDirection' | 'priority'
 >;
 

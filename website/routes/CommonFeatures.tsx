@@ -6,7 +6,7 @@ import { css } from 'ecij';
 import {
   DataGrid,
   renderTextEditor,
-  SelectCellFormatter,
+  SelectCheckbox,
   SelectColumn,
   type Column,
   type DataGridHandle,
@@ -47,11 +47,11 @@ const dialogContainerClassname = css`
   }
 `;
 
-const dateFormatter = new Intl.DateTimeFormat(navigator.language);
+const dateFormatter = new Intl.DateTimeFormat(navigator.language).format;
 const currencyFormatter = new Intl.NumberFormat(navigator.language, {
   style: 'currency',
   currency: 'eur'
-});
+}).format;
 
 interface SummaryRow {
   id: string;
@@ -191,21 +191,21 @@ function getColumns(
       key: 'startTimestamp',
       name: 'Start date',
       renderCell(props) {
-        return dateFormatter.format(props.row.startTimestamp);
+        return dateFormatter(props.row.startTimestamp);
       }
     },
     {
       key: 'endTimestamp',
       name: 'Deadline',
       renderCell(props) {
-        return dateFormatter.format(props.row.endTimestamp);
+        return dateFormatter(props.row.endTimestamp);
       }
     },
     {
       key: 'budget',
       name: 'Budget',
       renderCell(props) {
-        return currencyFormatter.format(props.row.budget);
+        return currencyFormatter(props.row.budget);
       }
     },
     {
@@ -226,7 +226,7 @@ function getColumns(
       name: 'Available',
       renderCell({ row, onRowChange, tabIndex }) {
         return (
-          <SelectCellFormatter
+          <SelectCheckbox
             value={row.available}
             onChange={() => {
               onRowChange({ ...row, available: !row.available });
