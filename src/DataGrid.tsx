@@ -1190,6 +1190,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
         '--rdg-scroll-height': `${scrollHeight}px`,
+        '--rdg-frozen-column-shadow-index': lastFrozenColumnIndex + 2,
+        // TODO: optimize/memoize
+        '--rdg-frozen-column-shadow-start': `${Iterator.from(templateColumns)
+          .take(lastFrozenColumnIndex + 1)
+          .reduce((total, width) => total + parseFloat(width), 0)}px`,
         ...layoutCssVars
       }}
       dir={direction}

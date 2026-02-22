@@ -33,7 +33,7 @@ const dialogContainerClassname = css`
   inset: 0;
   display: flex;
   place-items: center;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(0 0 0 / 10%);
 
   > dialog {
     width: 300px;

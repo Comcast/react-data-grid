@@ -14,7 +14,7 @@ const gridClassname = css`
 
 function EmptyRowsRenderer() {
   return (
-    <div style={{ textAlign: 'center', gridColumn: '1/-1' }}>
+    <div style={{ gridColumn: '1/-1', placeSelf: 'center' }}>
       Nothing to show{' '}
       <span lang="ja" title="ショボーン">
         (´・ω・`)
