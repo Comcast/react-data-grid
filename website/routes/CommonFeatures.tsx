@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { faker } from '@faker-js/faker';
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import {
@@ -17,7 +18,7 @@ import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { exportToCsv, exportToPdf } from '../utils';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/CommonFeatures')({
   component: CommonFeatures
 });
 

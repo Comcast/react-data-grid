@@ -5,13 +5,6 @@ beforeAll(() => {
   globalThis.console = {
     ...console,
     error(...params) {
-      if (
-        params[0] instanceof Error &&
-        params[0].message === 'ResizeObserver loop completed with undelivered notifications.'
-      ) {
-        return;
-      }
-
       consoleErrorOrConsoleWarnWereCalled = true;
       console.log(...params);
     },

@@ -89,8 +89,7 @@ export default defineConfig(
           target: 'react',
           generatedRouteTree: 'website/routeTree.gen.ts',
           routesDirectory: 'website/routes',
-          autoCodeSplitting: true,
-          verboseFileRoutes: false
+          autoCodeSplitting: true
         }),
       react({
         exclude: ['./.cache/**/*', './node_modules/**/*', './website/routeTree.gen.ts']
