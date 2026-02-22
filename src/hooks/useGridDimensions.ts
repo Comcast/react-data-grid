@@ -1,46 +1,99 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useCallback, useId, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
+
+const initialSize: ResizeObserverSize = {
+  inlineSize: 1,
+  blockSize: 1
+};
+
+const targetToIdMap = new Map<HTMLDivElement, string>();
+const idToTargetMap = new Map<string, HTMLDivElement>();
+// use an unmanaged WeakMap so we preserve the cache even when
+// the component partially unmounts via Suspense or Activity
+const sizeMap = new WeakMap<HTMLDivElement, ResizeObserverSize>();
+const subscribers = new Map<string, () => void>();
+
+// don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
+const resizeObserver =
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  globalThis.ResizeObserver == null ? null : new ResizeObserver(resizeObserverCallback);
+
+function resizeObserverCallback(entries: ResizeObserverEntry[]) {
+  for (const entry of entries) {
+    const target = entry.target as HTMLDivElement;
+
+    if (!targetToIdMap.has(target)) continue;
+
+    const id = targetToIdMap.get(target)!;
+
+    updateSize(target, id, entry.contentBoxSize[0]);
+  }
+}
+
+function updateSize(target: HTMLDivElement, id: string, size: ResizeObserverSize) {
+  if (sizeMap.has(target)) {
+    const prevSize = sizeMap.get(target)!;
+    if (prevSize.inlineSize === size.inlineSize && prevSize.blockSize === size.blockSize) {
+      return;
+    }
+  }
+
+  sizeMap.set(target, size);
+  subscribers.get(id)?.();
+}
+
+function getServerSnapshot(): ResizeObserverSize {
+  return initialSize;
+}
 
 export function useGridDimensions() {
+  const id = useId();
   const gridRef = useRef<HTMLDivElement>(null);
-  const [inlineSize, setInlineSize] = useState(1);
-  const [blockSize, setBlockSize] = useState(1);
-  const [horizontalScrollbarHeight, setHorizontalScrollbarHeight] = useState(0);
+
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      subscribers.set(id, onStoreChange);
+
+      return () => {
+        subscribers.delete(id);
+      };
+    },
+    [id]
+  );
+
+  const getSnapshot = useCallback((): ResizeObserverSize => {
+    if (idToTargetMap.has(id)) {
+      const target = idToTargetMap.get(id)!;
+      if (sizeMap.has(target)) {
+        return sizeMap.get(target)!;
+      }
+    }
+    return initialSize;
+  }, [id]);
+
+  // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
+  // which can lead to flashing scrollbars.
+  const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useLayoutEffect(() => {
-    const { ResizeObserver } = window;
+    const target = gridRef.current!;
 
-    // don't break in Node.js (SSR), jsdom, and browsers that don't support ResizeObserver
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (ResizeObserver == null) return;
+    targetToIdMap.set(target, id);
+    idToTargetMap.set(id, target);
+    resizeObserver?.observe(target);
 
-    const { clientWidth, clientHeight, offsetWidth, offsetHeight } = gridRef.current!;
-    const { width, height } = gridRef.current!.getBoundingClientRect();
-    const initialHorizontalScrollbarHeight = offsetHeight - clientHeight;
-    const initialWidth = width - offsetWidth + clientWidth;
-    const initialHeight = height - initialHorizontalScrollbarHeight;
-
-    setInlineSize(initialWidth);
-    setBlockSize(initialHeight);
-    setHorizontalScrollbarHeight(initialHorizontalScrollbarHeight);
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const size = entries[0].contentBoxSize[0];
-      const { clientHeight, offsetHeight } = gridRef.current!;
-
-      // we use flushSync here to avoid flashing scrollbars
-      flushSync(() => {
-        setInlineSize(size.inlineSize);
-        setBlockSize(size.blockSize);
-        setHorizontalScrollbarHeight(offsetHeight - clientHeight);
+    if (!sizeMap.has(target)) {
+      updateSize(target, id, {
+        inlineSize: target.clientWidth,
+        blockSize: target.clientHeight
       });
-    });
-    resizeObserver.observe(gridRef.current!);
+    }
 
     return () => {
-      resizeObserver.disconnect();
+      targetToIdMap.delete(target);
+      idToTargetMap.delete(id);
+      resizeObserver?.unobserve(target);
     };
-  }, []);
+  }, [id]);
 
-  return [gridRef, inlineSize, blockSize, horizontalScrollbarHeight] as const;
+  return [gridRef, inlineSize, blockSize] as const;
 }
