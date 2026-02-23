@@ -59,7 +59,7 @@ export default defineConfig([
       'no-control-regex': 1,
       'no-debugger': 1,
       'no-dupe-args': 1,
-      'no-dupe-class-members': 0,
+      'no-dupe-class-members': 0, // replaced by @typescript-eslint/no-dupe-class-members
       'no-dupe-else-if': 1,
       'no-dupe-keys': 1,
       'no-duplicate-case': 1,
@@ -96,7 +96,7 @@ export default defineConfig([
       'no-unsafe-optional-chaining': [1, { disallowArithmeticOperators: true }],
       'no-unused-private-class-members': 0, // replaced by @typescript-eslint/no-unused-private-class-members
       'no-unused-vars': 0, // replaced by @typescript-eslint/no-unused-vars
-      'no-use-before-define': 0,
+      'no-use-before-define': 0, // replaced by @typescript-eslint/no-use-before-define
       'no-useless-backreference': 1,
       'require-atomic-updates': 1,
       'use-isnan': [1, { enforceForIndexOf: true }],
@@ -109,14 +109,14 @@ export default defineConfig([
       'block-scoped-var': 1,
       camelcase: 0,
       'capitalized-comments': 0,
-      'class-methods-use-this': 1,
+      'class-methods-use-this': 0, // replaced by @typescript-eslint/class-methods-use-this
       complexity: 0,
-      'consistent-return': 0,
+      'consistent-return': 0, // replaced by @typescript-eslint/consistent-return
       'consistent-this': 0,
       curly: 0,
       'default-case': 1,
       'default-case-last': 1,
-      'default-param-last': 0,
+      'default-param-last': 0, // replaced by @typescript-eslint/default-param-last
       'dot-notation': 0, // replaced by @typescript-eslint/dot-notation
       eqeqeq: [1, 'always', { null: 'ignore' }],
       'func-name-matching': 0,
@@ -127,14 +127,14 @@ export default defineConfig([
       'id-denylist': 0,
       'id-length': 0,
       'id-match': 0,
-      'init-declarations': 0,
+      'init-declarations': 0, // replaced by @typescript-eslint/init-declarations
       'logical-assignment-operators': [1, 'always', { enforceForIfStatements: true }],
       'max-classes-per-file': 0,
       'max-depth': 0,
       'max-lines': 0,
       'max-lines-per-function': 0,
       'max-nested-callbacks': 0,
-      'max-params': 0,
+      'max-params': 0, // replaced by @typescript-eslint/max-params
       'max-statements': 0,
       'multiline-comment-style': 0,
       'new-cap': 0,
@@ -149,7 +149,7 @@ export default defineConfig([
       'no-div-regex': 0,
       'no-else-return': [1, { allowElseIf: false }],
       'no-empty': [1, { allowEmptyCatch: true }],
-      'no-empty-function': 0,
+      'no-empty-function': 0, // replaced by @typescript-eslint/no-empty-function
       'no-empty-static-block': 1,
       'no-eq-null': 0,
       'no-eval': 1,
@@ -162,14 +162,14 @@ export default defineConfig([
       'no-implicit-globals': 0,
       'no-implied-eval': 0, // replaced by @typescript-eslint/no-implied-eval
       'no-inline-comments': 0,
-      'no-invalid-this': 0,
+      'no-invalid-this': 0, // replaced by @typescript-eslint/no-invalid-this
       'no-iterator': 1,
       'no-label-var': 1,
       'no-labels': 1,
       'no-lone-blocks': 1,
       'no-lonely-if': 1,
-      'no-loop-func': 0,
-      'no-magic-numbers': 0,
+      'no-loop-func': 0, // replaced by @typescript-eslint/no-loop-func
+      'no-magic-numbers': 0, // replaced by @typescript-eslint/no-magic-numbers
       'no-multi-assign': 0,
       'no-multi-str': 1,
       'no-negated-condition': 0,
@@ -201,7 +201,7 @@ export default defineConfig([
       'no-return-await': 0, // replaced by @typescript-eslint/return-await
       'no-script-url': 1,
       'no-sequences': [1, { allowInParentheses: false }],
-      'no-shadow': 0,
+      'no-shadow': 0, // replaced by @typescript-eslint/no-shadow
       'no-shadow-restricted-names': 1,
       'no-ternary': 0,
       'no-throw-literal': 0, // replaced by @typescript-eslint/only-throw-error
@@ -215,7 +215,7 @@ export default defineConfig([
       'no-useless-catch': 1,
       'no-useless-computed-key': 1,
       'no-useless-concat': 1,
-      'no-useless-constructor': 1,
+      'no-useless-constructor': 0, // replaced by @typescript-eslint/no-useless-constructor
       'no-useless-escape': 1,
       'no-useless-rename': 1,
       'no-useless-return': 1,
@@ -579,7 +579,7 @@ copy(
       '@typescript-eslint/ban-ts-comment': [1, { 'ts-expect-error': false }],
       '@typescript-eslint/ban-tslint-comment': 0,
       '@typescript-eslint/class-literal-property-style': 0,
-      '@typescript-eslint/class-methods-use-this': 0,
+      '@typescript-eslint/class-methods-use-this': 1,
       '@typescript-eslint/consistent-generic-constructors': 1,
       '@typescript-eslint/consistent-indexed-object-style': 1,
       '@typescript-eslint/consistent-return': 0,
