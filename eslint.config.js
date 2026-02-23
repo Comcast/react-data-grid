@@ -412,6 +412,24 @@ export default defineConfig([
 
       // SonarJS rules
       // https://github.com/SonarSource/SonarJS/blob/master/packages/jsts/src/rules/README.md#rules
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // selecto rules table
+      .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table')
+      // select all rows with a rule
+      .querySelectorAll('tr:has(a)')
+  )
+    // filter out deprecated rules
+    .filter((row) => row.lastElementChild.textContent === '')
+    // map row to rule declaration
+    .map((row) => `'sonarjs/${row.firstElementChild.textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       'sonarjs/anchor-precedence': 1,
       'sonarjs/argument-type': 1,
       'sonarjs/arguments-order': 1,
@@ -434,7 +452,6 @@ export default defineConfig([
       'sonarjs/aws-s3-bucket-granted-access': 0,
       'sonarjs/aws-s3-bucket-insecure-http': 0,
       'sonarjs/aws-s3-bucket-public-access': 0,
-      'sonarjs/aws-s3-bucket-server-encryption': 0,
       'sonarjs/aws-s3-bucket-versioning': 0,
       'sonarjs/aws-sagemaker-unencrypted-notebook': 0,
       'sonarjs/aws-sns-unencrypted-topics': 0,
@@ -443,40 +460,33 @@ export default defineConfig([
       'sonarjs/block-scoped-var': 1,
       'sonarjs/bool-param-default': 0,
       'sonarjs/call-argument-line': 1,
-      'sonarjs/certificate-transparency': 1,
       'sonarjs/chai-determinate-assertion': 1,
       'sonarjs/class-name': 1,
       'sonarjs/class-prototype': 1,
-      'sonarjs/code-eval': 1,
       'sonarjs/cognitive-complexity': 0,
       'sonarjs/comma-or-logical-or-case': 1,
       'sonarjs/comment-regex': 1,
       'sonarjs/concise-regex': 1,
-      'sonarjs/conditional-indentation': 1,
       'sonarjs/confidential-information-logging': 1,
       'sonarjs/constructor-for-side-effects': 1,
       'sonarjs/content-length': 1,
       'sonarjs/content-security-policy': 1,
       'sonarjs/cookie-no-httponly': 1,
-      'sonarjs/cookies': 1,
       'sonarjs/cors': 1,
       'sonarjs/csrf': 1,
       'sonarjs/cyclomatic-complexity': 0,
       'sonarjs/declarations-in-global-scope': 0,
       'sonarjs/deprecation': 0,
       'sonarjs/destructuring-assignment-syntax': 1,
-      'sonarjs/different-types-comparison': 0,
+      'sonarjs/different-types-comparison': 1,
       'sonarjs/disabled-auto-escaping': 1,
       'sonarjs/disabled-resource-integrity': 1,
       'sonarjs/disabled-timeout': 1,
-      'sonarjs/dns-prefetching': 1,
       'sonarjs/duplicates-in-character-class': 1,
       'sonarjs/dynamically-constructed-templates': 1,
       'sonarjs/elseif-without-else': 0,
       'sonarjs/empty-string-repetition': 1,
-      'sonarjs/encryption': 1,
       'sonarjs/encryption-secure-mode': 1,
-      'sonarjs/enforce-trailing-comma': 0,
       'sonarjs/existing-groups': 1,
       'sonarjs/expression-complexity': 0,
       'sonarjs/file-header': 0,
@@ -586,7 +596,6 @@ export default defineConfig([
       'sonarjs/no-redundant-boolean': 1,
       'sonarjs/no-redundant-jump': 1,
       'sonarjs/no-redundant-optional': 1,
-      'sonarjs/no-redundant-parentheses': 1,
       'sonarjs/no-reference-error': 0,
       'sonarjs/no-referrer-policy': 1,
       'sonarjs/no-regex-spaces': 1,
@@ -595,10 +604,10 @@ export default defineConfig([
       'sonarjs/no-same-argument-assert': 1,
       'sonarjs/no-same-line-conditional': 1,
       'sonarjs/no-selector-parameter': 0,
+      'sonarjs/no-session-cookies-on-static-assets': 1,
       'sonarjs/no-skipped-tests': 1,
       'sonarjs/no-small-switch': 1,
       'sonarjs/no-sonar-comments': 1,
-      'sonarjs/no-tab': 1,
       'sonarjs/no-table-as-layout': 1,
       'sonarjs/no-try-promise': 1,
       'sonarjs/no-undefined-argument': 1,
@@ -616,7 +625,6 @@ export default defineConfig([
       'sonarjs/no-useless-intersection': 1,
       'sonarjs/no-useless-react-setstate': 1,
       'sonarjs/no-variable-usage-before-declaration': 1,
-      'sonarjs/no-vue-bypass-sanitization': 1,
       'sonarjs/no-weak-cipher': 1,
       'sonarjs/no-weak-keys': 1,
       'sonarjs/no-wildcard-import': 0,
@@ -636,7 +644,6 @@ export default defineConfig([
       'sonarjs/prefer-single-boolean-return': 1,
       'sonarjs/prefer-type-guard': 1,
       'sonarjs/prefer-while': 1,
-      'sonarjs/process-argv': 1,
       'sonarjs/production-debug': 1,
       'sonarjs/pseudo-random': 0,
       'sonarjs/public-static-readonly': 1,
@@ -644,21 +651,17 @@ export default defineConfig([
       'sonarjs/reduce-initial-value': 1,
       'sonarjs/redundant-type-aliases': 0,
       'sonarjs/regex-complexity': 1,
-      'sonarjs/regular-expr': 1,
       'sonarjs/review-blockchain-mnemonic': 1,
       'sonarjs/session-regeneration': 1,
       'sonarjs/shorthand-property-grouping': 0,
       'sonarjs/single-char-in-character-classes': 1,
       'sonarjs/single-character-alternation': 1,
       'sonarjs/slow-regex': 1,
-      'sonarjs/sockets': 1,
       'sonarjs/sql-queries': 1,
       'sonarjs/stable-tests': 1,
-      'sonarjs/standard-input': 1,
       'sonarjs/stateful-regex': 1,
       'sonarjs/strict-transport-security': 1,
       'sonarjs/strings-comparison': 1,
-      'sonarjs/super-invocation': 1,
       'sonarjs/table-header': 1,
       'sonarjs/table-header-reference': 1,
       'sonarjs/test-check-exception': 1,
@@ -672,15 +675,12 @@ export default defineConfig([
       'sonarjs/updated-const-var': 1,
       'sonarjs/updated-loop-counter': 0,
       'sonarjs/use-type-alias': 1,
-      'sonarjs/useless-string-operation': 1,
       'sonarjs/values-not-convertible-to-numbers': 1,
       'sonarjs/variable-name': 1,
       'sonarjs/void-use': 1,
       'sonarjs/weak-ssl': 1,
-      'sonarjs/web-sql-database': 1,
       'sonarjs/x-powered-by': 1,
       'sonarjs/xml-parser-xxe': 1,
-      'sonarjs/xpath': 1,
 
       // @typescript-eslint/eslint-plugin rules
       // https://typescript-eslint.io/rules/#supported-rules
