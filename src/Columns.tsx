@@ -4,13 +4,13 @@ import { SelectCellFormatter } from './cellRenderers';
 
 export const SELECT_COLUMN_KEY = 'rdg-select-column';
 
-function HeaderRenderer(props: RenderHeaderCellProps<unknown>) {
+function HeaderRenderer({ tabIndex }: RenderHeaderCellProps<unknown>) {
   const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
 
   return (
     <SelectCellFormatter
       aria-label="Select All"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       indeterminate={isIndeterminate}
       value={isRowSelected}
       onChange={(checked) => {
@@ -20,32 +20,32 @@ function HeaderRenderer(props: RenderHeaderCellProps<unknown>) {
   );
 }
 
-function SelectFormatter(props: RenderCellProps<unknown>) {
+function SelectFormatter({ row, tabIndex }: RenderCellProps<unknown>) {
   const { isRowSelectionDisabled, isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
     <SelectCellFormatter
       aria-label="Select"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       disabled={isRowSelectionDisabled}
       value={isRowSelected}
       onChange={(checked, isShiftClick) => {
-        onRowSelectionChange({ row: props.row, checked, isShiftClick });
+        onRowSelectionChange({ row, checked, isShiftClick });
       }}
     />
   );
 }
 
-function SelectGroupFormatter(props: RenderGroupCellProps<unknown>) {
+function SelectGroupFormatter({ row, tabIndex }: RenderGroupCellProps<unknown>) {
   const { isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
     <SelectCellFormatter
       aria-label="Select Group"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       value={isRowSelected}
       onChange={(checked) => {
-        onRowSelectionChange({ row: props.row, checked, isShiftClick: false });
+        onRowSelectionChange({ row, checked, isShiftClick: false });
       }}
     />
   );

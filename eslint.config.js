@@ -1,8 +1,12 @@
-import reactX from '@eslint-react/eslint-plugin';
+import eslintReact from '@eslint-react/eslint-plugin';
 import markdown from '@eslint/markdown';
 import vitest from '@vitest/eslint-plugin';
 import jestDom from 'eslint-plugin-jest-dom';
+import reactDom from 'eslint-plugin-react-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
+import reactNamingConvention from 'eslint-plugin-react-naming-convention';
+import reactRsc from 'eslint-plugin-react-rsc';
+import reactWebApi from 'eslint-plugin-react-web-api';
 import sonarjs from 'eslint-plugin-sonarjs';
 import testingLibrary from 'eslint-plugin-testing-library';
 import { defineConfig, globalIgnores } from 'eslint/config';
@@ -24,7 +28,11 @@ export default defineConfig([
     plugins: {
       // @ts-expect-error
       'react-hooks': reactHooks,
-      'react-x': reactX,
+      '@eslint-react': eslintReact,
+      '@eslint-react/rsc': reactRsc,
+      '@eslint-react/dom': reactDom,
+      '@eslint-react/web-api': reactWebApi,
+      '@eslint-react/naming-convention': reactNamingConvention,
       sonarjs,
       '@typescript-eslint': tseslint.plugin
     },
@@ -276,12 +284,127 @@ export default defineConfig([
       'react-hooks/unsupported-syntax': 1,
       'react-hooks/use-memo': 1,
 
-      // React Hooks Extra
-      // https://eslint-react.xyz/
-      'react-x/no-unnecessary-use-callback': 1,
-      'react-x/no-unnecessary-use-memo': 1,
-      'react-x/no-unnecessary-use-prefix': 1,
-      'react-x/prefer-use-state-lazy-initialization': 1,
+      // ESLint React
+      // https://www.eslint-react.xyz/docs/rules/overview
+      /*
+// copy all the rules from the rules table for easy pasting
+function getRules(id, prefix) {
+  return (
+    Iterator.from(
+      document
+        // select rules table
+        .querySelector(`#${id} ~ *:has(table) > table`)
+        // select all rule links
+        .querySelectorAll('tr a')
+    )
+      // map link to rule declaration
+      .map((a) => `'@eslint-react/${prefix}${a.textContent}': 1,`)
+  );
+}
+copy(
+  Iterator.from([
+    getRules('x-rules', ''),
+    getRules('rsc-rules', 'rsc/'),
+    getRules('dom-rules', 'dom/'),
+    getRules('web-api-rules', 'web-api/'),
+    getRules('naming-convention-rules', 'naming-convention/'),
+  ])
+    .flatMap((x) => x)
+    .toArray()
+    .join('\n')
+);
+      */
+      '@eslint-react/component-hook-factories': 1,
+      '@eslint-react/error-boundaries': 1,
+      '@eslint-react/exhaustive-deps': 1,
+      '@eslint-react/jsx-dollar': 1,
+      '@eslint-react/jsx-key-before-spread': 1,
+      '@eslint-react/jsx-no-comment-textnodes': 1,
+      '@eslint-react/jsx-no-duplicate-props': 1,
+      '@eslint-react/jsx-shorthand-boolean': 1,
+      '@eslint-react/jsx-shorthand-fragment': 1,
+      '@eslint-react/jsx-uses-react': 1,
+      '@eslint-react/jsx-uses-vars': 1,
+      '@eslint-react/no-access-state-in-setstate': 1,
+      '@eslint-react/no-array-index-key': 0,
+      '@eslint-react/no-children-count': 1,
+      '@eslint-react/no-children-for-each': 1,
+      '@eslint-react/no-children-map': 1,
+      '@eslint-react/no-children-only': 1,
+      '@eslint-react/no-children-prop': 1,
+      '@eslint-react/no-children-to-array': 1,
+      '@eslint-react/no-class-component': 1,
+      '@eslint-react/no-clone-element': 1,
+      '@eslint-react/no-component-will-mount': 1,
+      '@eslint-react/no-component-will-receive-props': 1,
+      '@eslint-react/no-component-will-update': 1,
+      '@eslint-react/no-context-provider': 1,
+      '@eslint-react/no-create-ref': 1,
+      '@eslint-react/no-direct-mutation-state': 1,
+      '@eslint-react/no-duplicate-key': 1,
+      '@eslint-react/no-forward-ref': 1,
+      '@eslint-react/no-implicit-key': 1,
+      '@eslint-react/no-leaked-conditional-rendering': 1,
+      '@eslint-react/no-missing-component-display-name': 1,
+      '@eslint-react/no-missing-context-display-name': 1,
+      '@eslint-react/no-missing-key': 1,
+      '@eslint-react/no-misused-capture-owner-stack': 1,
+      '@eslint-react/no-nested-component-definitions': 1,
+      '@eslint-react/no-nested-lazy-component-declarations': 1,
+      '@eslint-react/no-redundant-should-component-update': 1,
+      '@eslint-react/no-set-state-in-component-did-mount': 1,
+      '@eslint-react/no-set-state-in-component-did-update': 1,
+      '@eslint-react/no-set-state-in-component-will-update': 1,
+      '@eslint-react/no-unnecessary-use-callback': 1,
+      '@eslint-react/no-unnecessary-use-memo': 1,
+      '@eslint-react/no-unnecessary-use-prefix': 1,
+      '@eslint-react/no-unsafe-component-will-mount': 1,
+      '@eslint-react/no-unsafe-component-will-receive-props': 1,
+      '@eslint-react/no-unsafe-component-will-update': 1,
+      '@eslint-react/no-unstable-context-value': 1,
+      '@eslint-react/no-unstable-default-props': 1,
+      '@eslint-react/no-unused-class-component-members': 1,
+      '@eslint-react/no-unused-props': 1,
+      '@eslint-react/no-unused-state': 1,
+      '@eslint-react/no-use-context': 1,
+      '@eslint-react/no-useless-fragment': [1, { allowExpressions: false }],
+      '@eslint-react/prefer-destructuring-assignment': 1,
+      '@eslint-react/prefer-namespace-import': 1,
+      '@eslint-react/purity': 1,
+      '@eslint-react/refs': 1,
+      '@eslint-react/rules-of-hooks': 1,
+      '@eslint-react/set-state-in-effect': 0,
+      '@eslint-react/set-state-in-render': 1,
+      '@eslint-react/unsupported-syntax': 1,
+      '@eslint-react/use-memo': 1,
+      '@eslint-react/use-state': 1,
+      '@eslint-react/rsc/function-definition': 1,
+      '@eslint-react/dom/no-dangerously-set-innerhtml': 1,
+      '@eslint-react/dom/no-dangerously-set-innerhtml-with-children': 1,
+      '@eslint-react/dom/no-find-dom-node': 1,
+      '@eslint-react/dom/no-flush-sync': 0,
+      '@eslint-react/dom/no-hydrate': 1,
+      '@eslint-react/dom/no-missing-button-type': 1,
+      '@eslint-react/dom/no-missing-iframe-sandbox': 1,
+      '@eslint-react/dom/no-namespace': 1,
+      '@eslint-react/dom/no-render': 1,
+      '@eslint-react/dom/no-render-return-value': 1,
+      '@eslint-react/dom/no-script-url': 1,
+      '@eslint-react/dom/no-string-style-prop': 1,
+      '@eslint-react/dom/no-unknown-property': 0,
+      '@eslint-react/dom/no-unsafe-iframe-sandbox': 1,
+      '@eslint-react/dom/no-unsafe-target-blank': 1,
+      '@eslint-react/dom/no-use-form-state': 1,
+      '@eslint-react/dom/no-void-elements-with-children': 1,
+      '@eslint-react/dom/prefer-namespace-import': 1,
+      '@eslint-react/web-api/no-leaked-event-listener': 1,
+      '@eslint-react/web-api/no-leaked-interval': 1,
+      '@eslint-react/web-api/no-leaked-resize-observer': 1,
+      '@eslint-react/web-api/no-leaked-timeout': 1,
+      '@eslint-react/naming-convention/component-name': 1,
+      '@eslint-react/naming-convention/context-name': 1,
+      '@eslint-react/naming-convention/id-name': 1,
+      '@eslint-react/naming-convention/ref-name': 1,
 
       // SonarJS rules
       // https://github.com/SonarSource/SonarJS/blob/master/packages/jsts/src/rules/README.md#rules
@@ -290,7 +413,7 @@ export default defineConfig([
 copy(
   Iterator.from(
     document
-      // selecto rules table
+      // select rules table
       .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table')
       // select all rows with a rule
       .querySelectorAll('tr:has(a)')
@@ -438,7 +561,7 @@ copy(
       'sonarjs/no-identical-functions': 1,
       'sonarjs/no-ignored-exceptions': 1,
       'sonarjs/no-ignored-return': 1,
-      'sonarjs/no-implicit-dependencies': 1,
+      'sonarjs/no-implicit-dependencies': 0,
       'sonarjs/no-implicit-global': 1,
       'sonarjs/no-in-misuse': 1,
       'sonarjs/no-incomplete-assertions': 1,
@@ -654,19 +777,7 @@ copy(
       '@typescript-eslint/no-redeclare': 1,
       '@typescript-eslint/no-redundant-type-constituents': 1,
       '@typescript-eslint/no-require-imports': 1,
-      '@typescript-eslint/no-restricted-imports': [
-        1,
-        {
-          name: 'react',
-          importNames: ['default'],
-          message: 'Use named imports instead.'
-        },
-        {
-          name: 'react-dom',
-          importNames: ['default'],
-          message: 'Use named imports instead.'
-        }
-      ],
+      '@typescript-eslint/no-restricted-imports': 0,
       '@typescript-eslint/no-restricted-types': 0,
       '@typescript-eslint/no-shadow': 0,
       '@typescript-eslint/no-this-alias': 1,
@@ -802,6 +913,9 @@ copy(
 
     rules: {
       '@typescript-eslint/no-floating-promises': 1,
+
+      '@eslint-react/component-hook-factories': 0,
+      '@eslint-react/no-create-ref': 0,
 
       // https://github.com/vitest-dev/eslint-plugin-vitest#rules
       'vitest/consistent-each-for': 1,
