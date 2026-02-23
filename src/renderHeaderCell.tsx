@@ -26,32 +26,24 @@ export function renderHeaderCell<R, SR>({
 }: RenderHeaderCellContentProps<R, SR>) {
   if (!column.sortable) return column.name;
 
-  return (
-    <SortableHeaderCell sortDirection={sortDirection} priority={priority}>
-      {column.name}
-    </SortableHeaderCell>
-  );
+  return <SortableHeaderCell column={column} sortDirection={sortDirection} priority={priority} />;
 }
 
-type SharedHeaderCellProps<R, SR> = Pick<
+type SortableHeaderCellProps<R, SR> = Pick<
   RenderHeaderCellContentProps<R, SR>,
-  'sortDirection' | 'priority'
+  'column' | 'sortDirection' | 'priority'
 >;
 
-interface SortableHeaderCellProps<R, SR> extends SharedHeaderCellProps<R, SR> {
-  children: React.ReactNode;
-}
-
 function SortableHeaderCell<R, SR>({
+  column,
   sortDirection,
-  priority,
-  children
+  priority
 }: SortableHeaderCellProps<R, SR>) {
   const renderSortStatus = useDefaultRenderers<R, SR>()!.renderSortStatus!;
 
   return (
     <span className={headerSortCellClassname}>
-      <span className={headerSortNameClassname}>{children}</span>
+      <span className={headerSortNameClassname}>{column.name}</span>
       <span>{renderSortStatus({ sortDirection, priority })}</span>
     </span>
   );
