@@ -83,7 +83,7 @@ const SummaryRowComponent = memo(SummaryRow) as <R, SR>(
 
 export default SummaryRowComponent;
 
-export function defaultSummaryRenderRow<R, SR>(
+export function defaultRenderSummaryRow<R, SR>(
   key: React.Key,
   props: RenderSummaryRowProps<R, SR>
 ) {

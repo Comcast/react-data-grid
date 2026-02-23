@@ -70,7 +70,7 @@ import ScrollToCell from './ScrollToCell';
 import { default as defaultRenderSortStatus } from './sortStatus';
 import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/cell';
 import { rootClassname, viewportDraggingClassname } from './style/core';
-import { defaultSummaryRenderRow } from './SummaryRow';
+import { defaultRenderSummaryRow } from './SummaryRow';
 
 export interface SelectCellState extends Position {
   readonly mode: 'SELECT';
@@ -299,7 +299,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const summaryRowHeight = rawSummaryRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const renderRow = renderers?.renderRow ?? defaultRenderers?.renderRow ?? defaultRenderRow;
   const renderSummaryRow =
-    renderers?.renderSummaryRow ?? defaultRenderers?.renderSummaryRow ?? defaultSummaryRenderRow;
+    renderers?.renderSummaryRow ?? defaultRenderers?.renderSummaryRow ?? defaultRenderSummaryRow;
   const renderCell = renderers?.renderCell ?? defaultRenderers?.renderCell ?? defaultRenderCell;
   const renderSortStatus =
     renderers?.renderSortStatus ?? defaultRenderers?.renderSortStatus ?? defaultRenderSortStatus;
