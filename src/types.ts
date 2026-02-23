@@ -186,6 +186,16 @@ export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, newRow: TRow) => void;
 }
 
+export interface EditCellProps<R, SR> extends Pick<
+  RenderCellProps<R, SR>,
+  'column' | 'colSpan' | 'row' | 'rowIdx'
+> {
+  onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;
+  closeEditor: (shouldFocusCell: boolean) => void;
+  navigate: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  onKeyDown: Maybe<(args: EditCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>;
+}
+
 export type CellEvent<E extends React.SyntheticEvent<HTMLDivElement>> = E & {
   preventGridDefault: () => void;
   isGridDefaultPrevented: () => boolean;
@@ -254,7 +264,7 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
   row: TRow;
   lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<RenderEditCellContentProps<TRow>> | undefined;
+  selectedCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
   isTreeGrid: boolean;

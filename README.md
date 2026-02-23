@@ -1654,7 +1654,7 @@ interface RenderRowProps<TRow, TSummaryRow = unknown> {
   gridRowStart: number;
   lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<RenderEditCellContentProps<TRow>> | undefined;
+  selectedCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
   // ... and event handlers
