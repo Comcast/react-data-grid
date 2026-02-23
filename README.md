@@ -1782,9 +1782,9 @@ Arguments passed to the `onCellKeyDown` handler. The shape differs based on whet
 **SELECT mode:**
 
 ```tsx
-interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
+interface SelectCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'SELECT';
-  column: CalculatedColumn<TRow, TSummaryRow>;
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
   row: TRow;
   rowIdx: number;
   selectCell: (position: Position, options?: SelectCellOptions) => void;
@@ -1794,7 +1794,7 @@ interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
 **EDIT mode:**
 
 ```tsx
-interface EditCellKeyDownArgs<TRow, TSummaryRow> {
+interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
