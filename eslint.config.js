@@ -1,13 +1,12 @@
 import reactX from '@eslint-react/eslint-plugin';
 import markdown from '@eslint/markdown';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
 import vitest from '@vitest/eslint-plugin';
 import jestDom from 'eslint-plugin-jest-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
 import sonarjs from 'eslint-plugin-sonarjs';
 import testingLibrary from 'eslint-plugin-testing-library';
 import { defineConfig, globalIgnores } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   globalIgnores(['.cache', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
@@ -27,12 +26,11 @@ export default defineConfig([
       'react-hooks': reactHooks,
       'react-x': reactX,
       sonarjs,
-      // @ts-expect-error
-      '@typescript-eslint': typescriptEslint
+      '@typescript-eslint': tseslint.plugin
     },
 
     languageOptions: {
-      parser: tsParser,
+      parser: tseslint.parser,
 
       parserOptions: {
         ecmaVersion: 'latest',
@@ -61,7 +59,7 @@ export default defineConfig([
       'no-control-regex': 1,
       'no-debugger': 1,
       'no-dupe-args': 1,
-      'no-dupe-class-members': 0,
+      'no-dupe-class-members': 0, // replaced by @typescript-eslint/no-dupe-class-members
       'no-dupe-else-if': 1,
       'no-dupe-keys': 1,
       'no-duplicate-case': 1,
@@ -98,7 +96,7 @@ export default defineConfig([
       'no-unsafe-optional-chaining': [1, { disallowArithmeticOperators: true }],
       'no-unused-private-class-members': 0, // replaced by @typescript-eslint/no-unused-private-class-members
       'no-unused-vars': 0, // replaced by @typescript-eslint/no-unused-vars
-      'no-use-before-define': 0,
+      'no-use-before-define': 0, // replaced by @typescript-eslint/no-use-before-define
       'no-useless-backreference': 1,
       'require-atomic-updates': 1,
       'use-isnan': [1, { enforceForIndexOf: true }],
@@ -111,14 +109,14 @@ export default defineConfig([
       'block-scoped-var': 1,
       camelcase: 0,
       'capitalized-comments': 0,
-      'class-methods-use-this': 1,
+      'class-methods-use-this': 0, // replaced by @typescript-eslint/class-methods-use-this
       complexity: 0,
-      'consistent-return': 0,
+      'consistent-return': 0, // replaced by @typescript-eslint/consistent-return
       'consistent-this': 0,
       curly: 0,
       'default-case': 1,
       'default-case-last': 1,
-      'default-param-last': 0,
+      'default-param-last': 0, // replaced by @typescript-eslint/default-param-last
       'dot-notation': 0, // replaced by @typescript-eslint/dot-notation
       eqeqeq: [1, 'always', { null: 'ignore' }],
       'func-name-matching': 0,
@@ -129,19 +127,19 @@ export default defineConfig([
       'id-denylist': 0,
       'id-length': 0,
       'id-match': 0,
-      'init-declarations': 0,
+      'init-declarations': 0, // replaced by @typescript-eslint/init-declarations
       'logical-assignment-operators': [1, 'always', { enforceForIfStatements: true }],
       'max-classes-per-file': 0,
       'max-depth': 0,
       'max-lines': 0,
       'max-lines-per-function': 0,
       'max-nested-callbacks': 0,
-      'max-params': 0,
+      'max-params': 0, // replaced by @typescript-eslint/max-params
       'max-statements': 0,
       'multiline-comment-style': 0,
       'new-cap': 0,
       'no-alert': 0,
-      'no-array-constructor': 1,
+      'no-array-constructor': 0, // replaced by @typescript-eslint/no-array-constructor
       'no-bitwise': 0,
       'no-caller': 1,
       'no-case-declarations': 1,
@@ -151,7 +149,7 @@ export default defineConfig([
       'no-div-regex': 0,
       'no-else-return': [1, { allowElseIf: false }],
       'no-empty': [1, { allowEmptyCatch: true }],
-      'no-empty-function': 0,
+      'no-empty-function': 0, // replaced by @typescript-eslint/no-empty-function
       'no-empty-static-block': 1,
       'no-eq-null': 0,
       'no-eval': 1,
@@ -164,14 +162,14 @@ export default defineConfig([
       'no-implicit-globals': 0,
       'no-implied-eval': 0, // replaced by @typescript-eslint/no-implied-eval
       'no-inline-comments': 0,
-      'no-invalid-this': 0,
+      'no-invalid-this': 0, // replaced by @typescript-eslint/no-invalid-this
       'no-iterator': 1,
       'no-label-var': 1,
       'no-labels': 1,
       'no-lone-blocks': 1,
       'no-lonely-if': 1,
-      'no-loop-func': 0,
-      'no-magic-numbers': 0,
+      'no-loop-func': 0, // replaced by @typescript-eslint/no-loop-func
+      'no-magic-numbers': 0, // replaced by @typescript-eslint/no-magic-numbers
       'no-multi-assign': 0,
       'no-multi-str': 1,
       'no-negated-condition': 0,
@@ -203,7 +201,7 @@ export default defineConfig([
       'no-return-await': 0, // replaced by @typescript-eslint/return-await
       'no-script-url': 1,
       'no-sequences': [1, { allowInParentheses: false }],
-      'no-shadow': 0,
+      'no-shadow': 0, // replaced by @typescript-eslint/no-shadow
       'no-shadow-restricted-names': 1,
       'no-ternary': 0,
       'no-throw-literal': 0, // replaced by @typescript-eslint/only-throw-error
@@ -211,13 +209,13 @@ export default defineConfig([
       'no-undefined': 0,
       'no-underscore-dangle': 0,
       'no-unneeded-ternary': [1, { defaultAssignment: false }],
-      'no-unused-expressions': [1, { allowTaggedTemplates: true, enforceForJSX: true }],
+      'no-unused-expressions': 0, // replaced by @typescript-eslint/no-unused-expressions
       'no-unused-labels': 1,
       'no-useless-call': 1,
       'no-useless-catch': 1,
       'no-useless-computed-key': 1,
       'no-useless-concat': 1,
-      'no-useless-constructor': 1,
+      'no-useless-constructor': 0, // replaced by @typescript-eslint/no-useless-constructor
       'no-useless-escape': 1,
       'no-useless-rename': 1,
       'no-useless-return': 1,
@@ -408,7 +406,7 @@ copy(
       'sonarjs/no-code-after-done': 1,
       'sonarjs/no-collapsible-if': 1,
       'sonarjs/no-collection-size-mischeck': 1,
-      'sonarjs/no-commented-code': 1,
+      'sonarjs/no-commented-code': 0,
       'sonarjs/no-control-regex': 1,
       'sonarjs/no-dead-store': 1,
       'sonarjs/no-delete-var': 1,
@@ -558,48 +556,93 @@ copy(
       'sonarjs/xml-parser-xxe': 1,
 
       // @typescript-eslint/eslint-plugin rules
-      // https://typescript-eslint.io/rules/#supported-rules
+      // https://typescript-eslint.io/rules/
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select all rows with a rule
+      .querySelectorAll('tr:has(a)')
+  )
+    // filter out deprecated rules
+    .filter((row) => row.lastElementChild.textContent === '')
+    // map row to rule declaration
+    .map((row) => `'${row.querySelector('a').textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       '@typescript-eslint/adjacent-overload-signatures': 1,
-      '@typescript-eslint/array-type': 0,
+      '@typescript-eslint/array-type': 1,
       '@typescript-eslint/await-thenable': 1,
       '@typescript-eslint/ban-ts-comment': [1, { 'ts-expect-error': false }],
       '@typescript-eslint/ban-tslint-comment': 0,
       '@typescript-eslint/class-literal-property-style': 0,
-      '@typescript-eslint/class-methods-use-this': 0,
+      '@typescript-eslint/class-methods-use-this': 1,
       '@typescript-eslint/consistent-generic-constructors': 1,
       '@typescript-eslint/consistent-indexed-object-style': 1,
       '@typescript-eslint/consistent-return': 0,
       '@typescript-eslint/consistent-type-assertions': [
         1,
-        { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }
+        {
+          arrayLiteralTypeAssertions: 'never',
+          objectLiteralTypeAssertions: 'never'
+        }
       ],
       '@typescript-eslint/consistent-type-definitions': 1,
-      '@typescript-eslint/consistent-type-exports': 0,
+      '@typescript-eslint/consistent-type-exports': [
+        1,
+        { fixMixedExportsWithInlineTypeSpecifier: true }
+      ],
       '@typescript-eslint/consistent-type-imports': [1, { fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/default-param-last': 0,
+      '@typescript-eslint/dot-notation': 1,
       '@typescript-eslint/explicit-function-return-type': 0,
       '@typescript-eslint/explicit-member-accessibility': 0,
       '@typescript-eslint/explicit-module-boundary-types': 0,
+      '@typescript-eslint/init-declarations': 0,
+      '@typescript-eslint/max-params': 0,
       '@typescript-eslint/member-ordering': 0,
       '@typescript-eslint/method-signature-style': 1,
-      '@typescript-eslint/naming-convention': 0,
+      '@typescript-eslint/naming-convention': [
+        1,
+        {
+          selector: ['class', 'interface'],
+          format: ['PascalCase']
+        }
+      ],
+      '@typescript-eslint/no-array-constructor': 1,
       '@typescript-eslint/no-array-delete': 1,
       '@typescript-eslint/no-base-to-string': 0,
       '@typescript-eslint/no-confusing-non-null-assertion': 0,
-      '@typescript-eslint/no-confusing-void-expression': [1, { ignoreArrowShorthand: true }],
+      '@typescript-eslint/no-confusing-void-expression': [
+        1,
+        {
+          ignoreArrowShorthand: true,
+          ignoreVoidReturningFunctions: true
+        }
+      ],
       '@typescript-eslint/no-deprecated': 1,
+      '@typescript-eslint/no-dupe-class-members': 0,
       '@typescript-eslint/no-duplicate-enum-values': 1,
       '@typescript-eslint/no-duplicate-type-constituents': 1,
       '@typescript-eslint/no-dynamic-delete': 0,
+      '@typescript-eslint/no-empty-function': 0,
       '@typescript-eslint/no-empty-object-type': 1,
       '@typescript-eslint/no-explicit-any': [1, { fixToUnknown: true }],
       '@typescript-eslint/no-extra-non-null-assertion': 1,
       '@typescript-eslint/no-extraneous-class': 1,
       '@typescript-eslint/no-floating-promises': 0,
       '@typescript-eslint/no-for-in-array': 1,
-      '@typescript-eslint/no-import-type-side-effects': 0,
+      '@typescript-eslint/no-implied-eval': 1,
+      '@typescript-eslint/no-import-type-side-effects': 1,
       '@typescript-eslint/no-inferrable-types': 1,
+      '@typescript-eslint/no-invalid-this': 0,
       '@typescript-eslint/no-invalid-void-type': 1,
-      '@typescript-eslint/no-meaningless-void-operator': 0,
+      '@typescript-eslint/no-loop-func': 0,
+      '@typescript-eslint/no-magic-numbers': 0,
+      '@typescript-eslint/no-meaningless-void-operator': 1,
       '@typescript-eslint/no-misused-new': 1,
       '@typescript-eslint/no-misused-promises': 0,
       '@typescript-eslint/no-misused-spread': 1,
@@ -608,13 +651,33 @@ copy(
       '@typescript-eslint/no-non-null-asserted-nullish-coalescing': 1,
       '@typescript-eslint/no-non-null-asserted-optional-chain': 1,
       '@typescript-eslint/no-non-null-assertion': 0,
+      '@typescript-eslint/no-redeclare': 1,
       '@typescript-eslint/no-redundant-type-constituents': 1,
       '@typescript-eslint/no-require-imports': 1,
+      '@typescript-eslint/no-restricted-imports': [
+        1,
+        {
+          name: 'react',
+          importNames: ['default'],
+          message: 'Use named imports instead.'
+        },
+        {
+          name: 'react-dom',
+          importNames: ['default'],
+          message: 'Use named imports instead.'
+        }
+      ],
       '@typescript-eslint/no-restricted-types': 0,
-      '@typescript-eslint/no-this-alias': 0,
-      '@typescript-eslint/no-type-alias': 0,
+      '@typescript-eslint/no-shadow': 0,
+      '@typescript-eslint/no-this-alias': 1,
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 1,
-      '@typescript-eslint/no-unnecessary-condition': [1, { checkTypePredicates: true }],
+      '@typescript-eslint/no-unnecessary-condition': [
+        1,
+        {
+          allowConstantLoopConditions: 'only-allowed-literals',
+          checkTypePredicates: true
+        }
+      ],
       '@typescript-eslint/no-unnecessary-parameter-property-assignment': 1,
       '@typescript-eslint/no-unnecessary-qualifier': 0,
       '@typescript-eslint/no-unnecessary-template-expression': 1,
@@ -630,86 +693,98 @@ copy(
       '@typescript-eslint/no-unsafe-enum-comparison': 1,
       '@typescript-eslint/no-unsafe-function-type': 1,
       '@typescript-eslint/no-unsafe-member-access': 0,
-      '@typescript-eslint/no-unsafe-return': 1,
+      '@typescript-eslint/no-unsafe-return': 0,
       '@typescript-eslint/no-unsafe-type-assertion': 0,
       '@typescript-eslint/no-unsafe-unary-minus': 1,
+      '@typescript-eslint/no-unused-expressions': [1, { enforceForJSX: true }],
+      '@typescript-eslint/no-unused-private-class-members': 1,
+      '@typescript-eslint/no-unused-vars': [
+        1,
+        {
+          enableAutofixRemoval: { imports: true },
+          ignoreRestSiblings: true
+        }
+      ],
+      '@typescript-eslint/no-use-before-define': 0,
+      '@typescript-eslint/no-useless-constructor': 1,
+      '@typescript-eslint/no-useless-default-assignment': 1,
       '@typescript-eslint/no-useless-empty-export': 1,
-      '@typescript-eslint/no-var-requires': 0,
       '@typescript-eslint/no-wrapper-object-types': 1,
       '@typescript-eslint/non-nullable-type-assertion-style': 1,
+      '@typescript-eslint/only-throw-error': [
+        1,
+        {
+          allow: [
+            {
+              from: 'package',
+              package: '@tanstack/router-core',
+              name: ['NotFoundError', 'Redirect']
+            }
+          ]
+        }
+      ],
       '@typescript-eslint/parameter-properties': 1,
       '@typescript-eslint/prefer-as-const': 1,
-      '@typescript-eslint/prefer-destructuring': [1, { array: false, object: true }],
-      '@typescript-eslint/prefer-enum-initializers': 0,
+      '@typescript-eslint/prefer-destructuring': [
+        1,
+        {
+          VariableDeclarator: {
+            array: false,
+            object: true
+          },
+          AssignmentExpression: {
+            array: false,
+            object: false
+          }
+        }
+      ],
+      '@typescript-eslint/prefer-enum-initializers': 1,
       '@typescript-eslint/prefer-find': 1,
       '@typescript-eslint/prefer-for-of': 1,
       '@typescript-eslint/prefer-function-type': 1,
       '@typescript-eslint/prefer-includes': 1,
       '@typescript-eslint/prefer-literal-enum-member': 1,
-      '@typescript-eslint/prefer-namespace-keyword': 0,
+      '@typescript-eslint/prefer-namespace-keyword': 1,
       '@typescript-eslint/prefer-nullish-coalescing': [
         1,
-        { ignorePrimitives: { boolean: true, string: true } }
+        {
+          ignoreConditionalTests: false,
+          ignorePrimitives: true
+        }
       ],
       '@typescript-eslint/prefer-optional-chain': 1,
-      '@typescript-eslint/prefer-promise-reject-errors': [1, { allowEmptyReject: true }],
+      '@typescript-eslint/prefer-promise-reject-errors': 1,
       '@typescript-eslint/prefer-readonly': 1,
       '@typescript-eslint/prefer-readonly-parameter-types': 0,
       '@typescript-eslint/prefer-reduce-type-parameter': 1,
       '@typescript-eslint/prefer-regexp-exec': 1,
-      '@typescript-eslint/prefer-return-this-type': 0,
+      '@typescript-eslint/prefer-return-this-type': 1,
       '@typescript-eslint/prefer-string-starts-ends-with': 1,
       '@typescript-eslint/promise-function-async': 0,
+      '@typescript-eslint/related-getter-setter-pairs': 0,
       '@typescript-eslint/require-array-sort-compare': 1,
-      '@typescript-eslint/restrict-plus-operands': 0,
+      '@typescript-eslint/require-await': 1,
+      '@typescript-eslint/restrict-plus-operands': [
+        1,
+        {
+          allowAny: false,
+          allowBoolean: false,
+          allowNullish: false,
+          allowNumberAndString: false,
+          allowRegExp: false
+        }
+      ],
       '@typescript-eslint/restrict-template-expressions': 0,
-      '@typescript-eslint/sort-type-constituents': 0,
+      '@typescript-eslint/return-await': 1,
       '@typescript-eslint/strict-boolean-expressions': 0,
+      '@typescript-eslint/strict-void-return': 0,
       '@typescript-eslint/switch-exhaustiveness-check': 1,
       '@typescript-eslint/triple-slash-reference': [
         1,
         { path: 'never', types: 'never', lib: 'never' }
       ],
-      '@typescript-eslint/typedef': 0,
       '@typescript-eslint/unbound-method': 0,
       '@typescript-eslint/unified-signatures': 0,
-
-      // @typescript-eslint/eslint-plugin Extension Rules
-      // https://typescript-eslint.io/rules/#extension-rules
-      '@typescript-eslint/default-param-last': 0,
-      '@typescript-eslint/dot-notation': 1,
-      '@typescript-eslint/init-declarations': 0,
-      '@typescript-eslint/max-params': 0,
-      '@typescript-eslint/no-array-constructor': 0,
-      '@typescript-eslint/no-dupe-class-members': 0,
-      '@typescript-eslint/no-empty-function': 0,
-      '@typescript-eslint/no-implied-eval': 1,
-      '@typescript-eslint/no-invalid-this': 0,
-      '@typescript-eslint/no-loop-func': 0,
-      '@typescript-eslint/no-magic-numbers': 0,
-      '@typescript-eslint/no-redeclare': 1,
-      '@typescript-eslint/no-restricted-imports': [
-        1,
-        {
-          name: 'react',
-          importNames: ['default'],
-          message: 'Use named imports instead.'
-        },
-        {
-          name: 'react-dom',
-          importNames: ['default'],
-          message: 'Use named imports instead.'
-        }
-      ],
-      '@typescript-eslint/no-shadow': 0,
-      '@typescript-eslint/no-unused-expressions': 0,
-      '@typescript-eslint/no-unused-private-class-members': 0,
-      '@typescript-eslint/no-unused-vars': [1, { ignoreRestSiblings: true }],
-      '@typescript-eslint/no-use-before-define': 0,
-      '@typescript-eslint/no-useless-constructor': 0,
-      '@typescript-eslint/only-throw-error': 1,
-      '@typescript-eslint/require-await': 1,
-      '@typescript-eslint/return-await': 1,
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 1
     }
   },

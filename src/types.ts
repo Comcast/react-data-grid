@@ -203,7 +203,7 @@ export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
 
 interface SelectCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'SELECT';
-  column: CalculatedColumn<TRow, TSummaryRow>;
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
   row: TRow;
   rowIdx: number;
   selectCell: (position: Position, options?: SelectCellOptions) => void;
