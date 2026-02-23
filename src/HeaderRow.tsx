@@ -6,7 +6,6 @@ import type { CalculatedColumn, Direction, Maybe, Position, ResizedWidth } from 
 import type { DataGridProps } from './DataGrid';
 import HeaderCell from './HeaderCell';
 import { cell, cellFrozen } from './style/cell';
-import { rowSelectedClassname } from './style/row';
 
 type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
   DataGridProps<R, SR, K>,
@@ -62,7 +61,6 @@ function HeaderRow<R, SR, K extends React.Key>({
   direction
 }: HeaderRowProps<R, SR, K>) {
   const [draggedColumnKey, setDraggedColumnKey] = useState<string>();
-  const isPositionOnRow = selectedCellIdx === -1;
 
   const cells = [];
   for (let index = 0; index < columns.length; index++) {
@@ -97,11 +95,7 @@ function HeaderRow<R, SR, K extends React.Key>({
     <div
       role="row"
       aria-rowindex={rowIdx} // aria-rowindex is 1 based
-      className={classnames(
-        headerRowClassname,
-        isPositionOnRow && rowSelectedClassname,
-        headerRowClass
-      )}
+      className={classnames(headerRowClassname, headerRowClass)}
     >
       {cells}
     </div>
