@@ -13,6 +13,18 @@ export const row = css`
       background-color: var(--rdg-row-hover-background-color);
     }
 
+    &[aria-selected='true'] {
+      background-color: var(--rdg-row-selected-background-color);
+
+      &:hover {
+        background-color: var(--rdg-row-selected-hover-background-color);
+      }
+    }
+  }
+`;
+
+export const rowFocusable = css`
+  @layer rdg.Row {
     &:focus {
       outline: none;
     }
@@ -34,14 +46,6 @@ export const row = css`
         inset-block: 0;
         inset-inline-start: 0;
         border-inline-start: var(--rdg-selection-width) solid var(--rdg-selection-color);
-      }
-    }
-
-    &[aria-selected='true'] {
-      background-color: var(--rdg-row-selected-background-color);
-
-      &:hover {
-        background-color: var(--rdg-row-selected-hover-background-color);
       }
     }
   }

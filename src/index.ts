@@ -10,6 +10,7 @@ export { TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
 export { DataGridDefaultRenderersContext } from './DataGridDefaultRenderersContext';
 export { default as Row } from './Row';
 export { default as Cell } from './Cell';
+export { default as SummaryRow } from './SummaryRow';
 export * from './Columns';
 export * from './cellRenderers';
 export { default as renderTextEditor } from './editors/renderTextEditor';
@@ -47,6 +48,7 @@ export type {
   RenderSortPriorityProps,
   RenderSortStatusProps,
   RenderSummaryCellProps,
+  RenderSummaryRowProps,
   RowHeightArgs,
   RowsChangeData,
   SelectCellOptions,

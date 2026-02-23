@@ -70,7 +70,7 @@ import ScrollToCell from './ScrollToCell';
 import { default as defaultRenderSortStatus } from './sortStatus';
 import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/cell';
 import { rootClassname, viewportDraggingClassname } from './style/core';
-import SummaryRow from './SummaryRow';
+import { defaultSummaryRenderRow } from './SummaryRow';
 
 export interface SelectCellState extends Position {
   readonly mode: 'SELECT';
@@ -298,6 +298,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const summaryRowHeight = rawSummaryRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const renderRow = renderers?.renderRow ?? defaultRenderers?.renderRow ?? defaultRenderRow;
+  const renderSummaryRow =
+    renderers?.renderSummaryRow ?? defaultRenderers?.renderSummaryRow ?? defaultSummaryRenderRow;
   const renderCell = renderers?.renderCell ?? defaultRenderers?.renderCell ?? defaultRenderCell;
   const renderSortStatus =
     renderers?.renderSortStatus ?? defaultRenderers?.renderSortStatus ?? defaultRenderSortStatus;
@@ -1129,8 +1131,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           lastFrozenColumnIndex,
           onRowChange: handleFormatterRowChangeLatest,
           selectCell: selectCellLatest,
-          selectedCellEditor: getCellEditor(rowIdx),
-          isTreeGrid
+          selectedCellEditor: getCellEditor(rowIdx)
         })
       );
     }
@@ -1245,23 +1246,19 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               const isSummaryRowSelected = selectedPosition.rowIdx === summaryRowIdx;
               const top = headerRowsHeight + summaryRowHeight * rowIdx;
 
-              return (
-                <SummaryRow
-                  key={rowIdx}
-                  aria-rowindex={gridRowStart}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={undefined}
-                  viewportColumns={getRowViewportColumns(summaryRowIdx)}
-                  lastFrozenColumnIndex={lastFrozenColumnIndex}
-                  selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
-                  isTop
-                  selectCell={selectCellLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
+              return renderSummaryRow(rowIdx, {
+                'aria-rowindex': gridRowStart,
+                rowIdx: summaryRowIdx,
+                gridRowStart,
+                row,
+                top,
+                bottom: undefined,
+                viewportColumns: getRowViewportColumns(summaryRowIdx),
+                lastFrozenColumnIndex,
+                selectedCellIdx: isSummaryRowSelected ? selectedPosition.idx : undefined,
+                isTop: true,
+                selectCell: selectCellLatest
+              });
             })}
             <RowSelectionChangeContext value={selectRowLatest}>
               {getViewportRows()}
@@ -1279,23 +1276,19 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   ? summaryRowHeight * (bottomSummaryRows.length - 1 - rowIdx)
                   : undefined;
 
-              return (
-                <SummaryRow
-                  aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
-                  key={rowIdx}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={bottom}
-                  viewportColumns={getRowViewportColumns(summaryRowIdx)}
-                  lastFrozenColumnIndex={lastFrozenColumnIndex}
-                  selectedCellIdx={isSummaryRowSelected ? selectedPosition.idx : undefined}
-                  isTop={false}
-                  selectCell={selectCellLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
+              return renderSummaryRow(rowIdx, {
+                'aria-rowindex': ariaRowCount - bottomSummaryRowsCount + rowIdx + 1,
+                rowIdx: summaryRowIdx,
+                gridRowStart,
+                row,
+                top,
+                bottom,
+                viewportColumns: getRowViewportColumns(summaryRowIdx),
+                lastFrozenColumnIndex,
+                selectedCellIdx: isSummaryRowSelected ? selectedPosition.idx : undefined,
+                isTop: false,
+                selectCell: selectCellLatest
+              });
             })}
           </>
         )}

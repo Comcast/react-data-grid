@@ -4,7 +4,7 @@ import { RowSelectionContext, useLatestFunc, type RowSelectionContextValue } fro
 import { classnames, getColSpan } from './utils';
 import type { CalculatedColumn, RenderRowProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
-import { rowClassname, rowSelectedClassname } from './style/row';
+import { rowClassname } from './style/row';
 
 function Row<R, SR>({
   className,
@@ -18,7 +18,6 @@ function Row<R, SR>({
   row,
   viewportColumns,
   selectedCellEditor,
-  isTreeGrid,
   onCellMouseDown,
   onCellClick,
   onCellDoubleClick,
@@ -35,12 +34,9 @@ function Row<R, SR>({
     onRowChange(column, rowIdx, newRow);
   });
 
-  const isPositionOnRow = selectedCellIdx === -1;
-
   className = classnames(
     rowClassname,
     `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-    isPositionOnRow && rowSelectedClassname,
     rowClass?.(row, rowIdx),
     className
   );
@@ -88,7 +84,6 @@ function Row<R, SR>({
     <RowSelectionContext value={selectionValue}>
       <div
         role="row"
-        tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
         className={className}
         style={{
           gridRowStart,
