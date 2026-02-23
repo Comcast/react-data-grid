@@ -2,14 +2,7 @@ import { useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { css } from 'ecij';
 
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
-import type {
-  CellKeyboardEvent,
-  RenderCellProps,
-  EditCellKeyDownArgs,
-  Maybe,
-  Omit,
-  RenderEditCellContentProps
-} from './types';
+import type { CellKeyboardEvent, RenderCellProps, EditCellKeyDownArgs, Maybe } from './types';
 
 declare global {
   const scheduler: Scheduler | undefined;
@@ -50,13 +43,12 @@ const cellEditing = css`
   }
 `;
 
-type SharedRenderCellProps<R, SR> = Pick<RenderCellProps<R, SR>, 'colSpan'>;
+type SharedRenderCellProps<R, SR> = Pick<
+  RenderCellProps<R, SR>,
+  'column' | 'colSpan' | 'row' | 'rowIdx'
+>;
 
-interface EditCellProps<R, SR>
-  extends
-    Omit<RenderEditCellContentProps<R, SR>, 'onRowChange' | 'onClose'>,
-    SharedRenderCellProps<R, SR> {
-  rowIdx: number;
+interface EditCellProps<R, SR> extends SharedRenderCellProps<R, SR> {
   onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;
   closeEditor: (shouldFocusCell: boolean) => void;
   navigate: (event: React.KeyboardEvent<HTMLDivElement>) => void;
@@ -70,8 +62,8 @@ export default function EditCell<R, SR>({
   rowIdx,
   onRowChange,
   closeEditor,
-  onKeyDown,
-  navigate
+  navigate,
+  onKeyDown
 }: EditCellProps<R, SR>) {
   const captureEventRef = useRef<MouseEvent | undefined>(undefined);
   const abortControllerRef = useRef<AbortController>(undefined);
