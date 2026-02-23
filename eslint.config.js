@@ -4,7 +4,6 @@ import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import vitest from '@vitest/eslint-plugin';
 import jestDom from 'eslint-plugin-jest-dom';
-import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import sonarjs from 'eslint-plugin-sonarjs';
 import testingLibrary from 'eslint-plugin-testing-library';
@@ -24,7 +23,6 @@ export default defineConfig([
     files: ['**/*.{js,ts,tsx}'],
 
     plugins: {
-      react,
       // @ts-expect-error
       'react-hooks': reactHooks,
       'react-x': reactX,
@@ -41,12 +39,6 @@ export default defineConfig([
         jsxPragma: null,
         projectService: true,
         warnOnUnsupportedTypeScriptVersion: false
-      }
-    },
-
-    settings: {
-      react: {
-        version: 'detect'
       }
     },
 
@@ -265,123 +257,6 @@ export default defineConfig([
       // Layout & Formatting
       // https://eslint.org/docs/latest/rules/#layout--formatting
       'unicode-bom': 1,
-
-      // React rules
-      // https://github.com/jsx-eslint/eslint-plugin-react#list-of-supported-rules
-      'react/boolean-prop-naming': 0,
-      'react/button-has-type': 0,
-      'react/checked-requires-onchange-or-readonly': 1,
-      'react/default-props-match-prop-types': 0,
-      'react/destructuring-assignment': 0,
-      'react/display-name': 0,
-      'react/forbid-component-props': 0,
-      'react/forbid-dom-props': 0,
-      'react/forbid-elements': 0,
-      'react/forbid-foreign-prop-types': 0,
-      'react/forbid-prop-types': 0,
-      'react/forward-ref-uses-ref': 1,
-      'react/function-component-definition': [
-        1,
-        {
-          namedComponents: 'function-declaration',
-          unnamedComponents: 'function-expression'
-        }
-      ],
-      'react/hook-use-state': 0,
-      'react/iframe-missing-sandbox': 1,
-      'react/jsx-boolean-value': 1,
-      'react/jsx-child-element-spacing': 0,
-      'react/jsx-closing-bracket-location': 0,
-      'react/jsx-closing-tag-location': 0,
-      'react/jsx-curly-brace-presence': 1,
-      'react/jsx-curly-newline': 0,
-      'react/jsx-curly-spacing': 0,
-      'react/jsx-equals-spacing': 0,
-      'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
-      'react/jsx-first-prop-new-line': 0,
-      'react/jsx-fragments': 1,
-      'react/jsx-handler-names': 0,
-      'react/jsx-indent': 0,
-      'react/jsx-indent-props': 0,
-      'react/jsx-key': [
-        1,
-        {
-          checkFragmentShorthand: true,
-          checkKeyMustBeforeSpread: true,
-          warnOnDuplicates: true
-        }
-      ],
-      'react/jsx-max-depth': 0,
-      'react/jsx-max-props-per-line': 0,
-      'react/jsx-newline': 0,
-      'react/jsx-no-bind': 0,
-      'react/jsx-no-comment-textnodes': 1,
-      'react/jsx-no-constructed-context-values': 1,
-      'react/jsx-no-duplicate-props': 0,
-      'react/jsx-no-leaked-render': 0,
-      'react/jsx-no-literals': 0,
-      'react/jsx-no-script-url': 1,
-      'react/jsx-no-target-blank': 1,
-      'react/jsx-no-undef': 0,
-      'react/jsx-no-useless-fragment': 1,
-      'react/jsx-one-expression-per-line': 0,
-      'react/jsx-pascal-case': 1,
-      'react/jsx-props-no-multi-spaces': 0,
-      'react/jsx-props-no-spread-multi': 1,
-      'react/jsx-props-no-spreading': 0,
-      'react/jsx-sort-props': 0,
-      'react/jsx-tag-spacing': 0,
-      'react/jsx-uses-react': 0,
-      'react/jsx-uses-vars': 1,
-      'react/jsx-wrap-multilines': 0,
-      'react/no-access-state-in-setstate': 1,
-      'react/no-adjacent-inline-elements': 0,
-      'react/no-array-index-key': 0,
-      'react/no-arrow-function-lifecycle': 0,
-      'react/no-children-prop': 0,
-      'react/no-danger': 1,
-      'react/no-danger-with-children': 1,
-      'react/no-deprecated': 1,
-      'react/no-did-mount-set-state': 1,
-      'react/no-did-update-set-state': 1,
-      'react/no-direct-mutation-state': 1,
-      'react/no-find-dom-node': 0,
-      'react/no-invalid-html-attribute': 1,
-      'react/no-is-mounted': 1,
-      'react/no-multi-comp': 0,
-      'react/no-namespace': 0,
-      'react/no-object-type-as-default-prop': 1,
-      'react/no-redundant-should-component-update': 1,
-      'react/no-render-return-value': 0,
-      'react/no-set-state': 0,
-      'react/no-string-refs': [1, { noTemplateLiterals: true }],
-      'react/no-this-in-sfc': 0,
-      'react/no-typos': 1,
-      'react/no-unescaped-entities': 0,
-      'react/no-unknown-property': 0,
-      'react/no-unsafe': 1,
-      'react/no-unstable-nested-components': [1, { allowAsProps: true }],
-      'react/no-unused-class-component-methods': 0,
-      'react/no-unused-prop-types': 0,
-      'react/no-unused-state': 0,
-      'react/no-will-update-set-state': 1,
-      'react/prefer-es6-class': 1,
-      'react/prefer-exact-props': 0,
-      'react/prefer-read-only-props': 0,
-      'react/prefer-stateless-function': 0,
-      'react/prop-types': 0,
-      'react/react-in-jsx-scope': 0,
-      'react/require-default-props': 0,
-      'react/require-optimization': 0,
-      'react/require-render-return': 1,
-      'react/self-closing-comp': 1,
-      'react/sort-comp': 0,
-      'react/sort-default-props': 0,
-      'react/sort-prop-types': 0,
-      'react/state-in-constructor': 0,
-      'react/static-property-placement': 1,
-      'react/style-prop-object': 0,
-      'react/void-dom-elements-no-children': 1,
 
       // React Hooks
       // https://www.npmjs.com/package/eslint-plugin-react-hooks
