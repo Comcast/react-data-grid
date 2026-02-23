@@ -9,13 +9,13 @@ import { SelectCheckbox } from './cellRenderers';
 
 export const SELECT_COLUMN_KEY = 'rdg-select-column';
 
-function SelectAllCell(props: RenderHeaderCellContentProps<unknown>) {
+function SelectAllCell({ tabIndex }: RenderHeaderCellContentProps<unknown>) {
   const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
 
   return (
     <SelectCheckbox
       aria-label="Select All"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       indeterminate={isIndeterminate}
       value={isRowSelected}
       onChange={(checked) => {
@@ -25,32 +25,32 @@ function SelectAllCell(props: RenderHeaderCellContentProps<unknown>) {
   );
 }
 
-function RowSelectCell(props: RenderCellContentProps<unknown>) {
+function RowSelectCell({ row, tabIndex }: RenderCellContentProps<unknown>) {
   const { isRowSelectionDisabled, isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
     <SelectCheckbox
       aria-label="Select"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       disabled={isRowSelectionDisabled}
       value={isRowSelected}
       onChange={(checked, isShiftClick) => {
-        onRowSelectionChange({ row: props.row, checked, isShiftClick });
+        onRowSelectionChange({ row, checked, isShiftClick });
       }}
     />
   );
 }
 
-function GroupSelectCell(props: RenderGroupCellContentProps<unknown>) {
+function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>) {
   const { isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
     <SelectCheckbox
       aria-label="Select Group"
-      tabIndex={props.tabIndex}
+      tabIndex={tabIndex}
       value={isRowSelected}
       onChange={(checked) => {
-        onRowSelectionChange({ row: props.row, checked, isShiftClick: false });
+        onRowSelectionChange({ row, checked, isShiftClick: false });
       }}
     />
   );

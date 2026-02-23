@@ -62,12 +62,3 @@ function downloadFile(fileName: string, data: Blob) {
   downloadLink.click();
   URL.revokeObjectURL(url);
 }
-
-export function startViewTransition(fn: ViewTransitionUpdateCallback) {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (document.startViewTransition) {
-    document.startViewTransition(fn);
-  } else {
-    fn();
-  }
-}
