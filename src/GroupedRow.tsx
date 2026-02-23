@@ -24,7 +24,7 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupRowRendererProps<R, SR> extends BaseRenderRowProps<R, SR> {
+interface GroupedRowProps<R, SR> extends BaseRenderRowProps<R, SR> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
@@ -43,7 +43,7 @@ function GroupedRow<R, SR>({
   toggleGroup,
   isRowSelectionDisabled: _isRowSelectionDisabled,
   ...props
-}: GroupRowRendererProps<R, SR>) {
+}: GroupedRowProps<R, SR>) {
   const isPositionOnRow = selectedCellIdx === -1;
   // Select is always the first column
   const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
@@ -97,6 +97,4 @@ function GroupedRow<R, SR>({
   );
 }
 
-export default memo(GroupedRow) as <R, SR>(
-  props: GroupRowRendererProps<R, SR>
-) => React.JSX.Element;
+export default memo(GroupedRow) as <R, SR>(props: GroupedRowProps<R, SR>) => React.JSX.Element;
