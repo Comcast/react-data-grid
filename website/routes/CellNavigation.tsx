@@ -85,7 +85,7 @@ function CellNavigation() {
   function handleCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
     if (args.mode === 'EDIT') return;
     const { column, rowIdx, selectCell } = args;
-    const { idx } = column;
+    const idx = column?.idx ?? -1;
     const { key, shiftKey } = event;
 
     const preventDefault = () => {
