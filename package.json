@@ -74,7 +74,7 @@
     "eslint-plugin-testing-library": "^7.13.5",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.2",
-    "oxfmt": "0.33.0",
+    "oxfmt": "0.35.0",
     "playwright": "~1.58.0",
     "postcss": "^8.5.2",
     "react": "^19.2.1",
