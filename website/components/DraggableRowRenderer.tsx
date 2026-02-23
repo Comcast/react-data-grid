@@ -2,28 +2,26 @@ import { useState } from 'react';
 import { css } from 'ecij';
 import clsx from 'clsx';
 
-import { Cell, type CellRendererProps } from '../../src';
+import { Row, type RenderRowProps } from '../../src';
 
 const rowDraggingClassname = css`
   opacity: 0.5;
 `;
 
 const rowOverClassname = css`
-  .rdg-row:has(&) {
-    background-color: #ececec;
-  }
+  background-color: #ececec;
 `;
 
-interface DraggableCellRenderProps<R, SR> extends CellRendererProps<R, SR> {
+interface DraggableRowRenderProps<R, SR> extends RenderRowProps<R, SR> {
   onRowReorder: (sourceIndex: number, targetIndex: number) => void;
 }
 
-export function DraggableCellRenderer<R, SR>({
+export function DraggableRowRenderer<R, SR>({
   rowIdx,
   className,
   onRowReorder,
   ...props
-}: DraggableCellRenderProps<R, SR>) {
+}: DraggableRowRenderProps<R, SR>) {
   const [isDragging, setIsDragging] = useState(false);
   const [isOver, setIsOver] = useState(false);
 
@@ -34,8 +32,6 @@ export function DraggableCellRenderer<R, SR>({
 
   function onDragStart(event: React.DragEvent<HTMLDivElement>) {
     setIsDragging(true);
-    // TODO: use a custom drag image to show a preview of the row being dragged
-    event.dataTransfer.setDragImage(event.currentTarget.parentElement!.firstElementChild!, 40, 17);
     event.dataTransfer.setData('text/plain', String(rowIdx));
     event.dataTransfer.dropEffect = 'move';
   }
@@ -70,7 +66,7 @@ export function DraggableCellRenderer<R, SR>({
   }
 
   return (
-    <Cell
+    <Row
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}

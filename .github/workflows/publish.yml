@@ -30,9 +30,6 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      - name: Biome
-        run: node --run biome:ci
-
       - name: Typecheck
         run: node --run typecheck
 

@@ -38,7 +38,7 @@ function autoFocusAndSelect(input: HTMLInputElement | null) {
   input?.select();
 }
 
-export default function textTextEditor<TRow, TSummaryRow>({
+export function renderTextEditor<TRow, TSummaryRow>({
   row,
   column,
   onRowChange,
