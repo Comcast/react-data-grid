@@ -1,19 +1,29 @@
 {
   "name": "react-data-grid",
   "version": "7.0.0-beta.59",
-  "license": "MIT",
   "description": "Feature-rich and customizable data grid React component",
   "keywords": [
-    "react",
-    "data grid"
+    "data grid",
+    "react"
   ],
+  "homepage": "https://github.com/Comcast/react-data-grid#readme",
+  "bugs": "https://github.com/Comcast/react-data-grid/issues",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Comcast/react-data-grid.git"
   },
-  "homepage": "https://github.com/Comcast/react-data-grid#readme",
-  "bugs": "https://github.com/Comcast/react-data-grid/issues",
+  "files": [
+    "lib"
+  ],
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "browser": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "exports": {
     "./lib/styles.css": "./lib/styles.css",
     ".": {
@@ -21,16 +31,6 @@
       "default": "./lib/index.js"
     }
   },
-  "browser": "./lib/index.js",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "files": [
-    "lib"
-  ],
-  "sideEffects": [
-    "**/*.css"
-  ],
   "scripts": {
     "start": "vite serve --clearScreen false",
     "preview": "vite preview",
@@ -74,7 +74,7 @@
     "eslint-plugin-testing-library": "^7.13.5",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.2",
-    "oxfmt": "0.33.0",
+    "oxfmt": "0.35.0",
     "playwright": "~1.58.0",
     "postcss": "^8.5.2",
     "react": "^19.2.1",
