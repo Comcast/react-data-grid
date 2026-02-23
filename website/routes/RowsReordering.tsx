@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 
 import { DataGrid, renderTextEditor, type Column, type RenderRowProps } from '../../src';
 import { DraggableRowRenderer } from '../components';
-import { startViewTransition } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute({
@@ -73,7 +72,7 @@ function RowsReordering() {
         });
       }
 
-      startViewTransition(reorderRows);
+      document.startViewTransition(reorderRows);
     }
 
     return <DraggableRowRenderer<Row, unknown> key={key} {...props} onRowReorder={onRowReorder} />;
