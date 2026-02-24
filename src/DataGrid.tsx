@@ -340,7 +340,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [columnWidths]
   );
 
-  const [gridRef, gridWidth, gridHeight, horizontalScrollbarHeight] = useGridDimensions();
+  const [gridRef, gridWidth, gridHeight] = useGridDimensions();
   const {
     columns,
     colSpanColumns,
@@ -461,8 +461,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const maxColIdx = columns.length - 1;
   const selectedCellIsWithinSelectionBounds = isCellWithinSelectionBounds(selectedPosition);
   const selectedCellIsWithinViewportBounds = isCellWithinViewportBounds(selectedPosition);
-  const scrollHeight =
-    headerRowHeight + totalRowHeight + summaryRowsHeight + horizontalScrollbarHeight;
 
   /**
    * The identity of the wrapper function is stable so it won't break memoization
@@ -1190,7 +1188,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
-        '--rdg-scroll-height': `${scrollHeight}px`,
         ...layoutCssVars
       }}
       dir={direction}
