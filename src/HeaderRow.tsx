@@ -25,8 +25,8 @@ export interface HeaderRowProps<R, SR, K extends React.Key> extends SharedDataGr
   iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
   onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
   onColumnResizeEnd: () => void;
-  selectCell: (position: Position) => void;
-  selectedCellIdx: number | undefined;
+  activeCellIdx: number | undefined;
+  setPosition: (position: Position) => void;
   shouldFocusGrid: boolean;
   direction: Direction;
   headerRowClass: Maybe<string>;
@@ -61,28 +61,28 @@ function HeaderRow<R, SR, K extends React.Key>({
   onColumnsReorder,
   sortColumns,
   onSortColumnsChange,
-  selectedCellIdx,
-  selectCell,
+  activeCellIdx,
+  setPosition,
   shouldFocusGrid,
   direction
 }: HeaderRowProps<R, SR, K>) {
   const [draggedColumnKey, setDraggedColumnKey] = useState<string>();
-  const isPositionOnRow = selectedCellIdx === -1;
+  const isPositionOnRow = activeCellIdx === -1;
 
-  const cells = iterateOverViewportColumnsForRow(selectedCellIdx, { type: 'HEADER' })
+  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'HEADER' })
     .map(([column, colSpan], index) => (
       <HeaderCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         rowIdx={rowIdx}
-        isCellActive={selectedCellIdx === column.idx}
+        isCellActive={activeCellIdx === column.idx}
         onColumnResize={onColumnResize}
         onColumnResizeEnd={onColumnResizeEnd}
         onColumnsReorder={onColumnsReorder}
         onSortColumnsChange={onSortColumnsChange}
         sortColumns={sortColumns}
-        selectCell={selectCell}
+        setPosition={setPosition}
         shouldFocusGrid={shouldFocusGrid && index === 0}
         direction={direction}
         draggedColumnKey={draggedColumnKey}

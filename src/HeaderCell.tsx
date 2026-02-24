@@ -68,7 +68,7 @@ type SharedHeaderRowProps<R, SR> = Pick<
   HeaderRowProps<R, SR, React.Key>,
   | 'sortColumns'
   | 'onSortColumnsChange'
-  | 'selectCell'
+  | 'setPosition'
   | 'onColumnResize'
   | 'onColumnResizeEnd'
   | 'shouldFocusGrid'
@@ -95,7 +95,7 @@ export default function HeaderCell<R, SR>({
   onColumnsReorder,
   sortColumns,
   onSortColumnsChange,
-  selectCell,
+  setPosition,
   shouldFocusGrid,
   direction,
   draggedColumnKey,
@@ -165,12 +165,12 @@ export default function HeaderCell<R, SR>({
     onFocus?.(event);
     if (shouldFocusGrid) {
       // Select the first header cell if there is no selected cell
-      selectCell({ idx: 0, rowIdx });
+      setPosition({ idx: 0, rowIdx });
     }
   }
 
   function onMouseDown() {
-    selectCell({ idx: column.idx, rowIdx });
+    setPosition({ idx: column.idx, rowIdx });
   }
 
   function onClick(event: React.MouseEvent<HTMLSpanElement>) {

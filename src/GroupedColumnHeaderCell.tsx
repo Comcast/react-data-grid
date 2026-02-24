@@ -6,7 +6,7 @@ import { cellClassname } from './style/cell';
 
 type SharedGroupedColumnHeaderRowProps<R, SR> = Pick<
   GroupedColumnHeaderRowProps<R, SR>,
-  'rowIdx' | 'selectCell'
+  'rowIdx' | 'setPosition'
 >;
 
 interface GroupedColumnHeaderCellProps<R, SR> extends SharedGroupedColumnHeaderRowProps<R, SR> {
@@ -18,7 +18,7 @@ export default function GroupedColumnHeaderCell<R, SR>({
   column,
   rowIdx,
   isCellActive,
-  selectCell
+  setPosition
 }: GroupedColumnHeaderCellProps<R, SR>) {
   const { tabIndex, onFocus } = useRovingTabIndex(isCellActive);
   const { colSpan } = column;
@@ -26,7 +26,7 @@ export default function GroupedColumnHeaderCell<R, SR>({
   const index = column.idx + 1;
 
   function onMouseDown() {
-    selectCell({ idx: column.idx, rowIdx });
+    setPosition({ idx: column.idx, rowIdx });
   }
 
   return (

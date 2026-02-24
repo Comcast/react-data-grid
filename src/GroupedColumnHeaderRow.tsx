@@ -8,21 +8,21 @@ export interface GroupedColumnHeaderRowProps<R, SR> {
   rowIdx: number;
   level: number;
   iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
-  selectCell: (position: Position) => void;
-  selectedCellIdx: number | undefined;
+  activeCellIdx: number | undefined;
+  setPosition: (position: Position) => void;
 }
 
 function GroupedColumnHeaderRow<R, SR>({
   rowIdx,
   level,
   iterateOverViewportColumnsForRow,
-  selectedCellIdx,
-  selectCell
+  activeCellIdx,
+  setPosition
 }: GroupedColumnHeaderRowProps<R, SR>) {
   const cells = [];
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
-  for (const [column] of iterateOverViewportColumnsForRow(selectedCellIdx)) {
+  for (const [column] of iterateOverViewportColumnsForRow(activeCellIdx)) {
     if (column.parent === undefined) continue;
 
     let { parent } = column;
@@ -40,8 +40,8 @@ function GroupedColumnHeaderRow<R, SR>({
           key={idx}
           column={parent}
           rowIdx={rowIdx}
-          isCellActive={selectedCellIdx === idx}
-          selectCell={selectCell}
+          isCellActive={activeCellIdx === idx}
+          setPosition={setPosition}
         />
       );
     }

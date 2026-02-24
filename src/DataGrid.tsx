@@ -1202,10 +1202,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                 rowIdx={index + 1}
                 level={-groupedColumnHeaderRowsCount + index}
                 iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
-                selectedCellIdx={
+                activeCellIdx={
                   activePosition.rowIdx === minRowIdx + index ? activePosition.idx : undefined
                 }
-                selectCell={selectHeaderCellLatest}
+                setPosition={selectHeaderCellLatest}
               />
             ))}
             <HeaderRow
@@ -1217,10 +1217,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               onColumnsReorder={onColumnsReorderLastest}
               sortColumns={sortColumns}
               onSortColumnsChange={onSortColumnsChangeLatest}
-              selectedCellIdx={
+              activeCellIdx={
                 activePosition.rowIdx === mainHeaderRowIdx ? activePosition.idx : undefined
               }
-              selectCell={selectHeaderCellLatest}
+              setPosition={selectHeaderCellLatest}
               shouldFocusGrid={!activePositionIsInActiveBounds}
               direction={direction}
             />
