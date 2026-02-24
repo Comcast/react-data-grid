@@ -340,7 +340,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [columnWidths]
   );
 
-  const [gridRef, gridWidth, gridHeight, horizontalScrollbarHeight] = useGridDimensions();
+  const [gridRef, gridWidth, gridHeight] = useGridDimensions();
   const {
     columns,
     colSpanColumns,
@@ -439,8 +439,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     isRowInActiveBounds: activePositionIsRow,
     isCellInViewport: activePositionIsCellInViewport
   } = validatePosition(activePosition);
-  const scrollHeight =
-    headerRowHeight + totalRowHeight + summaryRowsHeight + horizontalScrollbarHeight;
 
   const {
     viewportColumns,
@@ -1179,7 +1177,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
-        '--rdg-scroll-height': `${scrollHeight}px`,
         ...layoutCssVars
       }}
       dir={direction}
