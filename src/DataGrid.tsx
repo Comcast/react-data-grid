@@ -23,7 +23,7 @@ import {
   getCellStyle,
   getColSpan,
   getLeftRightKey,
-  getNextSelectedCellPosition,
+  getNextActivePosition,
   isCellEditableUtil,
   isCtrlKeyHeldDown,
   isDefaultCellInput,
@@ -938,7 +938,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const nextPosition = getNextPosition(key, ctrlKey, shiftKey);
     if (isSamePosition(activePosition, nextPosition)) return;
 
-    const nextSelectedCellPosition = getNextSelectedCellPosition({
+    const nextActivePosition = getNextActivePosition({
       moveUp: key === 'ArrowUp',
       moveNext: key === rightKey || (key === 'Tab' && !shiftKey),
       columns,
@@ -951,12 +951,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       maxRowIdx,
       lastFrozenColumnIndex,
       cellNavigationMode,
-      currentPosition: activePosition,
+      activePosition,
       nextPosition,
       nextPositionIsCellInActiveBounds: validatePosition(nextPosition).isCellInActiveBounds
     });
 
-    setPosition(nextSelectedCellPosition, { shouldFocus: true });
+    setPosition(nextActivePosition, { shouldFocus: true });
   }
 
   function getDraggedOverCellIdx(currentRowIdx: number): number | undefined {
