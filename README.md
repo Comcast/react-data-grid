@@ -279,7 +279,7 @@ An array of rows, the rows data can be of any type.
 
 ###### `ref?: Maybe<React.Ref<DataGridHandle>>`
 
-Optional ref for imperative APIs like scrolling/selecting a cell. See [`DataGridHandle`](#datagridhandle).
+Optional ref for imperative APIs like scrolling to or focusing a cell. See [`DataGridHandle`](#datagridhandle).
 
 ###### `topSummaryRows?: Maybe<readonly SR[]>`
 
@@ -512,7 +512,7 @@ function MyGrid() {
 
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to select the cell. Call `preventGridDefault` to prevent the default behavior.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior.
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -1697,7 +1697,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.selectCell(true); // Select and start editing
+  args.setPosition(true); // Focus and start editing
 }
 ```
 
@@ -1730,7 +1730,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   if (args.column.key === 'actions') {
-    event.preventGridDefault(); // Prevent cell selection
+    event.preventGridDefault(); // Prevent cell focus
   }
 }
 ```
@@ -2046,8 +2046,8 @@ Handle type assigned to a grid's `ref` for programmatic grid control.
 ```tsx
 interface DataGridHandle {
   element: HTMLDivElement | null;
-  scrollToCell: (position: Partial<Position>) => void;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  scrollToCell: (position: PartialPosition) => void;
+  setPosition: (position: Position, options?: SetPositionOptions) => void;
 }
 ```
 

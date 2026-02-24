@@ -508,15 +508,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       element: gridRef.current,
       scrollToCell({ idx, rowIdx }) {
         const scrollToIdx =
-          idx !== undefined && idx > lastFrozenColumnIndex && idx < columns.length
-            ? idx
-            : undefined;
+          idx != null && idx > lastFrozenColumnIndex && idx < columns.length ? idx : undefined;
         const scrollToRowIdx =
-          rowIdx !== undefined && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
+          rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
             ? rowIdx + headerAndTopSummaryRowsCount
             : undefined;
 
-        if (scrollToIdx !== undefined || scrollToRowIdx !== undefined) {
+        if (scrollToIdx != null || scrollToRowIdx != null) {
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
         }
       },
