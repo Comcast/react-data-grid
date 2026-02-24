@@ -195,16 +195,20 @@ export type CellKeyboardEvent = CellEvent<React.KeyboardEvent<HTMLDivElement>>;
 export type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
 
 export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
+  /** The column object of the cell. */
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The row object of the cell. */
   row: TRow;
+  /** The row index of the cell. */
   rowIdx: number;
+  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
   setPosition: (enableEditor?: boolean) => void;
 }
 
 interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'ACTIVE';
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  row: TRow;
+  row: TRow | undefined;
   rowIdx: number;
   setPosition: (position: Position, options?: SetPositionOptions) => void;
 }

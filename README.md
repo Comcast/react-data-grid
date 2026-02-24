@@ -543,7 +543,7 @@ This event can be used to open cell editor on single click
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.selectCell(true);
+    args.setPosition(true);
   }
 }
 ```
@@ -1657,7 +1657,7 @@ interface RenderRowProps<TRow, TSummaryRow = unknown> {
 
 Props passed to the cell renderer when using `renderers.renderCell`.
 
-Shares a base type with row render props (DOM props and cell event handlers) but only includes cell-specific fields like `column`, `row`, `rowIdx`, `colSpan`, and selection state.
+Shares a base type with row render props (DOM props and cell event handlers) but only includes cell-specific fields like `column`, `row`, `rowIdx`, `colSpan`, and position state.
 
 #### `Renderers<TRow, TSummaryRow>`
 
@@ -1673,34 +1673,22 @@ interface Renderers<TRow, TSummaryRow> {
 }
 ```
 
-#### `CellMouseArgs<TRow, TSummaryRow>`
+#### `CellMouseArgs<TRow, TSummaryRow = unknown>`
 
 Arguments passed to cell mouse event handlers.
 
 ```tsx
 interface CellMouseArgs<TRow, TSummaryRow = unknown> {
+  /** The column object of the cell. */
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The row object of the cell. */
   row: TRow;
+  /** The row index of the cell. */
   rowIdx: number;
-  selectCell: (enableEditor?: boolean) => void;
+  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
+  setPosition: (enableEditor?: boolean) => void;
 }
 ```
-
-##### `column: CalculatedColumn<TRow, TSummaryRow>`
-
-The column object of the cell.
-
-##### `row: TRow`
-
-The row object of the cell.
-
-##### `rowIdx: number`
-
-The row index of the cell.
-
-##### `selectCell: (enableEditor?: boolean) => void`
-
-Function to manually select the cell. Pass `true` to immediately start editing.
 
 **Example:**
 
@@ -1774,19 +1762,19 @@ Arguments passed to the `onCellKeyDown` handler. The shape differs based on whet
 **ACTIVE mode:**
 
 ```tsx
-interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'ACTIVE';
-  column: CalculatedColumn<TRow, TSummaryRow>;
-  row: TRow;
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
+  row: TRow | undefined;
   rowIdx: number;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  setPosition: (position: Position, options?: SetPositionOptions) => void;
 }
 ```
 
 **EDIT mode:**
 
 ```tsx
-interface EditCellKeyDownArgs<TRow, TSummaryRow> {
+interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
