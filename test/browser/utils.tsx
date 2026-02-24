@@ -43,7 +43,7 @@ export function getCellsAtRowIndex(rowIdx: number) {
 }
 
 export async function validateCellPosition(columnIdx: number, rowIdx: number) {
-  const cell = page.getSelectedCell();
+  const cell = page.getActiveCell();
   const row = page.getRow().or(page.getHeaderRow()).filter({ has: cell });
   await expect.element(cell).toHaveAttribute('aria-colindex', `${columnIdx + 1}`);
   await expect.element(row).toHaveAttribute('aria-rowindex', `${rowIdx + 1}`);
