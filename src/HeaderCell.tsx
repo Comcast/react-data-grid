@@ -105,7 +105,7 @@ export default function HeaderCell<R, SR>({
   const dragImageRef = useRef<HTMLDivElement>(null);
   const isDragging = draggedColumnKey === column.key;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
-  // set the tabIndex to 0 when there is no selected cell so grid can receive focus
+  // set the tabIndex to 0 when there is no active cell so grid can receive focus
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellActive);
   const sortIndex = sortColumns?.findIndex((sort) => sort.columnKey === column.key);
   const sortColumn =
@@ -164,7 +164,7 @@ export default function HeaderCell<R, SR>({
   function handleFocus(event: React.FocusEvent<HTMLDivElement>) {
     onFocus?.(event);
     if (shouldFocusGrid) {
-      // Select the first header cell if there is no selected cell
+      // Select the first header cell if there is no active cell
       setPosition({ idx: 0, rowIdx });
     }
   }
