@@ -1,12 +1,13 @@
 import { createContext, use, useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column, type RenderHeaderCellProps } from '../../src';
 import type { Omit } from '../../src/types';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/HeaderFilters')({
   component: HeaderFilters
 });
 
