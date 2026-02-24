@@ -11,16 +11,16 @@ type SharedGroupedColumnHeaderRowProps<R, SR> = Pick<
 
 interface GroupedColumnHeaderCellProps<R, SR> extends SharedGroupedColumnHeaderRowProps<R, SR> {
   column: CalculatedColumnParent<R, SR>;
-  isCellSelected: boolean;
+  isCellActive: boolean;
 }
 
 export default function GroupedColumnHeaderCell<R, SR>({
   column,
   rowIdx,
-  isCellSelected,
+  isCellActive,
   selectCell
 }: GroupedColumnHeaderCellProps<R, SR>) {
-  const { tabIndex, onFocus } = useRovingTabIndex(isCellSelected);
+  const { tabIndex, onFocus } = useRovingTabIndex(isCellActive);
   const { colSpan } = column;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
   const index = column.idx + 1;
@@ -35,7 +35,7 @@ export default function GroupedColumnHeaderCell<R, SR>({
       aria-colindex={index}
       aria-colspan={colSpan}
       aria-rowspan={rowSpan}
-      aria-selected={isCellSelected}
+      aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={classnames(cellClassname, column.headerCellClass)}
       style={{

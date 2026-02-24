@@ -80,7 +80,7 @@ export interface HeaderCellProps<R, SR> extends SharedHeaderRowProps<R, SR> {
   column: CalculatedColumn<R, SR>;
   colSpan: number | undefined;
   rowIdx: number;
-  isCellSelected: boolean;
+  isCellActive: boolean;
   draggedColumnKey: string | undefined;
   setDraggedColumnKey: (draggedColumnKey: string | undefined) => void;
 }
@@ -89,7 +89,7 @@ export default function HeaderCell<R, SR>({
   column,
   colSpan,
   rowIdx,
-  isCellSelected,
+  isCellActive,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
@@ -106,7 +106,7 @@ export default function HeaderCell<R, SR>({
   const isDragging = draggedColumnKey === column.key;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
   // set the tabIndex to 0 when there is no selected cell so grid can receive focus
-  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellSelected);
+  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellActive);
   const sortIndex = sortColumns?.findIndex((sort) => sort.columnKey === column.key);
   const sortColumn =
     sortIndex !== undefined && sortIndex > -1 ? sortColumns![sortIndex] : undefined;
@@ -288,7 +288,7 @@ export default function HeaderCell<R, SR>({
         aria-colindex={column.idx + 1}
         aria-colspan={colSpan}
         aria-rowspan={rowSpan}
-        aria-selected={isCellSelected}
+        aria-selected={isCellActive}
         aria-sort={ariaSort}
         tabIndex={tabIndex}
         className={className}

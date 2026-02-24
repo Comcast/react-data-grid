@@ -40,7 +40,7 @@ function GroupedColumnHeaderRow<R, SR>({
           key={idx}
           column={parent}
           rowIdx={rowIdx}
-          isCellSelected={selectedCellIdx === idx}
+          isCellActive={selectedCellIdx === idx}
           selectCell={selectCell}
         />
       );

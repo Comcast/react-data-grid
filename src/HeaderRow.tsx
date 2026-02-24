@@ -76,7 +76,7 @@ function HeaderRow<R, SR, K extends React.Key>({
         column={column}
         colSpan={colSpan}
         rowIdx={rowIdx}
-        isCellSelected={selectedCellIdx === column.idx}
+        isCellActive={selectedCellIdx === column.idx}
         onColumnResize={onColumnResize}
         onColumnResizeEnd={onColumnResizeEnd}
         onColumnsReorder={onColumnsReorder}
