@@ -1582,7 +1582,7 @@ interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   onRowChange: (row: TRow, commitChanges?: boolean) => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 ```
 
@@ -1638,17 +1638,17 @@ Props passed to custom row renderers.
 ```tsx
 interface RenderRowProps<TRow, TSummaryRow = unknown> {
   row: TRow;
-  viewportColumns: readonly CalculatedColumn<TRow, TSummaryRow>[];
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<TRow, TSummaryRow>;
   rowIdx: number;
-  selectedCellIdx: number | undefined;
-  isRowSelected: boolean;
+  activeCellIdx: number | undefined;
   isRowSelectionDisabled: boolean;
+  isRowSelected: boolean;
   gridRowStart: number;
-  lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
+  activeCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
+  isTreeGrid: boolean;
   // ... and event handlers
 }
 ```
@@ -1780,7 +1780,7 @@ interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   navigate: () => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 ```
 
@@ -1846,9 +1846,9 @@ Arguments passed to the `colSpan` function.
 
 ```tsx
 type ColSpanArgs<TRow, TSummaryRow> =
-  | { type: 'HEADER' }
-  | { type: 'ROW'; row: TRow }
-  | { type: 'SUMMARY'; row: TSummaryRow };
+  | { readonly type: 'HEADER' }
+  | { readonly type: 'ROW'; readonly row: TRow }
+  | { readonly type: 'SUMMARY'; readonly row: TSummaryRow };
 ```
 
 **Example:**
@@ -1981,14 +1981,14 @@ interface Position {
 }
 ```
 
-#### `UpdatePositionOptions`
+#### `SetPositionOptions`
 
 Options for programmatically updating the grid's active position.
 
 ```tsx
-interface UpdatePositionOptions {
+interface SetPositionOptions {
   enableEditor?: Maybe<boolean>;
-  shouldFocusCell?: Maybe<boolean>;
+  shouldFocus?: Maybe<boolean>;
 }
 ```
 

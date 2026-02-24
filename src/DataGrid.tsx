@@ -1028,12 +1028,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
     const closeOnExternalRowChange = column.editorOptions?.closeOnExternalRowChange ?? true;
 
-    const closeEditor = (shouldFocusCell: boolean) => {
-      setShouldFocusPosition(shouldFocusCell);
+    const closeEditor = (shouldFocus: boolean) => {
+      setShouldFocusPosition(shouldFocus);
       setActivePosition(({ idx, rowIdx }) => ({ idx, rowIdx, mode: 'ACTIVE' }));
     };
 
-    const onRowChange = (row: R, commitChanges: boolean, shouldFocusCell: boolean) => {
+    const onRowChange = (row: R, commitChanges: boolean, shouldFocus: boolean) => {
       if (commitChanges) {
         // Prevents two issues when editor is closed by clicking on a different cell
         //
@@ -1041,7 +1041,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         // SELECT and this results in onRowChange getting called twice.
         flushSync(() => {
           updateRow(column, activePosition.rowIdx, row);
-          closeEditor(shouldFocusCell);
+          closeEditor(shouldFocus);
         });
       } else {
         setActivePosition((position) => ({ ...position, row }));

@@ -150,7 +150,7 @@ export interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   onRowChange: (row: TRow, commitChanges?: boolean) => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
 export interface RenderHeaderCellProps<TRow, TSummaryRow = unknown> {
@@ -219,7 +219,7 @@ export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   navigate: () => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
 export type CellKeyDownArgs<TRow, TSummaryRow = unknown> =
