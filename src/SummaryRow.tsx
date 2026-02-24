@@ -6,7 +6,7 @@ import type { RenderRowProps } from './types';
 import {
   bottomSummaryRowClassname,
   rowClassname,
-  rowSelectedClassname,
+  rowActiveClassname,
   topSummaryRowClassname
 } from './style/row';
 import SummaryCell from './SummaryCell';
@@ -77,7 +77,7 @@ function SummaryRow<R, SR>({
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
         isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
-        isPositionOnRow && rowSelectedClassname
+        isPositionOnRow && rowActiveClassname
       )}
       style={{
         gridRowStart,

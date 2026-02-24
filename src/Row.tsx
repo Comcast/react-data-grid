@@ -4,7 +4,7 @@ import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames } from './utils';
 import type { RenderRowProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
-import { rowClassname, rowSelectedClassname } from './style/row';
+import { rowClassname, rowActiveClassname } from './style/row';
 
 function Row<R, SR>({
   className,
@@ -35,7 +35,7 @@ function Row<R, SR>({
   className = classnames(
     rowClassname,
     `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-    isPositionOnRow && rowSelectedClassname,
+    isPositionOnRow && rowActiveClassname,
     rowClass?.(row, rowIdx),
     className
   );

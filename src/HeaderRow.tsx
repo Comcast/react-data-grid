@@ -13,7 +13,7 @@ import type {
 import type { DataGridProps } from './DataGrid';
 import HeaderCell from './HeaderCell';
 import { cell, cellFrozen } from './style/cell';
-import { rowSelectedClassname } from './style/row';
+import { rowActiveClassname } from './style/row';
 
 type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
   DataGridProps<R, SR, K>,
@@ -97,7 +97,7 @@ function HeaderRow<R, SR, K extends React.Key>({
       aria-rowindex={rowIdx} // aria-rowindex is 1 based
       className={classnames(
         headerRowClassname,
-        isPositionOnRow && rowSelectedClassname,
+        isPositionOnRow && rowActiveClassname,
         headerRowClass
       )}
     >
