@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, renderTextEditor, type Column, type RenderRowProps } from '../../src';
 import { DraggableRow } from '../components';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/RowsReordering')({
   component: RowsReordering
 });
 
