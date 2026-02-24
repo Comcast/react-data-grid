@@ -299,7 +299,7 @@ function AllFeatures() {
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
             event.preventGridDefault();
-            args.selectCell(true);
+            args.setPosition(true);
           }
         }}
         onCellKeyDown={(_, event) => {

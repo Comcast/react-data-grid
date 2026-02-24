@@ -5,7 +5,10 @@ export function getColSpan<R, SR>(
   lastFrozenColumnIndex: number,
   args: ColSpanArgs<R, SR>
 ): number | undefined {
-  const colSpan = typeof column.colSpan === 'function' ? column.colSpan(args) : 1;
+  if (typeof column.colSpan !== 'function') return undefined;
+
+  const colSpan = column.colSpan(args);
+
   if (
     Number.isInteger(colSpan) &&
     colSpan! > 1 &&
@@ -14,5 +17,6 @@ export function getColSpan<R, SR>(
   ) {
     return colSpan!;
   }
+
   return undefined;
 }

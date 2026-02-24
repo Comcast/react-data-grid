@@ -1,8 +1,15 @@
 import { memo, useState } from 'react';
 import { css } from 'ecij';
 
-import { classnames, getColSpan } from './utils';
-import type { CalculatedColumn, Direction, Maybe, Position, ResizedWidth } from './types';
+import { classnames } from './utils';
+import type {
+  CalculatedColumn,
+  Direction,
+  IterateOverViewportColumnsForRow,
+  Maybe,
+  Position,
+  ResizedWidth
+} from './types';
 import type { DataGridProps } from './DataGrid';
 import HeaderCell from './HeaderCell';
 import { cell, cellFrozen } from './style/cell';
@@ -15,11 +22,10 @@ type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
 
 export interface HeaderRowProps<R, SR, K extends React.Key> extends SharedDataGridProps<R, SR, K> {
   rowIdx: number;
-  columns: readonly CalculatedColumn<R, SR>[];
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
   onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
   onColumnResizeEnd: () => void;
   selectCell: (position: Position) => void;
-  lastFrozenColumnIndex: number;
   selectedCellIdx: number | undefined;
   shouldFocusGrid: boolean;
   direction: Direction;
@@ -49,13 +55,12 @@ export const headerRowClassname = `rdg-header-row ${headerRow}`;
 function HeaderRow<R, SR, K extends React.Key>({
   headerRowClass,
   rowIdx,
-  columns,
+  iterateOverViewportColumnsForRow,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
   sortColumns,
   onSortColumnsChange,
-  lastFrozenColumnIndex,
   selectedCellIdx,
   selectCell,
   shouldFocusGrid,
@@ -64,15 +69,8 @@ function HeaderRow<R, SR, K extends React.Key>({
   const [draggedColumnKey, setDraggedColumnKey] = useState<string>();
   const isPositionOnRow = selectedCellIdx === -1;
 
-  const cells = [];
-  for (let index = 0; index < columns.length; index++) {
-    const column = columns[index];
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'HEADER' });
-    if (colSpan !== undefined) {
-      index += colSpan - 1;
-    }
-
-    cells.push(
+  const cells = iterateOverViewportColumnsForRow(selectedCellIdx, { type: 'HEADER' })
+    .map(([column, colSpan], index) => (
       <HeaderCell<R, SR>
         key={column.key}
         column={column}
@@ -90,8 +88,8 @@ function HeaderRow<R, SR, K extends React.Key>({
         draggedColumnKey={draggedColumnKey}
         setDraggedColumnKey={setDraggedColumnKey}
       />
-    );
-  }
+    ))
+    .toArray();
 
   return (
     <div

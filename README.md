@@ -510,8 +510,6 @@ function MyGrid() {
 }
 ```
 
-###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
-
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
 Callback triggered when a pointer becomes active in a cell. The default behavior is to select the cell. Call `preventGridDefault` to prevent the default behavior.
@@ -589,7 +587,7 @@ A function called when keydown event is triggered on a cell. This event can be u
 
 ```tsx
 function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'SELECT' && event.key === 'Enter') {
+  if (args.mode === 'ACTIVE' && event.key === 'Enter') {
     event.preventGridDefault();
   }
 }
@@ -599,7 +597,7 @@ function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
 
 ```tsx
 function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'SELECT' && event.key === 'Tab') {
+  if (args.mode === 'ACTIVE' && event.key === 'Tab') {
     event.preventGridDefault();
   }
 }
@@ -617,15 +615,13 @@ Callback triggered when content is pasted into a cell.
 
 Return the updated row; the grid will call `onRowsChange` with it.
 
-###### `onSelectedCellChange?: Maybe<(args: CellSelectArgs<R, SR>) => void>`
+###### `onActivePositionChange?: Maybe<(args: PositionChangeArgs<R, SR>) => void>`
 
-Triggered when the selected cell is changed.
+Triggered when the active position changes.
 
-Arguments:
+See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type in the Types section below.
 
-- `args.rowIdx`: `number` - row index
-- `args.row`: `R | undefined` - row object of the currently selected cell
-- `args.column`: `CalculatedColumn<TRow, TSummaryRow>` - column object of the currently selected cell
+###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
 ###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
 
@@ -1373,7 +1369,7 @@ Control whether cells can be edited with `renderEditCell`.
 
 ##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>`
 
-Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the `ColSpanArgs` type in the Types section below.
+Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the [`ColSpanArgs`](#colspanargstrow-tsummaryrow) type in the Types section below.
 
 **Example:**
 
@@ -1773,13 +1769,13 @@ type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
 
 #### `CellKeyDownArgs<TRow, TSummaryRow>`
 
-Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in SELECT or EDIT mode.
+Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in ACTIVE or EDIT mode.
 
-**SELECT mode:**
+**ACTIVE mode:**
 
 ```tsx
 interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
-  mode: 'SELECT';
+  mode: 'ACTIVE';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
@@ -1813,15 +1809,24 @@ function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
 }
 ```
 
-#### `CellSelectArgs<TRow, TSummaryRow>`
+#### `PositionChangeArgs<TRow, TSummaryRow>`
 
-Arguments passed to `onSelectedCellChange`.
+Arguments passed to `onActivePositionChange`.
 
 ```tsx
-interface CellSelectArgs<TRow, TSummaryRow = unknown> {
+interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+  /** row index of the active position */
   rowIdx: number;
+  /**
+   * row object of the active position,
+   * undefined if the active position is on a header or summary row
+   */
   row: TRow | undefined;
-  column: CalculatedColumn<TRow, TSummaryRow>;
+  /**
+   * column object of the active position,
+   * undefined if the active position is a row instead of a cell
+   */
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
 ```
 
@@ -1988,12 +1993,12 @@ interface Position {
 }
 ```
 
-#### `SelectCellOptions`
+#### `UpdatePositionOptions`
 
-Options for programmatically selecting a cell.
+Options for programmatically updating the grid's active position.
 
 ```tsx
-interface SelectCellOptions {
+interface UpdatePositionOptions {
   enableEditor?: Maybe<boolean>;
   shouldFocusCell?: Maybe<boolean>;
 }

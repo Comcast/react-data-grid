@@ -7,22 +7,6 @@ import type {
 } from '../types';
 import { getColSpan } from './colSpanUtils';
 
-interface IsSelectedCellEditableOpts<R, SR> {
-  selectedPosition: Position;
-  columns: readonly CalculatedColumn<R, SR>[];
-  rows: readonly R[];
-}
-
-export function isSelectedCellEditable<R, SR>({
-  selectedPosition,
-  columns,
-  rows
-}: IsSelectedCellEditableOpts<R, SR>): boolean {
-  const column = columns[selectedPosition.idx];
-  const row = rows[selectedPosition.rowIdx];
-  return isCellEditableUtil(column, row);
-}
-
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
   return (
@@ -45,8 +29,8 @@ interface GetNextSelectedCellPositionOpts<R, SR> {
   maxRowIdx: number;
   currentPosition: Position;
   nextPosition: Position;
+  nextPositionIsCellInActiveBounds: boolean;
   lastFrozenColumnIndex: number;
-  isCellWithinBounds: (position: Position) => boolean;
 }
 
 function getSelectedCellColSpan<R, SR>({
@@ -109,8 +93,8 @@ export function getNextSelectedCellPosition<R, SR>({
   maxRowIdx,
   currentPosition: { idx: currentIdx, rowIdx: currentRowIdx },
   nextPosition,
-  lastFrozenColumnIndex,
-  isCellWithinBounds
+  nextPositionIsCellInActiveBounds,
+  lastFrozenColumnIndex
 }: GetNextSelectedCellPositionOpts<R, SR>): Position {
   let { idx: nextIdx, rowIdx: nextRowIdx } = nextPosition;
   const columnsCount = columns.length;
@@ -179,7 +163,7 @@ export function getNextSelectedCellPosition<R, SR>({
     }
   };
 
-  if (isCellWithinBounds(nextPosition)) {
+  if (nextPositionIsCellInActiveBounds) {
     setColSpan(moveNext);
 
     if (nextRowIdx < mainHeaderRowIdx) {
@@ -232,7 +216,7 @@ interface CanExitGridOpts {
   maxColIdx: number;
   minRowIdx: number;
   maxRowIdx: number;
-  selectedPosition: Position;
+  activePosition: Position;
   shiftKey: boolean;
 }
 
@@ -240,7 +224,7 @@ export function canExitGrid({
   maxColIdx,
   minRowIdx,
   maxRowIdx,
-  selectedPosition: { rowIdx, idx },
+  activePosition: { rowIdx, idx },
   shiftKey
 }: CanExitGridOpts): boolean {
   // Exit the grid if we're at the first or last cell of the grid

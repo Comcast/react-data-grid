@@ -12,7 +12,7 @@ interface GroupCellProps<R, SR> {
   isExpanded: boolean;
   column: CalculatedColumn<R, SR>;
   row: GroupRow<R>;
-  isCellSelected: boolean;
+  isCellActive: boolean;
   groupColumnIndex: number;
   isGroupByColumn: boolean;
 }
@@ -22,14 +22,14 @@ function GroupCell<R, SR>({
   groupKey,
   childRows,
   isExpanded,
-  isCellSelected,
+  isCellActive,
   column,
   row,
   groupColumnIndex,
   isGroupByColumn,
   toggleGroup: toggleGroupWrapper
 }: GroupCellProps<R, SR>) {
-  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellSelected);
+  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
   function toggleGroup() {
     toggleGroupWrapper(id);
@@ -43,7 +43,7 @@ function GroupCell<R, SR>({
       key={column.key}
       role="gridcell"
       aria-colindex={column.idx + 1}
-      aria-selected={isCellSelected}
+      aria-selected={isCellActive}
       // tabIndex={undefined} prevents clicks on the cell
       // from stealing focus from the row.
       // onMouseDown={preventDefault} would break mousewheel clicks

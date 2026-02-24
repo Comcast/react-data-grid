@@ -34,22 +34,22 @@ function GroupedRow<R, SR>({
   className,
   row,
   rowIdx,
-  viewportColumns,
-  selectedCellIdx,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
   isRowSelected,
-  selectCell,
+  setPosition,
   gridRowStart,
   groupBy,
   toggleGroup,
   isRowSelectionDisabled: _isRowSelectionDisabled,
   ...props
 }: GroupRowRendererProps<R, SR>) {
-  const isPositionOnRow = selectedCellIdx === -1;
-  // Select is always the first column
-  const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
+  const isPositionOnRow = activeCellIdx === -1;
+
+  let idx = row.level;
 
   function handleSelectGroup() {
-    selectCell({ rowIdx, idx: -1 }, { shouldFocusCell: true });
+    setPosition({ rowIdx, idx: -1 }, { shouldFocus: true });
   }
 
   const selectionValue = useMemo(
@@ -77,21 +77,30 @@ function GroupedRow<R, SR>({
         style={{ gridRowStart }}
         {...props}
       >
-        {viewportColumns.map((column) => (
-          <GroupCell
-            key={column.key}
-            id={row.id}
-            groupKey={row.groupKey}
-            childRows={row.childRows}
-            isExpanded={row.isExpanded}
-            isCellSelected={selectedCellIdx === column.idx}
-            column={column}
-            row={row}
-            groupColumnIndex={idx}
-            toggleGroup={toggleGroup}
-            isGroupByColumn={groupBy.includes(column.key)}
-          />
-        ))}
+        {iterateOverViewportColumnsForRow(activeCellIdx)
+          .map(([column], index) => {
+            // Select is always the first column
+            if (index === 0 && column.key === SELECT_COLUMN_KEY) {
+              idx += 1;
+            }
+
+            return (
+              <GroupCell
+                key={column.key}
+                id={row.id}
+                groupKey={row.groupKey}
+                childRows={row.childRows}
+                isExpanded={row.isExpanded}
+                isCellActive={activeCellIdx === column.idx}
+                column={column}
+                row={row}
+                groupColumnIndex={idx}
+                toggleGroup={toggleGroup}
+                isGroupByColumn={groupBy.includes(column.key)}
+              />
+            );
+          })
+          .toArray()}
       </div>
     </RowSelectionContext>
   );

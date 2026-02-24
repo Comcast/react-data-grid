@@ -1,13 +1,13 @@
 import { memo } from 'react';
 
-import type { CalculatedColumn, CalculatedColumnParent, Position } from './types';
+import type { CalculatedColumnParent, IterateOverViewportColumnsForRow, Position } from './types';
 import GroupedColumnHeaderCell from './GroupedColumnHeaderCell';
 import { headerRowClassname } from './HeaderRow';
 
 export interface GroupedColumnHeaderRowProps<R, SR> {
   rowIdx: number;
   level: number;
-  columns: readonly CalculatedColumn<R, SR>[];
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
   selectCell: (position: Position) => void;
   selectedCellIdx: number | undefined;
 }
@@ -15,14 +15,14 @@ export interface GroupedColumnHeaderRowProps<R, SR> {
 function GroupedColumnHeaderRow<R, SR>({
   rowIdx,
   level,
-  columns,
+  iterateOverViewportColumnsForRow,
   selectedCellIdx,
   selectCell
 }: GroupedColumnHeaderRowProps<R, SR>) {
   const cells = [];
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
-  for (const column of columns) {
+  for (const [column] of iterateOverViewportColumnsForRow(selectedCellIdx)) {
     if (column.parent === undefined) continue;
 
     let { parent } = column;

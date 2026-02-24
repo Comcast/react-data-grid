@@ -194,7 +194,7 @@ describe('Editor', () => {
       await page.render(
         <EditorTest
           onCellKeyDown={(args, event) => {
-            if (args.mode === 'SELECT' && event.key === 'x') {
+            if (args.mode === 'ACTIVE' && event.key === 'x') {
               event.preventGridDefault();
             }
           }}
