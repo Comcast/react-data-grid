@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
+import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type {
   CellRendererProps,
   Column,
@@ -10,7 +11,6 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
-import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({

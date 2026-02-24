@@ -1,7 +1,7 @@
 import { page } from 'vitest/browser';
 
-import type { Column } from '../../src';
 import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
+import type { Column } from '../../src';
 import { testCount } from './utils';
 
 const headerCells = page.getHeaderCell();

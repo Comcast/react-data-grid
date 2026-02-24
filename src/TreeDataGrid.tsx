@@ -1,5 +1,5 @@
-import type { Key } from 'react';
 import { useCallback, useMemo } from 'react';
+import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
 import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
@@ -19,8 +19,8 @@ import type {
 } from './types';
 import { renderToggleGroup } from './cellRenderers';
 import { SELECT_COLUMN_KEY } from './Columns';
-import type { DataGridProps } from './DataGrid';
 import { DataGrid } from './DataGrid';
+import type { DataGridProps } from './DataGrid';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import GroupedRow from './GroupRow';
 import { defaultRenderRow } from './Row';

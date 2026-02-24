@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
-import type { Column, DataGridProps } from '../../src';
 import { DataGrid } from '../../src';
+import type { Column, DataGridProps } from '../../src';
 
 interface Row {
   col1: number;

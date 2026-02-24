@@ -1,5 +1,5 @@
-import type { Key, KeyboardEvent } from 'react';
 import { useCallback, useImperativeHandle, useLayoutEffect, useMemo, useState } from 'react';
+import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
 import {

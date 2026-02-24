@@ -4,8 +4,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 import clsx from 'clsx';
 
-import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
 import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
+import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { useDirection } from '../directionContext';
 

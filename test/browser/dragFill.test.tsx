@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { commands, page, userEvent } from 'vitest/browser';
 
-import type { Column, FillEvent } from '../../src';
 import { DataGrid } from '../../src';
+import type { Column, FillEvent } from '../../src';
 import { getCellsAtRowIndex } from './utils';
 
 const dragHandle = page.getDragHandle();

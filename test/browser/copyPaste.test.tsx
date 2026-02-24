@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import type { CellPasteArgs, Column } from '../../src';
 import { DataGrid } from '../../src';
+import type { CellPasteArgs, Column } from '../../src';
 import { getCellsAtRowIndex } from './utils';
 
 interface Row {

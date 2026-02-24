@@ -1,7 +1,7 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.organizeImports": "explicit",
+    "source.removeUnusedImports": "explicit",
     // prevent removal of unreachable code
     "source.fixAll.ts": "never"
   },

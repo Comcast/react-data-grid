@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import type {
-  CellRendererProps,
-  Column,
-  DataGridProps,
-  RenderRowProps,
-  RenderSortStatusProps,
-  SortColumn
-} from '../../src';
 import {
   Cell,
   DataGrid,
@@ -16,6 +8,14 @@ import {
   Row as DefaultRow,
   renderSortIcon,
   SelectColumn
+} from '../../src';
+import type {
+  CellRendererProps,
+  Column,
+  DataGridProps,
+  RenderRowProps,
+  RenderSortStatusProps,
+  SortColumn
 } from '../../src';
 import { getRowWithCell, setup, testCount, testRowCount } from './utils';
 

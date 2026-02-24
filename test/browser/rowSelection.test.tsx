@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import type { Column } from '../../src';
 import { DataGrid, SelectColumn } from '../../src';
+import type { Column } from '../../src';
 
 const rows = page.getRow();
 const headerCheckbox = page.getSelectAllCheckbox();
