@@ -1,10 +1,11 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/ColumnSpanning')({
   component: ColumnSpanning
 });
 

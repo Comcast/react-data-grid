@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type {
@@ -12,7 +13,7 @@ import type {
 import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/CustomizableRenderers')({
   component: CustomizableRenderers
 });
 
