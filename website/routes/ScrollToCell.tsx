@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 import clsx from 'clsx';
 
@@ -6,7 +7,7 @@ import { DataGrid, type Column, type DataGridHandle } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/ScrollToCell')({
   component: ScrollToCell
 });
 
