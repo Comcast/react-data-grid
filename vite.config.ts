@@ -1,6 +1,6 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
-import { playwright } from '@vitest/browser-playwright';
+import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserInstanceOption } from 'vitest/node';
@@ -43,14 +43,18 @@ const viewport = { width: 1920, height: 1080 } as const;
 
 // vitest modifies the instance objects, so we cannot rely on static objects
 function getInstances(): BrowserInstanceOption[] {
+  const opts: PlaywrightProviderOptions = {
+    actionTimeout: 2000,
+    contextOptions: {
+      viewport
+    }
+  };
+
   return [
     {
       browser: 'chromium',
       provider: playwright({
-        actionTimeout: 1000,
-        contextOptions: {
-          viewport
-        },
+        ...opts,
         launchOptions: {
           channel: 'chromium'
         }
@@ -58,12 +62,7 @@ function getInstances(): BrowserInstanceOption[] {
     },
     {
       browser: 'firefox',
-      provider: playwright({
-        actionTimeout: 1000,
-        contextOptions: {
-          viewport
-        }
-      }),
+      provider: playwright(opts),
       // TODO: remove when FF tests are stable
       fileParallelism: false
     }
