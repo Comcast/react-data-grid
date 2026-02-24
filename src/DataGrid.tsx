@@ -72,7 +72,7 @@ import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/
 import { rootClassname, viewportDraggingClassname } from './style/core';
 import SummaryRow from './SummaryRow';
 
-export interface ActiveCellState extends Position {
+interface ActiveCellState extends Position {
   readonly mode: 'ACTIVE';
 }
 
@@ -800,8 +800,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const isRowPositionInViewport = rowIdx >= 0 && rowIdx < rows.length;
 
     // row status
-    const isRowInActiveBounds = isRowPositionInActiveBounds && isColumnPositionAllColumns;
-    const isRowInViewport = isRowPositionInViewport && isColumnPositionAllColumns;
+    const isRowInActiveBounds = isColumnPositionAllColumns && isRowPositionInActiveBounds;
+    const isRowInViewport = isColumnPositionAllColumns && isRowPositionInViewport;
 
     // cell status
     const isCellInActiveBounds = isColumnPositionInActiveBounds && isRowPositionInActiveBounds;
@@ -894,12 +894,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         if (activePositionIsRow) return { idx, rowIdx: maxRowIdx };
         return { idx: maxColIdx, rowIdx: ctrlKey ? maxRowIdx : rowIdx };
       case 'PageUp': {
-        if (activePosition.rowIdx === minRowIdx) return activePosition;
+        if (rowIdx === minRowIdx) return activePosition;
         const nextRowY = getRowTop(rowIdx) + getRowHeight(rowIdx) - clientHeight;
         return { idx, rowIdx: nextRowY > 0 ? findRowIdx(nextRowY) : 0 };
       }
       case 'PageDown': {
-        if (activePosition.rowIdx >= rows.length) return activePosition;
+        if (rowIdx >= rows.length) return activePosition;
         const nextRowY = getRowTop(rowIdx) + clientHeight;
         return { idx, rowIdx: nextRowY < totalRowHeight ? findRowIdx(nextRowY) : rows.length - 1 };
       }

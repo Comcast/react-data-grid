@@ -1673,7 +1673,7 @@ interface Renderers<TRow, TSummaryRow> {
 }
 ```
 
-#### `CellMouseArgs<TRow, TSummaryRow = unknown>`
+#### `CellMouseArgs<TRow, TSummaryRow>`
 
 Arguments passed to cell mouse event handlers.
 
