@@ -3,7 +3,7 @@ import { css } from 'ecij';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames } from './utils';
-import type { BaseRenderRowProps, GroupRow } from './types';
+import type { BaseRenderRowProps, GroupRow, Omit } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
 import { cell, cellFrozen } from './style/cell';
@@ -24,7 +24,10 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupRowRendererProps<R, SR> extends BaseRenderRowProps<R, SR> {
+interface GroupRowRendererProps<R, SR> extends Omit<
+  BaseRenderRowProps<R, SR>,
+  'isRowSelectionDisabled'
+> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
@@ -41,7 +44,6 @@ function GroupedRow<R, SR>({
   gridRowStart,
   groupBy,
   toggleGroup,
-  isRowSelectionDisabled: _isRowSelectionDisabled,
   ...props
 }: GroupRowRendererProps<R, SR>) {
   const isPositionOnRow = activeCellIdx === -1;

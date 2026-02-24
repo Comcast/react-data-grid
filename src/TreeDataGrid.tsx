@@ -379,6 +379,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
+      isRowSelectionDisabled,
       isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
@@ -417,6 +418,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
+      isRowSelectionDisabled,
       isTreeGrid
     });
   }
