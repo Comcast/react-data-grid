@@ -6,7 +6,6 @@
 npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
 node --run build             # library → lib/
 node --run typecheck         # tsc --build
-node --run check             # biome check (warnings are errors)
 node --run eslint            # eslint --max-warnings 0
 node --run eslint:fix        # eslint --fix
 node --run format            # oxfmt
@@ -48,7 +47,7 @@ website/              # demo site (Vite + TanStack Router)
 - **Dual classnames** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
 - **Accessibility first** — ARIA attributes (e.g. `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
-- **Formatting** — oxfmt (not Prettier). **Linting** — Biome + ESLint (both must pass with zero warnings).
+- **Formatting** — oxfmt (not Prettier). **Linting** — ESLint (must pass with zero warnings).
 - **Build** — Rolldown bundles library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
 
 ## Testing
@@ -60,4 +59,4 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `node --run typecheck`, `node --run check`, `node --run eslint`, `node --run format`, `node --run test`.
+Run before submitting changes: `node --run typecheck`, `node --run eslint`, `node --run format`, `node --run test`.

@@ -315,8 +315,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const [columnWidthsInternal, setColumnWidthsInternal] = useState(
     (): ColumnWidths => columnWidthsRaw ?? new Map()
   );
-  const [isColumnResizing, setColumnResizing] = useState(false);
-  const [isDragging, setDragging] = useState(false);
+  const [isColumnResizing, setIsColumnResizing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
   const [scrollToPosition, setScrollToPosition] = useState<PartialPosition | null>(null);
   const [shouldFocusCell, setShouldFocusCell] = useState(false);
@@ -340,7 +340,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [columnWidths]
   );
 
-  const [gridRef, gridWidth, gridHeight, horizontalScrollbarHeight] = useGridDimensions();
+  const [gridRef, gridWidth, gridHeight] = useGridDimensions();
   const {
     columns,
     colSpanColumns,
@@ -454,15 +454,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     columnWidths,
     onColumnWidthsChange,
     onColumnResize,
-    setColumnResizing
+    setIsColumnResizing
   );
 
   const minColIdx = isTreeGrid ? -1 : 0;
   const maxColIdx = columns.length - 1;
   const selectedCellIsWithinSelectionBounds = isCellWithinSelectionBounds(selectedPosition);
   const selectedCellIsWithinViewportBounds = isCellWithinViewportBounds(selectedPosition);
-  const scrollHeight =
-    headerRowHeight + totalRowHeight + summaryRowsHeight + horizontalScrollbarHeight;
 
   /**
    * The identity of the wrapper function is stable so it won't break memoization
@@ -695,7 +693,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     // This check is needed as double click on the resize handle triggers onPointerMove
     if (isColumnResizing) {
       onColumnWidthsChangeRaw?.(columnWidths);
-      setColumnResizing(false);
+      setIsColumnResizing(false);
     }
   }
 
@@ -705,7 +703,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (event.pointerType === 'mouse' && event.button !== 0) {
       return;
     }
-    setDragging(true);
+    setIsDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
@@ -728,7 +726,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   }
 
   function handleDragHandleLostPointerCapture() {
-    setDragging(false);
+    setIsDragging(false);
     if (draggedOverRowIdx === undefined) return;
 
     const { rowIdx } = selectedPosition;
@@ -1189,7 +1187,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
-        '--rdg-scroll-height': `${scrollHeight}px`,
         ...layoutCssVars
       }}
       dir={direction}
