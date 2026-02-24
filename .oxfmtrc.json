@@ -3,7 +3,7 @@
   "ignorePatterns": ["/website/routeTree.gen.ts"],
   "singleQuote": true,
   "trailingComma": "none",
-  "experimentalSortImports": {
+  "sortImports": {
     "customGroups": [
       {
         "groupName": "react",
@@ -64,6 +64,5 @@
       "unknown"
     ],
     "newlinesBetween": false
-  },
-  "experimentalSortPackageJson": false
+  }
 }

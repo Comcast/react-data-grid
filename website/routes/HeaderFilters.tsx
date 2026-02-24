@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, use, useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -67,6 +67,7 @@ interface Filter extends Omit<Row, 'id' | 'complete'> {
 // Context is needed to read filter values otherwise columns are
 // re-created when filters are changed and filter loses focus
 const FilterContext = createContext<Filter | undefined>(undefined);
+FilterContext.displayName = 'FilterContext';
 
 function inputStopPropagation(event: React.KeyboardEvent<HTMLInputElement>) {
   if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
@@ -317,7 +318,7 @@ function FilterRenderer<R>({
 }: RenderHeaderCellProps<R> & {
   children: (args: { tabIndex: number; filters: Filter }) => React.ReactElement;
 }) {
-  const filters = useContext(FilterContext)!;
+  const filters = use(FilterContext)!;
   return (
     <>
       <div>{column.name}</div>

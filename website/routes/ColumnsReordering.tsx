@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column, type ColumnWidths, type SortColumn } from '../../src';
-import { startViewTransition } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
@@ -121,7 +120,7 @@ function ColumnsReordering() {
       });
     }
 
-    startViewTransition(reorderColumns);
+    document.startViewTransition(reorderColumns);
   }
 
   function resetOrderAndWidths() {

@@ -14,7 +14,7 @@ test('renderHeaderCell is either undefined or a component', async () => {
     {
       key: 'name',
       name: 'Name',
-      renderHeaderCell: ({ column }) => `Fancy! ${column.name}`
+      renderHeaderCell: ({ column }) => `Fancy! ${column.name as string}`
     }
   ];
 

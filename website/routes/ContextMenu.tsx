@@ -75,10 +75,10 @@ function ContextMenuDemo() {
       setContextMenuProps(null);
     }
 
-    addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousedown', onMouseDown);
 
     return () => {
-      removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousedown', onMouseDown);
     };
   }, [isContextMenuOpen]);
 

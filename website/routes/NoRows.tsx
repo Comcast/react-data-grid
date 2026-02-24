@@ -45,7 +45,7 @@ function rowKeyGetter(row: Row) {
 
 function NoRows() {
   const direction = useDirection();
-  const [selectedRows, onSelectedRowsChange] = useState((): ReadonlySet<number> => new Set());
+  const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
 
   return (
     <DataGrid
@@ -54,7 +54,7 @@ function NoRows() {
       rows={rows}
       renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
       selectedRows={selectedRows}
-      onSelectedRowsChange={onSelectedRowsChange}
+      onSelectedRowsChange={setSelectedRows}
       rowKeyGetter={rowKeyGetter}
       className={gridClassname}
       direction={direction}
