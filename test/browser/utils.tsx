@@ -124,9 +124,9 @@ export async function safeTab(shift = false) {
     }
 
     // Firefox needs two clicks for some reason
-    while (!document.hasFocus()) {
+    do {
       await userEvent.click(button);
-    }
+    } while (!document.hasFocus());
 
     await userEvent.tab({ shift });
 
