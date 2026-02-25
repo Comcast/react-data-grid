@@ -84,6 +84,8 @@ function MasterDetail() {
         cellClass(row) {
           return row.type === 'DETAIL'
             ? css`
+                /* allows shrinking the inner grid */
+                contain: inline-size;
                 padding: 24px;
               `
             : undefined;
