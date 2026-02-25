@@ -1,6 +1,9 @@
 {
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.removeUnusedImports": "explicit",
+    // prevent removal of unreachable code
+    "source.fixAll.ts": "never"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
