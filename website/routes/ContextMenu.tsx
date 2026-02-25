@@ -1,12 +1,13 @@
 import { useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { faker } from '@faker-js/faker';
+import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/ContextMenu')({
   component: ContextMenuDemo
 });
 
@@ -74,10 +75,10 @@ function ContextMenuDemo() {
       setContextMenuProps(null);
     }
 
-    addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousedown', onMouseDown);
 
     return () => {
-      removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousedown', onMouseDown);
     };
   }, [isContextMenuOpen]);
 

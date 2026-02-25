@@ -139,13 +139,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   }, [groupBy, rowGrouper, rawRows]);
 
   const [rows, isGroupRow] = useMemo((): [
-    ReadonlyArray<R | GroupRow<R>>,
+    readonly (R | GroupRow<R>)[],
     (row: R | GroupRow<R>) => row is GroupRow<R>
   ] => {
     const allGroupRows = new Set<unknown>();
     if (!groupedRows) return [rawRows, isGroupRow];
 
-    const flattenedRows: Array<R | GroupRow<R>> = [];
+    const flattenedRows: (R | GroupRow<R>)[] = [];
 
     const expandGroup = (
       rows: GroupByDictionary<R> | readonly R[],
@@ -298,7 +298,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
     if (args.mode === 'EDIT') return;
     const { column, rowIdx, selectCell } = args;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 

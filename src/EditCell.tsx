@@ -115,12 +115,12 @@ export default function EditCell<R, SR>({
       }
     }
 
-    addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-    addEventListener('mousedown', onWindowMouseDown);
+    window.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+    window.addEventListener('mousedown', onWindowMouseDown);
 
     return () => {
-      removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-      removeEventListener('mousedown', onWindowMouseDown);
+      window.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+      window.removeEventListener('mousedown', onWindowMouseDown);
       cancelTask();
     };
   }, [commitOnOutsideClick]);

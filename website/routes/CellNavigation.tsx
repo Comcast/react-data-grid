@@ -1,10 +1,11 @@
 import { useId, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid } from '../../src';
 import type { CellKeyboardEvent, CellKeyDownArgs, Column } from '../../src';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/CellNavigation')({
   component: CellNavigation
 });
 
@@ -85,7 +86,7 @@ function CellNavigation() {
   function handleCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
     if (args.mode === 'EDIT') return;
     const { column, rowIdx, selectCell } = args;
-    const { idx } = column;
+    const idx = column?.idx ?? -1;
     const { key, shiftKey } = event;
 
     const preventDefault = () => {

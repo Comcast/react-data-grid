@@ -8,7 +8,7 @@ import type { DataGridProps } from '../DataGrid';
 import renderHeaderCell from '../renderHeaderCell';
 
 type Mutable<T> = {
-  -readonly [P in keyof T]: T[P] extends ReadonlyArray<infer V> ? Mutable<V>[] : T[P];
+  -readonly [P in keyof T]: T[P] extends readonly (infer V)[] ? Mutable<V>[] : T[P];
 };
 
 interface WithParent<R, SR> {
