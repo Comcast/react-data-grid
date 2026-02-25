@@ -80,7 +80,7 @@ export default function EditCell<R, SR>({
 
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
-  // To that end we instead access the latest props via useLatestFunc.
+  // To that end we instead access the latest props via useEffectEvent.
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
