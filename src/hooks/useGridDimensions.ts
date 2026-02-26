@@ -1,16 +1,15 @@
-import { useCallback, useId, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
 
 const initialSize: ResizeObserverSize = {
   inlineSize: 1,
   blockSize: 1
 };
 
-const targetToIdMap = new Map<HTMLDivElement, string>();
-const idToTargetMap = new Map<string, HTMLDivElement>();
+const targetToRefMap = new Map<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 // use an unmanaged WeakMap so we preserve the cache even when
 // the component partially unmounts via Suspense or Activity
-const sizeMap = new WeakMap<HTMLDivElement, ResizeObserverSize>();
-const subscribers = new Map<string, () => void>();
+const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
+const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
 
 // don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
 const resizeObserver =
@@ -21,24 +20,23 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   for (const entry of entries) {
     const target = entry.target as HTMLDivElement;
 
-    if (!targetToIdMap.has(target)) continue;
-
-    const id = targetToIdMap.get(target)!;
-
-    updateSize(target, id, entry.contentBoxSize[0]);
+    if (targetToRefMap.has(target)) {
+      const ref = targetToRefMap.get(target)!;
+      updateSize(ref, entry.contentBoxSize[0]);
+    }
   }
 }
 
-function updateSize(target: HTMLDivElement, id: string, size: ResizeObserverSize) {
-  if (sizeMap.has(target)) {
-    const prevSize = sizeMap.get(target)!;
+function updateSize(ref: RefObject<HTMLDivElement | null>, size: ResizeObserverSize) {
+  if (sizeMap.has(ref)) {
+    const prevSize = sizeMap.get(ref)!;
     if (prevSize.inlineSize === size.inlineSize && prevSize.blockSize === size.blockSize) {
       return;
     }
   }
 
-  sizeMap.set(target, size);
-  subscribers.get(id)?.();
+  sizeMap.set(ref, size);
+  subscribers.get(ref)?.();
 }
 
 function getServerSnapshot(): ResizeObserverSize {
@@ -46,54 +44,44 @@ function getServerSnapshot(): ResizeObserverSize {
 }
 
 export function useGridDimensions() {
-  const id = useId();
-  const gridRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => {
-      subscribers.set(id, onStoreChange);
+  const subscribe = useCallback((onStoreChange: () => void) => {
+    subscribers.set(ref, onStoreChange);
 
-      return () => {
-        subscribers.delete(id);
-      };
-    },
-    [id]
-  );
+    return () => {
+      subscribers.delete(ref);
+    };
+  }, []);
 
   const getSnapshot = useCallback((): ResizeObserverSize => {
-    if (idToTargetMap.has(id)) {
-      const target = idToTargetMap.get(id)!;
-      if (sizeMap.has(target)) {
-        return sizeMap.get(target)!;
-      }
-    }
-    return initialSize;
-  }, [id]);
+    // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
+    // We use ref as key instead to access stable values regardless of rendering state.
+    return sizeMap.has(ref) ? sizeMap.get(ref)! : initialSize;
+  }, []);
 
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.
   const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useLayoutEffect(() => {
-    const target = gridRef.current!;
+    const target = ref.current!;
 
-    targetToIdMap.set(target, id);
-    idToTargetMap.set(id, target);
+    targetToRefMap.set(target, ref);
     resizeObserver?.observe(target);
 
-    if (!sizeMap.has(target)) {
-      updateSize(target, id, {
+    if (!sizeMap.has(ref)) {
+      updateSize(ref, {
         inlineSize: target.clientWidth,
         blockSize: target.clientHeight
       });
     }
 
     return () => {
-      targetToIdMap.delete(target);
-      idToTargetMap.delete(id);
+      targetToRefMap.delete(target);
       resizeObserver?.unobserve(target);
     };
-  }, [id]);
+  }, []);
 
-  return [gridRef, inlineSize, blockSize] as const;
+  return [ref, inlineSize, blockSize] as const;
 }
