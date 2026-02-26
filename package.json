@@ -47,7 +47,7 @@
     "typecheck": "tsc --build"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "^3.0.0-beta.42",
+    "@eslint-react/eslint-plugin": "3.0.0-beta.53",
     "@eslint/markdown": "^7.5.1",
     "@faker-js/faker": "^10.0.0",
     "@tanstack/react-router": "^1.132.31",
@@ -73,7 +73,7 @@
     "postcss": "^8.5.2",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "rolldown": "^1.0.0-rc.3",
+    "rolldown": "1.0.0-rc.5",
     "rolldown-plugin-dts": "^0.22.1",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.56.0",
