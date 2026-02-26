@@ -356,3 +356,35 @@ export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
 export type Direction = 'ltr' | 'rtl';
 
 export type ResizedWidth = number | 'max-content';
+
+
+export interface VirtualizationOptions {
+  /** Enable row virtualization */
+  /** @default 4  */  
+  rows?: boolean | {overscanThreshold: number};
+  columns?: boolean;
+}
+export function isVirtualizationOptions(obj: unknown): obj is VirtualizationOptions {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const o = obj as VirtualizationOptions;
+
+  if ('rows' in o && typeof o.rows !== 'undefined') {
+    if (typeof o.rows !== 'boolean') {
+      if (
+        typeof o.rows !== 'object' ||
+        o.rows === null ||
+        !('overscanThreshold' in o.rows) ||
+        typeof (o.rows as any).overscanThreshold !== 'number'
+      ) {
+        return false;
+      }
+    }
+  }
+
+  if ('columns' in o && typeof o.columns !== 'undefined' && typeof o.columns !== 'boolean') {
+    return false;
+  }
+
+  return true;
+}
+
