@@ -5,10 +5,10 @@ const initialSize: ResizeObserverSize = {
   blockSize: 1
 };
 
-const targetToRefMap = new Map<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 // use an unmanaged WeakMap so we preserve the cache even when
 // the component partially unmounts via Suspense or Activity
 const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
+const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
 
 // don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
@@ -78,7 +78,6 @@ export function useGridDimensions() {
     }
 
     return () => {
-      targetToRefMap.delete(target);
       resizeObserver?.unobserve(target);
     };
   }, []);
