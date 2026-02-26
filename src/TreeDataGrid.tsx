@@ -297,7 +297,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (event.isGridDefaultPrevented()) return;
 
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, selectCell } = args;
+    const { column, rowIdx, setPosition } = args;
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 
@@ -320,7 +320,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const parentRowAndIndex = getParentRowAndIndex(row);
       if (parentRowAndIndex !== undefined) {
         event.preventGridDefault();
-        selectCell({ idx, rowIdx: parentRowAndIndex[1] });
+        setPosition({ idx, rowIdx: parentRowAndIndex[1] });
       }
     }
   }
@@ -377,9 +377,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor,
+      activeCellEditor,
+      isRowSelectionDisabled,
       isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
@@ -416,9 +416,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor,
+      activeCellEditor,
+      isRowSelectionDisabled,
       isTreeGrid
     });
   }

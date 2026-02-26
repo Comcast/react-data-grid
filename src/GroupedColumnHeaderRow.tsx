@@ -1,28 +1,28 @@
 import { memo } from 'react';
 
-import type { CalculatedColumn, CalculatedColumnParent, Position } from './types';
+import type { CalculatedColumnParent, IterateOverViewportColumnsForRow, Position } from './types';
 import GroupedColumnHeaderCell from './GroupedColumnHeaderCell';
 import { headerRowClassname } from './HeaderRow';
 
 export interface GroupedColumnHeaderRowProps<R, SR> {
   rowIdx: number;
   level: number;
-  columns: readonly CalculatedColumn<R, SR>[];
-  selectCell: (position: Position) => void;
-  selectedCellIdx: number | undefined;
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
+  activeCellIdx: number | undefined;
+  setPosition: (position: Position) => void;
 }
 
 function GroupedColumnHeaderRow<R, SR>({
   rowIdx,
   level,
-  columns,
-  selectedCellIdx,
-  selectCell
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
+  setPosition
 }: GroupedColumnHeaderRowProps<R, SR>) {
   const cells = [];
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
-  for (const column of columns) {
+  for (const [column] of iterateOverViewportColumnsForRow(activeCellIdx)) {
     if (column.parent === undefined) continue;
 
     let { parent } = column;
@@ -40,8 +40,8 @@ function GroupedColumnHeaderRow<R, SR>({
           key={idx}
           column={parent}
           rowIdx={rowIdx}
-          isCellSelected={selectedCellIdx === idx}
-          selectCell={selectCell}
+          isCellActive={activeCellIdx === idx}
+          setPosition={setPosition}
         />
       );
     }

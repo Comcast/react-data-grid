@@ -3,7 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
-import { rowSelectedClassname } from '../../src/style/row';
+import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
 
 const treeGrid = page.getTreeGrid();
@@ -11,7 +11,7 @@ const headerRow = treeGrid.getHeaderRow();
 const headerCells = headerRow.getHeaderCell();
 const headerCheckbox = headerRow.getSelectAllCheckbox();
 const rows = treeGrid.getRow();
-const selectedCell = treeGrid.getSelectedCell();
+const activeCell = treeGrid.getActiveCell();
 
 interface Row {
   id: number;
@@ -214,9 +214,9 @@ test('should toggle group using keyboard', async () => {
   const groupCell = page.getCell({ name: '2021' });
   await userEvent.click(groupCell);
   await testRowCount(7);
-  // clicking on the group cell selects the row
-  await expect.element(selectedCell).not.toBeInTheDocument();
-  await expect.element(getRowWithCell(groupCell)).toHaveClass(rowSelectedClassname);
+  // clicking on the group cell focuses the row
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(getRowWithCell(groupCell)).toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowright}{arrowright}{enter}');
   await testRowCount(5);
   await userEvent.keyboard('{enter}');
@@ -320,65 +320,65 @@ test('cell navigation in a treegrid', async () => {
   const groupCell1 = row1.getCell({ name: 'USA' });
   await expect.element(document.body).toHaveFocus();
   await expect.element(row1).toHaveAttribute('tabIndex', '-1');
-  await expect.element(row1).not.toHaveClass(rowSelectedClassname);
+  await expect.element(row1).not.toHaveClass(rowActiveClassname);
 
   await userEvent.click(groupCell1);
   await expect.element(row1).toHaveFocus();
   await expect.element(row1).toHaveAttribute('tabIndex', '0');
-  await expect.element(row1).toHaveClass(rowSelectedClassname);
+  await expect.element(row1).toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{arrowup}');
   await expect.element(topSummaryRow).toHaveFocus();
   await expect.element(topSummaryRow).toHaveAttribute('tabIndex', '0');
-  await expect.element(topSummaryRow).toHaveClass(rowSelectedClassname);
+  await expect.element(topSummaryRow).toHaveClass(rowActiveClassname);
 
-  // header row does not get selected
+  // header row does not get focused
   await userEvent.keyboard('{arrowup}');
   await expect.element(headerCheckbox).toHaveFocus();
   await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
-  await expect.element(headerRow).not.toHaveClass(rowSelectedClassname);
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
 
-  // header row cannot get selected
+  // header row cannot get focused
   await userEvent.keyboard('{arrowleft}');
   await expect.element(headerCheckbox).toHaveFocus();
   await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
-  await expect.element(headerRow).not.toHaveClass(rowSelectedClassname);
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{arrowdown}');
   await expect.element(topSummaryRow.getCell().nth(0)).toHaveFocus();
   await expect.element(topSummaryRow.getCell().nth(0)).toHaveAttribute('tabIndex', '0');
-  await expect.element(topSummaryRow).not.toHaveClass(rowSelectedClassname);
+  await expect.element(topSummaryRow).not.toHaveClass(rowActiveClassname);
 
-  // can select summary row
+  // can focus summary row
   await userEvent.keyboard('{arrowleft}');
   await expect.element(topSummaryRow).toHaveFocus();
   await expect.element(topSummaryRow).toHaveAttribute('tabIndex', '0');
-  await expect.element(topSummaryRow).toHaveClass(rowSelectedClassname);
+  await expect.element(topSummaryRow).toHaveClass(rowActiveClassname);
 
   const groupCell2 = page.getCell({ name: '2021' });
   await userEvent.click(groupCell2);
   await expect.element(row3).toHaveFocus();
   await expect.element(row3).toHaveAttribute('tabIndex', '0');
 
-  // select cell
+  // focus cell
   const cells = getCellsAtRowIndex(5);
   await userEvent.click(cells.nth(1));
   await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect.element(cells.nth(1)).toHaveFocus();
   await expect.element(cells.nth(1)).toHaveAttribute('tabIndex', '0');
 
-  // select the previous cell
+  // focus the previous cell
   await userEvent.keyboard('{arrowleft}');
   await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'false');
   await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
 
-  // if the first cell is selected then arrowleft should select the row
+  // if the first cell is focused then arrowleft should focus the row
   await userEvent.keyboard('{arrowleft}');
   await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'false');
-  await expect.element(rows.nth(4)).toHaveClass(rowSelectedClassname);
+  await expect.element(rows.nth(4)).toHaveClass(rowActiveClassname);
   await expect.element(rows.nth(4)).toHaveFocus();
 
-  // if the row is selected then arrowright should select the first cell on the same row
+  // if the row is focused then arrowright should focus the first cell on the same row
   await userEvent.keyboard('{arrowright}');
   await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
 
@@ -394,20 +394,20 @@ test('cell navigation in a treegrid', async () => {
   await userEvent.keyboard('{arrowright}');
   await testRowCount(7);
 
-  // left arrow on a collapsed group should select the parent group
-  await expect.element(rows.nth(1)).not.toHaveClass(rowSelectedClassname);
+  // left arrow on a collapsed group should focus the parent group
+  await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowleft}{arrowleft}');
-  await expect.element(rows.nth(1)).toHaveClass(rowSelectedClassname);
+  await expect.element(rows.nth(1)).toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{end}');
-  await expect.element(rows.nth(5)).toHaveClass(rowSelectedClassname);
+  await expect.element(rows.nth(5)).toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{home}');
   await expect.element(headerCheckbox).toHaveFocus();
   await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
-  await expect.element(headerRow).not.toHaveClass(rowSelectedClassname);
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
 
-  // collpase parent group
+  // collapse parent group
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowleft}{arrowleft}');
   await expect.element(page.getCell({ name: '2021' })).not.toBeInTheDocument();
   await testRowCount(4);
@@ -453,9 +453,9 @@ test('update row using cell renderer', async () => {
   await userEvent.click(page.getCell({ name: '2021' }));
   await userEvent.click(page.getCell({ name: 'USA' }));
   await userEvent.keyboard('{arrowright}{arrowright}');
-  await expect.element(selectedCell).toHaveTextContent('value: 2');
+  await expect.element(activeCell).toHaveTextContent('value: 2');
   await userEvent.click(page.getByRole('button', { name: 'value: 2' }));
-  await expect.element(selectedCell).toHaveTextContent('value: 12');
+  await expect.element(activeCell).toHaveTextContent('value: 12');
 });
 
 test('custom renderGroupCell', async () => {

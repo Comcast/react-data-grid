@@ -3,11 +3,11 @@ import { css } from 'ecij';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames } from './utils';
-import type { BaseRenderRowProps, GroupRow } from './types';
+import type { BaseRenderRowProps, GroupRow, Omit } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
 import { cell, cellFrozen } from './style/cell';
-import { rowClassname, rowSelectedClassname } from './style/row';
+import { rowClassname, rowActiveClassname } from './style/row';
 
 const groupRow = css`
   @layer rdg.GroupedRow {
@@ -24,7 +24,10 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupRowRendererProps<R, SR> extends BaseRenderRowProps<R, SR> {
+interface GroupRowRendererProps<R, SR> extends Omit<
+  BaseRenderRowProps<R, SR>,
+  'isRowSelectionDisabled'
+> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
@@ -34,22 +37,21 @@ function GroupedRow<R, SR>({
   className,
   row,
   rowIdx,
-  viewportColumns,
-  selectedCellIdx,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
   isRowSelected,
-  selectCell,
+  setPosition,
   gridRowStart,
   groupBy,
   toggleGroup,
-  isRowSelectionDisabled: _isRowSelectionDisabled,
   ...props
 }: GroupRowRendererProps<R, SR>) {
-  const isPositionOnRow = selectedCellIdx === -1;
-  // Select is always the first column
-  const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
+  const isPositionOnRow = activeCellIdx === -1;
+
+  let idx = row.level;
 
   function handleSelectGroup() {
-    selectCell({ rowIdx, idx: -1 }, { shouldFocusCell: true });
+    setPosition({ rowIdx, idx: -1 }, { shouldFocus: true });
   }
 
   const selectionValue = useMemo(
@@ -70,28 +72,37 @@ function GroupedRow<R, SR>({
           rowClassname,
           groupRowClassname,
           `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-          isPositionOnRow && rowSelectedClassname,
+          isPositionOnRow && rowActiveClassname,
           className
         )}
         onMouseDown={handleSelectGroup}
         style={{ gridRowStart }}
         {...props}
       >
-        {viewportColumns.map((column) => (
-          <GroupCell
-            key={column.key}
-            id={row.id}
-            groupKey={row.groupKey}
-            childRows={row.childRows}
-            isExpanded={row.isExpanded}
-            isCellSelected={selectedCellIdx === column.idx}
-            column={column}
-            row={row}
-            groupColumnIndex={idx}
-            toggleGroup={toggleGroup}
-            isGroupByColumn={groupBy.includes(column.key)}
-          />
-        ))}
+        {iterateOverViewportColumnsForRow(activeCellIdx)
+          .map(([column], index) => {
+            // Select is always the first column
+            if (index === 0 && column.key === SELECT_COLUMN_KEY) {
+              idx += 1;
+            }
+
+            return (
+              <GroupCell
+                key={column.key}
+                id={row.id}
+                groupKey={row.groupKey}
+                childRows={row.childRows}
+                isExpanded={row.isExpanded}
+                isCellActive={activeCellIdx === column.idx}
+                column={column}
+                row={row}
+                groupColumnIndex={idx}
+                toggleGroup={toggleGroup}
+                isGroupByColumn={groupBy.includes(column.key)}
+              />
+            );
+          })
+          .toArray()}
       </div>
     </RowSelectionContext>
   );

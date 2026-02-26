@@ -16,7 +16,7 @@ const cellDraggedOverClassname = `rdg-cell-dragged-over ${cellDraggedOver}`;
 function Cell<R, SR>({
   column,
   colSpan,
-  isCellSelected,
+  isCellActive,
   isDraggedOver,
   row,
   rowIdx,
@@ -30,11 +30,11 @@ function Cell<R, SR>({
   onContextMenu,
   onCellContextMenu,
   onRowChange,
-  selectCell,
+  setPosition,
   style,
   ...props
 }: CellRendererProps<R, SR>) {
-  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellSelected);
+  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
   const { cellClass } = column;
   className = getCellClassname(
@@ -47,8 +47,8 @@ function Cell<R, SR>({
   );
   const isEditable = isCellEditableUtil(column, row);
 
-  function selectCellWrapper(enableEditor?: boolean) {
-    selectCell({ rowIdx, idx: column.idx }, { enableEditor });
+  function setPositionWrapper(enableEditor?: boolean) {
+    setPosition({ rowIdx, idx: column.idx }, { enableEditor });
   }
 
   function handleMouseEvent(
@@ -58,7 +58,7 @@ function Cell<R, SR>({
     let eventHandled = false;
     if (eventHandler) {
       const cellEvent = createCellEvent(event);
-      eventHandler({ rowIdx, row, column, selectCell: selectCellWrapper }, cellEvent);
+      eventHandler({ rowIdx, row, column, setPosition: setPositionWrapper }, cellEvent);
       eventHandled = cellEvent.isGridDefaultPrevented();
     }
     return eventHandled;
@@ -68,7 +68,7 @@ function Cell<R, SR>({
     onMouseDown?.(event);
     if (!handleMouseEvent(event, onCellMouseDown)) {
       // select cell if the event is not prevented
-      selectCellWrapper();
+      setPositionWrapper();
     }
   }
 
@@ -81,7 +81,7 @@ function Cell<R, SR>({
     onDoubleClick?.(event);
     if (!handleMouseEvent(event, onCellDoubleClick)) {
       // go into edit mode if the event is not prevented
-      selectCellWrapper(true);
+      setPositionWrapper(true);
     }
   }
 
@@ -91,7 +91,7 @@ function Cell<R, SR>({
   }
 
   function handleRowChange(newRow: R) {
-    onRowChange(column, newRow);
+    onRowChange(column, rowIdx, newRow);
   }
 
   return (
@@ -99,7 +99,7 @@ function Cell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
       aria-colspan={colSpan}
-      aria-selected={isCellSelected}
+      aria-selected={isCellActive}
       aria-readonly={!isEditable || undefined}
       tabIndex={tabIndex}
       className={className}

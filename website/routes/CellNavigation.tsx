@@ -85,7 +85,7 @@ function CellNavigation() {
 
   function handleCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, selectCell } = args;
+    const { column, rowIdx, setPosition } = args;
     const idx = column?.idx ?? -1;
     const { key, shiftKey } = event;
 
@@ -96,10 +96,10 @@ function CellNavigation() {
 
     const loopOverNavigation = () => {
       if ((key === 'ArrowRight' || (key === 'Tab' && !shiftKey)) && idx === columns.length - 1) {
-        selectCell({ rowIdx, idx: 0 });
+        setPosition({ rowIdx, idx: 0 });
         preventDefault();
       } else if ((key === 'ArrowLeft' || (key === 'Tab' && shiftKey)) && idx === 0) {
-        selectCell({ rowIdx, idx: columns.length - 1 });
+        setPosition({ rowIdx, idx: columns.length - 1 });
         preventDefault();
       }
     };
@@ -108,15 +108,15 @@ function CellNavigation() {
       if (key === 'ArrowRight' && idx === columns.length - 1) {
         if (rows.length === 0) return;
         if (rowIdx === -1) {
-          selectCell({ rowIdx: 0, idx: 0 });
+          setPosition({ rowIdx: 0, idx: 0 });
         } else {
           if (rowIdx === rows.length - 1) return;
-          selectCell({ rowIdx: rowIdx + 1, idx: 0 });
+          setPosition({ rowIdx: rowIdx + 1, idx: 0 });
         }
         preventDefault();
       } else if (key === 'ArrowLeft' && idx === 0) {
         if (rowIdx === -1) return;
-        selectCell({ rowIdx: rowIdx - 1, idx: columns.length - 1 });
+        setPosition({ rowIdx: rowIdx - 1, idx: columns.length - 1 });
         preventDefault();
       }
     };
@@ -128,7 +128,7 @@ function CellNavigation() {
       } else {
         newRowIdx = shiftKey ? rowIdx - 1 : rowIdx === rows.length - 1 ? -1 : rowIdx + 1;
       }
-      selectCell({ rowIdx: newRowIdx, idx });
+      setPosition({ rowIdx: newRowIdx, idx });
       preventDefault();
     };
 

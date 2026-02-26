@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef } from 'react';
 
 import { scrollIntoView } from './utils';
+import type { Maybe } from './types';
 
 export interface PartialPosition {
-  readonly idx?: number | undefined;
-  readonly rowIdx?: number | undefined;
+  readonly idx?: Maybe<number>;
+  readonly rowIdx?: Maybe<number>;
 }
 
 export default function ScrollToCell({
@@ -34,8 +35,8 @@ export default function ScrollToCell({
     <div
       ref={ref}
       style={{
-        gridColumn: idx === undefined ? '1/-1' : idx + 1,
-        gridRow: rowIdx === undefined ? '1/-1' : rowIdx + 1
+        gridColumn: idx == null ? '1/-1' : idx + 1,
+        gridRow: rowIdx == null ? '1/-1' : rowIdx + 1
       }}
     />
   );

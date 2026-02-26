@@ -133,5 +133,5 @@ test('should not start editing when pressing ctrl+<input key>', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(1).nth(0));
   await userEvent.keyboard('{Control>}b');
-  await expect.element(page.getSelectedCell()).not.toHaveClass('rdg-editor-container');
+  await expect.element(page.getActiveCell()).not.toHaveClass('rdg-editor-container');
 });

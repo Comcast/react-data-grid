@@ -88,7 +88,7 @@ describe('Editor', () => {
     ]);
   });
 
-  it('should scroll to the editor if selected cell is not in the viewport', async () => {
+  it('should scroll to the editor if active cell is not in the viewport', async () => {
     const rows: Row[] = [];
     for (let i = 0; i < 99; i++) {
       rows.push({ col1: i, col2: `${i}` });
@@ -96,16 +96,16 @@ describe('Editor', () => {
 
     await page.render(<EditorTest gridRows={rows} />);
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
-    const selectedRowCells = getRowWithCell(page.getSelectedCell()).getCell();
-    await testCount(selectedRowCells, 2);
+    const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
+    await testCount(activeRowCells, 2);
     await scrollGrid({ top: 2001 });
-    await testCount(selectedRowCells, 1);
+    await testCount(activeRowCells, 1);
     const editor = grid.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).not.toBeInTheDocument();
     await expect.element(grid).toHaveProperty('scrollTop', 2001);
     // TODO: await userEvent.keyboard('123'); fails in FF
     await userEvent.keyboard('{enter}123');
-    await testCount(selectedRowCells, 2);
+    await testCount(activeRowCells, 2);
     await expect.element(editor).toHaveValue(123);
     await expect.element(grid).toHaveProperty('scrollTop', 0);
   });
@@ -194,7 +194,7 @@ describe('Editor', () => {
       await page.render(
         <EditorTest
           onCellKeyDown={(args, event) => {
-            if (args.mode === 'SELECT' && event.key === 'x') {
+            if (args.mode === 'ACTIVE' && event.key === 'x') {
               event.preventGridDefault();
             }
           }}
@@ -273,7 +273,7 @@ describe('Editor', () => {
 
       await scrollGrid({ top: 1500 });
       await userEvent.click(page.getCell({ name: 'name43' }));
-      await expect.element(page.getSelectedCell()).toHaveTextContent(/^name43$/);
+      await expect.element(page.getActiveCell()).toHaveTextContent(/^name43$/);
       await scrollGrid({ top: 0 });
       await expect.element(page.getCell({ name: 'name0abc' })).toBeVisible();
     });

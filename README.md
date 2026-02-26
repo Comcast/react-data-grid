@@ -279,7 +279,7 @@ An array of rows, the rows data can be of any type.
 
 ###### `ref?: Maybe<React.Ref<DataGridHandle>>`
 
-Optional ref for imperative APIs like scrolling/selecting a cell. See [`DataGridHandle`](#datagridhandle).
+Optional ref for imperative APIs like scrolling to or focusing a cell. See [`DataGridHandle`](#datagridhandle).
 
 ###### `topSummaryRows?: Maybe<readonly SR[]>`
 
@@ -510,11 +510,9 @@ function MyGrid() {
 }
 ```
 
-###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
-
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to select the cell. Call `preventGridDefault` to prevent the default behavior.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior.
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -545,7 +543,7 @@ This event can be used to open cell editor on single click
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.selectCell(true);
+    args.setPosition(true);
   }
 }
 ```
@@ -589,7 +587,7 @@ A function called when keydown event is triggered on a cell. This event can be u
 
 ```tsx
 function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'SELECT' && event.key === 'Enter') {
+  if (args.mode === 'ACTIVE' && event.key === 'Enter') {
     event.preventGridDefault();
   }
 }
@@ -599,7 +597,7 @@ function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
 
 ```tsx
 function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'SELECT' && event.key === 'Tab') {
+  if (args.mode === 'ACTIVE' && event.key === 'Tab') {
     event.preventGridDefault();
   }
 }
@@ -617,15 +615,13 @@ Callback triggered when content is pasted into a cell.
 
 Return the updated row; the grid will call `onRowsChange` with it.
 
-###### `onSelectedCellChange?: Maybe<(args: CellSelectArgs<R, SR>) => void>`
+###### `onActivePositionChange?: Maybe<(args: PositionChangeArgs<R, SR>) => void>`
 
-Triggered when the selected cell is changed.
+Triggered when the active position changes.
 
-Arguments:
+See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type in the Types section below.
 
-- `args.rowIdx`: `number` - row index
-- `args.row`: `R | undefined` - row object of the currently selected cell
-- `args.column`: `CalculatedColumn<TRow, TSummaryRow>` - column object of the currently selected cell
+###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
 ###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
 
@@ -1373,7 +1369,7 @@ Control whether cells can be edited with `renderEditCell`.
 
 ##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>`
 
-Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the `ColSpanArgs` type in the Types section below.
+Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the [`ColSpanArgs`](#colspanargstrow-tsummaryrow) type in the Types section below.
 
 **Example:**
 
@@ -1586,7 +1582,7 @@ interface RenderEditCellProps<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   onRowChange: (row: TRow, commitChanges?: boolean) => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 ```
 
@@ -1642,17 +1638,17 @@ Props passed to custom row renderers.
 ```tsx
 interface RenderRowProps<TRow, TSummaryRow = unknown> {
   row: TRow;
-  viewportColumns: readonly CalculatedColumn<TRow, TSummaryRow>[];
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<TRow, TSummaryRow>;
   rowIdx: number;
-  selectedCellIdx: number | undefined;
-  isRowSelected: boolean;
+  activeCellIdx: number | undefined;
   isRowSelectionDisabled: boolean;
+  isRowSelected: boolean;
   gridRowStart: number;
-  lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
+  activeCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
+  isTreeGrid: boolean;
   // ... and event handlers
 }
 ```
@@ -1661,7 +1657,7 @@ interface RenderRowProps<TRow, TSummaryRow = unknown> {
 
 Props passed to the cell renderer when using `renderers.renderCell`.
 
-Shares a base type with row render props (DOM props and cell event handlers) but only includes cell-specific fields like `column`, `row`, `rowIdx`, `colSpan`, and selection state.
+Shares a base type with row render props (DOM props and cell event handlers) but only includes cell-specific fields like `column`, `row`, `rowIdx`, `colSpan`, and position state.
 
 #### `Renderers<TRow, TSummaryRow>`
 
@@ -1683,28 +1679,16 @@ Arguments passed to cell mouse event handlers.
 
 ```tsx
 interface CellMouseArgs<TRow, TSummaryRow = unknown> {
+  /** The column object of the cell. */
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The row object of the cell. */
   row: TRow;
+  /** The row index of the cell. */
   rowIdx: number;
-  selectCell: (enableEditor?: boolean) => void;
+  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
+  setPosition: (enableEditor?: boolean) => void;
 }
 ```
-
-##### `column: CalculatedColumn<TRow, TSummaryRow>`
-
-The column object of the cell.
-
-##### `row: TRow`
-
-The row object of the cell.
-
-##### `rowIdx: number`
-
-The row index of the cell.
-
-##### `selectCell: (enableEditor?: boolean) => void`
-
-Function to manually select the cell. Pass `true` to immediately start editing.
 
 **Example:**
 
@@ -1713,7 +1697,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.selectCell(true); // Select and start editing
+  args.setPosition(true); // Focus and start editing
 }
 ```
 
@@ -1746,7 +1730,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   if (args.column.key === 'actions') {
-    event.preventGridDefault(); // Prevent cell selection
+    event.preventGridDefault(); // Prevent cell focus
   }
 }
 ```
@@ -1773,30 +1757,30 @@ type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
 
 #### `CellKeyDownArgs<TRow, TSummaryRow>`
 
-Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in SELECT or EDIT mode.
+Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in ACTIVE or EDIT mode.
 
-**SELECT mode:**
+**ACTIVE mode:**
 
 ```tsx
-interface SelectCellKeyDownArgs<TRow, TSummaryRow> {
-  mode: 'SELECT';
-  column: CalculatedColumn<TRow, TSummaryRow>;
-  row: TRow;
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+  mode: 'ACTIVE';
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
+  row: TRow | undefined;
   rowIdx: number;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  setPosition: (position: Position, options?: SetPositionOptions) => void;
 }
 ```
 
 **EDIT mode:**
 
 ```tsx
-interface EditCellKeyDownArgs<TRow, TSummaryRow> {
+interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
   navigate: () => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 ```
 
@@ -1813,15 +1797,24 @@ function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
 }
 ```
 
-#### `CellSelectArgs<TRow, TSummaryRow>`
+#### `PositionChangeArgs<TRow, TSummaryRow>`
 
-Arguments passed to `onSelectedCellChange`.
+Arguments passed to `onActivePositionChange`.
 
 ```tsx
-interface CellSelectArgs<TRow, TSummaryRow = unknown> {
+interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+  /** row index of the active position */
   rowIdx: number;
+  /**
+   * row object of the active position,
+   * undefined if the active position is on a header or summary row
+   */
   row: TRow | undefined;
-  column: CalculatedColumn<TRow, TSummaryRow>;
+  /**
+   * column object of the active position,
+   * undefined if the active position is a row instead of a cell
+   */
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
 ```
 
@@ -1853,9 +1846,9 @@ Arguments passed to the `colSpan` function.
 
 ```tsx
 type ColSpanArgs<TRow, TSummaryRow> =
-  | { type: 'HEADER' }
-  | { type: 'ROW'; row: TRow }
-  | { type: 'SUMMARY'; row: TSummaryRow };
+  | { readonly type: 'HEADER' }
+  | { readonly type: 'ROW'; readonly row: TRow }
+  | { readonly type: 'SUMMARY'; readonly row: TSummaryRow };
 ```
 
 **Example:**
@@ -1988,14 +1981,14 @@ interface Position {
 }
 ```
 
-#### `SelectCellOptions`
+#### `SetPositionOptions`
 
-Options for programmatically selecting a cell.
+Options for programmatically updating the grid's active position.
 
 ```tsx
-interface SelectCellOptions {
+interface SetPositionOptions {
   enableEditor?: Maybe<boolean>;
-  shouldFocusCell?: Maybe<boolean>;
+  shouldFocus?: Maybe<boolean>;
 }
 ```
 
@@ -2053,8 +2046,8 @@ Handle type assigned to a grid's `ref` for programmatic grid control.
 ```tsx
 interface DataGridHandle {
   element: HTMLDivElement | null;
-  scrollToCell: (position: Partial<Position>) => void;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  scrollToCell: (position: PartialPosition) => void;
+  setPosition: (position: Position, options?: SetPositionOptions) => void;
 }
 ```
 

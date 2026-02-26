@@ -1,19 +1,24 @@
 import { memo } from 'react';
 import { css } from 'ecij';
 
-import { classnames, getColSpan } from './utils';
+import { classnames } from './utils';
 import type { RenderRowProps } from './types';
 import {
   bottomSummaryRowClassname,
   rowClassname,
-  rowSelectedClassname,
+  rowActiveClassname,
   topSummaryRowClassname
 } from './style/row';
 import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
   RenderRowProps<R, SR>,
-  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell' | 'isTreeGrid'
+  | 'iterateOverViewportColumnsForRow'
+  | 'rowIdx'
+  | 'gridRowStart'
+  | 'setPosition'
+  | 'activeCellIdx'
+  | 'isTreeGrid'
 >;
 
 interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
@@ -21,8 +26,6 @@ interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
   row: SR;
   top: number | undefined;
   bottom: number | undefined;
-  lastFrozenColumnIndex: number;
-  selectedCellIdx: number | undefined;
   isTop: boolean;
 }
 
@@ -39,41 +42,30 @@ function SummaryRow<R, SR>({
   rowIdx,
   gridRowStart,
   row,
-  viewportColumns,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
+  setPosition,
   top,
   bottom,
-  lastFrozenColumnIndex,
-  selectedCellIdx,
   isTop,
-  selectCell,
   isTreeGrid,
   'aria-rowindex': ariaRowIndex
 }: SummaryRowProps<R, SR>) {
-  const isPositionOnRow = selectedCellIdx === -1;
+  const isPositionOnRow = activeCellIdx === -1;
 
-  const cells = [];
-
-  for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'SUMMARY', row });
-    if (colSpan !== undefined) {
-      index += colSpan - 1;
-    }
-
-    const isCellSelected = selectedCellIdx === column.idx;
-
-    cells.push(
+  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
+    .map(([column, colSpan]) => (
       <SummaryCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
-        isCellSelected={isCellSelected}
-        selectCell={selectCell}
+        isCellActive={activeCellIdx === column.idx}
+        setPosition={setPosition}
       />
-    );
-  }
+    ))
+    .toArray();
 
   return (
     <div
@@ -85,7 +77,7 @@ function SummaryRow<R, SR>({
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
         isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
-        isPositionOnRow && rowSelectedClassname
+        isPositionOnRow && rowActiveClassname
       )}
       style={{
         gridRowStart,
