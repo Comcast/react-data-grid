@@ -16,7 +16,7 @@ export function useScrollToPosition({ gridRef }: Props) {
 
   return {
     setScrollToPosition,
-    scrollToElement: scrollToPosition && (
+    scrollToPositionElement: scrollToPosition && (
       <ScrollToCell
         gridRef={gridRef}
         scrollToPosition={scrollToPosition}

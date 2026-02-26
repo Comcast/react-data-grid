@@ -376,7 +376,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const [selectedPosition, setSelectedPosition] = useState(
     (): SelectCellState | EditCellState<R> => ({ idx: -1, rowIdx: minRowIdx - 1, mode: 'SELECT' })
   );
-  const { setScrollToPosition, scrollToElement } = useScrollToPosition({ gridRef });
+  const { setScrollToPosition, scrollToPositionElement } = useScrollToPosition({ gridRef });
   const { shouldFocusPositionRef } = useShouldFocusPosition({ gridRef, selectedPosition });
 
   /**
@@ -1288,7 +1288,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
       {renderMeasuringCells(viewportColumns)}
 
-      {scrollToElement}
+      {scrollToPositionElement}
     </div>
   );
 }
