@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { getColSpan } from '../utils';
+import { getColSpan, getColumnInColumns, getRowInRows } from '../utils';
 import type { CalculatedColumn, Maybe } from '../types';
 
 interface ViewportColumnsArgs<R, SR> {
@@ -52,7 +52,7 @@ export function useViewportColumns<R, SR>({
 
       // check viewport rows
       for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
-        const row = rows[rowIdx];
+        const row = getRowInRows(rows, rowIdx);
         if (
           updateStartIdx(colIdx, getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row }))
         ) {
@@ -103,7 +103,7 @@ export function useViewportColumns<R, SR>({
   return useMemo((): readonly CalculatedColumn<R, SR>[] => {
     const viewportColumns: CalculatedColumn<R, SR>[] = [];
     for (let colIdx = 0; colIdx <= colOverscanEndIdx; colIdx++) {
-      const column = columns[colIdx];
+      const column = getColumnInColumns(columns, colIdx);
 
       if (colIdx < startIdx && !column.frozen) continue;
       viewportColumns.push(column);

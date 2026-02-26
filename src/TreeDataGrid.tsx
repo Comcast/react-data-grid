@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
-import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
+import { assertIsValidKeyGetter, getLeftRightKey, getRowInRows } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -122,7 +122,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     ): [Readonly<GroupByDictionary<R>>, number] => {
       let groupRowsCount = 0;
       const groups: GroupByDictionary<R> = {};
-      for (const [key, childRows] of Object.entries(rowGrouper(rows, groupByKey))) {
+      for (const [key, childRows] of Object.entries(rowGrouper(rows, groupByKey!))) {
         // Recursively group each parent group
         const [childGroups, childRowsCount] =
           remainingGroupByKeys.length === 0
@@ -159,7 +159,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       Object.keys(rows).forEach((groupKey, posInSet, keys) => {
         const id = groupIdGetter(groupKey, parentId);
         const isExpanded = expandedGroupIds.has(id);
-        const { childRows, childGroups, startRowIndex } = rows[groupKey];
+        const { childRows, childGroups, startRowIndex } = rows[groupKey]!;
 
         const groupRow: GroupRow<R> = {
           id,
@@ -189,6 +189,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
   }, [expandedGroupIds, groupedRows, rawRows, groupIdGetter]);
 
+  const getRow = useCallback(
+    (index: number) => {
+      return getRowInRows(rows, index);
+    },
+    [rows]
+  );
+
   const rowHeight = useMemo(() => {
     if (typeof rawRowHeight === 'function') {
       return (row: R | GroupRow<R>): number => {
@@ -206,7 +213,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     (row: R | GroupRow<R>) => {
       const rowIdx = rows.indexOf(row);
       for (let i = rowIdx - 1; i >= 0; i--) {
-        const parentRow = rows[i];
+        const parentRow = getRow(i);
         if (isGroupRow(parentRow) && (!isGroupRow(row) || row.parentId === parentRow.id)) {
           return [parentRow, i] as const;
         }
@@ -214,7 +221,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
       return undefined;
     },
-    [isGroupRow, rows]
+    [isGroupRow, rows, getRow]
   );
 
   const rowKeyGetter = useCallback(
@@ -299,7 +306,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (args.mode === 'EDIT') return;
     const { column, rowIdx, selectCell } = args;
     const idx = column?.idx ?? -1;
-    const row = rows[rowIdx];
+    const row = getRow(rowIdx);
 
     if (!isGroupRow(row)) return;
     if (
@@ -347,8 +354,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const updatedRawRows = [...rawRows];
     const rawIndexes: number[] = [];
     for (const index of indexes) {
-      const rawIndex = rawRows.indexOf(rows[index] as R);
-      updatedRawRows[rawIndex] = updatedRows[index];
+      const rawIndex = rawRows.indexOf(getRow(index) as R);
+      updatedRawRows[rawIndex] = getRowInRows(updatedRows, index);
       rawIndexes.push(rawIndex);
     }
     onRowsChange(updatedRawRows, {

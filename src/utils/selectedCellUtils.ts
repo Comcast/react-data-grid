@@ -5,6 +5,7 @@ import type {
   Maybe,
   Position
 } from '../types';
+import { getColumnInColumns, getRowInRows } from '.';
 import { getColSpan } from './colSpanUtils';
 
 interface IsSelectedCellEditableOpts<R, SR> {
@@ -18,8 +19,8 @@ export function isSelectedCellEditable<R, SR>({
   columns,
   rows
 }: IsSelectedCellEditableOpts<R, SR>): boolean {
-  const column = columns[selectedPosition.idx];
-  const row = rows[selectedPosition.rowIdx];
+  const column = getColumnInColumns(columns, selectedPosition.idx);
+  const row = getRowInRows(rows, selectedPosition.rowIdx);
   return isCellEditableUtil(column, row);
 }
 
@@ -76,19 +77,19 @@ function getSelectedCellColSpan<R, SR>({
   ) {
     return getColSpan(column, lastFrozenColumnIndex, {
       type: 'SUMMARY',
-      row: topSummaryRows[rowIdx + topSummaryRowsCount]
+      row: getRowInRows(topSummaryRows, rowIdx + topSummaryRowsCount)
     });
   }
 
   if (rowIdx >= 0 && rowIdx < rows.length) {
-    const row = rows[rowIdx];
+    const row = getRowInRows(rows, rowIdx);
     return getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
   }
 
   if (bottomSummaryRows) {
     return getColSpan(column, lastFrozenColumnIndex, {
       type: 'SUMMARY',
-      row: bottomSummaryRows[rowIdx - rows.length]
+      row: getRowInRows(bottomSummaryRows, rowIdx - rows.length)
     });
   }
 
@@ -145,7 +146,7 @@ export function getNextSelectedCellPosition<R, SR>({
   const setHeaderGroupColAndRowSpan = () => {
     if (moveNext) {
       // find the parent at the same row level
-      const nextColumn = columns[nextIdx];
+      const nextColumn = getColumnInColumns(columns, nextIdx);
       let { parent } = nextColumn;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
@@ -157,7 +158,7 @@ export function getNextSelectedCellPosition<R, SR>({
       }
     } else if (moveUp) {
       // find the first reachable parent
-      const nextColumn = columns[nextIdx];
+      const nextColumn = getColumnInColumns(columns, nextIdx);
       let { parent } = nextColumn;
       let found = false;
       while (parent !== undefined) {
@@ -211,7 +212,7 @@ export function getNextSelectedCellPosition<R, SR>({
     // Find the last reachable parent for the new rowIdx
     // This check is needed when navigating to a column
     // that does not have a parent matching the new rowIdx
-    const nextColumn = columns[nextIdx];
+    const nextColumn = getColumnInColumns(columns, nextIdx);
     let { parent } = nextColumn;
     const nextParentRowIdx = nextRowIdx;
     nextRowIdx = mainHeaderRowIdx;
