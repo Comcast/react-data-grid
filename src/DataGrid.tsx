@@ -812,6 +812,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       setSelectedPosition({ ...position, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
       // Avoid re-renders if the selected cell state is the same
+      setShouldFocusCell(options?.shouldFocusCell === true);
       scrollIntoView(getCellToScroll(gridRef.current!));
     } else {
       setShouldFocusCell(options?.shouldFocusCell === true);
