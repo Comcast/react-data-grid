@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, renderTextEditor } from '../../src';
 import type { Column } from '../../src';
+import { safeTab } from './utils';
 
 interface Row {
   readonly name: string;
@@ -48,7 +49,7 @@ test('renderTextEditor', async () => {
   // blurring the input closes and commits the editor
   await userEvent.dblClick(cell);
   await userEvent.fill(input, 'Jim Milton');
-  await userEvent.tab();
+  await safeTab();
   await expect.element(input).not.toBeInTheDocument();
   await expect.element(cell).toHaveTextContent(/^Jim Milton$/);
 });
