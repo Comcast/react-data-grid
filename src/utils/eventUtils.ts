@@ -4,17 +4,17 @@ export function createCellEvent<E extends React.SyntheticEvent<HTMLDivElement>>(
   event: E
 ): CellEvent<E> {
   let defaultPrevented = false;
-  const cellEvent = {
-    ...event,
-    preventGridDefault() {
-      defaultPrevented = true;
+
+  return Object.create(event, {
+    preventGridDefault: {
+      value() {
+        defaultPrevented = true;
+      }
     },
-    isGridDefaultPrevented() {
-      return defaultPrevented;
+    isGridDefaultPrevented: {
+      value() {
+        return defaultPrevented;
+      }
     }
-  };
-
-  Object.setPrototypeOf(cellEvent, Object.getPrototypeOf(event));
-
-  return cellEvent;
+  });
 }

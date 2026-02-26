@@ -3,7 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column } from '../../../src';
-import defaultRenderHeaderCell from '../../../src/renderHeaderCell';
+import { renderHeaderCell } from '../../../src/renderHeaderCell';
 import { getCellsAtRowIndex, safeTab, setup } from '../utils';
 
 const cells = page.getCell();
@@ -33,7 +33,7 @@ describe('renderValue', () => {
   });
 });
 
-describe('Custom cell renderer', () => {
+describe('Custom cell content renderer', () => {
   const columns: readonly Column<Row>[] = [
     {
       key: 'id',
@@ -49,7 +49,7 @@ describe('Custom cell renderer', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should replace the default cell renderer', async () => {
+  it('should replace the default cell content renderer', async () => {
     await setup({ columns, rows });
     await expect.element(cells.nth(0)).toHaveTextContent('#101');
     await expect.element(cells.nth(1)).toHaveTextContent('No name');
@@ -108,7 +108,7 @@ describe('Custom cell renderer', () => {
         sortable: false,
         draggable: false,
         width: 'auto',
-        renderHeaderCell: defaultRenderHeaderCell
+        renderHeaderCell
       },
       indexes: [0]
     });
@@ -167,7 +167,7 @@ test('Focus child if it sets tabIndex', async () => {
 test('Cell should not steal focus when the focus is outside the grid and cell is recreated', async () => {
   const columns: readonly Column<Row>[] = [{ key: 'id', name: 'ID' }];
 
-  function FormatterTest() {
+  function Test() {
     const [rows, setRows] = useState((): readonly Row[] => [{ id: 1 }]);
 
     function onClick() {
@@ -189,7 +189,7 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
     );
   }
 
-  await page.render(<FormatterTest />);
+  await page.render(<Test />);
 
   const cell = getCellsAtRowIndex(0).nth(0);
   await userEvent.click(cell);

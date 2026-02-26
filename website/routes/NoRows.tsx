@@ -13,7 +13,7 @@ const gridClassname = css`
   block-size: 300px;
 `;
 
-function EmptyRowsRenderer() {
+function NoRowsFallback() {
   return (
     <div style={{ textAlign: 'center', gridColumn: '1/-1' }}>
       Nothing to show{' '}
@@ -52,7 +52,7 @@ function NoRows() {
       aria-label="No Rows Example"
       columns={columns}
       rows={rows}
-      renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
+      renderers={{ noRowsFallback: <NoRowsFallback /> }}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       rowKeyGetter={rowKeyGetter}

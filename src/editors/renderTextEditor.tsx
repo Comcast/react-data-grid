@@ -1,6 +1,6 @@
 import { css } from 'ecij';
 
-import type { RenderEditCellProps } from '../types';
+import type { RenderEditCellContentProps } from '../types';
 
 const textEditorInternalClassname = css`
   @layer rdg.TextEditor {
@@ -43,7 +43,7 @@ export function renderTextEditor<TRow, TSummaryRow>({
   column,
   onRowChange,
   onClose
-}: RenderEditCellProps<TRow, TSummaryRow>) {
+}: RenderEditCellContentProps<TRow, TSummaryRow>) {
   return (
     <input
       className={textEditorClassname}

@@ -4,7 +4,7 @@ import { css } from 'ecij';
 
 import { Row as BaseRow, Cell, DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type {
-  CellRendererProps,
+  RenderCellProps,
   Column,
   RenderCheckboxProps,
   RenderRowProps,
@@ -159,7 +159,7 @@ function renderSortStatus({ sortDirection, priority }: RenderSortStatusProps) {
 
 const cellStyle: React.CSSProperties = { color: 'red' };
 
-function renderCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderCell(key: React.Key, props: RenderCellProps<Row, unknown>) {
   const style =
     props.column.key === 'priority' && props.row.priority === 'Critical' ? cellStyle : undefined;
 

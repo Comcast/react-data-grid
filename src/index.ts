@@ -8,12 +8,12 @@ export {
 } from './DataGrid';
 export { TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
 export { DataGridDefaultRenderersContext } from './DataGridDefaultRenderersContext';
-export { default as Row } from './Row';
-export { default as Cell } from './Cell';
+export { Row } from './Row';
+export { Cell } from './Cell';
 export * from './Columns';
 export * from './cellRenderers';
 export { renderTextEditor } from './editors/renderTextEditor';
-export { default as renderHeaderCell } from './renderHeaderCell';
+export { renderHeaderCell } from './renderHeaderCell';
 export { renderSortIcon, renderSortPriority } from './sortStatus';
 export { useRowSelection, useHeaderRowSelection } from './hooks';
 export type {
@@ -26,7 +26,6 @@ export type {
   CellMouseArgs,
   CellMouseEvent,
   CellPasteArgs,
-  CellRendererProps,
   CellSelectArgs,
   ColSpanArgs,
   Column,
@@ -36,17 +35,18 @@ export type {
   ColumnWidths,
   Direction,
   FillEvent,
+  RenderCellContentProps,
   RenderCellProps,
   RenderCheckboxProps,
-  RenderEditCellProps,
+  RenderEditCellContentProps,
   Renderers,
-  RenderGroupCellProps,
-  RenderHeaderCellProps,
+  RenderGroupCellContentProps,
+  RenderHeaderCellContentProps,
   RenderRowProps,
   RenderSortIconProps,
   RenderSortPriorityProps,
   RenderSortStatusProps,
-  RenderSummaryCellProps,
+  RenderSummaryCellContentProps,
   RowHeightArgs,
   RowsChangeData,
   SelectCellOptions,

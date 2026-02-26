@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
-import { DataGrid, type Column, type RenderHeaderCellProps } from '../../src';
+import { DataGrid, type Column, type RenderHeaderCellContentProps } from '../../src';
 import type { Omit } from '../../src/types';
 import { useDirection } from '../directionContext';
 
@@ -97,7 +97,7 @@ function HeaderFilters() {
 
   const developerOptions = useMemo(
     () =>
-      Array.from(new Set(rows.map((r) => r.developer))).map((d) => ({
+      Array.from(new Set(rows.map((r) => r.developer)), (d) => ({
         label: d,
         value: d
       })),
@@ -116,7 +116,7 @@ function HeaderFilters() {
         name: 'Title',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -131,7 +131,7 @@ function HeaderFilters() {
                 onKeyDown={inputStopPropagation}
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -139,7 +139,7 @@ function HeaderFilters() {
         name: 'Priority',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <select
                 {...rest}
@@ -160,7 +160,7 @@ function HeaderFilters() {
                 <option value="Low">Low</option>
               </select>
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -168,7 +168,7 @@ function HeaderFilters() {
         name: 'Issue Type',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <select
                 {...rest}
@@ -189,7 +189,7 @@ function HeaderFilters() {
                 <option value="Story">Story</option>
               </select>
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -197,7 +197,7 @@ function HeaderFilters() {
         name: 'Developer',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -213,7 +213,7 @@ function HeaderFilters() {
                 list="developers"
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -221,7 +221,7 @@ function HeaderFilters() {
         name: '% Complete',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -239,7 +239,7 @@ function HeaderFilters() {
                 onKeyDown={inputStopPropagation}
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       }
     ];
@@ -311,11 +311,11 @@ function HeaderFilters() {
   );
 }
 
-function FilterRenderer<R>({
+function FilterCell<R>({
   tabIndex,
   column,
   children
-}: RenderHeaderCellProps<R> & {
+}: RenderHeaderCellContentProps<R> & {
   children: (args: { tabIndex: number; filters: Filter }) => React.ReactElement;
 }) {
   const filters = use(FilterContext)!;

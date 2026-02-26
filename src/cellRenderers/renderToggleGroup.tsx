@@ -1,6 +1,6 @@
 import { css } from 'ecij';
 
-import type { RenderGroupCellProps } from '../types';
+import type { RenderGroupCellContentProps } from '../types';
 
 const groupCellContent = css`
   @layer rdg.GroupCellContent {
@@ -26,7 +26,7 @@ const caret = css`
 
 const caretClassname = `rdg-caret ${caret}`;
 
-export function renderToggleGroup<R, SR>(props: RenderGroupCellProps<R, SR>) {
+export function renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, SR>) {
   return <ToggleGroup {...props} />;
 }
 
@@ -35,7 +35,7 @@ export function ToggleGroup<R, SR>({
   isExpanded,
   tabIndex,
   toggleGroup
-}: RenderGroupCellProps<R, SR>) {
+}: RenderGroupCellContentProps<R, SR>) {
   function handleKeyDown({ key }: React.KeyboardEvent<HTMLSpanElement>) {
     if (key === 'Enter') {
       toggleGroup();

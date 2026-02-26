@@ -12,16 +12,16 @@ const rowOverClassname = css`
   background-color: #ececec;
 `;
 
-interface DraggableRowRenderProps<R, SR> extends RenderRowProps<R, SR> {
+interface DraggableRowProps<R, SR> extends RenderRowProps<R, SR> {
   onRowReorder: (sourceIndex: number, targetIndex: number) => void;
 }
 
-export function DraggableRowRenderer<R, SR>({
+export function DraggableRow<R, SR>({
   rowIdx,
   className,
   onRowReorder,
   ...props
-}: DraggableRowRenderProps<R, SR>) {
+}: DraggableRowProps<R, SR>) {
   const [isDragging, setIsDragging] = useState(false);
   const [isOver, setIsOver] = useState(false);
 
