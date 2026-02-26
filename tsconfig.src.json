@@ -1,7 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src/**/*"]
 }
