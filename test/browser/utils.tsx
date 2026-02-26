@@ -50,9 +50,11 @@ export async function validateCellPosition(columnIdx: number, rowIdx: number) {
 }
 
 export async function scrollGrid(options: ScrollToOptions) {
-  page.getGrid().element().scroll(options);
-  // let the browser fire the 'scroll' event
-  await new Promise(requestAnimationFrame);
+  await new Promise((resolve) => {
+    const gridElement = page.getGrid().element() as HTMLElement;
+    gridElement.addEventListener('scrollend', resolve, { once: true });
+    gridElement.scroll(options);
+  });
 }
 
 export async function tabIntoGrid() {
