@@ -1193,7 +1193,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
-        '--rdg-frozen-column-shadow-index': lastFrozenColumnIndex + 2,
         // TODO: optimize/memoize
         '--rdg-frozen-column-shadow-start': `${Iterator.from(templateColumns)
           .take(lastFrozenColumnIndex + 1)
