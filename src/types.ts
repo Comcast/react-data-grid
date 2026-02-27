@@ -254,7 +254,19 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
   selectedCellEditor: ReactElement<RenderEditCellProps<TRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
-  isTreeGrid: boolean;
+}
+
+export interface RenderSummaryRowProps<TRow, TSummaryRow = unknown> extends Pick<
+  BaseRenderRowProps<TRow, TSummaryRow>,
+  'className' | 'tabIndex' | 'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell'
+> {
+  'aria-rowindex': number;
+  row: TSummaryRow;
+  top: number | undefined;
+  bottom: number | undefined;
+  lastFrozenColumnIndex: number;
+  selectedCellIdx: number | undefined;
+  isTop: boolean;
 }
 
 export interface RowsChangeData<R, SR = unknown> {
@@ -337,6 +349,9 @@ export interface Renderers<TRow, TSummaryRow> {
   renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
   renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
   renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
+  renderSummaryRow?: Maybe<
+    (key: Key, props: RenderSummaryRowProps<TRow, TSummaryRow>) => ReactNode
+  >;
   renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;
   noRowsFallback?: Maybe<ReactNode>;
 }

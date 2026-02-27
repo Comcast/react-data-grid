@@ -7,7 +7,7 @@ import type { BaseRenderRowProps, GroupRow } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
 import { cell, cellFrozen } from './style/cell';
-import { rowClassname, rowSelectedClassname } from './style/row';
+import { rowClassname } from './style/row';
 
 const groupRow = css`
   @layer rdg.GroupedRow {
@@ -44,7 +44,6 @@ function GroupedRow<R, SR>({
   isRowSelectionDisabled: _isRowSelectionDisabled,
   ...props
 }: GroupRowRendererProps<R, SR>) {
-  const isPositionOnRow = selectedCellIdx === -1;
   // Select is always the first column
   const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
 
@@ -65,12 +64,10 @@ function GroupedRow<R, SR>({
         aria-setsize={row.setSize}
         aria-posinset={row.posInSet + 1} // aria-posinset is 1-based
         aria-expanded={row.isExpanded}
-        tabIndex={isPositionOnRow ? 0 : -1}
         className={classnames(
           rowClassname,
           groupRowClassname,
           `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-          isPositionOnRow && rowSelectedClassname,
           className
         )}
         onMouseDown={handleSelectGroup}
