@@ -44,7 +44,11 @@ export const cellFrozen = css`
         width: 10px;
         position: sticky;
         inset-inline-start: var(--rdg-frozen-column-shadow-start);
-        background-image: linear-gradient(to right, rgb(0 0 0 / 50%), transparent);
+        background-image: linear-gradient(
+          to right,
+          light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+          transparent
+        );
         pointer-events: none;
         z-index: 1;
 
