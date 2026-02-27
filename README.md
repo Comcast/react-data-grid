@@ -627,9 +627,9 @@ Arguments:
 - `args.row`: `R | undefined` - row object of the currently selected cell
 - `args.column`: `CalculatedColumn<TRow, TSummaryRow>` - column object of the currently selected cell
 
-###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
+###### `onScroll?: React.UIEventHandler<HTMLDivElement> | undefined`
 
-Callback triggered when the grid is scrolled.
+Native DOM `onScroll` prop.
 
 ###### `onColumnResize?: Maybe<(column: CalculatedColumn<R, SR>, width: number) => void>`
 

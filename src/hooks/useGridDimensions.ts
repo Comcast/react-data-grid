@@ -1,8 +1,11 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-export function useGridDimensions() {
-  const gridRef = useRef<HTMLDivElement>(null);
+export function useGridDimensions({
+  gridRef
+}: {
+  gridRef: React.RefObject<HTMLDivElement | null>;
+}) {
   const [inlineSize, setInlineSize] = useState(1);
   const [blockSize, setBlockSize] = useState(1);
 
@@ -32,7 +35,7 @@ export function useGridDimensions() {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [gridRef]);
 
-  return [gridRef, inlineSize, blockSize] as const;
+  return [inlineSize, blockSize] as const;
 }
