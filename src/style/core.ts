@@ -90,3 +90,36 @@ const viewportDragging = css`
 `;
 
 export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDragging}`;
+
+// Add shadow after the last frozen cell
+export const frozenColumnShadowClassname = css`
+  position: sticky;
+  width: 10px;
+  inset-inline-start: var(--rdg-frozen-column-shadow-start);
+  background-image: linear-gradient(
+    to right,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+
+  opacity: 1;
+  transition: opacity 0.1s;
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-start) {
+    opacity: 0;
+  }
+
+  &:dir(rtl) {
+    transform: scaleX(-1);
+  }
+`;
+
+const topShadowClassname = css`
+  /* render above header and summary rows */
+  z-index: 2;
+`;
+
+export const frozenColumnShadowTopClassname = `${frozenColumnShadowClassname} ${topShadowClassname}`;

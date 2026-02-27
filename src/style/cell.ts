@@ -35,42 +35,6 @@ export const cellFrozen = css`
     position: sticky;
     /* Should have a higher value than 0 to show up above unfrozen cells */
     z-index: 1;
-
-    /* Add shadow after the last frozen cell */
-    [role='row']:has(> &) {
-      &::before {
-        content: '';
-        grid-column: var(--rdg-frozen-column-shadow-index);
-        width: 10px;
-        position: sticky;
-        inset-inline-start: var(--rdg-frozen-column-shadow-start);
-        background-image: linear-gradient(
-          to right,
-          light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
-          transparent
-        );
-        pointer-events: none;
-        z-index: 1;
-
-        opacity: 1;
-        transition: opacity 0.1s;
-
-        @container rdg-root not scroll-state(scrollable: inline-start) {
-          opacity: 0;
-        }
-      }
-
-      &.rdg-header-row::before {
-        z-index: 3;
-        grid-row: 1;
-        /* TODO: fix for multiple header rows */
-        inset-block-start: 0;
-      }
-
-      &:dir(rtl)::before {
-        transform: scaleX(-1);
-      }
-    }
   }
 `;
 
