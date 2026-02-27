@@ -35,11 +35,6 @@ export const cellFrozen = css`
     position: sticky;
     /* Should have a higher value than 0 to show up above unfrozen cells */
     z-index: 1;
-
-    /* Add box-shadow on the last frozen cell */
-    &:nth-last-child(1 of &) {
-      box-shadow: var(--rdg-cell-frozen-box-shadow);
-    }
   }
 `;
 
