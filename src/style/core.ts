@@ -95,7 +95,6 @@ export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDraggi
 export const frozenColumnShadowClassname = css`
   position: sticky;
   width: 10px;
-  inset-inline-start: var(--rdg-frozen-column-shadow-start);
   background-image: linear-gradient(
     to right,
     light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),

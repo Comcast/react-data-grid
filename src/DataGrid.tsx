@@ -373,7 +373,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const minRowIdx = -headerAndTopSummaryRowsCount;
   const mainHeaderRowIdx = minRowIdx + groupedColumnHeaderRowsCount;
   const maxRowIdx = rows.length + bottomSummaryRowsCount - 1;
-  const frozenGridColumnStart = lastFrozenColumnIndex + 2;
+  const frozenShadowStyles: React.CSSProperties = {
+    gridColumnStart: lastFrozenColumnIndex + 2,
+    insetInlineStart: totalFrozenColumnWidth
+  };
 
   const [selectedPosition, setSelectedPosition] = useState(
     (): SelectCellState | EditCellState<R> => ({ idx: -1, rowIdx: minRowIdx - 1, mode: 'SELECT' })
@@ -1193,10 +1196,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
-        // TODO: optimize/memoize
-        '--rdg-frozen-column-shadow-start': `${Iterator.from(templateColumns)
-          .take(lastFrozenColumnIndex + 1)
-          .reduce((total, width) => total + parseFloat(width), 0)}px`,
         ...layoutCssVars
       }}
       dir={direction}
@@ -1313,9 +1312,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           <div
             className={frozenColumnShadowTopClassname}
             style={{
+              ...frozenShadowStyles,
               gridRowStart: 1,
               gridRowEnd: headerRowsCount + 1 + topSummaryRowsCount,
-              gridColumnStart: frozenGridColumnStart,
               insetBlockStart: 0
             }}
           />
@@ -1324,9 +1323,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
             <div
               className={frozenColumnShadowClassname}
               style={{
+                ...frozenShadowStyles,
                 gridRowStart: headerAndTopSummaryRowsCount + rowOverscanStartIdx + 1,
-                gridRowEnd: headerAndTopSummaryRowsCount + rowOverscanEndIdx + 2,
-                gridColumnStart: frozenGridColumnStart
+                gridRowEnd: headerAndTopSummaryRowsCount + rowOverscanEndIdx + 2
               }}
             />
           )}
@@ -1335,9 +1334,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
             <div
               className={frozenColumnShadowTopClassname}
               style={{
+                ...frozenShadowStyles,
                 gridRowStart: headerAndTopSummaryRowsCount + rows.length + 1,
                 gridRowEnd: headerAndTopSummaryRowsCount + rows.length + 1 + bottomSummaryRowsCount,
-                gridColumnStart: frozenGridColumnStart,
                 insetBlockStart:
                   clientHeight > totalRowHeight
                     ? gridHeight - summaryRowHeight * bottomSummaryRowsCount
