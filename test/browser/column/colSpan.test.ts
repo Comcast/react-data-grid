@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../../src';
-import { getCellsAtRowIndex, setup, validateCellPosition } from '../utils';
+import { getCellsAtRowIndex, safeTab, setup, validateCellPosition } from '../utils';
 
 const headerCells = page.getHeaderCell();
 
@@ -145,18 +145,18 @@ describe('colSpan', () => {
     await validateCellPosition(0, 8);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(5, 8);
-    await userEvent.tab({ shift: true });
-    await userEvent.tab({ shift: true });
+    await safeTab(true);
+    await safeTab(true);
     await validateCellPosition(14, 7);
-    await userEvent.tab();
+    await safeTab();
     await validateCellPosition(0, 8);
     await userEvent.click(getCellsAtRowIndex(10).nth(11));
     await validateCellPosition(11, 11);
-    await userEvent.tab();
+    await safeTab();
     await validateCellPosition(12, 11);
-    await userEvent.tab();
+    await safeTab();
     await validateCellPosition(0, 12);
-    await userEvent.tab({ shift: true });
+    await safeTab(true);
     await validateCellPosition(12, 11);
 
     // bottom summary rows
@@ -198,7 +198,7 @@ describe('colSpan', () => {
 
     async function navigate(count: number, shift = false) {
       for (let i = 0; i < count; i++) {
-        await userEvent.tab({ shift });
+        await safeTab(shift);
       }
     }
   });

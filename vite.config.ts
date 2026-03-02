@@ -44,7 +44,7 @@ const viewport = { width: 1920, height: 1080 } as const;
 // vitest modifies the instance objects, so we cannot rely on static objects
 function getInstances(): BrowserInstanceOption[] {
   const opts: PlaywrightProviderOptions = {
-    actionTimeout: 2000,
+    actionTimeout: 1000,
     contextOptions: {
       viewport
     }

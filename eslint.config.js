@@ -401,7 +401,6 @@ copy(
       '@eslint-react/web-api/no-leaked-interval': 1,
       '@eslint-react/web-api/no-leaked-resize-observer': 1,
       '@eslint-react/web-api/no-leaked-timeout': 1,
-      '@eslint-react/naming-convention/component-name': 1,
       '@eslint-react/naming-convention/context-name': 1,
       '@eslint-react/naming-convention/id-name': 1,
       '@eslint-react/naming-convention/ref-name': 1,

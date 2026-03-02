@@ -69,7 +69,12 @@ import type { PartialPosition } from './ScrollToCell';
 import ScrollToCell from './ScrollToCell';
 import { default as defaultRenderSortStatus } from './sortStatus';
 import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/cell';
-import { rootClassname, viewportDraggingClassname } from './style/core';
+import {
+  rootClassname,
+  frozenColumnShadowClassname,
+  viewportDraggingClassname,
+  frozenColumnShadowTopClassname
+} from './style/core';
 import SummaryRow from './SummaryRow';
 
 interface ActiveCellState extends Position {
@@ -368,6 +373,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const minRowIdx = -headerAndTopSummaryRowsCount;
   const mainHeaderRowIdx = minRowIdx + groupedColumnHeaderRowsCount;
   const maxRowIdx = rows.length + bottomSummaryRowsCount - 1;
+  const frozenShadowStyles: React.CSSProperties = {
+    gridColumnStart: lastFrozenColumnIndex + 2,
+    insetInlineStart: totalFrozenColumnWidth
+  };
 
   const [activePosition, setActivePosition] = useState<ActiveCellState | EditCellState<R>>(
     getInitialActivePosition
@@ -1257,11 +1266,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
               const top =
                 clientHeight > totalRowHeight
-                  ? gridHeight - summaryRowHeight * (bottomSummaryRows.length - rowIdx)
+                  ? gridHeight - summaryRowHeight * (bottomSummaryRowsCount - rowIdx)
                   : undefined;
               const bottom =
                 top === undefined
-                  ? summaryRowHeight * (bottomSummaryRows.length - 1 - rowIdx)
+                  ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
                   : undefined;
 
               return (
@@ -1284,6 +1293,47 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           </>
         )}
       </DataGridDefaultRenderersContext>
+
+      {lastFrozenColumnIndex > -1 && (
+        <>
+          <div
+            className={frozenColumnShadowTopClassname}
+            style={{
+              ...frozenShadowStyles,
+              gridRowStart: 1,
+              gridRowEnd: headerRowsCount + 1 + topSummaryRowsCount,
+              insetBlockStart: 0
+            }}
+          />
+
+          {rows.length > 0 && (
+            <div
+              className={frozenColumnShadowClassname}
+              style={{
+                ...frozenShadowStyles,
+                gridRowStart: headerAndTopSummaryRowsCount + rowOverscanStartIdx + 1,
+                gridRowEnd: headerAndTopSummaryRowsCount + rowOverscanEndIdx + 2
+              }}
+            />
+          )}
+
+          {bottomSummaryRows != null && bottomSummaryRowsCount > 0 && (
+            <div
+              className={frozenColumnShadowTopClassname}
+              style={{
+                ...frozenShadowStyles,
+                gridRowStart: headerAndTopSummaryRowsCount + rows.length + 1,
+                gridRowEnd: headerAndTopSummaryRowsCount + rows.length + 1 + bottomSummaryRowsCount,
+                insetBlockStart:
+                  clientHeight > totalRowHeight
+                    ? gridHeight - summaryRowHeight * bottomSummaryRowsCount
+                    : undefined,
+                insetBlockEnd: clientHeight > totalRowHeight ? undefined : 0
+              }}
+            />
+          )}
+        </>
+      )}
 
       {getDragHandle()}
 

@@ -3,7 +3,7 @@
 import 'vitest-browser-react';
 
 import { configure } from 'vitest-browser-react/pure';
-import { locators, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
+import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
 
 configure({
   reactStrictMode: true
@@ -80,3 +80,25 @@ function defaultToExactOpts(
 
   return opts;
 }
+
+beforeEach(async () => {
+  // 1. reset cursor position to avoid hover issues
+  // 2. force focus to be on the page
+  await userEvent.click(document.body, { position: { x: 0, y: 0 } });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+
+  // eslint-disable-next-line @eslint-react/purity
+  if (!document.hasFocus()) {
+    // Errors thrown in `afterEach` will short-circuit subsequent `afterEach` hooks,
+    // thus preventing tests from being cleaned up properly and affecting other tests.
+    // We must therefore wait for tests to "finish" before throwing the error.
+    onTestFinished(() => {
+      throw new Error(
+        'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
+      );
+    });
+  }
+});
