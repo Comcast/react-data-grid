@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
-import { getCellsAtRowIndex, getRowWithCell, scrollGrid, testCount } from '../utils';
+import { getCellsAtRowIndex, getRowWithCell, safeTab, scrollGrid, testCount } from '../utils';
 
 const grid = page.getGrid();
 
@@ -22,7 +22,7 @@ describe('Editor', () => {
     await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
     await expect.element(editor).toHaveValue(1);
     await userEvent.keyboard('2');
-    await userEvent.tab();
+    await safeTab();
     await expect.element(editor).not.toBeInTheDocument();
     await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^12$/);
   });

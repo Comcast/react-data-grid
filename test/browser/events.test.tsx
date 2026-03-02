@@ -2,6 +2,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, DataGridProps } from '../../src';
+import { safeTab } from './utils';
 
 interface Row {
   col1: number;
@@ -162,7 +163,7 @@ describe('Events', () => {
     expect(onSelectedCellChange).toHaveBeenCalledTimes(4);
 
     // Selected by tab key
-    await userEvent.keyboard('{Tab}');
+    await safeTab();
     expect(onSelectedCellChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],

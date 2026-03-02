@@ -16,7 +16,6 @@ const root = css`
     --rdg-selection-width: 2px;
     --rdg-selection-color: hsl(207, 75%, 66%);
     --rdg-font-size: 14px;
-    --rdg-cell-frozen-box-shadow: 2px 0 5px -2px rgba(136, 136, 136, 0.3);
     --rdg-border-width: 1px;
     --rdg-summary-border-width: calc(var(--rdg-border-width) * 2);
     --rdg-color: light-dark(#000, #ddd);
@@ -38,10 +37,6 @@ const root = css`
       color-scheme: light;
     }
 
-    &:dir(rtl) {
-      --rdg-cell-frozen-box-shadow: -2px 0 5px -2px rgba(136, 136, 136, 0.3);
-    }
-
     display: grid;
 
     accent-color: light-dark(hsl(207deg 100% 29%), hsl(207deg 100% 79%));
@@ -58,6 +53,9 @@ const root = css`
     background-color: var(--rdg-background-color);
     color: var(--rdg-color);
     font-size: var(--rdg-font-size);
+
+    container-name: rdg-root;
+    container-type: scroll-state;
 
     /* needed on Firefox to fix scrollbars */
     &::before {
@@ -92,3 +90,35 @@ const viewportDragging = css`
 `;
 
 export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDragging}`;
+
+// Add shadow after the last frozen cell
+export const frozenColumnShadowClassname = css`
+  position: sticky;
+  width: 10px;
+  background-image: linear-gradient(
+    to right,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+
+  opacity: 1;
+  transition: opacity 0.1s;
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-start) {
+    opacity: 0;
+  }
+
+  &:dir(rtl) {
+    transform: scaleX(-1);
+  }
+`;
+
+const topShadowClassname = css`
+  /* render above header and summary rows */
+  z-index: 2;
+`;
+
+export const frozenColumnShadowTopClassname = `${frozenColumnShadowClassname} ${topShadowClassname}`;
