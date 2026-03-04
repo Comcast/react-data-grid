@@ -30,7 +30,7 @@ function Cell<R, SR>({
   onContextMenu,
   onCellContextMenu,
   onRowChange,
-  setPosition,
+  setActivePosition,
   style,
   ...props
 }: CellRendererProps<R, SR>) {
@@ -47,8 +47,8 @@ function Cell<R, SR>({
   );
   const isEditable = isCellEditableUtil(column, row);
 
-  function setPositionWrapper(enableEditor?: boolean) {
-    setPosition({ rowIdx, idx: column.idx }, { enableEditor });
+  function setActivePositionWrapper(enableEditor?: boolean) {
+    setActivePosition({ rowIdx, idx: column.idx }, { enableEditor });
   }
 
   function handleMouseEvent(
@@ -58,7 +58,7 @@ function Cell<R, SR>({
     let eventHandled = false;
     if (eventHandler) {
       const cellEvent = createCellEvent(event);
-      eventHandler({ rowIdx, row, column, setPosition: setPositionWrapper }, cellEvent);
+      eventHandler({ rowIdx, row, column, setActivePosition: setActivePositionWrapper }, cellEvent);
       eventHandled = cellEvent.isGridDefaultPrevented();
     }
     return eventHandled;
@@ -68,7 +68,7 @@ function Cell<R, SR>({
     onMouseDown?.(event);
     if (!handleMouseEvent(event, onCellMouseDown)) {
       // select cell if the event is not prevented
-      setPositionWrapper();
+      setActivePositionWrapper();
     }
   }
 
@@ -81,7 +81,7 @@ function Cell<R, SR>({
     onDoubleClick?.(event);
     if (!handleMouseEvent(event, onCellDoubleClick)) {
       // go into edit mode if the event is not prevented
-      setPositionWrapper(true);
+      setActivePositionWrapper(true);
     }
   }
 

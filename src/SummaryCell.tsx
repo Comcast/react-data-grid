@@ -6,7 +6,7 @@ import type { CellRendererProps } from './types';
 
 type SharedCellRendererProps<R, SR> = Pick<
   CellRendererProps<R, SR>,
-  'rowIdx' | 'column' | 'colSpan' | 'isCellActive' | 'setPosition'
+  'rowIdx' | 'column' | 'colSpan' | 'isCellActive' | 'setActivePosition'
 >;
 
 interface SummaryCellProps<R, SR> extends SharedCellRendererProps<R, SR> {
@@ -19,7 +19,7 @@ function SummaryCell<R, SR>({
   row,
   rowIdx,
   isCellActive,
-  setPosition
+  setActivePosition
 }: SummaryCellProps<R, SR>) {
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
   const { summaryCellClass } = column;
@@ -29,7 +29,7 @@ function SummaryCell<R, SR>({
   );
 
   function onMouseDown() {
-    setPosition({ rowIdx, idx: column.idx });
+    setActivePosition({ rowIdx, idx: column.idx });
   }
 
   return (

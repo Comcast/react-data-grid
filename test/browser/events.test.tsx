@@ -75,7 +75,7 @@ describe('Events', () => {
         onCellClick={(args, event) => {
           if (args.column.key === 'col2') {
             event.preventGridDefault();
-            args.setPosition(true);
+            args.setActivePosition(true);
           }
         }}
       />

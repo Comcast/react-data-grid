@@ -50,7 +50,7 @@ import type {
   Position,
   Renderers,
   RowsChangeData,
-  SetPositionOptions,
+  SetActivePositionOptions,
   SelectHeaderRowEvent,
   SelectRowEvent,
   SortColumn
@@ -102,7 +102,7 @@ export type DefaultColumnOptions<R, SR> = Pick<
 export interface DataGridHandle {
   element: HTMLDivElement | null;
   scrollToCell: (position: PartialPosition) => void;
-  setPosition: (position: Position, options?: SetPositionOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
 type SharedDivProps = Pick<
@@ -525,7 +525,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
         }
       },
-      setPosition
+      setActivePosition: setPosition
     })
   );
 
@@ -600,7 +600,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           row: rows[rowIdx],
           column: columns[idx],
           rowIdx,
-          setPosition
+          setActivePosition: setPosition
         },
         cellEvent
       );
@@ -835,7 +835,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     );
   }
 
-  function setPosition(position: Position, options?: SetPositionOptions): void {
+  function setPosition(position: Position, options?: SetActivePositionOptions): void {
     const { isPositionInActiveBounds } = validatePosition(position);
     if (!isPositionInActiveBounds) return;
     commitEditorChanges();
@@ -1127,7 +1127,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           activeCellIdx: isActiveRow ? activeIdx : undefined,
           draggedOverCellIdx: getDraggedOverCellIdx(rowIdx),
           onRowChange: handleFormatterRowChangeLatest,
-          setPosition: setPositionLatest,
+          setActivePosition: setPositionLatest,
           activeCellEditor: getCellEditor(rowIdx),
           isTreeGrid
         });
@@ -1252,7 +1252,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
                   activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
                   isTop
-                  setPosition={setPositionLatest}
+                  setActivePosition={setPositionLatest}
                   isTreeGrid={isTreeGrid}
                 />
               );
@@ -1285,7 +1285,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
                   activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
                   isTop={false}
-                  setPosition={setPositionLatest}
+                  setActivePosition={setPositionLatest}
                   isTreeGrid={isTreeGrid}
                 />
               );

@@ -300,7 +300,7 @@ function AllFeatures() {
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
             event.preventGridDefault();
-            args.setPosition(true);
+            args.setActivePosition(true);
           }
         }}
         onCellKeyDown={(_, event) => {

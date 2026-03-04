@@ -40,7 +40,7 @@ function GroupedRow<R, SR>({
   iterateOverViewportColumnsForRow,
   activeCellIdx,
   isRowSelected,
-  setPosition,
+  setActivePosition,
   gridRowStart,
   groupBy,
   toggleGroup,
@@ -51,7 +51,7 @@ function GroupedRow<R, SR>({
   let idx = row.level;
 
   function handleSelectGroup() {
-    setPosition({ rowIdx, idx: -1 }, { shouldFocus: true });
+    setActivePosition({ rowIdx, idx: -1 }, { shouldFocus: true });
   }
 
   const selectionValue = useMemo(

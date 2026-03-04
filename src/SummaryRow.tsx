@@ -16,7 +16,7 @@ type SharedRenderRowProps<R, SR> = Pick<
   | 'iterateOverViewportColumnsForRow'
   | 'rowIdx'
   | 'gridRowStart'
-  | 'setPosition'
+  | 'setActivePosition'
   | 'activeCellIdx'
   | 'isTreeGrid'
 >;
@@ -44,7 +44,7 @@ function SummaryRow<R, SR>({
   row,
   iterateOverViewportColumnsForRow,
   activeCellIdx,
-  setPosition,
+  setActivePosition,
   top,
   bottom,
   isTop,
@@ -62,7 +62,7 @@ function SummaryRow<R, SR>({
         row={row}
         rowIdx={rowIdx}
         isCellActive={activeCellIdx === column.idx}
-        setPosition={setPosition}
+        setActivePosition={setActivePosition}
       />
     ))
     .toArray();

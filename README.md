@@ -540,7 +540,7 @@ This event can be used to open cell editor on single click
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.setPosition(true);
+    args.setActivePosition(true);
   }
 }
 ```
@@ -1683,7 +1683,7 @@ interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   /** The row index of the cell. */
   rowIdx: number;
   /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setPosition: (enableEditor?: boolean) => void;
+  setActivePosition: (enableEditor?: boolean) => void;
 }
 ```
 
@@ -1694,7 +1694,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.setPosition(true); // Focus and start editing
+  args.setActivePosition(true); // Focus and start editing
 }
 ```
 
@@ -1764,7 +1764,7 @@ interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
   row: TRow | undefined;
   rowIdx: number;
-  setPosition: (position: Position, options?: SetPositionOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 ```
 
@@ -1978,12 +1978,12 @@ interface Position {
 }
 ```
 
-#### `SetPositionOptions`
+#### `SetActivePositionOptions`
 
 Options for programmatically updating the grid's active position.
 
 ```tsx
-interface SetPositionOptions {
+interface SetActivePositionOptions {
   enableEditor?: Maybe<boolean>;
   shouldFocus?: Maybe<boolean>;
 }
@@ -2044,7 +2044,7 @@ Handle type assigned to a grid's `ref` for programmatic grid control.
 interface DataGridHandle {
   element: HTMLDivElement | null;
   scrollToCell: (position: PartialPosition) => void;
-  setPosition: (position: Position, options?: SetPositionOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 ```
 

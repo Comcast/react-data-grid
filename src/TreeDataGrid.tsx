@@ -297,7 +297,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (event.isGridDefaultPrevented()) return;
 
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, setPosition } = args;
+    const { column, rowIdx, setActivePosition } = args;
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 
@@ -320,7 +320,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const parentRowAndIndex = getParentRowAndIndex(row);
       if (parentRowAndIndex !== undefined) {
         event.preventGridDefault();
-        setPosition({ idx, rowIdx: parentRowAndIndex[1] });
+        setActivePosition({ idx, rowIdx: parentRowAndIndex[1] });
       }
     }
   }

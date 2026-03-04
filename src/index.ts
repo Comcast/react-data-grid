@@ -51,7 +51,7 @@ export type {
   RowsChangeData,
   SelectHeaderRowEvent,
   SelectRowEvent,
-  SetPositionOptions,
+  SetActivePositionOptions,
   SortColumn,
   SortDirection
 } from './types';

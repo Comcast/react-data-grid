@@ -168,7 +168,7 @@ interface BaseCellRendererProps<TRow, TSummaryRow = unknown>
       'onCellMouseDown' | 'onCellClick' | 'onCellDoubleClick' | 'onCellContextMenu'
     > {
   rowIdx: number;
-  setPosition: (position: Position, options?: SetPositionOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
 export interface CellRendererProps<TRow, TSummaryRow> extends BaseCellRendererProps<
@@ -202,7 +202,7 @@ export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   /** The row index of the cell. */
   rowIdx: number;
   /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setPosition: (enableEditor?: boolean) => void;
+  setActivePosition: (enableEditor?: boolean) => void;
 }
 
 interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
@@ -210,7 +210,7 @@ interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
   row: TRow | undefined;
   rowIdx: number;
-  setPosition: (position: Position, options?: SetPositionOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
 export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
@@ -367,7 +367,7 @@ export interface Renderers<TRow, TSummaryRow> {
   noRowsFallback?: Maybe<ReactNode>;
 }
 
-export interface SetPositionOptions {
+export interface SetActivePositionOptions {
   enableEditor?: Maybe<boolean>;
   shouldFocus?: Maybe<boolean>;
 }

@@ -24,7 +24,7 @@ function Row<R, SR>({
   onCellContextMenu,
   rowClass,
   onRowChange,
-  setPosition,
+  setActivePosition,
   style,
   ...props
 }: RenderRowProps<R, SR>) {
@@ -61,7 +61,7 @@ function Row<R, SR>({
         onCellDoubleClick,
         onCellContextMenu,
         onRowChange,
-        setPosition
+        setActivePosition
       });
     })
     .toArray();
