@@ -22,7 +22,7 @@ function GroupedColumnHeaderRow<R, SR>({
   const cells = [];
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
-  for (const [column] of iterateOverViewportColumnsForRow(activeCellIdx)) {
+  for (const [column, isCellActive] of iterateOverViewportColumnsForRow(activeCellIdx)) {
     if (column.parent === undefined) continue;
 
     let { parent } = column;
@@ -34,13 +34,12 @@ function GroupedColumnHeaderRow<R, SR>({
 
     if (parent.level === level && !renderedParents.has(parent)) {
       renderedParents.add(parent);
-      const { idx } = parent;
       cells.push(
         <GroupedColumnHeaderCell<R, SR>
-          key={idx}
+          key={parent.idx}
           column={parent}
           rowIdx={rowIdx}
-          isCellActive={activeCellIdx === idx}
+          isCellActive={isCellActive}
           setPosition={setPosition}
         />
       );

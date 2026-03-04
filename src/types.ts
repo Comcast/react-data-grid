@@ -251,6 +251,7 @@ export type IterateOverViewportColumns<TRow, TSummaryRow> = (
 
 export type ViewportColumnWithColSpan<TRow, TSummaryRow> = [
   column: CalculatedColumn<TRow, TSummaryRow>,
+  isCellActive: boolean,
   colSpan: number | undefined
 ];
 

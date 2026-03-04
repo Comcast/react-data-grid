@@ -70,13 +70,13 @@ function HeaderRow<R, SR, K extends React.Key>({
   const isPositionOnRow = activeCellIdx === -1;
 
   const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'HEADER' })
-    .map(([column, colSpan], index) => (
+    .map(([column, isCellActive, colSpan], index) => (
       <HeaderCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         rowIdx={rowIdx}
-        isCellActive={activeCellIdx === column.idx}
+        isCellActive={isCellActive}
         onColumnResize={onColumnResize}
         onColumnResizeEnd={onColumnResizeEnd}
         onColumnsReorder={onColumnsReorder}

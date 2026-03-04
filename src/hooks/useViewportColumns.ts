@@ -119,7 +119,7 @@ export function useViewportColumns<R, SR>({
       for (const column of iterator) {
         let colSpan = args && getColSpan(column, lastFrozenColumnIndex, args);
 
-        yield [column, colSpan];
+        yield [column, column.idx === activeColumnIdx, colSpan];
 
         // skip columns covered by colSpan
         while (colSpan !== undefined && colSpan > 1) {
@@ -137,7 +137,7 @@ export function useViewportColumns<R, SR>({
     function* (activeColumnIdx = -1, args): Generator<ViewportColumnWithColSpan<R, SR>> {
       if (activeColumnIdx >= 0 && activeColumnIdx < columns.length) {
         const column = columns[activeColumnIdx];
-        yield [column, args && getColSpan(column, lastFrozenColumnIndex, args)];
+        yield [column, true, args && getColSpan(column, lastFrozenColumnIndex, args)];
       }
     },
     [columns, lastFrozenColumnIndex]

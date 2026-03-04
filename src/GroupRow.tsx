@@ -80,7 +80,7 @@ function GroupedRow<R, SR>({
         {...props}
       >
         {iterateOverViewportColumnsForRow(activeCellIdx)
-          .map(([column], index) => {
+          .map(([column, isCellActive], index) => {
             // Select is always the first column
             if (index === 0 && column.key === SELECT_COLUMN_KEY) {
               idx += 1;
@@ -93,7 +93,7 @@ function GroupedRow<R, SR>({
                 groupKey={row.groupKey}
                 childRows={row.childRows}
                 isExpanded={row.isExpanded}
-                isCellActive={activeCellIdx === column.idx}
+                isCellActive={isCellActive}
                 column={column}
                 row={row}
                 groupColumnIndex={idx}

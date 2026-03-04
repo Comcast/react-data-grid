@@ -54,14 +54,14 @@ function SummaryRow<R, SR>({
   const isPositionOnRow = activeCellIdx === -1;
 
   const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
-    .map(([column, colSpan]) => (
+    .map(([column, isCellActive, colSpan]) => (
       <SummaryCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
-        isCellActive={activeCellIdx === column.idx}
+        isCellActive={isCellActive}
         setActivePosition={setActivePosition}
       />
     ))

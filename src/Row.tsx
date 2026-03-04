@@ -41,10 +41,7 @@ function Row<R, SR>({
   );
 
   const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'ROW', row })
-    .map(([column, colSpan]) => {
-      const { idx } = column;
-      const isCellActive = activeCellIdx === idx;
-
+    .map(([column, isCellActive, colSpan]) => {
       if (isCellActive && activeCellEditor) {
         return activeCellEditor;
       }
@@ -54,7 +51,7 @@ function Row<R, SR>({
         colSpan,
         row,
         rowIdx,
-        isDraggedOver: draggedOverCellIdx === idx,
+        isDraggedOver: draggedOverCellIdx === column.idx,
         isCellActive,
         onCellMouseDown,
         onCellClick,
