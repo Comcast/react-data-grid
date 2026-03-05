@@ -19,7 +19,7 @@ export function useGridDimensions() {
     setBlockSize(clientHeight);
 
     const resizeObserver = new ResizeObserver((entries) => {
-      const size = entries[0].contentBoxSize[0];
+      const size = entries[0]!.contentBoxSize[0]!;
 
       // we use flushSync here to avoid flashing scrollbars
       flushSync(() => {

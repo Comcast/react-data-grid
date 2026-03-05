@@ -3,7 +3,7 @@ import type { CalculatedColumn, ColSpanArgs } from '../types';
 export function getColSpan<R, SR>(
   column: CalculatedColumn<R, SR>,
   lastFrozenColumnIndex: number,
-  args: ColSpanArgs<R, SR>
+  args: ColSpanArgs<NoInfer<R>, NoInfer<SR>>
 ): number | undefined {
   if (typeof column.colSpan !== 'function') return undefined;
 

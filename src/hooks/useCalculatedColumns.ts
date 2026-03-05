@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { clampColumnWidth, max, min } from '../utils';
+import { clampColumnWidth, getColumnInColumns, max, min } from '../utils';
 import type { CalculatedColumn, CalculatedColumnParent, ColumnOrColumnGroup, Omit } from '../types';
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
@@ -189,14 +189,14 @@ export function useCalculatedColumns<R, SR>({
     }
 
     if (lastFrozenColumnIndex !== -1) {
-      const columnMetric = columnMetrics.get(columns[lastFrozenColumnIndex])!;
+      const columnMetric = columnMetrics.get(getColumnInColumns(columns, lastFrozenColumnIndex))!;
       totalFrozenColumnWidth = columnMetric.left + columnMetric.width;
     }
 
     const layoutCssVars: Record<string, string> = {};
 
     for (let i = 0; i <= lastFrozenColumnIndex; i++) {
-      const column = columns[i];
+      const column = getColumnInColumns(columns, i);
       layoutCssVars[`--rdg-frozen-left-${column.idx}`] = `${columnMetrics.get(column)!.left}px`;
     }
 
@@ -222,7 +222,7 @@ export function useCalculatedColumns<R, SR>({
     // get the first visible non-frozen column index
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleStartIdx])!;
+      const { left, width } = columnMetrics.get(getColumnInColumns(columns, colVisibleStartIdx))!;
       // if the right side of the columnn is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
@@ -234,7 +234,7 @@ export function useCalculatedColumns<R, SR>({
     // get the last visible non-frozen column index
     let colVisibleEndIdx = colVisibleStartIdx;
     while (colVisibleEndIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleEndIdx])!;
+      const { left, width } = columnMetrics.get(getColumnInColumns(columns, colVisibleEndIdx))!;
       // if the right side of the column is beyond or equal to the right side of the available viewport,
       // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (left + width >= viewportRight) {
