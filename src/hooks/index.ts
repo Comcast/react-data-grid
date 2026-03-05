@@ -1,3 +1,4 @@
+export * from './useActivePosition';
 export * from './useCalculatedColumns';
 export * from './useColumnWidths';
 export * from './useGridDimensions';
