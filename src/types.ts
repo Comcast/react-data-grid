@@ -156,7 +156,7 @@ export interface RenderEditCellContentProps<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   onRowChange: (row: TRow, commitChanges?: boolean) => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
 export interface RenderHeaderCellContentProps<TRow, TSummaryRow = unknown> {
@@ -174,7 +174,7 @@ interface BaseRenderCellProps<TRow, TSummaryRow = unknown>
       'onCellMouseDown' | 'onCellClick' | 'onCellDoubleClick' | 'onCellContextMenu'
     > {
   rowIdx: number;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
 export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<TRow, TSummaryRow> {
@@ -182,16 +182,16 @@ export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<
   row: TRow;
   colSpan: number | undefined;
   isDraggedOver: boolean;
-  isCellSelected: boolean;
-  onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, newRow: TRow) => void;
+  isCellActive: boolean;
+  onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
 }
 
 export interface EditCellProps<R, SR> extends Pick<
   RenderCellProps<R, SR>,
   'column' | 'colSpan' | 'row' | 'rowIdx'
 > {
-  onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;
-  closeEditor: (shouldFocusCell: boolean) => void;
+  onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
+  closeEditor: (shouldFocus: boolean) => void;
   navigate: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   onKeyDown: Maybe<(args: EditCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>;
 }
@@ -208,18 +208,22 @@ export type CellKeyboardEvent = CellEvent<React.KeyboardEvent<HTMLDivElement>>;
 export type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
 
 export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
+  /** The column object of the cell. */
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The row object of the cell. */
   row: TRow;
+  /** The row index of the cell. */
   rowIdx: number;
-  selectCell: (enableEditor?: boolean) => void;
+  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
+  setActivePosition: (enableEditor?: boolean) => void;
 }
 
-interface SelectCellKeyDownArgs<TRow, TSummaryRow = unknown> {
-  mode: 'SELECT';
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+  mode: 'ACTIVE';
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  row: TRow;
+  row: TRow | undefined;
   rowIdx: number;
-  selectCell: (position: Position, options?: SelectCellOptions) => void;
+  setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
 export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
@@ -228,30 +232,54 @@ export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   rowIdx: number;
   navigate: () => void;
-  onClose: (commitChanges?: boolean, shouldFocusCell?: boolean) => void;
+  onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
 export type CellKeyDownArgs<TRow, TSummaryRow = unknown> =
-  | SelectCellKeyDownArgs<TRow, TSummaryRow>
+  | ActiveCellKeyDownArgs<TRow, TSummaryRow>
   | EditCellKeyDownArgs<TRow, TSummaryRow>;
 
-export interface CellSelectArgs<TRow, TSummaryRow = unknown> {
+export interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+  /** row index of the active position */
   rowIdx: number;
+  /**
+   * row object of the active position,
+   * undefined if the active position is on a header or summary row
+   */
   row: TRow | undefined;
-  column: CalculatedColumn<TRow, TSummaryRow>;
+  /**
+   * column object of the active position,
+   * undefined if the active position is a row instead of a cell
+   */
+  column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
 
 export type CellMouseEventHandler<R, SR> = Maybe<
   (args: CellMouseArgs<NoInfer<R>, NoInfer<SR>>, event: CellMouseEvent) => void
 >;
 
+export type IterateOverViewportColumns<TRow, TSummaryRow> = (
+  activeColumnIdx: number
+) => IteratorObject<CalculatedColumn<TRow, TSummaryRow>>;
+
+export type ViewportColumnWithColSpan<TRow, TSummaryRow> = [
+  column: CalculatedColumn<TRow, TSummaryRow>,
+  isCellActive: boolean,
+  colSpan: number | undefined
+];
+
+export type IterateOverViewportColumnsForRow<TRow, TSummaryRow> = (
+  activeIdx: number | undefined,
+  args?: ColSpanArgs<TRow, TSummaryRow>
+) => IteratorObject<ViewportColumnWithColSpan<TRow, TSummaryRow>>;
+
 export interface BaseRenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderCellProps<
   TRow,
   TSummaryRow
 > {
-  viewportColumns: readonly CalculatedColumn<TRow, TSummaryRow>[];
+  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<TRow, TSummaryRow>;
   rowIdx: number;
-  selectedCellIdx: number | undefined;
+  activeCellIdx: number | undefined;
   isRowSelectionDisabled: boolean;
   isRowSelected: boolean;
   gridRowStart: number;
@@ -262,9 +290,8 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
   TSummaryRow
 > {
   row: TRow;
-  lastFrozenColumnIndex: number;
   draggedOverCellIdx: number | undefined;
-  selectedCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
+  activeCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
   isTreeGrid: boolean;
@@ -320,9 +347,9 @@ export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
 export type SortDirection = 'ASC' | 'DESC';
 
 export type ColSpanArgs<TRow, TSummaryRow> =
-  | { type: 'HEADER' }
-  | { type: 'ROW'; row: TRow }
-  | { type: 'SUMMARY'; row: TSummaryRow };
+  | { readonly type: 'HEADER' }
+  | { readonly type: 'ROW'; readonly row: TRow }
+  | { readonly type: 'SUMMARY'; readonly row: TSummaryRow };
 
 export type RowHeightArgs<TRow> =
   | { type: 'ROW'; row: TRow }
@@ -354,9 +381,9 @@ export interface Renderers<TRow, TSummaryRow> {
   noRowsFallback?: Maybe<ReactNode>;
 }
 
-export interface SelectCellOptions {
+export interface SetActivePositionOptions {
   enableEditor?: Maybe<boolean>;
-  shouldFocusCell?: Maybe<boolean>;
+  shouldFocus?: Maybe<boolean>;
 }
 
 export interface ColumnWidth {

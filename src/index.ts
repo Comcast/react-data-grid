@@ -2,8 +2,8 @@ import './style/layers.css';
 
 export {
   DataGrid,
-  type DataGridProps,
   type DataGridHandle,
+  type DataGridProps,
   type DefaultColumnOptions
 } from './DataGrid';
 export { TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
@@ -15,7 +15,7 @@ export * from './cellRenderers';
 export { renderTextEditor } from './editors/renderTextEditor';
 export { renderHeaderCell } from './renderHeaderCell';
 export { renderSortIcon, renderSortPriority } from './sortStatus';
-export { useRowSelection, useHeaderRowSelection } from './hooks';
+export { useHeaderRowSelection, useRowSelection } from './hooks';
 export type {
   CalculatedColumn,
   CalculatedColumnOrColumnGroup,
@@ -26,7 +26,6 @@ export type {
   CellMouseArgs,
   CellMouseEvent,
   CellPasteArgs,
-  CellSelectArgs,
   ColSpanArgs,
   Column,
   ColumnGroup,
@@ -35,6 +34,7 @@ export type {
   ColumnWidths,
   Direction,
   FillEvent,
+  PositionChangeArgs,
   RenderCellContentProps,
   RenderCellProps,
   RenderCheckboxProps,
@@ -49,9 +49,9 @@ export type {
   RenderSummaryCellContentProps,
   RowHeightArgs,
   RowsChangeData,
-  SelectCellOptions,
   SelectHeaderRowEvent,
   SelectRowEvent,
+  SetActivePositionOptions,
   SortColumn,
   SortDirection
 } from './types';

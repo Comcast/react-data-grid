@@ -7,22 +7,6 @@ import type {
 } from '../types';
 import { getColSpan } from './colSpanUtils';
 
-interface IsSelectedCellEditableOpts<R, SR> {
-  selectedPosition: Position;
-  columns: readonly CalculatedColumn<R, SR>[];
-  rows: readonly R[];
-}
-
-export function isSelectedCellEditable<R, SR>({
-  selectedPosition,
-  columns,
-  rows
-}: IsSelectedCellEditableOpts<R, SR>): boolean {
-  const column = columns[selectedPosition.idx];
-  const row = rows[selectedPosition.rowIdx];
-  return isCellEditableUtil(column, row);
-}
-
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
   return (
@@ -31,7 +15,7 @@ export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: 
   );
 }
 
-interface GetNextSelectedCellPositionOpts<R, SR> {
+interface GetNextPositionOpts<R, SR> {
   moveUp: boolean;
   moveNext: boolean;
   cellNavigationMode: CellNavigationMode;
@@ -43,13 +27,13 @@ interface GetNextSelectedCellPositionOpts<R, SR> {
   minRowIdx: number;
   mainHeaderRowIdx: number;
   maxRowIdx: number;
-  currentPosition: Position;
+  activePosition: Position;
   nextPosition: Position;
+  nextPositionIsCellInActiveBounds: boolean;
   lastFrozenColumnIndex: number;
-  isCellWithinBounds: (position: Position) => boolean;
 }
 
-function getSelectedCellColSpan<R, SR>({
+function getCellColSpan<R, SR>({
   rows,
   topSummaryRows,
   bottomSummaryRows,
@@ -58,7 +42,7 @@ function getSelectedCellColSpan<R, SR>({
   lastFrozenColumnIndex,
   column
 }: Pick<
-  GetNextSelectedCellPositionOpts<R, SR>,
+  GetNextPositionOpts<R, SR>,
   'rows' | 'topSummaryRows' | 'bottomSummaryRows' | 'lastFrozenColumnIndex' | 'mainHeaderRowIdx'
 > & {
   rowIdx: number;
@@ -95,7 +79,7 @@ function getSelectedCellColSpan<R, SR>({
   return undefined;
 }
 
-export function getNextSelectedCellPosition<R, SR>({
+export function getNextActivePosition<R, SR>({
   moveUp,
   moveNext,
   cellNavigationMode,
@@ -107,21 +91,21 @@ export function getNextSelectedCellPosition<R, SR>({
   minRowIdx,
   mainHeaderRowIdx,
   maxRowIdx,
-  currentPosition: { idx: currentIdx, rowIdx: currentRowIdx },
+  activePosition: { idx: activeIdx, rowIdx: activeRowIdx },
   nextPosition,
-  lastFrozenColumnIndex,
-  isCellWithinBounds
-}: GetNextSelectedCellPositionOpts<R, SR>): Position {
+  nextPositionIsCellInActiveBounds,
+  lastFrozenColumnIndex
+}: GetNextPositionOpts<R, SR>): Position {
   let { idx: nextIdx, rowIdx: nextRowIdx } = nextPosition;
   const columnsCount = columns.length;
 
   const setColSpan = (moveNext: boolean) => {
-    // If a cell within the colspan range is selected then move to the
+    // If a cell within the colspan range is active then move to the
     // previous or the next cell depending on the navigation direction
     for (const column of colSpanColumns) {
       const colIdx = column.idx;
       if (colIdx > nextIdx) break;
-      const colSpan = getSelectedCellColSpan({
+      const colSpan = getCellColSpan({
         rows,
         topSummaryRows,
         bottomSummaryRows,
@@ -173,13 +157,13 @@ export function getNextSelectedCellPosition<R, SR>({
 
       // keep the current position if there is no parent matching the new row position
       if (!found) {
-        nextIdx = currentIdx;
-        nextRowIdx = currentRowIdx;
+        nextIdx = activeIdx;
+        nextRowIdx = activeRowIdx;
       }
     }
   };
 
-  if (isCellWithinBounds(nextPosition)) {
+  if (nextPositionIsCellInActiveBounds) {
     setColSpan(moveNext);
 
     if (nextRowIdx < mainHeaderRowIdx) {
@@ -232,7 +216,7 @@ interface CanExitGridOpts {
   maxColIdx: number;
   minRowIdx: number;
   maxRowIdx: number;
-  selectedPosition: Position;
+  activePosition: Position;
   shiftKey: boolean;
 }
 
@@ -240,7 +224,7 @@ export function canExitGrid({
   maxColIdx,
   minRowIdx,
   maxRowIdx,
-  selectedPosition: { rowIdx, idx },
+  activePosition: { rowIdx, idx },
   shiftKey
 }: CanExitGridOpts): boolean {
   // Exit the grid if we're at the first or last cell of the grid
