@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
 import { scrollIntoView } from '../utils';
+import type { Maybe } from '../types';
 
 export interface PartialPosition {
-  readonly idx?: number | undefined;
-  readonly rowIdx?: number | undefined;
+  readonly idx?: Maybe<number>;
+  readonly rowIdx?: Maybe<number>;
 }
 
 interface Props {
@@ -31,8 +32,8 @@ export function useScrollToPosition({ gridRef }: Props) {
           }
         }}
         style={{
-          gridColumn: scrollToPosition.idx === undefined ? '1/-1' : scrollToPosition.idx + 1,
-          gridRow: scrollToPosition.rowIdx === undefined ? '1/-1' : scrollToPosition.rowIdx + 1
+          gridColumn: scrollToPosition.idx == null ? '1/-1' : scrollToPosition.idx + 1,
+          gridRow: scrollToPosition.rowIdx == null ? '1/-1' : scrollToPosition.rowIdx + 1
         }}
       />
     )

@@ -18,7 +18,7 @@ declare module 'vitest/browser' {
     getRow: (opts?: LocatorByRoleOptions) => Locator;
     getCell: (opts?: LocatorByRoleOptions) => Locator;
     getSelectAllCheckbox: () => Locator;
-    getSelectedCell: () => Locator;
+    getActiveCell: () => Locator;
     getDragHandle: () => Locator;
     getBySelector: (selector: string) => Locator;
   }
@@ -55,7 +55,7 @@ locators.extend({
     return this.getByRole('checkbox', { name: 'Select All' });
   },
 
-  getSelectedCell() {
+  getActiveCell() {
     return this.getCell({ selected: true }).or(this.getHeaderCell({ selected: true }));
   },
 

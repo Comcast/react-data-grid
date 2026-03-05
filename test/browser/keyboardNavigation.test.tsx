@@ -12,7 +12,7 @@ import {
   validateCellPosition
 } from './utils';
 
-const selectedCell = page.getSelectedCell();
+const activeCell = page.getActiveCell();
 
 type Row = undefined;
 
@@ -33,8 +33,8 @@ const columns: readonly Column<Row, Row>[] = [
 test('keyboard navigation', async () => {
   await setup({ columns, rows, topSummaryRows, bottomSummaryRows }, true);
 
-  // no initial selection
-  await expect.element(selectedCell).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(activeCell).not.toBeInTheDocument();
 
   // tab into the grid
   await tabIntoGrid();
@@ -96,12 +96,12 @@ test('keyboard navigation', async () => {
   await userEvent.keyboard('{PageUp}');
   await validateCellPosition(0, 0);
 
-  // tab at the end of a row selects the first cell on the next row
+  // tab at the end of a row focuses the first cell on the next row
   await userEvent.keyboard('{end}');
   await safeTab();
   await validateCellPosition(0, 1);
 
-  // shift tab should select the last cell of the previous row
+  // shift tab should focus the last cell of the previous row
   await safeTab(true);
   await validateCellPosition(6, 0);
 });
@@ -137,8 +137,8 @@ test('grid enter/exit', async () => {
   const beforeButton = page.getByRole('button', { name: 'Before' });
   const afterButton = page.getByRole('button', { name: 'After' });
 
-  // no initial selection
-  await expect.element(selectedCell).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(activeCell).not.toBeInTheDocument();
 
   // tab into the grid
   await tabIntoGrid();
@@ -154,18 +154,18 @@ test('grid enter/exit', async () => {
   await userEvent.keyboard('{arrowdown}{arrowdown}');
   await validateCellPosition(0, 2);
 
-  // tab should select the last selected cell
+  // tab should focus the last active cell
   // click outside the grid
   await userEvent.click(beforeButton);
   await safeTab();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 3);
 
-  // shift+tab should select the last selected cell
+  // shift+tab should focus the last active cell
   await userEvent.click(afterButton);
   await safeTab(true);
   await validateCellPosition(0, 3);
-  await expect.element(selectedCell.getByRole('checkbox')).toHaveFocus();
+  await expect.element(activeCell.getByRole('checkbox')).toHaveFocus();
 
   // tab tabs out of the grid if we are at the last cell
   await userEvent.keyboard('{Control>}{end}{/Control}');
@@ -180,15 +180,15 @@ test('navigation with focusable cell renderer', async () => {
   await validateCellPosition(0, 1);
 
   // cell should not set tabIndex to 0 if it contains a focusable cell renderer
-  await expect.element(selectedCell).toHaveAttribute('tabIndex', '-1');
-  const checkbox = selectedCell.getByRole('checkbox');
+  await expect.element(activeCell).toHaveAttribute('tabIndex', '-1');
+  const checkbox = activeCell.getByRole('checkbox');
   await expect.element(checkbox).toHaveFocus();
   await expect.element(checkbox).toHaveAttribute('tabIndex', '0');
 
   await safeTab();
   await validateCellPosition(1, 1);
   // cell should set tabIndex to 0 if it does not have focusable cell renderer
-  await expect.element(selectedCell).toHaveAttribute('tabIndex', '0');
+  await expect.element(activeCell).toHaveAttribute('tabIndex', '0');
 });
 
 test('navigation when header and summary rows have focusable elements', async () => {
@@ -250,12 +250,12 @@ test('navigation when header and summary rows have focusable elements', async ()
   await safeTab(true);
   await safeTab(true);
   await validateCellPosition(1, 2);
-  await expect.element(selectedCell).toHaveFocus();
+  await expect.element(activeCell).toHaveFocus();
 });
 
-test('navigation when selected cell not in the viewport', async () => {
+test('navigation when active cell not in the viewport', async () => {
   const columns: Column<Row, Row>[] = [SelectColumn];
-  const selectedRowCells = getRowWithCell(selectedCell).getCell();
+  const activeRowCells = getRowWithCell(activeCell).getCell();
   for (let i = 0; i < 99; i++) {
     columns.push({ key: `col${i}`, name: `col${i}`, frozen: i < 5 });
   }
@@ -265,12 +265,12 @@ test('navigation when selected cell not in the viewport', async () => {
 
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(99, 100);
-  await expect.element(selectedRowCells).not.toHaveLength(1);
+  await expect.element(activeRowCells).not.toHaveLength(1);
   await scrollGrid({ top: 0 });
-  await testCount(selectedRowCells, 1);
+  await testCount(activeRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
-  await expect.element(selectedRowCells).not.toHaveLength(1);
+  await expect.element(activeRowCells).not.toHaveLength(1);
 
   await scrollGrid({ left: 0 });
   await userEvent.keyboard('{arrowdown}');
@@ -285,7 +285,7 @@ test('navigation when selected cell not in the viewport', async () => {
   await validateCellPosition(6, 100);
 });
 
-test('reset selected cell when column is removed', async () => {
+test('reset active cell when column is removed', async () => {
   const columns: readonly Column<Row>[] = [
     { key: '1', name: '1' },
     { key: '2', name: '2' }
@@ -304,10 +304,10 @@ test('reset selected cell when column is removed', async () => {
 
   await rerender(<Test columns={[columns[0]]} />);
 
-  await expect.element(selectedCell).not.toBeInTheDocument();
+  await expect.element(activeCell).not.toBeInTheDocument();
 });
 
-test('reset selected cell when row is removed', async () => {
+test('reset active cell when row is removed', async () => {
   const columns: readonly Column<Row>[] = [
     { key: '1', name: '1' },
     { key: '2', name: '2' }
@@ -326,7 +326,7 @@ test('reset selected cell when row is removed', async () => {
 
   await rerender(<Test rows={[rows[0]]} />);
 
-  await expect.element(selectedCell).not.toBeInTheDocument();
+  await expect.element(activeCell).not.toBeInTheDocument();
 });
 
 test('should not change the left and right arrow behavior for right to left languages', async () => {
