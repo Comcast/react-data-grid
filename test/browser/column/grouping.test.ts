@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
-import { setup, tabIntoGrid, testCount, validateCellPosition } from '../utils';
+import { safeTab, setup, tabIntoGrid, testCount, validateCellPosition } from '../utils';
 
 const grid = page.getGrid();
 const headerRows = grid.getHeaderRow();
@@ -254,8 +254,8 @@ test('grouping', async () => {
 test('keyboard navigation', async () => {
   await setup({ columns, rows: [{}] }, true);
 
-  // no initial selection
-  await expect.element(grid.getSelectedCell()).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
   await tabIntoGrid();
   await validateCellPosition(0, 3);
@@ -323,21 +323,21 @@ test('keyboard navigation', async () => {
   await validateCellPosition(10, 3);
 
   // tab navigation
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(11, 3);
-  await userEvent.tab({ shift: true });
-  await userEvent.tab({ shift: true });
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
+  await safeTab(true);
+  await safeTab(true);
   await validateCellPosition(8, 3);
   await userEvent.keyboard('{arrowup}');
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await validateCellPosition(4, 0);
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(8, 0);
 
   await userEvent.keyboard('{home}{end}');
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(0, 4);
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await validateCellPosition(11, 3);
 });
