@@ -49,7 +49,7 @@ export const row = css`
 
 export const rowClassname = `rdg-row ${row}`;
 
-export const rowSelectedClassname = 'rdg-row-selected';
+export const rowActiveClassname = 'rdg-row-active';
 
 export const topSummaryRowClassname = 'rdg-top-summary-row';
 

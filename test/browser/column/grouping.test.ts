@@ -254,8 +254,8 @@ test('grouping', async () => {
 test('keyboard navigation', async () => {
   await setup({ columns, rows: [{}] }, true);
 
-  // no initial selection
-  await expect.element(grid.getSelectedCell()).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
   await tabIntoGrid();
   await validateCellPosition(0, 3);
