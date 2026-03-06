@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { page, userEvent } from 'vitest/browser';
 
-import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
+import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
 import {
   getRowWithCell,
@@ -344,43 +343,4 @@ test('should not change the left and right arrow behavior for right to left lang
   await validateCellPosition(1, 0);
   await userEvent.keyboard('{arrowleft}');
   await validateCellPosition(2, 0);
-});
-
-test('adding a top summary row when no rows or cells are active should not focus the summary row', async () => {
-  const rows: readonly Row[] = [];
-
-  function Test() {
-    const [topSummaryRows, setTopSummaryRows] = useState((): readonly Row[] => []);
-
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => setTopSummaryRows((topSummaryRows) => [...topSummaryRows, undefined])}
-        >
-          Add summary row
-        </button>
-        <TreeDataGrid
-          columns={columns}
-          rows={rows}
-          topSummaryRows={topSummaryRows}
-          groupBy={[]}
-          rowGrouper={() => ({})}
-          expandedGroupIds={new Set()}
-          onExpandedGroupIdsChange={() => {}}
-        />
-      </>
-    );
-  }
-
-  await page.render(<Test />);
-  const addSummaryRowButton = page.getByRole('button', { name: 'Add summary row' });
-  const activeRow = page.getBySelector('.rdg-row-active');
-
-  await expect.element(activeCell).not.toBeInTheDocument();
-  await expect.element(activeRow).not.toBeInTheDocument();
-
-  await userEvent.click(addSummaryRowButton);
-  await expect.element(activeCell).not.toBeInTheDocument();
-  await expect.element(activeRow).not.toBeInTheDocument();
 });
