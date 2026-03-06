@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
-import { safeTab, setup, tabIntoGrid, testCount, validateCellPosition } from '../utils';
+import { safeTab, setup, testCount, validateCellPosition } from '../utils';
 
 const grid = page.getGrid();
 const headerRows = grid.getHeaderRow();
@@ -252,12 +252,12 @@ test('grouping', async () => {
 });
 
 test('keyboard navigation', async () => {
-  await setup({ columns, rows: [{}] }, true);
+  await setup({ columns, rows: [{}] });
 
   // no initial active position
   await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
-  await tabIntoGrid();
+  await safeTab();
   await validateCellPosition(0, 3);
 
   // arrow navigation

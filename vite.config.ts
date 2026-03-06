@@ -133,7 +133,7 @@ export default defineConfig(
               ui: false,
               screenshotFailures: !isCI
             },
-            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
+            setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
         {

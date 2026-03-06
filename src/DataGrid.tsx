@@ -1170,13 +1170,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // Scrollable containers without tabIndex are keyboard focusable in Chrome only if there is no focusable element inside
       // whereas they are always focusable in Firefox. We need to set tabIndex to have a consistent behavior across browsers.
       tabIndex={-1}
-      className={classnames(
-        rootClassname,
-        {
-          [viewportDraggingClassname]: isDragging
-        },
-        className
-      )}
+      className={classnames(rootClassname, isDragging && viewportDraggingClassname, className)}
       style={{
         ...style,
         // set scrollPadding to correctly scroll to non-sticky cells/rows

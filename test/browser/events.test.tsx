@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
-import type { Column, DataGridProps } from '../../src';
+import type { Column } from '../../src';
 import { safeTab } from './utils';
 
 interface Row {
@@ -55,7 +55,9 @@ const rows: readonly Row[] = [
 describe('Events', () => {
   it('should not select cell if onCellMouseDown prevents grid default', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellMouseDown={(args, event) => {
           if (args.column.key === 'col1') {
             event.preventGridDefault();
@@ -71,7 +73,9 @@ describe('Events', () => {
 
   it('should be able to open editor editor on single click using onCellClick', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellClick={(args, event) => {
           if (args.column.key === 'col2') {
             event.preventGridDefault();
@@ -88,7 +92,9 @@ describe('Events', () => {
 
   it('should not open editor editor on double click if onCellDoubleClick prevents default', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellDoubleClick={(args, event) => {
           if (args.column.key === 'col1') {
             event.preventGridDefault();
@@ -104,7 +110,9 @@ describe('Events', () => {
 
   it('should call onCellContextMenu when cell is right clicked', async () => {
     const onCellContextMenu = vi.fn();
-    await page.render(<EventTest onCellContextMenu={onCellContextMenu} />);
+    await page.render(
+      <DataGrid columns={columns} rows={rows} onCellContextMenu={onCellContextMenu} />
+    );
     expect(onCellContextMenu).not.toHaveBeenCalled();
     await userEvent.click(page.getCell({ name: '1' }), { button: 'right' });
     expect(onCellContextMenu).toHaveBeenCalledExactlyOnceWith(
@@ -122,7 +130,9 @@ describe('Events', () => {
   it('should call onActivePositionChange when cell selection is changed', async () => {
     const onActivePositionChange = vi.fn();
 
-    await page.render(<EventTest onActivePositionChange={onActivePositionChange} />);
+    await page.render(
+      <DataGrid columns={columns} rows={rows} onActivePositionChange={onActivePositionChange} />
+    );
 
     expect(onActivePositionChange).not.toHaveBeenCalled();
 
@@ -181,16 +191,3 @@ describe('Events', () => {
     expect(onActivePositionChange).toHaveBeenCalledTimes(6);
   });
 });
-
-type EventProps = Pick<
-  DataGridProps<Row>,
-  | 'onCellMouseDown'
-  | 'onCellClick'
-  | 'onCellDoubleClick'
-  | 'onCellContextMenu'
-  | 'onActivePositionChange'
->;
-
-function EventTest(props: EventProps) {
-  return <DataGrid columns={columns} rows={rows} {...props} />;
-}
