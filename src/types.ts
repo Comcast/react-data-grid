@@ -6,8 +6,6 @@ export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type Maybe<T> = T | undefined | null;
 
-export type StateSetter<S> = React.Dispatch<React.SetStateAction<S>>;
-
 export interface Column<TRow, TSummaryRow = unknown> {
   /** The name of the column. Displayed in the header cell by default */
   readonly name: string | ReactElement;
