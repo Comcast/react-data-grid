@@ -88,9 +88,14 @@ test('should allow drag up using mouse', async () => {
 
 test('should focus the cell when drag handle is clicked', async () => {
   await setup();
-  await userEvent.click(getCellsAtRowIndex(0).nth(0));
-  await userEvent.click(document.body);
-  await expect.element(document.body).toHaveFocus();
+  const cell = getCellsAtRowIndex(0).nth(0);
+
+  await userEvent.click(cell);
+  await expect.element(cell).toHaveFocus();
+
+  cell.element().blur();
+  await expect.element(cell).not.toHaveFocus();
+
   await userEvent.click(dragHandle);
-  await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
+  await expect.element(cell).toHaveFocus();
 });
