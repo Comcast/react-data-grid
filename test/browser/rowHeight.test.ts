@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { Column, DataGridProps } from '../../src';
-import { setup, tabIntoGrid, testRowCount } from './utils';
+import { safeTab, setup, testRowCount } from './utils';
 
 const grid = page.getGrid();
 
@@ -19,7 +19,7 @@ function setupGrid(rowHeight: DataGridProps<Row>['rowHeight']) {
       width: 80
     });
   }
-  return setup({ columns, rows, rowHeight }, true);
+  return setup({ columns, rows, rowHeight });
 }
 
 async function expectGridRows(rowHeightFn: (row: number) => number, expected: string) {
@@ -36,7 +36,7 @@ test('rowHeight is number', async () => {
       '40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px'
   });
   await testRowCount(30);
-  await tabIntoGrid();
+  await safeTab();
   await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
   const gridEl = grid.element();
@@ -52,7 +52,7 @@ test('rowHeight is function', async () => {
   });
   await testRowCount(22);
 
-  await tabIntoGrid();
+  await safeTab();
   await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
   const gridEl = grid.element();

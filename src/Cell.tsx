@@ -39,9 +39,7 @@ function Cell<R, SR>({
   const { cellClass } = column;
   className = getCellClassname(
     column,
-    {
-      [cellDraggedOverClassname]: isDraggedOver
-    },
+    isDraggedOver && cellDraggedOverClassname,
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
   );
