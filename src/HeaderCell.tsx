@@ -116,13 +116,15 @@ export default function HeaderCell<R, SR>({
     sortDirection && !priority ? (sortDirection === 'ASC' ? 'ascending' : 'descending') : undefined;
   const { sortable, resizable, draggable } = column;
 
-  const className = getCellClassname(column, column.headerCellClass, {
-    [cellSortableClassname]: sortable,
-    [cellResizableClassname]: resizable,
-    [cellDraggableClassname]: draggable,
-    [cellDraggingClassname]: isDragging,
-    [cellOverClassname]: isOver
-  });
+  const className = getCellClassname(
+    column,
+    column.headerCellClass,
+    sortable && cellSortableClassname,
+    resizable && cellResizableClassname,
+    draggable && cellDraggableClassname,
+    isDragging && cellDraggingClassname,
+    isOver && cellOverClassname
+  );
 
   function onSort(ctrlClick: boolean) {
     if (onSortColumnsChange == null) return;

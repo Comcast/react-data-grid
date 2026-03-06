@@ -38,37 +38,23 @@ export function getCellStyle<R, SR>(
   };
 }
 
-type ClassValue = Maybe<string> | Record<string, boolean> | false;
+type ClassValue = Maybe<string | false>;
 
 export function classnames(...args: readonly ClassValue[]) {
   let classname = '';
 
   for (const arg of args) {
-    if (arg) {
-      if (typeof arg === 'string') {
-        classname += ` ${arg}`;
-      } else if (typeof arg === 'object') {
-        for (const key in arg) {
-          if (arg[key]) {
-            classname += ` ${key}`;
-          }
-        }
-      }
+    if (typeof arg === 'string') {
+      classname += ` ${arg}`;
     }
   }
 
-  return classname.trimStart();
+  return classname.slice(1);
 }
 
 export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
-  return classnames(
-    cellClassname,
-    {
-      [cellFrozenClassname]: column.frozen
-    },
-    ...extraClasses
-  );
+  return classnames(cellClassname, column.frozen && cellFrozenClassname, ...extraClasses);
 }
