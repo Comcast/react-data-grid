@@ -90,15 +90,12 @@ beforeEach(async () => {
 afterEach(() => {
   vi.useRealTimers();
 
-  // eslint-disable-next-line @eslint-react/purity
-  if (!document.hasFocus()) {
-    // Errors thrown in `afterEach` will short-circuit subsequent `afterEach` hooks,
-    // thus preventing tests from being cleaned up properly and affecting other tests.
-    // We must therefore wait for tests to "finish" before throwing the error.
-    onTestFinished(() => {
-      throw new Error(
-        'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
-      );
-    });
-  }
+  // eslint-disable-next-line vitest/no-standalone-expect
+  expect
+    .soft(
+      // eslint-disable-next-line @eslint-react/purity
+      document.hasFocus(),
+      'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
+    )
+    .toBe(true);
 });

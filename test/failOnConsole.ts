@@ -23,16 +23,16 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-  if (!consoleErrorOrConsoleWarnWereCalled) {
-    return;
-  }
-
-  consoleErrorOrConsoleWarnWereCalled = false;
-
-  // Errors thrown in `afterEach` will short-circuit subsequent `afterEach` hooks,
-  // thus preventing tests from being cleaned up properly and affecting other tests.
-  // We must therefore wait for tests to "finish" before throwing the error.
+  // Wait for both the test and `afterEach` hooks to complete to ensure all logs are caught
   onTestFinished(() => {
-    throw new Error('console.error() and/or console.warn() were called during the test');
+    // eslint-disable-next-line vitest/no-standalone-expect
+    expect
+      .soft(
+        consoleErrorOrConsoleWarnWereCalled,
+        'console.error() and/or console.warn() were called during the test'
+      )
+      .toBe(false);
+
+    consoleErrorOrConsoleWarnWereCalled = false;
   });
 });
