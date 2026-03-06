@@ -22,26 +22,62 @@ const initialActivePosition: ActivePosition = {
 export function useActivePosition<R, SR>({
   columns,
   rows,
-  validatePosition,
+  isTreeGrid,
+  maxColIdx,
+  minRowIdx,
+  maxRowIdx,
   setDraggedOverRowIdx,
   setShouldFocusPosition
 }: {
   columns: readonly CalculatedColumn<R, SR>[];
   rows: readonly R[];
-  validatePosition: (position: Position) => {
-    isPositionInActiveBounds: boolean;
-    isPositionInViewport: boolean;
-    isRowInActiveBounds: boolean;
-    isRowInViewport: boolean;
-    isCellInActiveBounds: boolean;
-    isCellInViewport: boolean;
-  };
+  isTreeGrid: boolean;
+  maxColIdx: number;
+  minRowIdx: number;
+  maxRowIdx: number;
   setDraggedOverRowIdx: StateSetter<number | undefined>;
   setShouldFocusPosition: StateSetter<boolean>;
 }) {
   const [activePosition, setActivePosition] = useState<ActivePosition | EditPosition<R>>(
     initialActivePosition
   );
+
+  /**
+   * Returns whether the given position represents a valid cell or row position in the grid.
+   * Active bounds: any valid position in the grid
+   * Viewport: any valid position in the grid outside of header rows and summary rows
+   * Row selection is only allowed in TreeDataGrid
+   */
+  function validatePosition({ idx, rowIdx }: Position) {
+    // check column position
+    const isColumnPositionAllColumns = isTreeGrid && idx === -1;
+    const isColumnPositionInActiveBounds = idx >= 0 && idx <= maxColIdx;
+
+    // check row position
+    const isRowPositionInActiveBounds = rowIdx >= minRowIdx && rowIdx <= maxRowIdx;
+    const isRowPositionInViewport = rowIdx >= 0 && rowIdx < rows.length;
+
+    // row status
+    const isRowInActiveBounds = isColumnPositionAllColumns && isRowPositionInActiveBounds;
+    const isRowInViewport = isColumnPositionAllColumns && isRowPositionInViewport;
+
+    // cell status
+    const isCellInActiveBounds = isColumnPositionInActiveBounds && isRowPositionInActiveBounds;
+    const isCellInViewport = isColumnPositionInActiveBounds && isRowPositionInViewport;
+
+    // position status
+    const isPositionInActiveBounds = isRowInActiveBounds || isCellInActiveBounds;
+    const isPositionInViewport = isRowInViewport || isCellInViewport;
+
+    return {
+      isPositionInActiveBounds,
+      isPositionInViewport,
+      isRowInActiveBounds,
+      isRowInViewport,
+      isCellInActiveBounds,
+      isCellInViewport
+    };
+  }
 
   function getResolvedValues(position: ActivePosition | EditPosition<R>) {
     return {
@@ -99,6 +135,7 @@ export function useActivePosition<R, SR>({
     activePositionIsInViewport: validatedPosition.isPositionInViewport,
     activePositionIsRow: validatedPosition.isRowInActiveBounds,
     activePositionIsCellInViewport: validatedPosition.isCellInViewport,
+    validatePosition,
     getActiveColumn,
     getActiveRow
   } as const;

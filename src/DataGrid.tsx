@@ -387,12 +387,16 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     activePositionIsInViewport,
     activePositionIsRow,
     activePositionIsCellInViewport,
+    validatePosition,
     getActiveColumn,
     getActiveRow
   } = useActivePosition<R, SR>({
     columns,
     rows,
-    validatePosition,
+    isTreeGrid,
+    maxColIdx,
+    minRowIdx,
+    maxRowIdx,
     setDraggedOverRowIdx,
     setShouldFocusPosition
   });
@@ -781,43 +785,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (indexes.length > 0) {
       onRowsChange(updatedRows, { indexes, column });
     }
-  }
-
-  /**
-   * Returns whether the given position represents a valid cell or row position in the grid.
-   * Active bounds: any valid position in the grid
-   * Viewport: any valid position in the grid outside of header rows and summary rows
-   * Row selection is only allowed in TreeDataGrid
-   */
-  function validatePosition({ idx, rowIdx }: Position) {
-    // check column position
-    const isColumnPositionAllColumns = isTreeGrid && idx === -1;
-    const isColumnPositionInActiveBounds = idx >= 0 && idx <= maxColIdx;
-
-    // check row position
-    const isRowPositionInActiveBounds = rowIdx >= minRowIdx && rowIdx <= maxRowIdx;
-    const isRowPositionInViewport = rowIdx >= 0 && rowIdx < rows.length;
-
-    // row status
-    const isRowInActiveBounds = isColumnPositionAllColumns && isRowPositionInActiveBounds;
-    const isRowInViewport = isColumnPositionAllColumns && isRowPositionInViewport;
-
-    // cell status
-    const isCellInActiveBounds = isColumnPositionInActiveBounds && isRowPositionInActiveBounds;
-    const isCellInViewport = isColumnPositionInActiveBounds && isRowPositionInViewport;
-
-    // position status
-    const isPositionInActiveBounds = isRowInActiveBounds || isCellInActiveBounds;
-    const isPositionInViewport = isRowInViewport || isCellInViewport;
-
-    return {
-      isPositionInActiveBounds,
-      isPositionInViewport,
-      isRowInActiveBounds,
-      isRowInViewport,
-      isCellInActiveBounds,
-      isCellInViewport
-    };
   }
 
   function isCellEditable(position: Position): boolean {
