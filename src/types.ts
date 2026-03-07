@@ -285,7 +285,13 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
 
 export interface RenderSummaryRowProps<TRow, TSummaryRow = unknown> extends Pick<
   BaseRenderRowProps<TRow, TSummaryRow>,
-  'className' | 'tabIndex' | 'iterateOverViewportColumnsForRow' | 'rowIdx' | 'gridRowStart' | 'setActivePosition' | 'activeCellIdx'
+  | 'className'
+  | 'tabIndex'
+  | 'iterateOverViewportColumnsForRow'
+  | 'rowIdx'
+  | 'gridRowStart'
+  | 'setActivePosition'
+  | 'activeCellIdx'
 > {
   'aria-rowindex': number;
   row: TSummaryRow;

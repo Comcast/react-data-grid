@@ -3,11 +3,7 @@ import { css } from 'ecij';
 
 import { classnames } from './utils';
 import type { RenderSummaryRowProps } from './types';
-import {
-  bottomSummaryRowClassname,
-  rowClassname,
-  topSummaryRowClassname
-} from './style/row';
+import { bottomSummaryRowClassname, rowClassname, topSummaryRowClassname } from './style/row';
 import SummaryCell from './SummaryCell';
 
 const summaryRow = css`

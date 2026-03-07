@@ -429,7 +429,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
-      isRowSelectionDisabled,
+      isRowSelectionDisabled
     });
   }
 
