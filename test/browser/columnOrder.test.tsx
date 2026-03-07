@@ -2,7 +2,6 @@ import { page } from 'vitest/browser';
 
 import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
 import type { Column } from '../../src';
-import { testCount } from './utils';
 
 const headerCells = page.getHeaderCell();
 
@@ -48,7 +47,7 @@ test('column order', async () => {
       ));
     }
 
-    await testCount(headerCells, expected.length);
+    await expect.element(headerCells).toHaveLength(expected.length);
     for (const [n, text] of expected.entries()) {
       await expect.element(headerCells.nth(n)).toHaveTextContent(text);
     }

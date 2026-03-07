@@ -1,7 +1,7 @@
 import { page, type Locator } from 'vitest/browser';
 
 import type { Column } from '../../src';
-import { getCellsAtRowIndex, setup } from './utils';
+import { setup } from './utils';
 
 const grid = page.getGrid();
 const headerCells = page.getHeaderCell();
@@ -85,7 +85,7 @@ async function assertRowIndexes(indexes: number[]) {
 
 async function assertCells(rowIdx: number, count: number, startIdx: number, endIdx: number) {
   await assertElements(
-    getCellsAtRowIndex(rowIdx),
+    page.getCellsAtRowIndex(rowIdx),
     'aria-colindex',
     count,
     startIdx + 1,
@@ -94,7 +94,7 @@ async function assertCells(rowIdx: number, count: number, startIdx: number, endI
 }
 
 async function assertCellIndexes(rowIdx: number, indexes: number[]) {
-  await assertIndexes(getCellsAtRowIndex(rowIdx), indexes, 'aria-colindex', 1);
+  await assertIndexes(page.getCellsAtRowIndex(rowIdx), indexes, 'aria-colindex', 1);
 }
 
 test('virtualization is enabled', async () => {

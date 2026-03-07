@@ -16,10 +16,13 @@ declare module 'vitest/browser' {
     getHeaderRow: (opts?: LocatorByRoleOptions) => Locator;
     getHeaderCell: (opts?: LocatorByRoleOptions) => Locator;
     getRow: (opts?: LocatorByRoleOptions) => Locator;
+    getSummaryRow: (opts?: LocatorByRoleOptions) => Locator;
     getCell: (opts?: LocatorByRoleOptions) => Locator;
     getSelectAllCheckbox: () => Locator;
     getActiveCell: () => Locator;
     getDragHandle: () => Locator;
+    getRowWithCell: (cell: Locator) => Locator;
+    getCellsAtRowIndex: (rowIdx: number) => Locator;
     getBySelector: (selector: string) => Locator;
     scroll: (this: Locator, options: ScrollToOptions) => Promise<void>;
     blur: (this: Locator) => void;
@@ -53,6 +56,12 @@ locators.extend({
     return this.getByRole('gridcell', defaultToExactOpts(opts));
   },
 
+  getSummaryRow(opts?: LocatorByRoleOptions) {
+    return this.getByRole('row', defaultToExactOpts(opts)).and(
+      this.getBySelector('.rdg-summary-row')
+    );
+  },
+
   getSelectAllCheckbox() {
     return this.getByRole('checkbox', { name: 'Select All' });
   },
@@ -63,6 +72,14 @@ locators.extend({
 
   getDragHandle() {
     return '.rdg-cell-drag-handle';
+  },
+
+  getRowWithCell(cell: Locator) {
+    return this.getRow().filter({ has: cell });
+  },
+
+  getCellsAtRowIndex(rowIdx: number) {
+    return this.getRow().and(this.getBySelector(`[aria-rowindex="${rowIdx + 2}"]`)).getCell();
   },
 
   getBySelector(selector: string) {
@@ -97,6 +114,7 @@ function defaultToExactOpts(
 
 interface CustomMatchers<R = unknown> {
   toHaveRowsCount: (rowsCount: number) => R;
+  toHaveCellPosition: (columnIdx: number, rowIdx: number) => R;
 }
 
 declare module 'vitest' {
@@ -122,6 +140,20 @@ expect.extend({
     return {
       pass: count === expected,
       message: () => `expected ${count} to have row count ${expected}`
+    };
+  },
+
+  toHaveCellPosition(cell: HTMLElement, columnIdx: number, rowIdx: number) {
+    const actualColIndex = cell.getAttribute('aria-colindex');
+    const row = cell.closest('.rdg-row, .rdg-header-row, .rdg-summary-row');
+    const actualRowIndex = row?.getAttribute('aria-rowindex');
+    const expectedColIndex = String(columnIdx + 1);
+    const expectedRowIndex = String(rowIdx + 1);
+
+    return {
+      pass: actualColIndex === expectedColIndex && actualRowIndex === expectedRowIndex,
+      message: () =>
+        `expected cell position (${columnIdx}, ${rowIdx}) but got (${Number(actualColIndex) - 1}, ${Number(actualRowIndex) - 1})`
     };
   }
 });
