@@ -90,7 +90,7 @@ import 'react-data-grid/lib/styles.css';
 `react-data-grid` is published as ECMAScript modules for evergreen browsers, bundlers, and server-side rendering.
 
 > **Important** <br />
-> Vite 8+ by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
+> Vite 8+ by default uses `lightningcss` to minify CSS which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
 
 ```ts
 build: {
@@ -576,7 +576,7 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 ###### `onCellKeyDown?: Maybe<(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>`
 
-A function called when keydown event is triggered on a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
+A function called when a keydown event is triggered on a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
 
 **Examples**
 
@@ -614,9 +614,7 @@ Return the updated row; the grid will call `onRowsChange` with it.
 
 ###### `onActivePositionChange?: Maybe<(args: PositionChangeArgs<R, SR>) => void>`
 
-Triggered when the active position changes.
-
-See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type.
+Callback triggered when the active position changes. See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type.
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
@@ -741,7 +739,7 @@ Custom class name for the header row.
 
 ###### `direction?: Maybe<'ltr' | 'rtl'>`
 
-This property sets the text direction of the grid, it defaults to `'ltr'` (left-to-right). See the [`Direction`](#direction) type. Setting `direction` to `'rtl'` has the following effects:
+This property sets the text direction of the grid. It defaults to `'ltr'` (left-to-right). See the [`Direction`](#direction) type. Setting `direction` to `'rtl'` has the following effects:
 
 - Columns flow from right to left
 - Frozen columns are pinned on the right
@@ -1411,7 +1409,7 @@ const columns: readonly Column<Row>[] = [
 
 **Default:** `false`
 
-Determines whether column is frozen. Frozen columns are pinned to the start edge (left in LTR, right in RTL). Per-column pinning to the end edge is not supported at the moment.
+Determines whether the column is frozen. Frozen columns are pinned to the start edge (left in LTR, right in RTL). Per-column pinning to the end edge is not supported at the moment.
 
 ##### `resizable?: Maybe<boolean>`
 
