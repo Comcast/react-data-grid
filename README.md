@@ -257,7 +257,7 @@ An array of column definitions and/or column groups. See the [`ColumnOrColumnGro
 
 ###### `rows: readonly R[]`
 
-An array of rows, the rows data can be of any type.
+An array of rows. The rows data can be of any type.
 
 :bulb: **Performance:** The grid is optimized for efficient rendering:
 
@@ -451,7 +451,7 @@ Callback triggered when sorting changes.
 
 ```tsx
 import { useState } from 'react';
-import { DataGrid, SelectColumn } from 'react-data-grid';
+import { DataGrid } from 'react-data-grid';
 
 const rows: readonly Row[] = [...];
 
@@ -478,7 +478,7 @@ function MyGrid() {
 }
 ```
 
-More than one column can be sorted via `ctrl (command) + click`. To disable multiple column sorting, change the `onSortColumnsChange` function to
+More than one column can be sorted via `ctrl (command) + click`. To disable multiple column sorting, change the `onSortColumnsChange` function to:
 
 ```tsx
 function onSortColumnsChange(sortColumns: SortColumn[]) {
@@ -535,7 +535,7 @@ function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellClick={onCellClick} />;
 ```
 
-This event can be used to open cell editor on single click.
+This event can be used to open the cell editor on a single click.
 
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -691,7 +691,7 @@ const customRenderers: Renderers<Row, SummaryRow> = {
 <DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
 ```
 
-The default `<Row />` component can be wrapped via the `renderRow` prop to add contexts or tweak props:
+The default `<Row />` component can be wrapped via `renderers.renderRow` to add contexts or tweak props:
 
 ```tsx
 import { DataGrid, Row, type RenderRowProps } from 'react-data-grid';
@@ -762,17 +762,19 @@ ARIA role for the grid container. Defaults to `grid`.
 
 ###### `'aria-label'?: string | undefined`
 
-The label of the grid. We recommend providing a label using `aria-label` or `aria-labelledby`
+The label of the grid. We recommend providing a label using `aria-label` or `aria-labelledby`.
 
 ###### `'aria-labelledby'?: string | undefined`
 
-The id of the element containing a label for the grid. We recommend providing a label using `aria-label` or `aria-labelledby`
+The id of the element containing a label for the grid. We recommend providing a label using `aria-label` or `aria-labelledby`.
 
 ###### `'aria-rowcount'?: number | undefined`
 
 Total number of rows for assistive technologies.
 
 ###### `'aria-description'?: string | undefined`
+
+A human-readable description of the grid.
 
 ###### `'aria-describedby'?: string | undefined`
 
@@ -1270,7 +1272,7 @@ A unique key to distinguish each column.
 
 **Default:** `auto`
 
-Width can be any valid css grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
+Width can be any valid CSS grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
 
 ```tsx
 const columns: Column<Row>[] = [
