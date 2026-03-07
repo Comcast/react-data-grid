@@ -271,7 +271,9 @@ test('should select rows in a group', async () => {
   await expect.element(selectedRows).toHaveLength(0);
 
   // select parent row
-  await userEvent.click(page.getRowWithCell(groupCell1).getByRole('checkbox', { name: 'Select Group' }));
+  await userEvent.click(
+    page.getRowWithCell(groupCell1).getByRole('checkbox', { name: 'Select Group' })
+  );
   await expect.element(selectedRows).toHaveLength(4);
   await expect.element(selectedRows.nth(0)).toHaveAttribute('aria-rowindex', '6');
   await expect.element(selectedRows.nth(1)).toHaveAttribute('aria-rowindex', '7');

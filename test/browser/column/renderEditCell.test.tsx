@@ -45,7 +45,9 @@ describe('Editor', () => {
     await userEvent.click(page.getRow({ index: 0 }).getCell({ index: 0 }));
     // TODO: await userEvent.keyboard('123{enter}'); fails in FF
     await userEvent.keyboard('{enter}123{enter}');
-    await expect.element(page.getRow({ index: 0 }).getCell({ index: 0 })).toHaveTextContent(/^1123$/);
+    await expect
+      .element(page.getRow({ index: 0 }).getCell({ index: 0 }))
+      .toHaveTextContent(/^1123$/);
   });
 
   it('should close editor and discard changes on escape', async () => {
@@ -67,7 +69,9 @@ describe('Editor', () => {
     await userEvent.keyboard('2222');
     await userEvent.click(page.getByText('outside'));
     await expect.element(editor).not.toBeInTheDocument();
-    await expect.element(page.getRow({ index: 0 }).getCell({ index: 0 })).toHaveTextContent(/^12222$/);
+    await expect
+      .element(page.getRow({ index: 0 }).getCell({ index: 0 }))
+      .toHaveTextContent(/^12222$/);
   });
 
   it('should commit quickly enough on outside clicks so click event handlers access the latest rows state', async () => {
@@ -157,7 +161,9 @@ describe('Editor', () => {
       await expect.element(editor1).toHaveValue('a1');
       await userEvent.keyboard('23');
       // The cell value should update as the editor value is changed
-      await expect.element(page.getRow({ index: 0 }).getCell({ index: 1 })).toHaveTextContent(/^a123$/);
+      await expect
+        .element(page.getRow({ index: 0 }).getCell({ index: 1 }))
+        .toHaveTextContent(/^a123$/);
       // clicking in a portal does not count as an outside click
       await userEvent.click(editor1);
       await expect.element(editor1).toBeInTheDocument();
@@ -203,7 +209,9 @@ describe('Editor', () => {
       await userEvent.click(page.getRow({ index: 0 }).getCell({ index: 1 }));
       // TODO: await userEvent.keyboard('yz{enter}'); fails in FF
       await userEvent.keyboard('{enter}yz{enter}');
-      await expect.element(page.getRow({ index: 0 }).getCell({ index: 1 })).toHaveTextContent(/^a1yz$/);
+      await expect
+        .element(page.getRow({ index: 0 }).getCell({ index: 1 }))
+        .toHaveTextContent(/^a1yz$/);
       await userEvent.keyboard('x');
       await expect
         .element(page.getByRole('textbox', { name: 'col2-editor' }))
@@ -223,7 +231,9 @@ describe('Editor', () => {
       );
       await userEvent.dblClick(page.getRow({ index: 0 }).getCell({ index: 1 }));
       await userEvent.keyboard('a{arrowleft}b{arrowright}c{arrowdown}'); // should commit changes on arrowdown
-      await expect.element(page.getRow({ index: 0 }).getCell({ index: 1 })).toHaveTextContent(/^a1bac$/);
+      await expect
+        .element(page.getRow({ index: 0 }).getCell({ index: 1 }))
+        .toHaveTextContent(/^a1bac$/);
     });
 
     it('should close the editor when closeOnExternalRowChange is true or undefined and row is changed from outside', async () => {
