@@ -15,14 +15,13 @@ declare module 'vitest/browser' {
     getTreeGrid: () => Locator;
     getHeaderRow: (opts?: LocatorByRoleOptions) => Locator;
     getHeaderCell: (opts?: LocatorByRoleOptions) => Locator;
-    getRow: (opts?: LocatorByRoleOptions) => Locator;
+    getRow: (opts?: LocatorByRoleOptions & { index?: number }) => Locator;
     getSummaryRow: (opts?: LocatorByRoleOptions) => Locator;
-    getCell: (opts?: LocatorByRoleOptions) => Locator;
+    getCell: (opts?: LocatorByRoleOptions & { index?: number }) => Locator;
     getSelectAllCheckbox: () => Locator;
     getActiveCell: () => Locator;
     getDragHandle: () => Locator;
     getRowWithCell: (cell: Locator) => Locator;
-    getCellsAtRowIndex: (rowIdx: number) => Locator;
     getBySelector: (selector: string) => Locator;
     scroll: (this: Locator, options: ScrollToOptions) => Promise<void>;
     blur: (this: Locator) => void;
@@ -48,12 +47,24 @@ locators.extend({
     return this.getByRole('columnheader', defaultToExactOpts(opts));
   },
 
-  getRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+  getRow(opts?: LocatorByRoleOptions & { index?: number }) {
+    const row = this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+    if (opts?.index != null) {
+      const grid = document.querySelector('.rdg')!;
+      const headerRowsCount = grid.querySelectorAll(':scope > .rdg-header-row').length;
+      const topSummaryRowsCount = grid.querySelectorAll(':scope > .rdg-top-summary-row').length;
+      const ariaRowIndex = headerRowsCount + topSummaryRowsCount + opts.index + 1;
+      return row.and(this.getBySelector(`[aria-rowindex="${ariaRowIndex}"]`));
+    }
+    return row;
   },
 
-  getCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('gridcell', defaultToExactOpts(opts));
+  getCell(opts?: LocatorByRoleOptions & { index?: number }) {
+    const cell = this.getByRole('gridcell', defaultToExactOpts(opts));
+    if (opts?.index != null) {
+      return cell.and(this.getBySelector(`[aria-colindex="${opts.index + 1}"]`));
+    }
+    return cell;
   },
 
   getSummaryRow(opts?: LocatorByRoleOptions) {
@@ -76,10 +87,6 @@ locators.extend({
 
   getRowWithCell(cell: Locator) {
     return this.getRow().filter({ has: cell });
-  },
-
-  getCellsAtRowIndex(rowIdx: number) {
-    return this.getRow().and(this.getBySelector(`[aria-rowindex="${rowIdx + 2}"]`)).getCell();
   },
 
   getBySelector(selector: string) {

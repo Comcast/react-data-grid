@@ -360,7 +360,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(row3).toHaveAttribute('tabIndex', '0');
 
   // focus cell
-  const cells = page.getCellsAtRowIndex(5);
+  const cells = page.getRow({ index: 4 }).getCell();
   await userEvent.click(cells.nth(1));
   await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect.element(cells.nth(1)).toHaveFocus();

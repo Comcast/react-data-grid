@@ -85,7 +85,7 @@ async function assertRowIndexes(indexes: number[]) {
 
 async function assertCells(rowIdx: number, count: number, startIdx: number, endIdx: number) {
   await assertElements(
-    page.getCellsAtRowIndex(rowIdx),
+    page.getRow({ index: rowIdx }).getCell(),
     'aria-colindex',
     count,
     startIdx + 1,
@@ -94,7 +94,7 @@ async function assertCells(rowIdx: number, count: number, startIdx: number, endI
 }
 
 async function assertCellIndexes(rowIdx: number, indexes: number[]) {
-  await assertIndexes(page.getCellsAtRowIndex(rowIdx), indexes, 'aria-colindex', 1);
+  await assertIndexes(page.getRow({ index: rowIdx }).getCell(), indexes, 'aria-colindex', 1);
 }
 
 test('virtualization is enabled', async () => {
