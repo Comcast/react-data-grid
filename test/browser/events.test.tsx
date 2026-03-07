@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
-import type { Column, DataGridProps } from '../../src';
+import type { Column } from '../../src';
 import { safeTab } from './utils';
 
 interface Row {
@@ -55,7 +55,9 @@ const rows: readonly Row[] = [
 describe('Events', () => {
   it('should not select cell if onCellMouseDown prevents grid default', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellMouseDown={(args, event) => {
           if (args.column.key === 'col1') {
             event.preventGridDefault();
@@ -71,11 +73,13 @@ describe('Events', () => {
 
   it('should be able to open editor editor on single click using onCellClick', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellClick={(args, event) => {
           if (args.column.key === 'col2') {
             event.preventGridDefault();
-            args.selectCell(true);
+            args.setActivePosition(true);
           }
         }}
       />
@@ -88,7 +92,9 @@ describe('Events', () => {
 
   it('should not open editor editor on double click if onCellDoubleClick prevents default', async () => {
     await page.render(
-      <EventTest
+      <DataGrid
+        columns={columns}
+        rows={rows}
         onCellDoubleClick={(args, event) => {
           if (args.column.key === 'col1') {
             event.preventGridDefault();
@@ -104,7 +110,9 @@ describe('Events', () => {
 
   it('should call onCellContextMenu when cell is right clicked', async () => {
     const onCellContextMenu = vi.fn();
-    await page.render(<EventTest onCellContextMenu={onCellContextMenu} />);
+    await page.render(
+      <DataGrid columns={columns} rows={rows} onCellContextMenu={onCellContextMenu} />
+    );
     expect(onCellContextMenu).not.toHaveBeenCalled();
     await userEvent.click(page.getCell({ name: '1' }), { button: 'right' });
     expect(onCellContextMenu).toHaveBeenCalledExactlyOnceWith(
@@ -119,78 +127,67 @@ describe('Events', () => {
     );
   });
 
-  it('should call onSelectedCellChange when cell selection is changed', async () => {
-    const onSelectedCellChange = vi.fn();
+  it('should call onActivePositionChange when cell selection is changed', async () => {
+    const onActivePositionChange = vi.fn();
 
-    await page.render(<EventTest onSelectedCellChange={onSelectedCellChange} />);
+    await page.render(
+      <DataGrid columns={columns} rows={rows} onActivePositionChange={onActivePositionChange} />
+    );
 
-    expect(onSelectedCellChange).not.toHaveBeenCalled();
+    expect(onActivePositionChange).not.toHaveBeenCalled();
 
     // Selected by click
     await userEvent.click(page.getCell({ name: 'a1' }));
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],
       rowIdx: 0
     });
-    expect(onSelectedCellChange).toHaveBeenCalledOnce();
+    expect(onActivePositionChange).toHaveBeenCalledOnce();
 
     // Selected by double click
     await userEvent.dblClick(page.getCell({ name: '1' }));
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[0]),
       row: rows[0],
       rowIdx: 0
     });
-    expect(onSelectedCellChange).toHaveBeenCalledTimes(2);
+    expect(onActivePositionChange).toHaveBeenCalledTimes(2);
 
     // Selected by right-click
     await userEvent.click(page.getCell({ name: '2' }), { button: 'right' });
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[0]),
       row: rows[1],
       rowIdx: 1
     });
-    expect(onSelectedCellChange).toHaveBeenCalledTimes(3);
+    expect(onActivePositionChange).toHaveBeenCalledTimes(3);
 
     // Selected by ←↑→↓ keys
     await userEvent.keyboard('{ArrowUp}');
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[0]),
       row: rows[0],
       rowIdx: 0
     });
-    expect(onSelectedCellChange).toHaveBeenCalledTimes(4);
+    expect(onActivePositionChange).toHaveBeenCalledTimes(4);
 
     // Selected by tab key
     await safeTab();
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],
       rowIdx: 0
     });
-    expect(onSelectedCellChange).toHaveBeenCalledTimes(5);
+    expect(onActivePositionChange).toHaveBeenCalledTimes(5);
 
     // go to the header row
     await userEvent.keyboard('{ArrowUp}');
-    expect(onSelectedCellChange).toHaveBeenLastCalledWith({
+    expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: undefined,
       rowIdx: -1
     });
-    expect(onSelectedCellChange).toHaveBeenCalledTimes(6);
+    expect(onActivePositionChange).toHaveBeenCalledTimes(6);
   });
 });
-
-type EventProps = Pick<
-  DataGridProps<Row>,
-  | 'onCellMouseDown'
-  | 'onCellClick'
-  | 'onCellDoubleClick'
-  | 'onCellContextMenu'
-  | 'onSelectedCellChange'
->;
-
-function EventTest(props: EventProps) {
-  return <DataGrid columns={columns} rows={rows} {...props} />;
-}

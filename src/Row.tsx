@@ -1,8 +1,8 @@
 import { memo, useMemo } from 'react';
 
-import { RowSelectionContext, useLatestFunc, type RowSelectionContextValue } from './hooks';
-import { classnames, getColSpan } from './utils';
-import type { CalculatedColumn, RenderRowProps } from './types';
+import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
+import { classnames } from './utils';
+import type { RenderRowProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import { rowClassname } from './style/row';
 
@@ -10,29 +10,24 @@ function Row<R, SR>({
   className,
   rowIdx,
   gridRowStart,
-  selectedCellIdx,
+  activeCellIdx,
   isRowSelectionDisabled,
   isRowSelected,
   draggedOverCellIdx,
-  lastFrozenColumnIndex,
   row,
-  viewportColumns,
-  selectedCellEditor,
+  iterateOverViewportColumnsForRow,
+  activeCellEditor,
   onCellMouseDown,
   onCellClick,
   onCellDoubleClick,
   onCellContextMenu,
   rowClass,
   onRowChange,
-  selectCell,
+  setActivePosition,
   style,
   ...props
 }: RenderRowProps<R, SR>) {
   const renderCell = useDefaultRenderers<R, SR>()!.renderCell!;
-
-  const handleRowChange = useLatestFunc((column: CalculatedColumn<R, SR>, newRow: R) => {
-    onRowChange(column, rowIdx, newRow);
-  });
 
   className = classnames(
     rowClassname,
@@ -41,39 +36,28 @@ function Row<R, SR>({
     className
   );
 
-  const cells = [];
+  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'ROW', row })
+    .map(([column, isCellActive, colSpan]) => {
+      if (isCellActive && activeCellEditor) {
+        return activeCellEditor;
+      }
 
-  for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
-    const { idx } = column;
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
-    if (colSpan !== undefined) {
-      index += colSpan - 1;
-    }
-
-    const isCellSelected = selectedCellIdx === idx;
-
-    if (isCellSelected && selectedCellEditor) {
-      cells.push(selectedCellEditor);
-    } else {
-      cells.push(
-        renderCell(column.key, {
-          column,
-          colSpan,
-          row,
-          rowIdx,
-          isDraggedOver: draggedOverCellIdx === idx,
-          isCellSelected,
-          onCellMouseDown,
-          onCellClick,
-          onCellDoubleClick,
-          onCellContextMenu,
-          onRowChange: handleRowChange,
-          selectCell
-        })
-      );
-    }
-  }
+      return renderCell(column.key, {
+        column,
+        colSpan,
+        row,
+        rowIdx,
+        isDraggedOver: draggedOverCellIdx === column.idx,
+        isCellActive,
+        onCellMouseDown,
+        onCellClick,
+        onCellDoubleClick,
+        onCellContextMenu,
+        onRowChange,
+        setActivePosition
+      });
+    })
+    .toArray();
 
   const selectionValue = useMemo(
     (): RowSelectionContextValue => ({ isRowSelected, isRowSelectionDisabled }),

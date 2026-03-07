@@ -6,27 +6,27 @@ import { cellClassname } from './style/cell';
 
 type SharedGroupedColumnHeaderRowProps<R, SR> = Pick<
   GroupedColumnHeaderRowProps<R, SR>,
-  'rowIdx' | 'selectCell'
+  'rowIdx' | 'setPosition'
 >;
 
 interface GroupedColumnHeaderCellProps<R, SR> extends SharedGroupedColumnHeaderRowProps<R, SR> {
   column: CalculatedColumnParent<R, SR>;
-  isCellSelected: boolean;
+  isCellActive: boolean;
 }
 
 export default function GroupedColumnHeaderCell<R, SR>({
   column,
   rowIdx,
-  isCellSelected,
-  selectCell
+  isCellActive,
+  setPosition
 }: GroupedColumnHeaderCellProps<R, SR>) {
-  const { tabIndex, onFocus } = useRovingTabIndex(isCellSelected);
+  const { tabIndex, onFocus } = useRovingTabIndex(isCellActive);
   const { colSpan } = column;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
   const index = column.idx + 1;
 
   function onMouseDown() {
-    selectCell({ idx: column.idx, rowIdx });
+    setPosition({ idx: column.idx, rowIdx });
   }
 
   return (
@@ -35,7 +35,7 @@ export default function GroupedColumnHeaderCell<R, SR>({
       aria-colindex={index}
       aria-colspan={colSpan}
       aria-rowspan={rowSpan}
-      aria-selected={isCellSelected}
+      aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={classnames(cellClassname, column.headerCellClass)}
       style={{

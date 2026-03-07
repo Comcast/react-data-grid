@@ -1,9 +1,13 @@
 import { memo } from 'react';
 import { css } from 'ecij';
 
-import { classnames, getColSpan } from './utils';
+import { classnames } from './utils';
 import type { RenderSummaryRowProps } from './types';
-import { bottomSummaryRowClassname, rowClassname, topSummaryRowClassname } from './style/row';
+import {
+  bottomSummaryRowClassname,
+  rowClassname,
+  topSummaryRowClassname
+} from './style/row';
 import SummaryCell from './SummaryCell';
 
 const summaryRow = css`
@@ -21,38 +25,27 @@ function SummaryRow<R, SR>({
   rowIdx,
   gridRowStart,
   row,
-  viewportColumns,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
+  setActivePosition,
   top,
   bottom,
-  lastFrozenColumnIndex,
-  selectedCellIdx,
   isTop,
-  selectCell,
   'aria-rowindex': ariaRowIndex
 }: RenderSummaryRowProps<R, SR>) {
-  const cells = [];
-
-  for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'SUMMARY', row });
-    if (colSpan !== undefined) {
-      index += colSpan - 1;
-    }
-
-    const isCellSelected = selectedCellIdx === column.idx;
-
-    cells.push(
+  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
+    .map(([column, isCellActive, colSpan]) => (
       <SummaryCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
-        isCellSelected={isCellSelected}
-        selectCell={selectCell}
+        isCellActive={isCellActive}
+        setActivePosition={setActivePosition}
       />
-    );
-  }
+    ))
+    .toArray();
 
   return (
     <div

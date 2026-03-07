@@ -68,7 +68,7 @@ type SharedHeaderRowProps<R, SR> = Pick<
   HeaderRowProps<R, SR, React.Key>,
   | 'sortColumns'
   | 'onSortColumnsChange'
-  | 'selectCell'
+  | 'setPosition'
   | 'onColumnResize'
   | 'onColumnResizeEnd'
   | 'shouldFocusGrid'
@@ -80,7 +80,7 @@ export interface HeaderCellProps<R, SR> extends SharedHeaderRowProps<R, SR> {
   column: CalculatedColumn<R, SR>;
   colSpan: number | undefined;
   rowIdx: number;
-  isCellSelected: boolean;
+  isCellActive: boolean;
   draggedColumnKey: string | undefined;
   setDraggedColumnKey: (draggedColumnKey: string | undefined) => void;
 }
@@ -89,13 +89,13 @@ export default function HeaderCell<R, SR>({
   column,
   colSpan,
   rowIdx,
-  isCellSelected,
+  isCellActive,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
   sortColumns,
   onSortColumnsChange,
-  selectCell,
+  setPosition,
   shouldFocusGrid,
   direction,
   draggedColumnKey,
@@ -105,8 +105,8 @@ export default function HeaderCell<R, SR>({
   const dragImageRef = useRef<HTMLDivElement>(null);
   const isDragging = draggedColumnKey === column.key;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
-  // set the tabIndex to 0 when there is no selected cell so grid can receive focus
-  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellSelected);
+  // set the tabIndex to 0 when there is no active cell so grid can receive focus
+  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellActive);
   const sortIndex = sortColumns?.findIndex((sort) => sort.columnKey === column.key);
   const sortColumn =
     sortIndex !== undefined && sortIndex > -1 ? sortColumns![sortIndex] : undefined;
@@ -116,13 +116,15 @@ export default function HeaderCell<R, SR>({
     sortDirection && !priority ? (sortDirection === 'ASC' ? 'ascending' : 'descending') : undefined;
   const { sortable, resizable, draggable } = column;
 
-  const className = getCellClassname(column, column.headerCellClass, {
-    [cellSortableClassname]: sortable,
-    [cellResizableClassname]: resizable,
-    [cellDraggableClassname]: draggable,
-    [cellDraggingClassname]: isDragging,
-    [cellOverClassname]: isOver
-  });
+  const className = getCellClassname(
+    column,
+    column.headerCellClass,
+    sortable && cellSortableClassname,
+    resizable && cellResizableClassname,
+    draggable && cellDraggableClassname,
+    isDragging && cellDraggingClassname,
+    isOver && cellOverClassname
+  );
 
   function onSort(ctrlClick: boolean) {
     if (onSortColumnsChange == null) return;
@@ -164,13 +166,13 @@ export default function HeaderCell<R, SR>({
   function handleFocus(event: React.FocusEvent<HTMLDivElement>) {
     onFocus?.(event);
     if (shouldFocusGrid) {
-      // Select the first header cell if there is no selected cell
-      selectCell({ idx: 0, rowIdx });
+      // Select the first header cell if there is no active cell
+      setPosition({ idx: 0, rowIdx });
     }
   }
 
   function onMouseDown() {
-    selectCell({ idx: column.idx, rowIdx });
+    setPosition({ idx: column.idx, rowIdx });
   }
 
   function onClick(event: React.MouseEvent<HTMLSpanElement>) {
@@ -288,7 +290,7 @@ export default function HeaderCell<R, SR>({
         aria-colindex={column.idx + 1}
         aria-colspan={colSpan}
         aria-rowspan={rowSpan}
-        aria-selected={isCellSelected}
+        aria-selected={isCellActive}
         aria-sort={ariaSort}
         tabIndex={tabIndex}
         className={className}

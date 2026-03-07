@@ -25,7 +25,7 @@ import type { DataGridProps } from './DataGrid';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import GroupedRow from './GroupRow';
 import { defaultRenderRow } from './Row';
-import { rowFocusable, rowSelectedClassname } from './style/row';
+import { rowFocusable, rowActiveClassname } from './style/row';
 import SummaryRowComponent from './SummaryRow';
 
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
@@ -300,7 +300,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (event.isGridDefaultPrevented()) return;
 
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, selectCell } = args;
+    const { column, rowIdx, setActivePosition } = args;
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 
@@ -323,7 +323,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const parentRowAndIndex = getParentRowAndIndex(row);
       if (parentRowAndIndex !== undefined) {
         event.preventGridDefault();
-        selectCell({ idx, rowIdx: parentRowAndIndex[1] });
+        setActivePosition({ idx, rowIdx: parentRowAndIndex[1] });
       }
     }
   }
@@ -380,16 +380,16 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor,
+      activeCellEditor,
       className,
+      isRowSelectionDisabled,
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
-    const isPositionOnRow = rowProps.selectedCellIdx === -1;
+    const isPositionOnRow = rowProps.activeCellIdx === -1;
     const tabIndex = isPositionOnRow ? 0 : -1;
-    className = classnames(className, rowFocusable, isPositionOnRow && rowSelectedClassname);
+    className = classnames(className, rowFocusable, isPositionOnRow && rowActiveClassname);
 
     if (isGroupRow(row)) {
       const { startRowIndex } = row;
@@ -427,9 +427,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor
+      activeCellEditor,
+      isRowSelectionDisabled,
     });
   }
 
@@ -465,17 +465,17 @@ function defaultGroupIdGetter(groupKey: string, parentId: string | undefined) {
 
 function renderSummaryRow<R, SR>(
   key: React.Key,
-  { selectedCellIdx, className, ...props }: RenderSummaryRowProps<R, SR>
+  { activeCellIdx, className, ...props }: RenderSummaryRowProps<R, SR>
 ) {
-  const isPositionOnRow = selectedCellIdx === -1;
+  const isPositionOnRow = activeCellIdx === -1;
   const tabIndex = isPositionOnRow ? 0 : -1;
-  className = classnames(className, rowFocusable, isPositionOnRow && rowSelectedClassname);
+  className = classnames(className, rowFocusable, isPositionOnRow && rowActiveClassname);
 
   return (
     <SummaryRowComponent
       key={key}
       tabIndex={tabIndex}
-      selectedCellIdx={selectedCellIdx}
+      activeCellIdx={activeCellIdx}
       className={className}
       {...props}
     />
