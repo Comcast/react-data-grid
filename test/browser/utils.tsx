@@ -1,4 +1,4 @@
-import { page, userEvent, type Locator } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
@@ -7,38 +7,8 @@ export function setup<R, SR, K extends React.Key = React.Key>(props: DataGridPro
   return page.render(<DataGrid {...props} />);
 }
 
-export function getRowWithCell(cell: Locator) {
-  return page.getRow().filter({ has: cell });
-}
-
-export function getCellsAtRowIndex(rowIdx: number) {
-  return page
-    .getRow()
-    .and(page.getBySelector(`[aria-rowindex="${rowIdx + 2}"]`))
-    .getCell();
-}
-
-export async function validateCellPosition(columnIdx: number, rowIdx: number) {
-  const cell = page.getActiveCell();
-  const row = page.getRow().or(page.getHeaderRow()).filter({ has: cell });
-  await expect.element(cell).toHaveAttribute('aria-colindex', `${columnIdx + 1}`);
-  await expect.element(row).toHaveAttribute('aria-rowindex', `${rowIdx + 1}`);
-}
-
-export async function scrollGrid(options: ScrollToOptions) {
-  await new Promise((resolve) => {
-    const gridElement = page.getGrid().element() as HTMLElement;
-    gridElement.addEventListener('scrollend', resolve, { once: true });
-    gridElement.scroll(options);
-  });
-}
-
-export function testCount(locator: Locator, expectedCount: number) {
-  return expect.element(locator).toHaveLength(expectedCount);
-}
-
 export function testRowCount(expectedCount: number) {
-  return testCount(page.getRow(), expectedCount);
+  return expect.element(page.getRow()).toHaveLength(expectedCount);
 }
 
 /**

@@ -2,15 +2,9 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import {
-  getRowWithCell,
-  safeTab,
-  scrollGrid,
-  setup,
-  testCount,
-  validateCellPosition
-} from './utils';
+import { safeTab, setup } from './utils';
 
+const grid = page.getGrid();
 const activeCell = page.getActiveCell();
 const activeSelectAllCheckbox = activeCell.getSelectAllCheckbox();
 const activeSelectCheckbox = activeCell.getByRole('checkbox', { name: 'Select', exact: true });
@@ -39,72 +33,72 @@ test('keyboard navigation', async () => {
 
   // tab into the grid
   await safeTab();
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
 
   // tab to the next cell
   await safeTab();
-  await validateCellPosition(1, 0);
+  await expect.element(activeCell).toHaveCellPosition(1, 0);
 
   // tab back to the previous cell
   await safeTab(true);
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
 
   // arrow navigation
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(1, 1);
+  await expect.element(activeCell).toHaveCellPosition(1, 1);
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(1, 2);
+  await expect.element(activeCell).toHaveCellPosition(1, 2);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(0, 2);
+  await expect.element(activeCell).toHaveCellPosition(0, 2);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
 
   // page {up,down}
   await userEvent.keyboard('{PageDown}');
-  await validateCellPosition(0, 26);
+  await expect.element(activeCell).toHaveCellPosition(0, 26);
   await userEvent.keyboard('{PageDown}');
-  await validateCellPosition(0, 52);
+  await expect.element(activeCell).toHaveCellPosition(0, 52);
   await userEvent.keyboard('{PageUp}');
-  await validateCellPosition(0, 26);
+  await expect.element(activeCell).toHaveCellPosition(0, 26);
 
   // home/end navigation
   await userEvent.keyboard('{end}');
-  await validateCellPosition(6, 26);
+  await expect.element(activeCell).toHaveCellPosition(6, 26);
   await userEvent.keyboard('{home}');
-  await validateCellPosition(0, 26);
+  await expect.element(activeCell).toHaveCellPosition(0, 26);
   await userEvent.keyboard('{Control>}{end}{/Control}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{end}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{Control>}{end}{/Control}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{PageDown}');
-  await validateCellPosition(6, 103);
+  await expect.element(activeCell).toHaveCellPosition(6, 103);
   await userEvent.keyboard('{Control>}{home}{/Control}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await userEvent.keyboard('{home}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await userEvent.keyboard('{Control>}{home}{/Control}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await userEvent.keyboard('{PageUp}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
 
   // tab at the end of a row focuses the first cell on the next row
   await userEvent.keyboard('{end}');
   await safeTab();
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
 
   // shift tab should focus the last cell of the previous row
   await safeTab(true);
-  await validateCellPosition(6, 0);
+  await expect.element(activeCell).toHaveCellPosition(6, 0);
 });
 
 test('arrow and tab navigation', async () => {
@@ -113,23 +107,23 @@ test('arrow and tab navigation', async () => {
   // pressing arrowleft on the leftmost cell does nothing
   await safeTab();
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
 
   // pressing arrowright on the rightmost cell does nothing
   await userEvent.keyboard('{end}');
-  await validateCellPosition(6, 1);
+  await expect.element(activeCell).toHaveCellPosition(6, 1);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(6, 1);
+  await expect.element(activeCell).toHaveCellPosition(6, 1);
 
   // pressing tab on the rightmost cell navigates to the leftmost cell on the next row
   await safeTab();
-  await validateCellPosition(0, 2);
+  await expect.element(activeCell).toHaveCellPosition(0, 2);
 
   // pressing shift+tab on the leftmost cell navigates to the rightmost cell on the previous row
   await safeTab(true);
-  await validateCellPosition(6, 1);
+  await expect.element(activeCell).toHaveCellPosition(6, 1);
 });
 
 test('grid enter/exit', async () => {
@@ -154,7 +148,7 @@ test('grid enter/exit', async () => {
   // tab into the grid
   await safeTab();
   await safeTab();
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await expect.element(activeSelectAllCheckbox).toHaveFocus();
 
   // shift+tab tabs out of the grid if we are at the first cell
@@ -162,11 +156,11 @@ test('grid enter/exit', async () => {
   await expect.element(beforeButton).toHaveFocus();
 
   await safeTab();
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await expect.element(activeSelectAllCheckbox).toHaveFocus();
 
   await userEvent.keyboard('{arrowdown}{arrowdown}');
-  await validateCellPosition(0, 2);
+  await expect.element(activeCell).toHaveCellPosition(0, 2);
   await expect.element(activeSelectCheckbox).toHaveFocus();
 
   // tab should focus the last active cell
@@ -174,14 +168,14 @@ test('grid enter/exit', async () => {
   await userEvent.click(beforeButton);
   await safeTab();
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(0, 3);
+  await expect.element(activeCell).toHaveCellPosition(0, 3);
   await expect.element(activeSelectCheckbox).toHaveFocus();
 
   // shift+tab should focus the last active cell
   // click outside the grid
   await userEvent.click(afterButton);
   await safeTab(true);
-  await validateCellPosition(0, 3);
+  await expect.element(activeCell).toHaveCellPosition(0, 3);
   await expect.element(activeSelectCheckbox).toHaveFocus();
 
   // tab tabs out of the grid if we are at the last cell
@@ -194,7 +188,7 @@ test('navigation with focusable cell renderer', async () => {
   await setup({ columns, rows: Array.from<Row>({ length: 1 }), bottomSummaryRows });
   await safeTab();
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
 
   // cell should not set tabIndex to 0 if it contains a focusable cell renderer
   await expect.element(activeCell).toHaveAttribute('tabIndex', '-1');
@@ -202,7 +196,7 @@ test('navigation with focusable cell renderer', async () => {
   await expect.element(activeSelectCheckbox).toHaveAttribute('tabIndex', '0');
 
   await safeTab();
-  await validateCellPosition(1, 1);
+  await expect.element(activeCell).toHaveCellPosition(1, 1);
   // cell should set tabIndex to 0 if it does not have focusable cell renderer
   await expect.element(activeCell).toHaveAttribute('tabIndex', '0');
 });
@@ -241,7 +235,7 @@ test('navigation when header and summary rows have focusable elements', async ()
   await expect.element(page.getByTestId('header-filter2')).toHaveFocus();
 
   await safeTab();
-  await validateCellPosition(0, 1);
+  await expect.element(activeCell).toHaveCellPosition(0, 1);
 
   await safeTab(true);
   await expect.element(page.getByTestId('header-filter2')).toHaveFocus();
@@ -252,7 +246,7 @@ test('navigation when header and summary rows have focusable elements', async ()
   await safeTab();
   await safeTab();
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
-  await validateCellPosition(1, 2);
+  await expect.element(activeCell).toHaveCellPosition(1, 2);
 
   await safeTab();
   await expect.element(page.getByTestId('summary-col2-1')).toHaveFocus();
@@ -262,40 +256,40 @@ test('navigation when header and summary rows have focusable elements', async ()
 
   await safeTab(true);
   await safeTab(true);
-  await validateCellPosition(1, 2);
+  await expect.element(activeCell).toHaveCellPosition(1, 2);
   await expect.element(activeCell).toHaveFocus();
 });
 
 test('navigation when active cell not in the viewport', async () => {
   const columns: Column<Row, Row>[] = [SelectColumn];
-  const activeRowCells = getRowWithCell(activeCell).getCell();
+  const activeRowCells = page.getRowWithCell(activeCell).getCell();
   for (let i = 0; i < 99; i++) {
     columns.push({ key: `col${i}`, name: `col${i}`, frozen: i < 5 });
   }
   await setup({ columns, rows, bottomSummaryRows });
   await safeTab();
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
 
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
-  await validateCellPosition(99, 100);
+  await expect.element(activeCell).toHaveCellPosition(99, 100);
   await expect.element(activeRowCells).not.toHaveLength(1);
-  await scrollGrid({ top: 0 });
-  await testCount(activeRowCells, 1);
+  await grid.scroll({ top: 0 });
+  await expect.element(activeRowCells).toHaveLength(1);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(99, 99);
+  await expect.element(activeCell).toHaveCellPosition(99, 99);
   await expect.element(activeRowCells).not.toHaveLength(1);
 
-  await scrollGrid({ left: 0 });
+  await grid.scroll({ left: 0 });
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(99, 100);
+  await expect.element(activeCell).toHaveCellPosition(99, 100);
 
   await userEvent.keyboard(
     '{home}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}'
   );
-  await validateCellPosition(7, 100);
-  await scrollGrid({ left: 2000 });
+  await expect.element(activeCell).toHaveCellPosition(7, 100);
+  await grid.scroll({ left: 2000 });
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(6, 100);
+  await expect.element(activeCell).toHaveCellPosition(6, 100);
 });
 
 test('reset active cell when column is removed', async () => {
@@ -313,7 +307,7 @@ test('reset active cell when column is removed', async () => {
 
   await safeTab();
   await userEvent.keyboard('{arrowdown}{arrowright}');
-  await validateCellPosition(1, 1);
+  await expect.element(activeCell).toHaveCellPosition(1, 1);
 
   await rerender(<Test columns={[columns[0]]} />);
 
@@ -335,7 +329,7 @@ test('reset active cell when row is removed', async () => {
 
   await safeTab();
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowright}');
-  await validateCellPosition(1, 2);
+  await expect.element(activeCell).toHaveCellPosition(1, 2);
 
   await rerender(<Test rows={[rows[0]]} />);
 
@@ -345,15 +339,15 @@ test('reset active cell when row is removed', async () => {
 test('should not change the left and right arrow behavior for right to left languages', async () => {
   await setup<Row, Row>({ columns, rows, direction: 'rtl' });
   await safeTab();
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await safeTab();
-  await validateCellPosition(1, 0);
+  await expect.element(activeCell).toHaveCellPosition(1, 0);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(0, 0);
+  await expect.element(activeCell).toHaveCellPosition(0, 0);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(1, 0);
+  await expect.element(activeCell).toHaveCellPosition(1, 0);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(2, 0);
+  await expect.element(activeCell).toHaveCellPosition(2, 0);
 });

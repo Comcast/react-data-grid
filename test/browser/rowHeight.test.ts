@@ -35,7 +35,7 @@ test('rowHeight is number', async () => {
     gridTemplateRows:
       '40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px'
   });
-  await testRowCount(30);
+  await expect.element(grid).toHaveRowsCount(30);
   await safeTab();
   await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');

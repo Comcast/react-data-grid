@@ -1,9 +1,12 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../../src';
-import { getCellsAtRowIndex, safeTab, setup, validateCellPosition } from '../utils';
+import { safeTab, setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
+const topSummaryRows = page.getSummaryRow().and(page.getBySelector('.rdg-top-summary-row'));
+const bottomSummaryRows = page.getSummaryRow().and(page.getBySelector('.rdg-bottom-summary-row'));
+const activeCell = page.getActiveCell();
 
 describe('colSpan', () => {
   function setupColSpan(colCount = 15) {
@@ -45,19 +48,19 @@ describe('colSpan', () => {
     await expect.element(headerCells).toHaveLength(13);
 
     // top summary rows
-    const topSummarryRow1 = getCellsAtRowIndex(0);
-    await expect.element(topSummarryRow1).toHaveLength(14);
+    const topSummaryRow1Cells = topSummaryRows.nth(0).getCell();
+    await expect.element(topSummaryRow1Cells).toHaveLength(14);
     // 7th-8th cells are merged
-    await expect.element(topSummarryRow1.nth(7)).toHaveAttribute('aria-colindex', '8');
-    await expect.element(topSummarryRow1.nth(7)).toHaveAttribute('aria-colspan', '2');
-    await expect.element(topSummarryRow1.nth(7)).toHaveStyle({
+    await expect.element(topSummaryRow1Cells.nth(7)).toHaveAttribute('aria-colindex', '8');
+    await expect.element(topSummaryRow1Cells.nth(7)).toHaveAttribute('aria-colspan', '2');
+    await expect.element(topSummaryRow1Cells.nth(7)).toHaveStyle({
       gridColumnStart: '8',
       gridColumnEnd: '10'
     });
-    await expect.element(getCellsAtRowIndex(1)).toHaveLength(15);
+    await expect.element(topSummaryRows.nth(1).getCell()).toHaveLength(15);
 
     // rows
-    const row1 = getCellsAtRowIndex(3);
+    const row1 = page.getRow({ index: 1 }).getCell();
     await expect.element(row1).toHaveLength(14);
     // 7th-8th cells are merged
     await expect.element(row1.nth(6)).toHaveAttribute('aria-colindex', '7');
@@ -70,7 +73,7 @@ describe('colSpan', () => {
     await expect.element(row1.nth(7)).not.toHaveAttribute('aria-colspan');
 
     // 3rd-5th, 7th-8th cells are merged
-    const row2 = getCellsAtRowIndex(4);
+    const row2 = page.getRow({ index: 2 }).getCell();
     await expect.element(row2).toHaveLength(12);
     await expect.element(row2.nth(2)).toHaveAttribute('aria-colindex', '3');
     await expect.element(row2.nth(2)).toHaveStyle({
@@ -86,95 +89,95 @@ describe('colSpan', () => {
     });
     await expect.element(row2.nth(5)).toHaveAttribute('aria-colindex', '9');
 
-    await expect.element(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
-    await expect.element(getCellsAtRowIndex(7)).toHaveLength(10);
+    await expect.element(page.getRow({ index: 4 }).getCell()).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
+    await expect.element(page.getRow({ index: 5 }).getCell()).toHaveLength(10);
 
-    // bottom summary row
-    await expect.element(getCellsAtRowIndex(12)).toHaveLength(14);
-    await expect.element(getCellsAtRowIndex(13)).toHaveLength(15);
+    // bottom summary rows
+    await expect.element(bottomSummaryRows.nth(0).getCell()).toHaveLength(14);
+    await expect.element(bottomSummaryRows.nth(1).getCell()).toHaveLength(15);
   });
 
   it('should navigate between merged cells', async () => {
     await setupColSpan();
     // header row
     await userEvent.click(headerCells.nth(7));
-    await validateCellPosition(7, 0);
+    await expect.element(activeCell).toHaveCellPosition(7, 0);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(8, 0);
+    await expect.element(activeCell).toHaveCellPosition(8, 0);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(11, 0);
+    await expect.element(activeCell).toHaveCellPosition(11, 0);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(12, 0);
+    await expect.element(activeCell).toHaveCellPosition(12, 0);
     await userEvent.keyboard('{arrowleft}{arrowleft}{arrowleft}');
-    await validateCellPosition(7, 0);
+    await expect.element(activeCell).toHaveCellPosition(7, 0);
 
     // top summary rows
-    await userEvent.click(getCellsAtRowIndex(0).nth(6));
-    await validateCellPosition(6, 1);
+    await userEvent.click(topSummaryRows.nth(0).getCell({ index: 6 }));
+    await expect.element(activeCell).toHaveCellPosition(6, 1);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(7, 1);
+    await expect.element(activeCell).toHaveCellPosition(7, 1);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(9, 1);
+    await expect.element(activeCell).toHaveCellPosition(9, 1);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(10, 1);
+    await expect.element(activeCell).toHaveCellPosition(10, 1);
     await userEvent.keyboard('{arrowleft}{arrowleft}{arrowleft}');
-    await validateCellPosition(6, 1);
+    await expect.element(activeCell).toHaveCellPosition(6, 1);
 
     // viewport rows
-    await userEvent.click(getCellsAtRowIndex(3).nth(1));
-    await validateCellPosition(1, 4);
+    await userEvent.click(page.getRow({ index: 1 }).getCell({ index: 1 }));
+    await expect.element(activeCell).toHaveCellPosition(1, 4);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(2, 4);
+    await expect.element(activeCell).toHaveCellPosition(2, 4);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(3, 4);
+    await expect.element(activeCell).toHaveCellPosition(3, 4);
     await userEvent.keyboard('{arrowdown}');
-    await validateCellPosition(2, 5);
+    await expect.element(activeCell).toHaveCellPosition(2, 5);
     await userEvent.keyboard('{arrowleft}');
-    await validateCellPosition(1, 5);
+    await expect.element(activeCell).toHaveCellPosition(1, 5);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(2, 5);
+    await expect.element(activeCell).toHaveCellPosition(2, 5);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(5, 5);
+    await expect.element(activeCell).toHaveCellPosition(5, 5);
     await userEvent.keyboard('{arrowleft}');
-    await validateCellPosition(2, 5);
+    await expect.element(activeCell).toHaveCellPosition(2, 5);
     await userEvent.keyboard('{arrowdown}');
-    await validateCellPosition(2, 6);
+    await expect.element(activeCell).toHaveCellPosition(2, 6);
     await userEvent.keyboard('{arrowdown}{arrowdown}');
-    await validateCellPosition(0, 8);
+    await expect.element(activeCell).toHaveCellPosition(0, 8);
     await userEvent.keyboard('{arrowLeft}');
-    await validateCellPosition(0, 8);
+    await expect.element(activeCell).toHaveCellPosition(0, 8);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(5, 8);
+    await expect.element(activeCell).toHaveCellPosition(5, 8);
     await safeTab(true);
     await safeTab(true);
-    await validateCellPosition(14, 7);
+    await expect.element(activeCell).toHaveCellPosition(14, 7);
     await safeTab();
-    await validateCellPosition(0, 8);
-    await userEvent.click(getCellsAtRowIndex(10).nth(11));
-    await validateCellPosition(11, 11);
+    await expect.element(activeCell).toHaveCellPosition(0, 8);
+    await userEvent.click(page.getRow({ index: 8 }).getCell({ index: 11 }));
+    await expect.element(activeCell).toHaveCellPosition(11, 11);
     await safeTab();
-    await validateCellPosition(12, 11);
+    await expect.element(activeCell).toHaveCellPosition(12, 11);
     await safeTab();
-    await validateCellPosition(0, 12);
+    await expect.element(activeCell).toHaveCellPosition(0, 12);
     await safeTab(true);
-    await validateCellPosition(12, 11);
+    await expect.element(activeCell).toHaveCellPosition(12, 11);
 
     // bottom summary rows
-    await userEvent.click(getCellsAtRowIndex(12).nth(6));
-    await validateCellPosition(6, 13);
+    await userEvent.click(bottomSummaryRows.nth(0).getCell({ index: 6 }));
+    await expect.element(activeCell).toHaveCellPosition(6, 13);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(7, 13);
+    await expect.element(activeCell).toHaveCellPosition(7, 13);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(9, 13);
+    await expect.element(activeCell).toHaveCellPosition(9, 13);
     await userEvent.keyboard('{arrowright}');
-    await validateCellPosition(10, 13);
+    await expect.element(activeCell).toHaveCellPosition(10, 13);
     await userEvent.keyboard('{arrowleft}{arrowleft}{arrowleft}');
-    await validateCellPosition(6, 13);
+    await expect.element(activeCell).toHaveCellPosition(6, 13);
   });
 
   it('should scroll to the merged cell when selected', async () => {
     await setupColSpan(30);
-    await userEvent.click(getCellsAtRowIndex(10).nth(23)); // last visible cell (1920/80)
+    await userEvent.click(page.getRow({ index: 8 }).getCell({ index: 23 })); // last visible cell (1920/80)
     const spy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
     const testScrollIntoView = () => {
       expect(spy).toHaveBeenCalled();
@@ -184,13 +187,13 @@ describe('colSpan', () => {
     testScrollIntoView();
     await navigate(1);
     testScrollIntoView(); // should bring the merged cell into view
-    await validateCellPosition(27, 11);
+    await expect.element(activeCell).toHaveCellPosition(27, 11);
     await navigate(7);
     testScrollIntoView();
-    await validateCellPosition(6, 12); // should navigate to the next row
+    await expect.element(activeCell).toHaveCellPosition(6, 12); // should navigate to the next row
     await navigate(7, true);
     testScrollIntoView();
-    await validateCellPosition(27, 11); // should navigate to the previous row
+    await expect.element(activeCell).toHaveCellPosition(27, 11); // should navigate to the previous row
     await navigate(27);
     testScrollIntoView();
     await navigate(1);

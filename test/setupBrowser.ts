@@ -15,12 +15,16 @@ declare module 'vitest/browser' {
     getTreeGrid: () => Locator;
     getHeaderRow: (opts?: LocatorByRoleOptions) => Locator;
     getHeaderCell: (opts?: LocatorByRoleOptions) => Locator;
-    getRow: (opts?: LocatorByRoleOptions) => Locator;
-    getCell: (opts?: LocatorByRoleOptions) => Locator;
+    getRow: (opts?: LocatorByRoleOptions & { index?: number }) => Locator;
+    getSummaryRow: (opts?: LocatorByRoleOptions) => Locator;
+    getCell: (opts?: LocatorByRoleOptions & { index?: number }) => Locator;
     getSelectAllCheckbox: () => Locator;
     getActiveCell: () => Locator;
     getDragHandle: () => Locator;
+    getRowWithCell: (cell: Locator) => Locator;
     getBySelector: (selector: string) => Locator;
+    scroll: (this: Locator, options: ScrollToOptions) => Promise<void>;
+    blur: (this: Locator) => void;
   }
 }
 
@@ -43,12 +47,30 @@ locators.extend({
     return this.getByRole('columnheader', defaultToExactOpts(opts));
   },
 
-  getRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+  getRow(opts?: LocatorByRoleOptions & { index?: number }) {
+    const row = this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+    if (opts?.index != null) {
+      const grid = document.querySelector('.rdg')!;
+      const headerRowsCount = grid.querySelectorAll(':scope > .rdg-header-row').length;
+      const topSummaryRowsCount = grid.querySelectorAll(':scope > .rdg-top-summary-row').length;
+      const ariaRowIndex = headerRowsCount + topSummaryRowsCount + opts.index + 1;
+      return row.and(this.getBySelector(`[aria-rowindex="${ariaRowIndex}"]`));
+    }
+    return row;
   },
 
-  getCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('gridcell', defaultToExactOpts(opts));
+  getCell(opts?: LocatorByRoleOptions & { index?: number }) {
+    const cell = this.getByRole('gridcell', defaultToExactOpts(opts));
+    if (opts?.index != null) {
+      return cell.and(this.getBySelector(`[aria-colindex="${opts.index + 1}"]`));
+    }
+    return cell;
+  },
+
+  getSummaryRow(opts?: LocatorByRoleOptions) {
+    return this.getByRole('row', defaultToExactOpts(opts)).and(
+      this.getBySelector('.rdg-summary-row')
+    );
   },
 
   getSelectAllCheckbox() {
@@ -63,8 +85,24 @@ locators.extend({
     return '.rdg-cell-drag-handle';
   },
 
+  getRowWithCell(cell: Locator) {
+    return this.getRow().filter({ has: cell });
+  },
+
   getBySelector(selector: string) {
     return selector;
+  },
+
+  async scroll(options: ScrollToOptions) {
+    await new Promise((resolve) => {
+      const element = (this as Locator).element();
+      element.addEventListener('scrollend', resolve, { once: true });
+      element.scroll(options);
+    });
+  },
+
+  blur() {
+    (this as Locator).element().blur();
   }
 });
 
@@ -80,6 +118,52 @@ function defaultToExactOpts(
 
   return opts;
 }
+
+interface CustomMatchers<R = unknown> {
+  toHaveRowsCount: (rowsCount: number) => R;
+  toHaveCellPosition: (columnIdx: number, rowIdx: number) => R;
+}
+
+declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any
+  interface Matchers<T = any> extends CustomMatchers<T> {}
+}
+
+expect.extend({
+  toHaveRowsCount(grid: HTMLElement, expected) {
+    if (!grid.matches('.rdg')) {
+      return {
+        pass: false,
+        message: () => 'expected element to be a grid'
+      };
+    }
+
+    const allRowsCount = Number(grid.getAttribute('aria-rowcount'));
+    const otherRowsCount = grid.querySelectorAll(
+      ':scope > :is(.rdg-header-row, .rdg-summary-row)'
+    ).length;
+    const count = allRowsCount - otherRowsCount;
+
+    return {
+      pass: count === expected,
+      message: () => `expected ${count} to have row count ${expected}`
+    };
+  },
+
+  toHaveCellPosition(cell: HTMLElement, columnIdx: number, rowIdx: number) {
+    const actualColIndex = cell.getAttribute('aria-colindex');
+    const row = cell.closest('.rdg-row, .rdg-header-row, .rdg-summary-row');
+    const actualRowIndex = row?.getAttribute('aria-rowindex');
+    const expectedColIndex = String(columnIdx + 1);
+    const expectedRowIndex = String(rowIdx + 1);
+
+    return {
+      pass: actualColIndex === expectedColIndex && actualRowIndex === expectedRowIndex,
+      message: () =>
+        `expected cell position (${columnIdx}, ${rowIdx}) but got (${Number(actualColIndex) - 1}, ${Number(actualRowIndex) - 1})`
+    };
+  }
+});
 
 beforeEach(async () => {
   // 1. reset cursor position to avoid hover issues
