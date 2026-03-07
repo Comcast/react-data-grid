@@ -21,6 +21,8 @@ declare module 'vitest/browser' {
     getActiveCell: () => Locator;
     getDragHandle: () => Locator;
     getBySelector: (selector: string) => Locator;
+    scroll: (this: Locator, options: ScrollToOptions) => Promise<void>;
+    blur: (this: Locator) => void;
   }
 }
 
@@ -65,6 +67,18 @@ locators.extend({
 
   getBySelector(selector: string) {
     return selector;
+  },
+
+  async scroll(options: ScrollToOptions) {
+    await new Promise((resolve) => {
+      const element = (this as Locator).element();
+      element.addEventListener('scrollend', resolve, { once: true });
+      element.scroll(options);
+    });
+  },
+
+  blur() {
+    (this as Locator).element().blur();
   }
 });
 
@@ -80,6 +94,37 @@ function defaultToExactOpts(
 
   return opts;
 }
+
+interface CustomMatchers<R = unknown> {
+  toHaveRowsCount: (rowsCount: number) => R;
+}
+
+declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any
+  interface Matchers<T = any> extends CustomMatchers<T> {}
+}
+
+expect.extend({
+  toHaveRowsCount(grid: HTMLElement, expected) {
+    if (!grid.matches('.rdg')) {
+      return {
+        pass: false,
+        message: () => 'expected element to be a grid'
+      };
+    }
+
+    const allRowsCount = Number(grid.getAttribute('aria-rowcount'));
+    const otherRowsCount = grid.querySelectorAll(
+      ':scope > :is(.rdg-header-row, .rdg-summary-row)'
+    ).length;
+    const count = allRowsCount - otherRowsCount;
+
+    return {
+      pass: count === expected,
+      message: () => `expected ${count} to have row count ${expected}`
+    };
+  }
+});
 
 beforeEach(async () => {
   // 1. reset cursor position to avoid hover issues

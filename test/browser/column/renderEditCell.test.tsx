@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
-import { getCellsAtRowIndex, getRowWithCell, safeTab, scrollGrid, testCount } from '../utils';
+import { getCellsAtRowIndex, getRowWithCell, safeTab, testCount } from '../utils';
 
 const grid = page.getGrid();
 
@@ -98,7 +98,7 @@ describe('Editor', () => {
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
     const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
     await testCount(activeRowCells, 2);
-    await scrollGrid({ top: 2001 });
+    await grid.scroll({ top: 2001 });
     await testCount(activeRowCells, 1);
     const editor = grid.getByRole('spinbutton', { name: 'col1-editor' });
     await expect.element(editor).not.toBeInTheDocument();
@@ -271,10 +271,10 @@ describe('Editor', () => {
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
       await userEvent.keyboard('abc');
 
-      await scrollGrid({ top: 1500 });
+      await grid.scroll({ top: 1500 });
       await userEvent.click(page.getCell({ name: 'name43' }));
       await expect.element(page.getActiveCell()).toHaveTextContent(/^name43$/);
-      await scrollGrid({ top: 0 });
+      await grid.scroll({ top: 0 });
       await expect.element(page.getCell({ name: 'name0abc' })).toBeVisible();
     });
 

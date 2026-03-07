@@ -2,15 +2,9 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import {
-  getRowWithCell,
-  safeTab,
-  scrollGrid,
-  setup,
-  testCount,
-  validateCellPosition
-} from './utils';
+import { getRowWithCell, safeTab, setup, testCount, validateCellPosition } from './utils';
 
+const grid = page.getGrid();
 const activeCell = page.getActiveCell();
 const activeSelectAllCheckbox = activeCell.getSelectAllCheckbox();
 const activeSelectCheckbox = activeCell.getByRole('checkbox', { name: 'Select', exact: true });
@@ -279,13 +273,13 @@ test('navigation when active cell not in the viewport', async () => {
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(99, 100);
   await expect.element(activeRowCells).not.toHaveLength(1);
-  await scrollGrid({ top: 0 });
+  await grid.scroll({ top: 0 });
   await testCount(activeRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
   await expect.element(activeRowCells).not.toHaveLength(1);
 
-  await scrollGrid({ left: 0 });
+  await grid.scroll({ left: 0 });
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(99, 100);
 
@@ -293,7 +287,7 @@ test('navigation when active cell not in the viewport', async () => {
     '{home}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}'
   );
   await validateCellPosition(7, 100);
-  await scrollGrid({ left: 2000 });
+  await grid.scroll({ left: 2000 });
   await userEvent.keyboard('{arrowleft}');
   await validateCellPosition(6, 100);
 });
