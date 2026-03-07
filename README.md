@@ -35,7 +35,7 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - Great performance thanks to virtualization: columns and rows outside the viewport are not rendered
 - Strictly typed with TypeScript
 - [Keyboard accessibility](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- Light and dark mode support out of the box via `color-scheme`.
+- Light and dark mode support out of the box via `color-scheme`
 - [Frozen columns](https://comcast.github.io/react-data-grid/#/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
 - [Column resizing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
 - [Multi-column sorting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
@@ -53,7 +53,7 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - [Cell copy / pasting](https://comcast.github.io/react-data-grid/#/AllFeatures)
 - [Cell value dragging / filling](https://comcast.github.io/react-data-grid/#/AllFeatures)
 - [Customizable Renderers](https://comcast.github.io/react-data-grid/#/CustomizableRenderers)
-- Right-to-left (RTL) support.
+- Right-to-left (RTL) support
 
 ## Links
 
@@ -257,7 +257,7 @@ An array of column definitions and/or column groups. See the [`ColumnOrColumnGro
 
 ###### `rows: readonly R[]`
 
-An array of rows. The rows data can be of any type.
+An array of rows. Row data can be of any type.
 
 :bulb: **Performance:** The grid is optimized for efficient rendering:
 
@@ -406,7 +406,7 @@ Callback triggered when the selection changes.
 
 ```tsx
 import { useState } from 'react';
-import { DataGrid, SelectColumn } from 'react-data-grid';
+import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
 
 const rows: readonly Row[] = [...];
 
@@ -451,7 +451,7 @@ Callback triggered when sorting changes.
 
 ```tsx
 import { useState } from 'react';
-import { DataGrid } from 'react-data-grid';
+import { DataGrid, type Column, type SortColumn } from 'react-data-grid';
 
 const rows: readonly Row[] = [...];
 
@@ -576,7 +576,7 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 ###### `onCellKeyDown?: Maybe<(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>`
 
-A function called when a keydown event is triggered on a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
+Callback triggered when a keydown event occurs on a cell. This can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
 
 **Examples**
 
@@ -1094,7 +1094,7 @@ Renders the sort direction arrow icon.
 
 **Props:**
 
-- `sortDirection: SortDirection | undefined` - 'ASC', 'DESC', or undefined
+- `sortDirection: SortDirection | undefined` - `'ASC'`, `'DESC'`, or `undefined`
 
 #### `renderSortPriority(props: RenderSortPriorityProps)`
 
@@ -1111,7 +1111,7 @@ Renders a checkbox input with proper styling and accessibility.
 **Props:**
 
 - `checked?: boolean` - Whether the checkbox is checked
-- `indeterminate?: boolean` - Whether the checkbox is in indeterminate state
+- `indeterminate?: boolean` - Whether the checkbox is in an indeterminate state
 - `disabled?: boolean` - Whether the checkbox is disabled
 - `onChange: (checked: boolean, shift: boolean) => void` - Change handler
 - `tabIndex?: number` - Tab index for keyboard navigation
@@ -1504,7 +1504,7 @@ Extends `Column` with additional computed properties used internally by the grid
 - `idx: number` - The column index
 - `level: number` - Nesting level when using column groups
 - `parent: CalculatedColumnParent | undefined` - Parent column group if nested
-- Multiple Column properties have their values set to their default value
+- Optional Column properties are set to their default values
 
 **See also:** [`Column`](#columntrow-tsummaryrow), `onColumnResize` prop on `<DataGrid />`
 
@@ -1996,7 +1996,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-**See also:** `colSpan` property on [`Column`](#columntrow-tsummaryrow)
+**See also:** `Column.colSpan`
 
 #### `RowHeightArgs<TRow>`
 
