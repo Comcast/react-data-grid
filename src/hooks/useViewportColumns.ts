@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { getColSpan } from '../utils';
+import { getColSpan, getColumnInColumns, getRowInRows } from '../utils';
 import type {
   CalculatedColumn,
   ColSpanArgs,
@@ -52,7 +52,7 @@ export function useViewportColumns<R, SR>({
 
       // check viewport rows
       for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
-        yield { type: 'ROW', row: rows[rowIdx] };
+        yield { type: 'ROW', row: getRowInRows(rows, rowIdx) };
       }
 
       // check bottom summary rows
@@ -92,21 +92,21 @@ export function useViewportColumns<R, SR>({
   const iterateOverViewportColumns = useCallback<IterateOverViewportColumns<R, SR>>(
     function* (activeColumnIdx): Generator<CalculatedColumn<R, SR>> {
       for (let colIdx = 0; colIdx <= lastFrozenColumnIndex; colIdx++) {
-        yield columns[colIdx];
+        yield getColumnInColumns(columns, colIdx);
       }
 
       if (columns.length === lastFrozenColumnIndex + 1) return;
 
       if (activeColumnIdx > lastFrozenColumnIndex && activeColumnIdx < startIdx) {
-        yield columns[activeColumnIdx];
+        yield getColumnInColumns(columns, activeColumnIdx);
       }
 
       for (let colIdx = startIdx; colIdx <= colOverscanEndIdx; colIdx++) {
-        yield columns[colIdx];
+        yield getColumnInColumns(columns, colIdx);
       }
 
       if (activeColumnIdx > colOverscanEndIdx && activeColumnIdx < columns.length) {
-        yield columns[activeColumnIdx];
+        yield getColumnInColumns(columns, activeColumnIdx);
       }
     },
     [startIdx, colOverscanEndIdx, columns, lastFrozenColumnIndex]
@@ -136,7 +136,7 @@ export function useViewportColumns<R, SR>({
   >(
     function* (activeColumnIdx = -1, args): Generator<ViewportColumnWithColSpan<R, SR>> {
       if (activeColumnIdx >= 0 && activeColumnIdx < columns.length) {
-        const column = columns[activeColumnIdx];
+        const column = getColumnInColumns(columns, activeColumnIdx);
         yield [column, true, args && getColSpan(column, lastFrozenColumnIndex, args)];
       }
     },

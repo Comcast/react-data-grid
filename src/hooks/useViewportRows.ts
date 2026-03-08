@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { floor, max, min } from '../utils';
+import { floor, getRowInRows, max, min } from '../utils';
 
 interface ViewportRowsArgs<R> {
   rows: readonly R[];
@@ -80,14 +80,14 @@ export function useViewportRows<R>({
     return {
       totalRowHeight,
       gridTemplateRows,
-      getRowTop: (rowIdx: number) => rowPositions[validateRowIdx(rowIdx)].top,
-      getRowHeight: (rowIdx: number) => rowPositions[validateRowIdx(rowIdx)].height,
+      getRowTop: (rowIdx: number) => getRowInRows(rowPositions, validateRowIdx(rowIdx)).top,
+      getRowHeight: (rowIdx: number) => getRowInRows(rowPositions, validateRowIdx(rowIdx)).height,
       findRowIdx(offset: number) {
         let start = 0;
         let end = rowPositions.length - 1;
         while (start <= end) {
           const middle = start + floor((end - start) / 2);
-          const currentOffset = rowPositions[middle].top;
+          const currentOffset = getRowInRows(rowPositions, middle).top;
 
           if (currentOffset === offset) return middle;
 
