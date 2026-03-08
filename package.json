@@ -40,6 +40,7 @@
     "test:watch": "vitest watch --project browser --project node",
     "visual": "vitest run --project visual --coverage.reportsDirectory='./coverage/visual'",
     "visual:update": "vitest run --project visual --update",
+    "bench": "vitest bench --project bench",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "eslint": "eslint --max-warnings 0 --cache --cache-location .cache/eslint --cache-strategy content",

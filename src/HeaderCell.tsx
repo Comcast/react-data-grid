@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { css } from 'ecij';
 
@@ -13,8 +13,7 @@ import {
   isCtrlKeyHeldDown,
   stopPropagation
 } from './utils';
-import type { CalculatedColumn, SortColumn } from './types';
-import type { HeaderRowProps } from './HeaderRow';
+import type { CalculatedColumn, Direction, Position, ResizedWidth, SortDirection } from './types';
 
 const cellSortableClassname = css`
   @layer rdg.HeaderCell {
@@ -64,37 +63,35 @@ const dragImageClassname = css`
   }
 `;
 
-type SharedHeaderRowProps<R, SR> = Pick<
-  HeaderRowProps<R, SR, React.Key>,
-  | 'sortColumns'
-  | 'onSortColumnsChange'
-  | 'setPosition'
-  | 'onColumnResize'
-  | 'onColumnResizeEnd'
-  | 'shouldFocusGrid'
-  | 'direction'
-  | 'onColumnsReorder'
->;
-
-export interface HeaderCellProps<R, SR> extends SharedHeaderRowProps<R, SR> {
+export interface HeaderCellProps<R, SR> {
   column: CalculatedColumn<R, SR>;
   colSpan: number | undefined;
   rowIdx: number;
   isCellActive: boolean;
+  sortDirection: SortDirection | undefined;
+  priority: number | undefined;
+  onSort: (column: CalculatedColumn<R, SR>, ctrlClick: boolean) => void;
+  onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
+  onColumnResizeEnd: () => void;
+  onColumnsReorder: ((sourceColumnKey: string, targetColumnKey: string) => void) | undefined | null;
+  setPosition: (position: Position) => void;
+  shouldFocusGrid: boolean;
+  direction: Direction;
   draggedColumnKey: string | undefined;
   setDraggedColumnKey: (draggedColumnKey: string | undefined) => void;
 }
 
-export default function HeaderCell<R, SR>({
+function HeaderCell<R, SR>({
   column,
   colSpan,
   rowIdx,
   isCellActive,
+  sortDirection,
+  priority,
+  onSort,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
-  sortColumns,
-  onSortColumnsChange,
   setPosition,
   shouldFocusGrid,
   direction,
@@ -107,11 +104,6 @@ export default function HeaderCell<R, SR>({
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
   // set the tabIndex to 0 when there is no active cell so grid can receive focus
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellActive);
-  const sortIndex = sortColumns?.findIndex((sort) => sort.columnKey === column.key);
-  const sortColumn =
-    sortIndex !== undefined && sortIndex > -1 ? sortColumns![sortIndex] : undefined;
-  const sortDirection = sortColumn?.direction;
-  const priority = sortColumn !== undefined && sortColumns!.length > 1 ? sortIndex! + 1 : undefined;
   const ariaSort =
     sortDirection && !priority ? (sortDirection === 'ASC' ? 'ascending' : 'descending') : undefined;
   const { sortable, resizable, draggable } = column;
@@ -125,43 +117,6 @@ export default function HeaderCell<R, SR>({
     isDragging && cellDraggingClassname,
     isOver && cellOverClassname
   );
-
-  function onSort(ctrlClick: boolean) {
-    if (onSortColumnsChange == null) return;
-    const { sortDescendingFirst } = column;
-    if (sortColumn === undefined) {
-      // not currently sorted
-      const nextSort: SortColumn = {
-        columnKey: column.key,
-        direction: sortDescendingFirst ? 'DESC' : 'ASC'
-      };
-      onSortColumnsChange(sortColumns && ctrlClick ? [...sortColumns, nextSort] : [nextSort]);
-    } else {
-      let nextSortColumn: SortColumn | undefined;
-      if (
-        (sortDescendingFirst === true && sortDirection === 'DESC') ||
-        (sortDescendingFirst !== true && sortDirection === 'ASC')
-      ) {
-        nextSortColumn = {
-          columnKey: column.key,
-          direction: sortDirection === 'ASC' ? 'DESC' : 'ASC'
-        };
-      }
-      if (ctrlClick) {
-        const nextSortColumns = [...sortColumns!];
-        if (nextSortColumn) {
-          // swap direction
-          nextSortColumns[sortIndex!] = nextSortColumn;
-        } else {
-          // remove sort
-          nextSortColumns.splice(sortIndex!, 1);
-        }
-        onSortColumnsChange(nextSortColumns);
-      } else {
-        onSortColumnsChange(nextSortColumn ? [nextSortColumn] : []);
-      }
-    }
-  }
 
   function handleFocus(event: React.FocusEvent<HTMLDivElement>) {
     onFocus?.(event);
@@ -177,7 +132,7 @@ export default function HeaderCell<R, SR>({
 
   function onClick(event: React.MouseEvent<HTMLSpanElement>) {
     if (sortable) {
-      onSort(event.ctrlKey || event.metaKey);
+      onSort(column, event.ctrlKey || event.metaKey);
     }
   }
 
@@ -186,7 +141,7 @@ export default function HeaderCell<R, SR>({
     if (sortable && (key === ' ' || key === 'Enter')) {
       // prevent scrolling
       event.preventDefault();
-      onSort(event.ctrlKey || event.metaKey);
+      onSort(column, event.ctrlKey || event.metaKey);
     } else if (
       resizable &&
       isCtrlKeyHeldDown(event) &&
@@ -317,10 +272,14 @@ export default function HeaderCell<R, SR>({
   );
 }
 
-type ResizeHandleProps<R, SR> = Pick<
-  HeaderCellProps<R, SR>,
-  'direction' | 'column' | 'onColumnResize' | 'onColumnResizeEnd'
->;
+export default memo(HeaderCell) as <R, SR>(props: HeaderCellProps<R, SR>) => React.JSX.Element;
+
+interface ResizeHandleProps<R, SR> {
+  direction: Direction;
+  column: CalculatedColumn<R, SR>;
+  onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
+  onColumnResizeEnd: () => void;
+}
 
 function ResizeHandle<R, SR>({
   direction,
