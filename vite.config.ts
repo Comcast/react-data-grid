@@ -124,14 +124,13 @@ export default defineConfig(
             browser: {
               enabled: true,
               trace: {
-                mode: isCI ? 'off' : 'retain-on-failure'
+                mode: 'retain-on-failure'
               },
               instances: getInstances(),
               commands: { resizeColumn, dragFill },
               viewport,
               headless: true,
-              ui: false,
-              screenshotFailures: !isCI
+              ui: false
             },
             setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
