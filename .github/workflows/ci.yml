@@ -38,7 +38,27 @@ jobs:
         run: npx playwright install chromium firefox
 
       - name: Test
-        run: node --run test
+        run: |
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
+          node --run test
         timeout-minutes: 4
 
       - name: Upload test failure screenshots
