@@ -102,8 +102,6 @@ test('keyboard navigation', async () => {
   await safeTab();
   await validateCellPosition(0, 1);
 
-  expect(1).toBe(2);
-
   // shift tab should focus the last cell of the previous row
   await safeTab(true);
   await validateCellPosition(6, 0);
