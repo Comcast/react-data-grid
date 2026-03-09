@@ -1,3 +1,4 @@
+export * from './useActivePosition';
 export * from './useCalculatedColumns';
 export * from './useColumnWidths';
 export * from './useGridDimensions';
@@ -6,6 +7,5 @@ export * from './useRovingTabIndex';
 export * from './useRowSelection';
 export * from './useScrollState';
 export * from './useScrollToPosition';
-export * from './useShouldFocusPosition';
 export * from './useViewportColumns';
 export * from './useViewportRows';
