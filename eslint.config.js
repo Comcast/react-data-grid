@@ -13,7 +13,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['.cache', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
+  globalIgnores(['.cache', '.claude', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
 
   {
     linterOptions: {

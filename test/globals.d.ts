@@ -9,5 +9,5 @@ declare module 'vitest/browser' {
   }
 }
 
-// somehow required to make `declare global` work
+// somehow required to make types work
 export {};
