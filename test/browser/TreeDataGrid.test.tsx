@@ -495,7 +495,7 @@ test('adding a top summary row when no rows or cells are active should not focus
 
   await page.render(<Test />);
   const addSummaryRowButton = page.getByRole('button', { name: 'Add summary row' });
-  const activeRow = page.getBySelector('.rdg-row-active');
+  const activeRow = page.getBySelector(`.${rowActiveClassname}`);
 
   await expect.element(activeCell).not.toBeInTheDocument();
   await expect.element(activeRow).not.toBeInTheDocument();
