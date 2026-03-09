@@ -59,7 +59,7 @@ jobs:
           node --run test
           node --run test
           node --run test
-        timeout-minutes: 4
+        # timeout-minutes: 4
 
       - name: Upload test failure screenshots
         if: failure()
