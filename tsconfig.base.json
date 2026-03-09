@@ -12,7 +12,7 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "./.cache/ts",
-    "strictNullChecks": true, // TODO: remove once `typescript-eslint` support TS 6
+    "strictNullChecks": true, // TODO: remove once `typescript-eslint` supports TS 6
     "target": "esnext",
     "verbatimModuleSyntax": true
   }
