@@ -53,6 +53,7 @@ const root = css`
     background-color: var(--rdg-background-color);
     color: var(--rdg-color);
     font-size: var(--rdg-font-size);
+    font-variant-numeric: tabular-nums;
 
     container-name: rdg-root;
     container-type: scroll-state;
