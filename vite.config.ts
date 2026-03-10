@@ -123,7 +123,6 @@ export default defineConfig(
             include: ['browser/**/*.test.*'],
             browser: {
               enabled: true,
-              trace: 'retain-on-failure',
               instances: getInstances(),
               commands: { resizeColumn, dragFill },
               viewport,
