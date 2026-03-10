@@ -49,6 +49,7 @@ jobs:
           path: |
             test/browser/**/__screenshots__/**
             test/browser/**/__traces__/**
+            .vitest-attachments/test/**/*
           if-no-files-found: ignore
 
       - name: Visual regression test
