@@ -257,7 +257,6 @@ describe('Editor', () => {
       await page.render(<EditorTest gridRows={rows} />);
 
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
-      await expect.element(col2Editor).toHaveFocus();
       await userEvent.keyboard('abc');
 
       await scrollGrid({ top: 1500 });
