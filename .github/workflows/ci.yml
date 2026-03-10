@@ -41,6 +41,9 @@ jobs:
         run: node --run test
         timeout-minutes: 4
 
+      - name: Visual regression test
+        run: node --run visual
+
       - name: Upload test failure artifacts
         if: failure()
         uses: actions/upload-artifact@v7
@@ -51,9 +54,6 @@ jobs:
             test/browser/**/__traces__/**
             .vitest-attachments/test/**/*
           if-no-files-found: ignore
-
-      - name: Visual regression test
-        run: node --run visual
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5
