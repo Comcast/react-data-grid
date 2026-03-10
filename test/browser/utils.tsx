@@ -27,9 +27,12 @@ export async function validateCellPosition(columnIdx: number, rowIdx: number) {
 
 export async function scrollGrid(options: ScrollToOptions) {
   await new Promise((resolve) => {
-    const gridElement = page.getGrid().element() as HTMLElement;
-    gridElement.addEventListener('scrollend', resolve, { once: true });
-    gridElement.scroll(options);
+    // wait for browser state to stablize before scrolling, to avoid flaky scroll-related tests
+    requestAnimationFrame(() => {
+      const gridElement = page.getGrid().element();
+      gridElement.addEventListener('scrollend', resolve, { once: true });
+      gridElement.scroll(options);
+    });
   });
 }
 
