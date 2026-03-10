@@ -50,7 +50,7 @@ const root = css`
     border: 1px solid var(--rdg-border-color);
     box-sizing: border-box;
     overflow: auto;
-    background-color: grey;
+    background-color: var(--rdg-background-color);
     color: var(--rdg-color);
     font-size: var(--rdg-font-size);
     font-variant-numeric: tabular-nums;
