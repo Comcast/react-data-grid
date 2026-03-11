@@ -4,21 +4,6 @@ import { css } from 'ecij';
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type { EditCellProps } from './types';
 
-declare global {
-  const scheduler: Scheduler | undefined;
-}
-
-interface Scheduler {
-  readonly postTask?: (
-    callback: () => void,
-    options?: {
-      priority?: 'user-blocking' | 'user-visible' | 'background';
-      signal?: AbortSignal;
-      delay?: number;
-    }
-  ) => Promise<unknown>;
-}
-
 /*
  * To check for outside `mousedown` events, we listen to all `mousedown` events at their birth,
  * i.e. on the window during the capture phase, and at their death, i.e. on the window during the bubble phase.

@@ -127,8 +127,7 @@ export default defineConfig(
               commands: { resizeColumn, dragFill },
               viewport,
               headless: true,
-              ui: false,
-              screenshotFailures: !isCI
+              ui: false
             },
             setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
