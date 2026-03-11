@@ -13,7 +13,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['.cache', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
+  globalIgnores(['.cache', '.claude', '.nitro', '.output', '.tanstack', 'coverage', 'dist', 'lib']),
 
   {
     linterOptions: {
@@ -314,17 +314,15 @@ copy(
     .join('\n')
 );
       */
-      '@eslint-react/component-hook-factories': 1,
-      '@eslint-react/error-boundaries': 1,
-      '@eslint-react/exhaustive-deps': 1,
       '@eslint-react/jsx-dollar': 1,
       '@eslint-react/jsx-key-before-spread': 1,
       '@eslint-react/jsx-no-comment-textnodes': 1,
-      '@eslint-react/jsx-no-duplicate-props': 1,
       '@eslint-react/jsx-shorthand-boolean': 1,
       '@eslint-react/jsx-shorthand-fragment': 1,
-      '@eslint-react/jsx-uses-react': 1,
-      '@eslint-react/jsx-uses-vars': 1,
+      '@eslint-react/component-hook-factories': 1,
+      '@eslint-react/error-boundaries': 1,
+      '@eslint-react/exhaustive-deps': 1,
+      '@eslint-react/immutability': 0,
       '@eslint-react/no-access-state-in-setstate': 1,
       '@eslint-react/no-array-index-key': 0,
       '@eslint-react/no-children-count': 1,
@@ -343,7 +341,9 @@ copy(
       '@eslint-react/no-direct-mutation-state': 1,
       '@eslint-react/no-duplicate-key': 1,
       '@eslint-react/no-forward-ref': 1,
+      '@eslint-react/no-implicit-children': 0,
       '@eslint-react/no-implicit-key': 1,
+      '@eslint-react/no-implicit-ref': 0,
       '@eslint-react/no-leaked-conditional-rendering': 1,
       '@eslint-react/no-missing-component-display-name': 1,
       '@eslint-react/no-missing-context-display-name': 1,
