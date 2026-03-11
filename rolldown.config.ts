@@ -22,7 +22,7 @@ export default defineConfig({
       classPrefix: `rdg-${pkg.version.replaceAll('.', '-')}-`
     }),
     dts({
-      tsconfig: './tsconfig.lib.json'
+      tsconfig: './tsconfig.src.json'
     })
   ]
 });
