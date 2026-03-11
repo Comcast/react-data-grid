@@ -6,6 +6,7 @@ import {
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,
   RowSelectionChangeContext,
+  useActivePosition,
   useCalculatedColumns,
   useColumnWidths,
   useGridDimensions,
@@ -76,16 +77,6 @@ import {
   frozenColumnShadowTopClassname
 } from './style/core';
 import SummaryRow from './SummaryRow';
-
-interface ActiveCellState extends Position {
-  readonly mode: 'ACTIVE';
-}
-
-interface EditCellState<R> extends Position {
-  readonly mode: 'EDIT';
-  readonly row: R;
-  readonly originalRow: R;
-}
 
 export type DefaultColumnOptions<R, SR> = Pick<
   Column<R, SR>,
@@ -365,33 +356,50 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     enableVirtualization
   });
 
+  /**
+   * computed values
+   */
+  const isTreeGrid = role === 'treegrid';
   const topSummaryRowsCount = topSummaryRows?.length ?? 0;
   const bottomSummaryRowsCount = bottomSummaryRows?.length ?? 0;
   const summaryRowsCount = topSummaryRowsCount + bottomSummaryRowsCount;
   const headerAndTopSummaryRowsCount = headerRowsCount + topSummaryRowsCount;
   const groupedColumnHeaderRowsCount = headerRowsCount - 1;
   const minRowIdx = -headerAndTopSummaryRowsCount;
-  const mainHeaderRowIdx = minRowIdx + groupedColumnHeaderRowsCount;
   const maxRowIdx = rows.length + bottomSummaryRowsCount - 1;
-  const frozenShadowStyles: React.CSSProperties = {
-    gridColumnStart: lastFrozenColumnIndex + 2,
-    insetInlineStart: totalFrozenColumnWidth
-  };
-
-  const [activePosition, setActivePosition] = useState<ActiveCellState | EditCellState<R>>(
-    getInitialActivePosition
-  );
-
-  /**
-   * computed values
-   */
-  const isTreeGrid = role === 'treegrid';
+  const mainHeaderRowIdx = minRowIdx + groupedColumnHeaderRowsCount;
+  const maxColIdx = columns.length - 1;
   const headerRowsHeight = headerRowsCount * headerRowHeight;
   const summaryRowsHeight = summaryRowsCount * summaryRowHeight;
   const clientHeight = gridHeight - headerRowsHeight - summaryRowsHeight;
   const isSelectable = selectedRows != null && onSelectedRowsChange != null;
   const { leftKey, rightKey } = getLeftRightKey(direction);
   const ariaRowCount = rawAriaRowCount ?? headerRowsCount + rows.length + summaryRowsCount;
+  const frozenShadowStyles: React.CSSProperties = {
+    gridColumnStart: lastFrozenColumnIndex + 2,
+    insetInlineStart: totalFrozenColumnWidth
+  };
+
+  const {
+    activePosition,
+    setActivePosition,
+    activePositionIsInActiveBounds,
+    activePositionIsInViewport,
+    activePositionIsRow,
+    activePositionIsCellInViewport,
+    validatePosition,
+    getActiveColumn,
+    getActiveRow
+  } = useActivePosition<R, SR>({
+    columns,
+    rows,
+    isTreeGrid,
+    maxColIdx,
+    minRowIdx,
+    maxRowIdx,
+    setDraggedOverRowIdx,
+    setShouldFocusPosition
+  });
 
   const defaultGridComponents = useMemo(
     () => ({
@@ -440,14 +448,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     scrollTop,
     enableVirtualization
   });
-
-  const maxColIdx = columns.length - 1;
-  const {
-    isPositionInActiveBounds: activePositionIsInActiveBounds,
-    isPositionInViewport: activePositionIsInViewport,
-    isRowInActiveBounds: activePositionIsRow,
-    isCellInViewport: activePositionIsCellInViewport
-  } = validatePosition(activePosition);
 
   const {
     viewportColumns,
@@ -656,29 +656,32 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
   function commitEditorChanges() {
     if (activePosition.mode !== 'EDIT') return;
-    updateRow(columns[activePosition.idx], activePosition.rowIdx, activePosition.row);
+    updateRow(getActiveColumn(), activePosition.rowIdx, activePosition.row);
   }
 
   function handleCellCopy(event: CellClipboardEvent) {
     if (!activePositionIsCellInViewport) return;
-    const { idx, rowIdx } = activePosition;
-    onCellCopy?.({ row: rows[rowIdx], column: columns[idx] }, event);
+    onCellCopy?.({ row: getActiveRow(), column: getActiveColumn() }, event);
   }
 
   function handleCellPaste(event: CellClipboardEvent) {
-    if (!onCellPaste || !onRowsChange || !isCellEditable(activePosition)) {
+    if (
+      typeof onCellPaste !== 'function' ||
+      typeof onRowsChange !== 'function' ||
+      !isCellEditable(activePosition)
+    ) {
       return;
     }
 
-    const { idx, rowIdx } = activePosition;
-    const column = columns[idx];
-    const updatedRow = onCellPaste({ row: rows[rowIdx], column }, event);
-    updateRow(column, rowIdx, updatedRow);
+    const column = getActiveColumn();
+    const row = getActiveRow();
+    const updatedRow = onCellPaste({ row, column }, event);
+    updateRow(column, activePosition.rowIdx, updatedRow);
   }
 
   function handleCellInput(event: KeyboardEvent<HTMLDivElement>) {
     if (!activePositionIsCellInViewport) return;
-    const row = rows[activePosition.rowIdx];
+    const row = getActiveRow();
     const { key, shiftKey } = event;
 
     // Select the row on Shift + Space
@@ -764,9 +767,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function updateRows(startRowIdx: number, endRowIdx: number) {
     if (onRowsChange == null) return;
 
-    const { rowIdx, idx } = activePosition;
-    const column = columns[idx];
-    const sourceRow = rows[rowIdx];
+    const { idx } = activePosition;
+    const column = getActiveColumn();
+    const sourceRow = getActiveRow();
     const updatedRows = [...rows];
     const indexes: number[] = [];
     for (let i = startRowIdx; i < endRowIdx; i++) {
@@ -782,50 +785,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (indexes.length > 0) {
       onRowsChange(updatedRows, { indexes, column });
     }
-  }
-
-  /**
-   * utils
-   */
-  function getInitialActivePosition(): ActiveCellState {
-    return { idx: -1, rowIdx: minRowIdx - 1, mode: 'ACTIVE' };
-  }
-
-  /**
-   * Returns whether the given position represents a valid cell or row position in the grid.
-   * Active bounds: any valid position in the grid
-   * Viewport: any valid position in the grid outside of header rows and summary rows
-   * Row selection is only allowed in TreeDataGrid
-   */
-  function validatePosition({ idx, rowIdx }: Position) {
-    // check column position
-    const isColumnPositionAllColumns = isTreeGrid && idx === -1;
-    const isColumnPositionInActiveBounds = idx >= 0 && idx <= maxColIdx;
-
-    // check row position
-    const isRowPositionInActiveBounds = rowIdx >= minRowIdx && rowIdx <= maxRowIdx;
-    const isRowPositionInViewport = rowIdx >= 0 && rowIdx < rows.length;
-
-    // row status
-    const isRowInActiveBounds = isColumnPositionAllColumns && isRowPositionInActiveBounds;
-    const isRowInViewport = isColumnPositionAllColumns && isRowPositionInViewport;
-
-    // cell status
-    const isCellInActiveBounds = isColumnPositionInActiveBounds && isRowPositionInActiveBounds;
-    const isCellInViewport = isColumnPositionInActiveBounds && isRowPositionInViewport;
-
-    // position status
-    const isPositionInActiveBounds = isRowInActiveBounds || isCellInActiveBounds;
-    const isPositionInViewport = isRowInViewport || isCellInViewport;
-
-    return {
-      isPositionInActiveBounds,
-      isPositionInViewport,
-      isRowInActiveBounds,
-      isRowInViewport,
-      isCellInActiveBounds,
-      isCellInViewport
-    };
   }
 
   function isCellEditable(position: Position): boolean {
@@ -977,19 +936,19 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   }
 
   function getDragHandle() {
-    if (onFill == null || activePosition.mode === 'EDIT' || !activePositionIsCellInViewport) {
+    if (onFill == null || activePosition.mode !== 'ACTIVE' || !activePositionIsCellInViewport) {
       return;
     }
 
-    const { idx, rowIdx } = activePosition;
-    const column = columns[idx];
+    const { rowIdx } = activePosition;
+    const column = getActiveColumn();
     if (column.renderEditCell == null || column.editable === false) {
       return;
     }
 
     const isLastRow = rowIdx === maxRowIdx;
     const columnWidth = getColumnWidth(column);
-    const colSpan = column.colSpan?.({ type: 'ROW', row: rows[rowIdx] }) ?? 1;
+    const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
     const { insetInlineStart, ...style } = getCellStyle(column, colSpan);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
     const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
@@ -1023,22 +982,21 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (
       !activePositionIsCellInViewport ||
       activePosition.rowIdx !== rowIdx ||
-      activePosition.mode === 'ACTIVE'
+      activePosition.mode !== 'EDIT'
     ) {
       return;
     }
 
-    const { idx, row } = activePosition;
-    const column = columns[idx];
+    const { row } = activePosition;
+    const column = getActiveColumn();
     const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
-    const closeOnExternalRowChange = column.editorOptions?.closeOnExternalRowChange ?? true;
 
-    const closeEditor = (shouldFocus: boolean) => {
+    function closeEditor(shouldFocus: boolean) {
       setShouldFocusPosition(shouldFocus);
       setActivePosition(({ idx, rowIdx }) => ({ idx, rowIdx, mode: 'ACTIVE' }));
-    };
+    }
 
-    const onRowChange = (row: R, commitChanges: boolean, shouldFocus: boolean) => {
+    function onRowChange(row: R, commitChanges: boolean, shouldFocus: boolean) {
       if (commitChanges) {
         // Prevents two issues when editor is closed by clicking on a different cell
         //
@@ -1051,11 +1009,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       } else {
         setActivePosition((position) => ({ ...position, row }));
       }
-    };
-
-    if (closeOnExternalRowChange && rows[activePosition.rowIdx] !== activePosition.originalRow) {
-      // Discard changes if rows are updated from outside
-      closeEditor(false);
     }
 
     return (
@@ -1133,12 +1086,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         });
       })
       .toArray();
-  }
-
-  // Reset the positions if the current values are no longer valid. This can happen if a column or row is removed
-  if (activePosition.idx > maxColIdx || activePosition.rowIdx > maxRowIdx) {
-    setActivePosition(getInitialActivePosition());
-    setDraggedOverRowIdx(undefined);
   }
 
   // Keep the state and prop in sync

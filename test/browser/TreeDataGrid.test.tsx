@@ -465,3 +465,42 @@ test('custom renderGroupCell', async () => {
   await expect.element(getRowWithCell(usaCell).getCell().nth(4)).toHaveTextContent('1');
   await expect.element(getRowWithCell(canadaCell).getCell().nth(4)).toHaveTextContent('3');
 });
+
+test('adding a top summary row when no rows or cells are active should not focus the summary row', async () => {
+  const rows: readonly Row[] = [];
+
+  function Test() {
+    const [topSummaryRows, setTopSummaryRows] = useState((): readonly SummaryRow[] => []);
+
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setTopSummaryRows((topSummaryRows) => [...topSummaryRows, undefined])}
+        >
+          Add summary row
+        </button>
+        <TreeDataGrid
+          columns={columns}
+          rows={rows}
+          topSummaryRows={topSummaryRows}
+          groupBy={[]}
+          rowGrouper={() => ({})}
+          expandedGroupIds={new Set()}
+          onExpandedGroupIdsChange={() => {}}
+        />
+      </>
+    );
+  }
+
+  await page.render(<Test />);
+  const addSummaryRowButton = page.getByRole('button', { name: 'Add summary row' });
+  const activeRow = page.getBySelector(`.${rowActiveClassname}`);
+
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
+
+  await userEvent.click(addSummaryRowButton);
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
+});

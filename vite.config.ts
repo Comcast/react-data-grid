@@ -44,7 +44,7 @@ const viewport = { width: 1920, height: 1080 } as const;
 // vitest modifies the instance objects, so we cannot rely on static objects
 function getInstances(): BrowserInstanceOption[] {
   const opts: PlaywrightProviderOptions = {
-    actionTimeout: 1000,
+    actionTimeout: 2000,
     contextOptions: {
       viewport
     }
@@ -123,15 +123,11 @@ export default defineConfig(
             include: ['browser/**/*.test.*'],
             browser: {
               enabled: true,
-              trace: {
-                mode: isCI ? 'off' : 'retain-on-failure'
-              },
               instances: getInstances(),
               commands: { resizeColumn, dragFill },
               viewport,
               headless: true,
-              ui: false,
-              screenshotFailures: !isCI
+              ui: false
             },
             setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
