@@ -93,7 +93,6 @@ afterEach(() => {
   // eslint-disable-next-line vitest/no-standalone-expect
   expect
     .soft(
-      // eslint-disable-next-line @eslint-react/purity
       document.hasFocus(),
       'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
     )
