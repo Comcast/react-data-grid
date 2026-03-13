@@ -140,8 +140,8 @@ export default defineConfig(
               instances: getInstances(),
               viewport,
               headless: true,
-              screenshotFailures: false,
-              ui: false
+              ui: false,
+              screenshotFailures: false
             },
             setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
