@@ -9,7 +9,6 @@ test('key is escaped in query selectors', async () => {
     }
   ];
 
-  //
   // eslint-disable-next-line vitest/no-alias-methods
   await expect(setup({ columns, rows: [] })).resolves.not.toThrow();
 });
