@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
+import { focusCell, focusRow } from '../utils';
 import type { CalculatedColumn, Position, StateSetter } from '../types';
 
-interface ActivePosition extends Position {
+export interface ActivePosition extends Position {
   readonly mode: 'ACTIVE';
 }
 
@@ -20,15 +21,16 @@ const initialActivePosition: ActivePosition = {
 };
 
 export function useActivePosition<R, SR>({
+  gridRef,
   columns,
   rows,
   isTreeGrid,
   maxColIdx,
   minRowIdx,
   maxRowIdx,
-  setDraggedOverRowIdx,
-  setShouldFocusPosition
+  setDraggedOverRowIdx
 }: {
+  gridRef: React.RefObject<HTMLDivElement | null>;
   columns: readonly CalculatedColumn<R, SR>[];
   rows: readonly R[];
   isTreeGrid: boolean;
@@ -36,10 +38,12 @@ export function useActivePosition<R, SR>({
   minRowIdx: number;
   maxRowIdx: number;
   setDraggedOverRowIdx: StateSetter<number | undefined>;
-  setShouldFocusPosition: StateSetter<boolean>;
 }) {
   const [activePosition, setActivePosition] = useState<ActivePosition | EditPosition<R>>(
     initialActivePosition
+  );
+  const [positionToFocus, setPositionToFocus] = useState<ActivePosition | EditPosition<R> | null>(
+    null
   );
 
   /**
@@ -123,14 +127,25 @@ export function useActivePosition<R, SR>({
         mode: 'ACTIVE'
       };
       setActivePosition(newPosition);
-      setShouldFocusPosition(false);
+      setPositionToFocus(null);
       ({ resolvedActivePosition, validatedPosition } = getResolvedValues(newPosition));
     }
   }
 
+  useLayoutEffect(() => {
+    if (positionToFocus !== null) {
+      if (positionToFocus.idx === -1) {
+        focusRow(gridRef.current!);
+      } else {
+        focusCell(gridRef.current!);
+      }
+    }
+  }, [positionToFocus, gridRef]);
+
   return {
     activePosition: resolvedActivePosition,
     setActivePosition,
+    setPositionToFocus,
     activePositionIsInActiveBounds: validatedPosition.isPositionInActiveBounds,
     activePositionIsInViewport: validatedPosition.isPositionInViewport,
     activePositionIsRow: validatedPosition.isRowInActiveBounds,

@@ -620,9 +620,9 @@ See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type in the 
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
-###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
+###### `onScroll?: React.UIEventHandler<HTMLDivElement> | undefined`
 
-Callback triggered when the grid is scrolled.
+Native DOM `onScroll` prop.
 
 ###### `onColumnResize?: Maybe<(column: CalculatedColumn<R, SR>, width: number) => void>`
 
