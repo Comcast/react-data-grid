@@ -10,7 +10,7 @@ import {
   SelectColumn
 } from '../../src';
 import type {
-  CellRendererProps,
+  RenderCellProps,
   Column,
   DataGridProps,
   RenderRowProps,
@@ -41,11 +41,11 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
-function renderGlobalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderGlobalCell(key: React.Key, props: RenderCellProps<Row, unknown>) {
   return <Cell key={key} {...props} className="global" style={{ fontStyle: 'italic' }} />;
 }
 
-function renderLocalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderLocalCell(key: React.Key, props: RenderCellProps<Row, unknown>) {
   return <Cell key={key} {...props} className="local" style={{ fontStyle: 'normal' }} />;
 }
 

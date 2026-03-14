@@ -483,7 +483,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    */
   const handleColumnResizeLatest = useLatestFunc(handleColumnResize);
   const handleColumnResizeEndLatest = useLatestFunc(handleColumnResizeEnd);
-  const onColumnsReorderLastest = useLatestFunc(onColumnsReorder);
+  const onColumnsReorderLatest = useLatestFunc(onColumnsReorder);
   const onSortColumnsChangeLatest = useLatestFunc(onSortColumnsChange);
   const onCellMouseDownLatest = useLatestFunc(onCellMouseDown);
   const onCellClickLatest = useLatestFunc(onCellClick);
@@ -491,7 +491,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const onCellContextMenuLatest = useLatestFunc(onCellContextMenu);
   const selectHeaderRowLatest = useLatestFunc(selectHeaderRow);
   const selectRowLatest = useLatestFunc(selectRow);
-  const handleFormatterRowChangeLatest = useLatestFunc(updateRow);
+  const updateRowLatest = useLatestFunc(updateRow);
   const setPositionLatest = useLatestFunc(setPosition);
   const selectHeaderCellLatest = useLatestFunc(selectHeaderCell);
 
@@ -949,7 +949,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const isLastRow = rowIdx === maxRowIdx;
     const columnWidth = getColumnWidth(column);
     const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
-    const { insetInlineStart, ...style } = getCellStyle(column, colSpan);
+    const style = getCellStyle(column, colSpan);
+    const { insetInlineStart } = style;
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
     const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
     const dragHandleStyle: React.CSSProperties = {
@@ -1079,7 +1080,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           gridRowStart,
           activeCellIdx: isActiveRow ? activeIdx : undefined,
           draggedOverCellIdx: getDraggedOverCellIdx(rowIdx),
-          onRowChange: handleFormatterRowChangeLatest,
+          onRowChange: updateRowLatest,
           setActivePosition: setPositionLatest,
           activeCellEditor: getCellEditor(rowIdx),
           isTreeGrid
@@ -1159,7 +1160,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
               onColumnResize={handleColumnResizeLatest}
               onColumnResizeEnd={handleColumnResizeEndLatest}
-              onColumnsReorder={onColumnsReorderLastest}
+              onColumnsReorder={onColumnsReorderLatest}
               sortColumns={sortColumns}
               onSortColumnsChange={onSortColumnsChangeLatest}
               activeCellIdx={
