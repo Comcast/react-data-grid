@@ -28,12 +28,13 @@ export function useColumnWidths<R, SR>(
     columnsCanFlex &&
     // there is enough space for columns to flex and the grid was resized
     gridWidth !== prevGridWidth;
-  const newTemplateColumns = [...templateColumns];
+  let newTemplateColumns: string[] | undefined;
   const columnsToMeasure: string[] = [];
 
   for (const { key, idx, width } of viewportColumns) {
     const columnWidth = columnWidths.get(key);
     if (key === columnToAutoResize?.key) {
+      newTemplateColumns ??= [...templateColumns];
       newTemplateColumns[idx] =
         columnToAutoResize.width === 'max-content'
           ? columnToAutoResize.width
@@ -47,12 +48,13 @@ export function useColumnWidths<R, SR>(
         columnsToMeasureOnResize?.has(key) === true ||
         columnWidth === undefined)
     ) {
+      newTemplateColumns ??= [...templateColumns];
       newTemplateColumns[idx] = width;
       columnsToMeasure.push(key);
     }
   }
 
-  const gridTemplateColumns = newTemplateColumns.join(' ');
+  const gridTemplateColumns = (newTemplateColumns ?? templateColumns).join(' ');
 
   useLayoutEffect(updateMeasuredAndResizedWidths);
 

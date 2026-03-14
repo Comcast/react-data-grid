@@ -154,6 +154,25 @@ export default defineConfig(
             environment: 'node',
             setupFiles: ['test/failOnConsole.ts']
           }
+        },
+        {
+          extends: true,
+          test: {
+            name: 'bench',
+            include: ['bench/**/*.bench.*'],
+            benchmark: {
+              include: ['bench/**/*.bench.*']
+            },
+            browser: {
+              enabled: true,
+              instances: getInstances().slice(0, 1),
+              viewport,
+              headless: true,
+              ui: false,
+              screenshotFailures: false
+            },
+            setupFiles: ['test/browser/styles.css', 'test/bench/setup.ts']
+          }
         }
       ]
     }

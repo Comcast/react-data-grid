@@ -166,9 +166,9 @@ export function useCalculatedColumns<R, SR>({
     templateColumns: readonly string[];
     layoutCssVars: Readonly<Record<string, string>>;
     totalFrozenColumnWidth: number;
-    columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
+    columnMetrics: readonly ColumnMetric[];
   } => {
-    const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
+    const columnMetrics: ColumnMetric[] = [];
     let left = 0;
     let totalFrozenColumnWidth = 0;
     const templateColumns: string[] = [];
@@ -184,20 +184,19 @@ export function useCalculatedColumns<R, SR>({
         width = column.minWidth;
       }
       templateColumns.push(`${width}px`);
-      columnMetrics.set(column, { width, left });
+      columnMetrics.push({ width, left });
       left += width;
     }
 
     if (lastFrozenColumnIndex !== -1) {
-      const columnMetric = columnMetrics.get(columns[lastFrozenColumnIndex])!;
+      const columnMetric = columnMetrics[lastFrozenColumnIndex];
       totalFrozenColumnWidth = columnMetric.left + columnMetric.width;
     }
 
     const layoutCssVars: Record<string, string> = {};
 
     for (let i = 0; i <= lastFrozenColumnIndex; i++) {
-      const column = columns[i];
-      layoutCssVars[`--rdg-frozen-left-${column.idx}`] = `${columnMetrics.get(column)!.left}px`;
+      layoutCssVars[`--rdg-frozen-left-${columns[i].idx}`] = `${columnMetrics[i].left}px`;
     }
 
     return { templateColumns, layoutCssVars, totalFrozenColumnWidth, columnMetrics };
@@ -222,7 +221,7 @@ export function useCalculatedColumns<R, SR>({
     // get the first visible non-frozen column index
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleStartIdx])!;
+      const { left, width } = columnMetrics[colVisibleStartIdx];
       // if the right side of the columnn is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
@@ -234,7 +233,7 @@ export function useCalculatedColumns<R, SR>({
     // get the last visible non-frozen column index
     let colVisibleEndIdx = colVisibleStartIdx;
     while (colVisibleEndIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleEndIdx])!;
+      const { left, width } = columnMetrics[colVisibleEndIdx];
       // if the right side of the column is beyond or equal to the right side of the available viewport,
       // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (left + width >= viewportRight) {
