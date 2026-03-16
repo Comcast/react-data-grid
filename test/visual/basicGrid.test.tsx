@@ -52,7 +52,6 @@ test('basic grid', async () => {
   );
 
   await expect.element(grid).toMatchScreenshot('basic-grid-edit');
-  expect.soft(1).toBe(2);
   await userEvent.click(grid.getByRole('gridcell', { name: 'Row 2', exact: true }));
   await expect.element(grid).toMatchScreenshot('basic-grid-clicked');
 });
