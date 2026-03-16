@@ -150,7 +150,7 @@ export default defineConfig(
               ui: false,
               expect: {
                 toMatchScreenshot: {
-                  resolveScreenshotPath: ({
+                  resolveScreenshotPath({
                     root,
                     testFileDirectory,
                     testFileName,
@@ -158,8 +158,9 @@ export default defineConfig(
                     browserName,
                     platform,
                     ext
-                  }) =>
-                    `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`
+                  }) {
+                    return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
+                  }
                 }
               }
             },
