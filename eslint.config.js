@@ -917,6 +917,24 @@ copy(
       '@eslint-react/no-create-ref': 0,
 
       // https://github.com/vitest-dev/eslint-plugin-vitest#rules
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select rules table
+      .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table')
+      // select all rows with a rule
+      .querySelectorAll('tr:has(a)')
+  )
+    // filter out deprecated rules
+    .filter((row) => row.lastElementChild.textContent === '')
+    // map row to rule declaration
+    .map((row) => `'vitest/${row.firstElementChild.textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       'vitest/consistent-each-for': 1,
       'vitest/consistent-test-filename': 0,
       'vitest/consistent-test-it': 1,
@@ -931,7 +949,6 @@ copy(
       'vitest/no-conditional-in-test': 0,
       'vitest/no-conditional-tests': 1,
       'vitest/no-disabled-tests': 0,
-      'vitest/no-done-callback': 1,
       'vitest/no-duplicate-hooks': 1,
       'vitest/no-focused-tests': [1, { fixable: false }],
       'vitest/no-hooks': 0,
@@ -979,7 +996,7 @@ copy(
       'vitest/prefer-strict-equal': 1,
       'vitest/prefer-to-be': 1,
       'vitest/prefer-to-be-falsy': 0,
-      'vitest/prefer-to-be-object': 0,
+      'vitest/prefer-to-be-object': 1,
       'vitest/prefer-to-be-truthy': 0,
       'vitest/prefer-to-contain': 1,
       'vitest/prefer-to-have-been-called-times': 1,
@@ -990,7 +1007,8 @@ copy(
       'vitest/require-hook': 0,
       'vitest/require-local-test-context-for-concurrent-snapshots': 0,
       'vitest/require-mock-type-parameters': 0,
-      'vitest/require-to-throw-message': 0,
+      'vitest/require-test-timeout': 0,
+      'vitest/require-to-throw-message': 1,
       'vitest/require-top-level-describe': 0,
       'vitest/valid-describe-callback': 1,
       'vitest/valid-expect': [1, { alwaysAwait: true }],
