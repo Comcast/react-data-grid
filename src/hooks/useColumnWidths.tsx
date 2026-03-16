@@ -33,20 +33,27 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
 
     const gridRef = cellToGridRefMap.get(cell)!;
     const key = cell.dataset.measuringCellKey!;
+    const previousWidthsMap = gridRefToWidthsMap.get(gridRef);
+    const widthItem = previousWidthsMap?.get(key);
     const width = entry.contentBoxSize[0].inlineSize;
 
-    const widthsMap = new Map(gridRefToWidthsMap.get(gridRef));
-    const columnWidth = widthsMap.get(key);
+    // Avoid triggering re-renders if the size hasn't changed.
+    // Per the explanation below, this check is safe:
+    // no width -> state updates
+    // `autosizing` -> width is a string -> type changes, state updates
+    // other types must not change regardless of width change
+    if (width === widthItem?.width) continue;
 
     // `autosizing` -> immediately `resized`
     // `resizing` -> remains `resizing` until the end of the user action
     // `resized` -> remains `resized`, may happen after external width changes
     // `measured` otherwise
-    const type = columnWidth?.type === 'autosizing' ? 'resized' : (columnWidth?.type ?? 'measured');
-    if (columnWidth?.type === 'autosizing') {
-      columnWidth.onMeasure(width);
+    const type = widthItem?.type === 'autosizing' ? 'resized' : (widthItem?.type ?? 'measured');
+    if (widthItem?.type === 'autosizing') {
+      widthItem.onMeasure(width);
     }
 
+    const widthsMap = new Map(previousWidthsMap);
     widthsMap.set(key, { type, width });
     gridRefToWidthsMap.set(gridRef, widthsMap);
     updatedGrids.add(gridRef);
