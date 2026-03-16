@@ -46,12 +46,12 @@ jobs:
         run: npx playwright install chromium firefox
       - name: Update screenshots
         run: |
-          rm -r test/visual/__screenshots__
-          node --run visual:update
+          rm -r "test/**/screenshots/**"
+          node --run test:ci:update
       - name: Push new screenshots
         run: |
           git config --global user.name "${{ env.AUTHOR_NAME }}"
           git config --global user.email "${{ env.AUTHOR_EMAIL }}"
-          git add test/visual/__screenshots__/.
+          git add "test/**/screenshots/**"
           git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
           git push
