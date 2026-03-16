@@ -49,6 +49,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
 };
 
 // vitest modifies the instance objects, so we cannot rely on static objects
+// https://github.com/vitest-dev/vitest/issues/9877
 function getInstances(): BrowserInstanceOption[] {
   return [
     {
