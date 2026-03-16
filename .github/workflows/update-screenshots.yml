@@ -5,14 +5,6 @@ on:
     types: [labeled]
   workflow_dispatch:
 
-env:
-  AUTHOR_NAME: 'github-actions[bot]'
-  AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
-  COMMIT_MESSAGE: |
-    Update screenshots
-
-    Co-authored-by: ${{ github.actor }}
-
 jobs:
   update-screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
@@ -50,8 +42,8 @@ jobs:
           node --run test:ci:update
       - name: Push new screenshots
         run: |
-          git config --global user.name "${{ env.AUTHOR_NAME }}"
-          git config --global user.email "${{ env.AUTHOR_EMAIL }}"
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           git add "test/**/screenshots/**"
-          git diff-index --quiet HEAD || git commit -m "${{ env.COMMIT_MESSAGE }}"
+          git diff-index --quiet HEAD || git commit -m "Update screenshots"
           git push

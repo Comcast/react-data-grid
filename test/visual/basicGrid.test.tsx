@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser';
+import { page } from 'vitest/browser';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
 
@@ -51,7 +51,5 @@ test('basic grid', async () => {
     />
   );
 
-  await expect.element(grid).toMatchScreenshot('basic-grid-edit');
-  await userEvent.click(grid.getByRole('gridcell', { name: 'Row 2', exact: true }));
-  await expect.element(grid).toMatchScreenshot('basic-grid-clicked');
+  await expect.element(grid).toMatchScreenshot('basic-grid');
 });
