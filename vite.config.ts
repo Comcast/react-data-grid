@@ -39,22 +39,23 @@ const dragFill: BrowserCommand<[from: string, to: string]> = async ({ page, ifra
   await page.mouse.up();
 };
 
+const actionTimeout = 2000;
 const viewport = { width: 1920, height: 1080 } as const;
+const playwrightOptions: PlaywrightProviderOptions = {
+  actionTimeout,
+  contextOptions: {
+    viewport
+  }
+};
 
 // vitest modifies the instance objects, so we cannot rely on static objects
+// https://github.com/vitest-dev/vitest/issues/9877
 function getInstances(): BrowserInstanceOption[] {
-  const opts: PlaywrightProviderOptions = {
-    actionTimeout: 2000,
-    contextOptions: {
-      viewport
-    }
-  };
-
   return [
     {
       browser: 'chromium',
       provider: playwright({
-        ...opts,
+        ...playwrightOptions,
         launchOptions: {
           channel: 'chromium'
         }
@@ -62,7 +63,7 @@ function getInstances(): BrowserInstanceOption[] {
     },
     {
       browser: 'firefox',
-      provider: playwright(opts),
+      provider: playwright(playwrightOptions),
       // TODO: remove when FF tests are stable
       fileParallelism: false
     }
@@ -74,6 +75,7 @@ export default defineConfig(
     base: '/react-data-grid/',
     cacheDir: '.cache/vite',
     clearScreen: false,
+    define: isTest ? { __IS_CI__: JSON.stringify(isCI) } : {},
     build: {
       modulePreload: { polyfill: false },
       sourcemap: true,
@@ -107,15 +109,20 @@ export default defineConfig(
       },
       restoreMocks: true,
       sequence: {
-        shuffle: true
+        shuffle: {
+          files: false,
+          tests: true
+        }
+      },
+      expect: {
+        poll: {
+          timeout: actionTimeout
+        }
       },
       slowTestThreshold: 1000,
       projects: [
         {
           extends: true,
-          define: {
-            __IS_CI__: JSON.stringify(isCI)
-          },
           test: {
             name: 'browser',
             include: ['browser/**/*.test.*'],
@@ -141,7 +148,21 @@ export default defineConfig(
               viewport,
               headless: true,
               ui: false,
-              screenshotFailures: false
+              expect: {
+                toMatchScreenshot: {
+                  resolveScreenshotPath({
+                    root,
+                    testFileDirectory,
+                    testFileName,
+                    arg,
+                    browserName,
+                    platform,
+                    ext
+                  }) {
+                    return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
+                  }
+                }
+              }
             },
             setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }

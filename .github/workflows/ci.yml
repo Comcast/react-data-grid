@@ -38,11 +38,8 @@ jobs:
         run: npx playwright install chromium firefox
 
       - name: Test
-        run: node --run test
+        run: node --run test:ci
         timeout-minutes: 4
-
-      - name: Visual regression test
-        run: node --run visual
 
       - name: Upload test failure artifacts
         if: failure()
@@ -50,9 +47,9 @@ jobs:
         with:
           name: test-artifacts
           path: |
-            test/browser/**/__screenshots__/**
-            test/browser/**/__traces__/**
-            .vitest-attachments/test/**/*
+            test/**/__screenshots__/**
+            test/**/__traces__/**
+            .vitest-attachments/test/**
           if-no-files-found: ignore
 
       - name: Upload coverage
