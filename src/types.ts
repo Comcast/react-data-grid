@@ -373,13 +373,19 @@ export interface SetActivePositionOptions {
   shouldFocus?: Maybe<boolean>;
 }
 
-export interface ColumnWidth {
-  readonly type: 'resized' | 'measured';
-  readonly width: number;
-}
+export type ColumnWidth =
+  | {
+      readonly type: 'measured' | 'resizing' | 'resized';
+      readonly width: number;
+    }
+  | {
+      readonly type: 'autosizing';
+      readonly width: 'max-content';
+      readonly onMeasure: (width: number) => void;
+    };
 
 export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
 
-export type Direction = 'ltr' | 'rtl';
+export type ResizedWidth = ColumnWidth['width'];
 
-export type ResizedWidth = number | 'max-content';
+export type Direction = 'ltr' | 'rtl';

@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useDeferredValue, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 export function useGridDimensions() {
   const gridRef = useRef<HTMLDivElement>(null);
   const [inlineSize, setInlineSize] = useState(1);
   const [blockSize, setBlockSize] = useState(1);
+  const deferredInlineSize = useDeferredValue(inlineSize, -1);
+  const isResizingWidth = inlineSize !== deferredInlineSize;
 
   useLayoutEffect(() => {
     const { ResizeObserver } = window;
@@ -13,10 +15,9 @@ export function useGridDimensions() {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ResizeObserver == null) return;
 
-    const { clientWidth, clientHeight } = gridRef.current!;
-
-    setInlineSize(clientWidth);
-    setBlockSize(clientHeight);
+    const grid = gridRef.current!;
+    setInlineSize(grid.clientWidth);
+    setBlockSize(grid.clientHeight);
 
     const resizeObserver = new ResizeObserver((entries) => {
       const size = entries[0].contentBoxSize[0];
@@ -27,12 +28,12 @@ export function useGridDimensions() {
         setBlockSize(size.blockSize);
       });
     });
-    resizeObserver.observe(gridRef.current!);
+    resizeObserver.observe(grid);
 
     return () => {
       resizeObserver.disconnect();
     };
   }, []);
 
-  return [gridRef, inlineSize, blockSize] as const;
+  return [gridRef, inlineSize, blockSize, isResizingWidth] as const;
 }

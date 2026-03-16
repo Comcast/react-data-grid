@@ -127,17 +127,19 @@ test('should auto resize column when resize handle is double clicked', async () 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   await autoResize('col2');
   await testGridTemplateColumns('100px 327.703px', '100px 327.833px', '100px 400px');
-  expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
-    expect.objectContaining(columns[1]),
-    // Due to differences in text rendering between browsers the measured width can vary
-    expect.toSatisfy(
-      (width) =>
-        // Chrome and Firefox on windows
-        (width >= 327.7 && width <= 327.9) ||
-        // Firefox on CI
-        width === 400
-    )
-  );
+  await expect
+    .poll(() => onColumnResize)
+    .toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining(columns[1]),
+      // Due to differences in text rendering between browsers the measured width can vary
+      expect.toSatisfy(
+        (width) =>
+          // Chrome and Firefox on windows
+          (width >= 327.7 && width <= 327.9) ||
+          // Firefox on CI
+          width === 400
+      )
+    );
 });
 
 test('should use the maxWidth if specified on auto resize', async () => {
@@ -214,7 +216,7 @@ test('should remeasure flex columns when resizing a column', async () => {
     '79.1667px 919.417px 919.417px',
     '100.5px 908.75px 908.75px'
   );
-  expect(onColumnResize).toHaveBeenCalledOnce();
+  await expect.poll(() => onColumnResize).toHaveBeenCalledOnce();
   // onColumnResize is not called if width is not changed
   await autoResize('col1');
   await testGridTemplateColumns(
@@ -272,12 +274,14 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '101px 201px' });
   await autoResize('col2');
-  expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
-    new Map([
-      ['col1', { width: 101, type: 'measured' }],
-      ['col2', { width: 100, type: 'resized' }]
-    ])
-  );
+  await expect
+    .poll(() => onColumnWidthsChangeSpy)
+    .toHaveBeenCalledExactlyOnceWith(
+      new Map([
+        ['col1', { width: 100, type: 'measured' }],
+        ['col2', { width: 100, type: 'resized' }]
+      ])
+    );
   expect(onColumnResizeSpy).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
     100
@@ -288,7 +292,7 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   await resize('col2', [5, 5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
     new Map([
-      ['col1', { width: 101, type: 'measured' }],
+      ['col1', { width: 100, type: 'measured' }],
       ['col2', { width: 115, type: 'resized' }]
     ])
   );
@@ -303,11 +307,12 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   expect(onColumnWidthsChangeSpy).not.toHaveBeenCalled();
   expect(onColumnResizeSpy).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '120px 120px' });
+
   await resize('col2', [5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
     new Map([
-      ['col1', { width: 120, type: 'measured' }],
-      ['col2', { width: 130, type: 'resized' }]
+      ['col1', { width: 100, type: 'measured' }],
+      ['col2', { width: 150, type: 'resized' }]
     ])
   );
 });
