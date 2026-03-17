@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-import { clampColumnWidth, max, min } from '../utils';
+import { max, min } from '../utils';
 import type { CalculatedColumn, ColumnWidths, ResizedWidth } from '../types';
 import { useLatestFunc } from './useLatestFunc';
 import type { DataGridProps } from '../DataGrid';
@@ -247,10 +247,18 @@ export function useColumnWidths<R, SR>(
 
   const handleColumnResizeLatest = useLatestFunc(
     (column: CalculatedColumn<R, SR>, nextWidth: ResizedWidth) => {
-      const { key } = column;
+      const previousWidth = columnMetrics.get(column)?.width;
 
+      if (typeof nextWidth === 'number') {
+        nextWidth = clampColumnWidth(nextWidth, column);
+
+        if (nextWidth === previousWidth) {
+          return;
+        }
+      }
+
+      const { key } = column;
       const widthsMap = new Map(gridRefToWidthsMap.get(gridRef));
-      const previousWidth = (columnWidthsRaw?.get(key) ?? widthsMap.get(key))?.width;
       const { promise, resolve } = Promise.withResolvers<number>();
 
       widthsMap.set(
@@ -282,7 +290,7 @@ export function useColumnWidths<R, SR>(
             onColumnWidthsChangeRaw?.(getSnapshot());
           }
         });
-      } else if (nextWidth !== previousWidth) {
+      } else {
         onColumnResize?.(column, nextWidth);
       }
     }
@@ -318,4 +326,16 @@ export function useColumnWidths<R, SR>(
     handleColumnResizeLatest,
     handleColumnResizeEndLatest
   } as const;
+}
+
+function clampColumnWidth<R, SR>(
+  width: number,
+  { minWidth, maxWidth }: CalculatedColumn<R, SR>
+): number {
+  // ignore maxWidth if it less than minWidth
+  if (typeof maxWidth === 'number' && maxWidth >= minWidth) {
+    width = min(width, maxWidth);
+  }
+
+  return max(width, minWidth);
 }

@@ -4,7 +4,6 @@ import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import {
-  clampColumnWidth,
   getCellClassname,
   getCellStyle,
   getHeaderCellRowSpan,
@@ -200,10 +199,7 @@ export default function HeaderCell<R, SR>({
       const { width } = event.currentTarget.getBoundingClientRect();
       const { leftKey } = getLeftRightKey(direction);
       const offset = key === leftKey ? -10 : 10;
-      const newWidth = clampColumnWidth(width + offset, column);
-      if (newWidth !== width) {
-        onColumnResize(column, newWidth);
-      }
+      onColumnResize(column, width + offset);
     }
   }
 
@@ -361,12 +357,9 @@ function ResizeHandle<R, SR>({
     const offset = resizingOffsetRef.current;
     if (offset === undefined) return;
     resizingRef.current = true;
-    const { width, right, left } = event.currentTarget.parentElement!.getBoundingClientRect();
-    let newWidth = isRtl ? right + offset - event.clientX : event.clientX + offset - left;
-    newWidth = clampColumnWidth(newWidth, column);
-    if (width > 0 && newWidth !== width) {
-      onColumnResize(column, newWidth);
-    }
+    const { right, left } = event.currentTarget.parentElement!.getBoundingClientRect();
+    const newWidth = isRtl ? right + offset - event.clientX : event.clientX + offset - left;
+    onColumnResize(column, newWidth);
   }
 
   function onLostPointerCapture() {
