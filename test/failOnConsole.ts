@@ -1,30 +1,29 @@
 let consoleErrorOrConsoleWarnWereCalled = false;
 
 beforeAll(() => {
-  // replace instead of mutating `console` to avoid infinite loops
-  globalThis.console = {
-    ...console,
-    error(...params) {
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    },
-    warn(...params) {
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    }
+  console.error = (...params) => {
+    consoleErrorOrConsoleWarnWereCalled = true;
+    console.log(...params);
+  };
+
+  console.warn = (...params) => {
+    consoleErrorOrConsoleWarnWereCalled = true;
+    console.log(...params);
   };
 });
 
-afterEach(() => {
-  // Wait for both the test and `afterEach` hooks to complete to ensure all logs are caught
+afterEach(({ task, signal }) => {
+  // Wait for the test and all `afterEach` hooks to complete to ensure all logs are caught
   onTestFinished(() => {
-    // eslint-disable-next-line vitest/no-standalone-expect
-    expect
-      .soft(
-        consoleErrorOrConsoleWarnWereCalled,
-        'console.error() and/or console.warn() were called during the test'
-      )
-      .toBe(false);
+    // avoid failing test runs twice
+    if (task.result!.state !== 'fail' || signal.aborted) {
+      expect
+        .soft(
+          consoleErrorOrConsoleWarnWereCalled,
+          'errors/warnings were logged to the console during the test'
+        )
+        .toBe(false);
+    }
 
     consoleErrorOrConsoleWarnWereCalled = false;
   });
