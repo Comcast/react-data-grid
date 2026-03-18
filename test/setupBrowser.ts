@@ -90,7 +90,6 @@ beforeEach(async () => {
 afterEach(() => {
   vi.useRealTimers();
 
-  // eslint-disable-next-line vitest/no-standalone-expect
   expect
     .soft(
       document.hasFocus(),
