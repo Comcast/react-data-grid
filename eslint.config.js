@@ -960,7 +960,19 @@ copy(
       'vitest/no-mocks-import': 1,
       'vitest/no-restricted-matchers': 0,
       'vitest/no-restricted-vi-methods': 0,
-      'vitest/no-standalone-expect': 1,
+      'vitest/no-standalone-expect': [
+        1,
+        {
+          additionalTestBlockFunctions: [
+            'beforeAll',
+            'beforeEach',
+            'afterAll',
+            'afterEach',
+            'aroundAll',
+            'aroundEach'
+          ]
+        }
+      ],
       'vitest/no-test-prefixes': 1,
       'vitest/no-test-return-statement': 1,
       'vitest/no-unneeded-async-expect-function': 1,
