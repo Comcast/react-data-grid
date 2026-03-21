@@ -411,7 +411,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
 
   const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitely unchecked
+    // no rows to select = explicitly unchecked
     let hasSelectedRow = false;
     let hasUnselectedRow = false;
 
@@ -736,7 +736,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     setDraggedOverRowIdx(overRowIdx);
     const ariaRowIndex = headerAndTopSummaryRowsCount + overRowIdx + 1;
     const el = gridEl.querySelector(
-      `:scope > [aria-rowindex="${ariaRowIndex}"] > [aria-colindex="${activePosition.idx + 1}"]`
+      `& > [aria-rowindex="${ariaRowIndex}"] > [aria-colindex="${activePosition.idx + 1}"]`
     );
     scrollIntoView(el);
   }
@@ -1293,11 +1293,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 }
 
 function getRowToScroll(gridEl: HTMLDivElement) {
-  return gridEl.querySelector<HTMLDivElement>(':scope > [role="row"][tabindex="0"]');
+  return gridEl.querySelector<HTMLDivElement>('& > [role="row"][tabindex="0"]');
 }
 
 function getCellToScroll(gridEl: HTMLDivElement) {
-  return gridEl.querySelector<HTMLDivElement>(':scope > [role="row"] > [tabindex="0"]');
+  return gridEl.querySelector<HTMLDivElement>('& > [role="row"] > [tabindex="0"]');
 }
 
 function isSamePosition(p1: Position, p2: Position) {
