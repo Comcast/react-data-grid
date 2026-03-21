@@ -19,11 +19,11 @@ beforeAll(() => {
   };
 });
 
-afterEach(({ task, signal }) => {
+afterEach(() => {
   // Wait for the test and all `afterEach` hooks to complete to ensure all logs are caught
-  onTestFinished(() => {
+  onTestFinished(({ task, signal }) => {
     // avoid failing test runs twice
-    if (task.result!.state !== 'fail' || signal.aborted) {
+    if (task.result!.state !== 'fail' && !signal.aborted) {
       expect
         .soft(
           consoleErrorOrConsoleWarnWereCalled,
