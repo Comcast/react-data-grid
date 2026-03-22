@@ -229,7 +229,7 @@ test('virtualization is enabled with not enough columns or rows to virtualize', 
 });
 
 test('virtualization is disabled with no frozen columns', async () => {
-  await setupGrid(false, 40, 100, 0);
+  await setupGrid(false, 40, 100);
 
   await assertHeaderCells(40, 0, 39);
   await assertRows(100, 0, 99);
