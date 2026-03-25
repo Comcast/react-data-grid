@@ -1,5 +1,9 @@
 declare global {
-  const __IS_CI__: boolean;
+  interface ImportMeta {
+    readonly env: {
+      readonly CI: boolean;
+    };
+  }
 }
 
 declare module 'vitest/browser' {

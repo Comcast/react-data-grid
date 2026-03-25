@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react';
 import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
-import type { BrowserCommand, BrowserInstanceOption } from 'vitest/node';
+import type { BrowserCommand } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
-const isTest = process.env.NODE_ENV === 'test';
+const isTest = process.env.VITEST === 'true';
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
@@ -48,34 +48,11 @@ const playwrightOptions: PlaywrightProviderOptions = {
   }
 };
 
-// vitest modifies the instance objects, so we cannot rely on static objects
-// https://github.com/vitest-dev/vitest/issues/9877
-function getInstances(): BrowserInstanceOption[] {
-  return [
-    {
-      browser: 'chromium',
-      provider: playwright({
-        ...playwrightOptions,
-        launchOptions: {
-          channel: 'chromium'
-        }
-      })
-    },
-    {
-      browser: 'firefox',
-      provider: playwright(playwrightOptions),
-      // TODO: remove when FF tests are stable
-      fileParallelism: false
-    }
-  ];
-}
-
 export default defineConfig(
   ({ isPreview }): ViteUserConfig => ({
     base: '/react-data-grid/',
     cacheDir: '.cache/vite',
     clearScreen: false,
-    define: isTest ? { __IS_CI__: JSON.stringify(isCI) } : {},
     build: {
       modulePreload: { polyfill: false },
       sourcemap: true,
@@ -83,17 +60,19 @@ export default defineConfig(
       // https://github.com/parcel-bundler/lightningcss/issues/873
       cssTarget: 'esnext'
     },
-    plugins: [
-      ecij(),
-      (!isTest || isPreview) &&
-        tanstackRouter({
-          target: 'react',
-          generatedRouteTree: 'website/routeTree.gen.ts',
-          routesDirectory: 'website/routes',
-          autoCodeSplitting: true
-        }),
-      react()
-    ],
+    plugins: isPreview
+      ? []
+      : [
+          ecij(),
+          !isTest &&
+            tanstackRouter({
+              target: 'react',
+              generatedRouteTree: 'website/routeTree.gen.ts',
+              routesDirectory: 'website/routes',
+              autoCodeSplitting: true
+            }),
+          react()
+        ],
     server: {
       open: true
     },
@@ -101,6 +80,10 @@ export default defineConfig(
       dir: 'test',
       globals: true,
       printConsoleTrace: true,
+      env: {
+        // @ts-expect-error
+        CI: isCI
+      },
       coverage: {
         provider: 'istanbul',
         enabled: isCI,
@@ -120,20 +103,51 @@ export default defineConfig(
         }
       },
       slowTestThreshold: 1000,
+      browser: {
+        headless: true,
+        ui: false,
+        viewport,
+        commands: { resizeColumn, dragFill },
+        expect: {
+          toMatchScreenshot: {
+            resolveScreenshotPath({
+              root,
+              testFileDirectory,
+              testFileName,
+              arg,
+              browserName,
+              platform,
+              ext
+            }) {
+              return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
+            }
+          }
+        },
+        instances: [
+          {
+            browser: 'chromium',
+            provider: playwright({
+              ...playwrightOptions,
+              launchOptions: {
+                channel: 'chromium'
+              }
+            })
+          },
+          {
+            browser: 'firefox',
+            provider: playwright(playwrightOptions),
+            // TODO: remove when FF tests are stable
+            fileParallelism: false
+          }
+        ]
+      },
       projects: [
         {
           extends: true,
           test: {
             name: 'browser',
             include: ['browser/**/*.test.*'],
-            browser: {
-              enabled: true,
-              instances: getInstances(),
-              commands: { resizeColumn, dragFill },
-              viewport,
-              headless: true,
-              ui: false
-            },
+            browser: { enabled: true },
             setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
@@ -142,28 +156,7 @@ export default defineConfig(
           test: {
             name: 'visual',
             include: ['visual/*.test.*'],
-            browser: {
-              enabled: true,
-              instances: getInstances(),
-              viewport,
-              headless: true,
-              ui: false,
-              expect: {
-                toMatchScreenshot: {
-                  resolveScreenshotPath({
-                    root,
-                    testFileDirectory,
-                    testFileName,
-                    arg,
-                    browserName,
-                    platform,
-                    ext
-                  }) {
-                    return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
-                  }
-                }
-              }
-            },
+            browser: { enabled: true },
             setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
           }
         },
