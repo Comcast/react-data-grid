@@ -220,7 +220,7 @@ test('zero rows', async () => {
   await expect.element(rows).toHaveLength(0);
 });
 
-test('virtualization is enable with not enough columns or rows to virtualize', async () => {
+test('virtualization is enabled with not enough columns or rows to virtualize', async () => {
   await setupGrid(true, 5, 5);
 
   await assertHeaderCells(5, 0, 4);
@@ -228,8 +228,19 @@ test('virtualization is enable with not enough columns or rows to virtualize', a
   await expect.element(cells).toHaveLength(5 * 5);
 });
 
-test('enableVirtualization is disabled', async () => {
+test('virtualization is disabled with no frozen columns', async () => {
   await setupGrid(false, 40, 100);
+
+  await assertHeaderCells(40, 0, 39);
+  await assertRows(100, 0, 99);
+  await expect.element(cells).toHaveLength(40 * 100);
+});
+
+// failing test
+// cannot use `test.fails` as console logs lead to timeout in parallel tests
+// https://github.com/vitest-dev/vitest/issues/9941
+test.skip('virtualization is disabled with some frozen columns', async () => {
+  await setupGrid(false, 40, 100, 3);
 
   await assertHeaderCells(40, 0, 39);
   await assertRows(100, 0, 99);

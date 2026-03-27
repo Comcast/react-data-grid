@@ -34,8 +34,7 @@ import {
   isCtrlKeyHeldDown,
   isDefaultCellInput,
   renderMeasuringCells,
-  scrollIntoView,
-  sign
+  scrollIntoView
 } from './utils';
 import type {
   CalculatedColumn,
@@ -417,7 +416,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
 
   const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitely unchecked
+    // no rows to select = explicitly unchecked
     let hasSelectedRow = false;
     let hasUnselectedRow = false;
 
@@ -568,8 +567,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       previousRowIdx !== rowIdx &&
       previousRowIdx < rows.length
     ) {
-      const step = sign(rowIdx - previousRowIdx);
-      for (let i = previousRowIdx + step; i < rowIdx; i += step) {
+      const [min, max] =
+        previousRowIdx < rowIdx ? [previousRowIdx, rowIdx] : [rowIdx, previousRowIdx];
+
+      for (let i = min + 1; i < max; i++) {
         const row = rows[i];
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {
@@ -721,7 +722,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     setDraggedOverRowIdx(overRowIdx);
     const ariaRowIndex = headerAndTopSummaryRowsCount + overRowIdx + 1;
     const el = gridEl.querySelector(
-      `:scope > [aria-rowindex="${ariaRowIndex}"] > [aria-colindex="${activePosition.idx + 1}"]`
+      `& > [aria-rowindex="${ariaRowIndex}"] > [aria-colindex="${activePosition.idx + 1}"]`
     );
     scrollIntoView(el);
   }
