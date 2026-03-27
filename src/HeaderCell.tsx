@@ -101,7 +101,7 @@ export default function HeaderCell<R, SR>({
   setDraggedColumnKey
 }: HeaderCellProps<R, SR>) {
   const [isOver, setIsOver] = useState(false);
-  const resizingRef = useRef<boolean>(false);
+  const resizingRef = useRef(false);
   const dragImageRef = useRef<HTMLDivElement>(null);
   const isDragging = draggedColumnKey === column.key;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
@@ -334,7 +334,7 @@ function ResizeHandle<R, SR>({
   onColumnResize,
   onColumnResizeEnd
 }: ResizeHandleProps<R, SR>) {
-  const resizingRef = useRef<boolean>(false);
+  const resizingRef = useRef(false);
   const resizingOffsetRef = useRef<number>(undefined);
   const isRtl = direction === 'rtl';
 
