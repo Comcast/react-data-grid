@@ -235,10 +235,7 @@ test('virtualization is disabled with no frozen columns', async () => {
   await expect.element(cells).toHaveLength(40 * 100);
 });
 
-// failing test
-// cannot use `test.fails` as console logs lead to timeout in parallel tests
-// https://github.com/vitest-dev/vitest/issues/9941
-test.skip('virtualization is disabled with some frozen columns', async () => {
+test('virtualization is disabled with some frozen columns', async () => {
   await setupGrid(false, 40, 100, 3);
 
   await assertHeaderCells(40, 0, 39);
