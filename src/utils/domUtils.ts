@@ -12,7 +12,7 @@ function getRowToScroll(gridEl: HTMLDivElement) {
   return gridEl.querySelector<HTMLDivElement>('& > [role="row"][tabindex="0"]');
 }
 
-function getCellToScroll(gridEl: HTMLDivElement) {
+export function getCellToScroll(gridEl: HTMLDivElement) {
   return gridEl.querySelector<HTMLDivElement>('& > [role="row"] > [tabindex="0"]');
 }
 
