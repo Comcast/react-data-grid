@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, userEvent } from 'vitest/browser';
+import { commands, page, server, userEvent } from 'vitest/browser';
 
 import { DataGrid, type Column, type ColumnWidth, type ColumnWidths } from '../../../src';
 import { setup } from '../utils';
@@ -313,11 +313,8 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
 });
 
 async function testGridTemplateColumns(chrome: string, firefox: string, firefoxCI = firefox) {
-  const gridTemplateColumns = navigator.userAgent.includes('Chrome')
-    ? chrome
-    : __IS_CI__
-      ? firefoxCI
-      : firefox;
+  const gridTemplateColumns =
+    server.browser === 'chromium' ? chrome : import.meta.env.CI ? firefoxCI : firefox;
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }
