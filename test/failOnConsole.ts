@@ -1,30 +1,23 @@
-let consoleErrorOrConsoleWarnWereCalled = false;
+beforeEach(({ onTestFinished }) => {
+  vi.spyOn(console, 'warn').mockName('console.warn');
+  vi.spyOn(console, 'error').mockName('console.error');
 
-beforeAll(() => {
-  console.error = (...params) => {
-    consoleErrorOrConsoleWarnWereCalled = true;
-    console.log(...params);
-  };
-
-  console.warn = (...params) => {
-    consoleErrorOrConsoleWarnWereCalled = true;
-    console.log(...params);
-  };
-});
-
-afterEach(({ task, signal }) => {
   // Wait for the test and all `afterEach` hooks to complete to ensure all logs are caught
-  onTestFinished(() => {
+  onTestFinished(({ expect, task, signal }) => {
     // avoid failing test runs twice
-    if (task.result!.state !== 'fail' || signal.aborted) {
-      expect
-        .soft(
-          consoleErrorOrConsoleWarnWereCalled,
-          'errors/warnings were logged to the console during the test'
-        )
-        .toBe(false);
-    }
+    if (task.result?.state === 'fail' || signal.aborted) return;
 
-    consoleErrorOrConsoleWarnWereCalled = false;
+    expect
+      .soft(
+        console.warn,
+        'console.warn() was called during the test; please resolve unexpected warnings'
+      )
+      .toHaveBeenCalledTimes(0);
+    expect
+      .soft(
+        console.error,
+        'console.error() was called during the test; please resolve unexpected errors'
+      )
+      .toHaveBeenCalledTimes(0);
   });
 });

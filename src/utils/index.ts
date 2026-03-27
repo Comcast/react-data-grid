@@ -8,7 +8,7 @@ export * from './keyboardUtils';
 export * from './renderMeasuringCells';
 export * from './styleUtils';
 
-export const { min, max, floor, sign, abs } = Math;
+export const { min, max, floor, abs } = Math;
 
 export function assertIsValidKeyGetter<R, K extends React.Key>(
   keyGetter: Maybe<(row: NoInfer<R>) => K>
