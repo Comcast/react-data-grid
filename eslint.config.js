@@ -1,7 +1,6 @@
 import eslintReact from '@eslint-react/eslint-plugin';
 import markdown from '@eslint/markdown';
 import vitest from '@vitest/eslint-plugin';
-import jestDom from 'eslint-plugin-jest-dom';
 import reactDom from 'eslint-plugin-react-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactNamingConvention from 'eslint-plugin-react-naming-convention';
@@ -904,8 +903,7 @@ copy(
     files: ['test/**/*'],
 
     plugins: {
-      vitest,
-      'jest-dom': jestDom
+      vitest
     },
 
     rules: {
@@ -1024,20 +1022,7 @@ copy(
       'vitest/valid-expect': [1, { alwaysAwait: true }],
       'vitest/valid-expect-in-promise': 1,
       'vitest/valid-title': 1,
-      'vitest/warn-todo': 1,
-
-      // https://github.com/testing-library/eslint-plugin-jest-dom#supported-rules
-      'jest-dom/prefer-checked': 1,
-      'jest-dom/prefer-empty': 1,
-      'jest-dom/prefer-enabled-disabled': 1,
-      'jest-dom/prefer-focus': 1,
-      'jest-dom/prefer-in-document': 1,
-      'jest-dom/prefer-required': 1,
-      'jest-dom/prefer-to-have-attribute': 1,
-      'jest-dom/prefer-to-have-class': 1,
-      'jest-dom/prefer-to-have-style': 1,
-      'jest-dom/prefer-to-have-text-content': 1,
-      'jest-dom/prefer-to-have-value': 1
+      'vitest/warn-todo': 1
     }
   },
 
