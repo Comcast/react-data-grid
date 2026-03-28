@@ -8,7 +8,6 @@ import reactNamingConvention from 'eslint-plugin-react-naming-convention';
 import reactRsc from 'eslint-plugin-react-rsc';
 import reactWebApi from 'eslint-plugin-react-web-api';
 import sonarjs from 'eslint-plugin-sonarjs';
-import testingLibrary from 'eslint-plugin-testing-library';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
@@ -906,8 +905,7 @@ copy(
 
     plugins: {
       vitest,
-      'jest-dom': jestDom,
-      'testing-library': testingLibrary
+      'jest-dom': jestDom
     },
 
     rules: {
@@ -1039,38 +1037,7 @@ copy(
       'jest-dom/prefer-to-have-class': 1,
       'jest-dom/prefer-to-have-style': 1,
       'jest-dom/prefer-to-have-text-content': 1,
-      'jest-dom/prefer-to-have-value': 1,
-
-      // eslint-plugin-testing-library Rules
-      // https://github.com/testing-library/eslint-plugin-testing-library#supported-rules
-      'testing-library/await-async-events': 0,
-      'testing-library/await-async-queries': 0,
-      'testing-library/await-async-utils': 0,
-      'testing-library/consistent-data-testid': 0,
-      'testing-library/no-await-sync-events': 0,
-      'testing-library/no-await-sync-queries': 0,
-      'testing-library/no-container': 1,
-      'testing-library/no-debugging-utils': 1,
-      'testing-library/no-dom-import': 1,
-      'testing-library/no-global-regexp-flag-in-query': 1,
-      'testing-library/no-manual-cleanup': 0,
-      'testing-library/no-node-access': 0,
-      'testing-library/no-promise-in-fire-event': 0,
-      'testing-library/no-render-in-lifecycle': 0,
-      'testing-library/no-test-id-queries': 0,
-      'testing-library/no-unnecessary-act': 1,
-      'testing-library/no-wait-for-multiple-assertions': 1,
-      'testing-library/no-wait-for-side-effects': 1,
-      'testing-library/no-wait-for-snapshot': 0,
-      'testing-library/prefer-explicit-assert': 1,
-      'testing-library/prefer-find-by': 1,
-      'testing-library/prefer-implicit-assert': 0,
-      'testing-library/prefer-presence-queries': 0,
-      'testing-library/prefer-query-by-disappearance': 1,
-      'testing-library/prefer-query-matchers': 0,
-      'testing-library/prefer-screen-queries': 0,
-      'testing-library/prefer-user-event': 1,
-      'testing-library/render-result-naming-convention': 0
+      'jest-dom/prefer-to-have-value': 1
     }
   },
 
