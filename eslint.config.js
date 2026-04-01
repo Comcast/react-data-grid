@@ -1103,7 +1103,6 @@ copy(
     name: 'markdown',
     files: ['**/*.md'],
     plugins: {
-      // @ts-expect-error
       markdown
     },
     language: 'markdown/commonmark',
