@@ -60,7 +60,9 @@
     "react-dom": "^19.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.15",
     "vite-plus": "^0.1.15",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@^0.1.15",
     "vitest-browser-react": "^2.1.0"
   },
   "peerDependencies": {
@@ -69,8 +71,8 @@
   },
   "overrides": {
     "eslint": "$eslint",
-    "vite": "$@voidzero-dev/vite-plus-core",
-    "vitest": "$@voidzero-dev/vite-plus-test"
+    "vite": "$vite",
+    "vitest": "$vitest"
   },
   "packageManager": "npm@11.12.1"
 }
