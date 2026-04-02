@@ -183,7 +183,8 @@ export default defineConfig({
         cache: false
       },
       typecheck: {
-        command: 'tsgo --build'
+        command: 'tsgo --build',
+        input: [{ auto: true }, '!./.cache/ts/**/*']
       }
     }
   },
