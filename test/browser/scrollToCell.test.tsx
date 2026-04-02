@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import type { Column, DataGridHandle } from '../../src';
 import { setup } from './utils';

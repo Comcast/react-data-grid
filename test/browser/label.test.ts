@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import { setup } from './utils';
 

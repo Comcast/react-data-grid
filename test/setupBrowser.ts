@@ -2,14 +2,19 @@
 // need to import it so TypeScript can pick up types
 import 'vitest-browser-react';
 
+import {
+  locators,
+  userEvent,
+  type Locator,
+  type LocatorByRoleOptions
+} from 'vite-plus/test/browser';
 import { configure } from 'vitest-browser-react/pure';
-import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
 
 configure({
   reactStrictMode: true
 });
 
-declare module 'vitest/browser' {
+declare module 'vite-plus/test/browser' {
   interface LocatorSelectors {
     getGrid: () => Locator;
     getTreeGrid: () => Locator;

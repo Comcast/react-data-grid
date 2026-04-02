@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, userEvent } from 'vitest/browser';
+import { commands, page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, FillEvent } from '../../src';

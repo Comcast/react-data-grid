@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
 

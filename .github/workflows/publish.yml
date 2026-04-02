@@ -21,46 +21,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v6
+      - uses: voidzero-dev/setup-vp@v1
         with:
           node-version: 25
-          check-latest: true
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: npm i
-
-      - name: Typecheck
-        run: node --run typecheck
-
-      - name: ESLint
-        run: node --run eslint
-
-      - name: Oxfmt
-        run: node --run format:check
-
-      - name: Bundle
-        run: node --run build
-
-      - name: Build website
-        run: node --run build:website
+      - run: vp check
+      - run: vpr typecheck
+      - run: vpr eslint
+      - run: vp pack
+      - run: vp build
 
       - name: Install Playwright Browsers
-        run: npx playwright install chromium firefox
+        run: vpx playwright install chromium firefox
 
-      - name: Test
-        run: node --run test:ci
+      - run: vp test
         timeout-minutes: 4
 
       - name: Update version
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          npm version ${{ inputs.version }}
+          vp env exec npm version ${{ inputs.version }}
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm
-        run: npm publish --tag latest
+        run: vp env exec npm publish --tag latest
 
       - name: Push tag
         run: git push origin v${{ inputs.version }}
