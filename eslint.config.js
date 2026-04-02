@@ -2,11 +2,7 @@ import eslintReact from '@eslint-react/eslint-plugin';
 import markdown from '@eslint/markdown';
 import vitest from '@vitest/eslint-plugin';
 import jestDom from 'eslint-plugin-jest-dom';
-import reactDom from 'eslint-plugin-react-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactNamingConvention from 'eslint-plugin-react-naming-convention';
-import reactRsc from 'eslint-plugin-react-rsc';
-import reactWebApi from 'eslint-plugin-react-web-api';
 import sonarjs from 'eslint-plugin-sonarjs';
 import testingLibrary from 'eslint-plugin-testing-library';
 import { defineConfig, globalIgnores } from 'eslint/config';
@@ -29,10 +25,6 @@ export default defineConfig([
       // @ts-expect-error
       'react-hooks': reactHooks,
       '@eslint-react': eslintReact,
-      '@eslint-react/rsc': reactRsc,
-      '@eslint-react/dom': reactDom,
-      '@eslint-react/web-api': reactWebApi,
-      '@eslint-react/naming-convention': reactNamingConvention,
       sonarjs,
       '@typescript-eslint': tseslint.plugin
     },
@@ -288,7 +280,7 @@ export default defineConfig([
       // https://www.eslint-react.xyz/docs/rules/overview
       /*
 // copy all the rules from the rules table for easy pasting
-function getRules(id, prefix) {
+function getRules(id) {
   return (
     Iterator.from(
       document
@@ -298,38 +290,33 @@ function getRules(id, prefix) {
         .querySelectorAll('tr a')
     )
       // map link to rule declaration
-      .map((a) => `'@eslint-react/${prefix}${a.textContent}': 1,`)
+      .map((a) => `'@eslint-react/${a.getAttribute('href')}': 1,`)
   );
 }
 copy(
   Iterator.from([
-    getRules('x-rules', ''),
-    getRules('rsc-rules', 'rsc/'),
-    getRules('dom-rules', 'dom/'),
-    getRules('web-api-rules', 'web-api/'),
-    getRules('naming-convention-rules', 'naming-convention/'),
+    getRules('x-rules'),
+    getRules('jsx-rules'),
+    getRules('rsc-rules'),
+    getRules('dom-rules'),
+    getRules('web-api-rules'),
+    getRules('naming-convention-rules'),
   ])
     .flatMap((x) => x)
     .toArray()
     .join('\n')
 );
       */
-      '@eslint-react/jsx-dollar': 1,
-      '@eslint-react/jsx-key-before-spread': 1,
-      '@eslint-react/jsx-no-comment-textnodes': 1,
-      '@eslint-react/jsx-shorthand-boolean': 1,
-      '@eslint-react/jsx-shorthand-fragment': 1,
       '@eslint-react/component-hook-factories': 1,
       '@eslint-react/error-boundaries': 1,
       '@eslint-react/exhaustive-deps': 1,
-      '@eslint-react/immutability': 0,
+      '@eslint-react/immutability': 1,
       '@eslint-react/no-access-state-in-setstate': 1,
       '@eslint-react/no-array-index-key': 0,
       '@eslint-react/no-children-count': 1,
       '@eslint-react/no-children-for-each': 1,
       '@eslint-react/no-children-map': 1,
       '@eslint-react/no-children-only': 1,
-      '@eslint-react/no-children-prop': 1,
       '@eslint-react/no-children-to-array': 1,
       '@eslint-react/no-class-component': 1,
       '@eslint-react/no-clone-element': 1,
@@ -367,7 +354,6 @@ copy(
       '@eslint-react/no-unused-props': 1,
       '@eslint-react/no-unused-state': 1,
       '@eslint-react/no-use-context': 1,
-      '@eslint-react/no-useless-fragment': [1, { allowExpressions: false }],
       '@eslint-react/prefer-destructuring-assignment': 1,
       '@eslint-react/prefer-namespace-import': 1,
       '@eslint-react/purity': 1,
@@ -378,32 +364,37 @@ copy(
       '@eslint-react/unsupported-syntax': 1,
       '@eslint-react/use-memo': 1,
       '@eslint-react/use-state': 1,
-      '@eslint-react/rsc/function-definition': 1,
-      '@eslint-react/dom/no-dangerously-set-innerhtml': 1,
-      '@eslint-react/dom/no-dangerously-set-innerhtml-with-children': 1,
-      '@eslint-react/dom/no-find-dom-node': 1,
-      '@eslint-react/dom/no-flush-sync': 0,
-      '@eslint-react/dom/no-hydrate': 1,
-      '@eslint-react/dom/no-missing-button-type': 1,
-      '@eslint-react/dom/no-missing-iframe-sandbox': 1,
-      '@eslint-react/dom/no-namespace': 1,
-      '@eslint-react/dom/no-render': 1,
-      '@eslint-react/dom/no-render-return-value': 1,
-      '@eslint-react/dom/no-script-url': 1,
-      '@eslint-react/dom/no-string-style-prop': 1,
-      '@eslint-react/dom/no-unknown-property': 0,
-      '@eslint-react/dom/no-unsafe-iframe-sandbox': 1,
-      '@eslint-react/dom/no-unsafe-target-blank': 1,
-      '@eslint-react/dom/no-use-form-state': 1,
-      '@eslint-react/dom/no-void-elements-with-children': 1,
-      '@eslint-react/dom/prefer-namespace-import': 1,
-      '@eslint-react/web-api/no-leaked-event-listener': 1,
-      '@eslint-react/web-api/no-leaked-interval': 1,
-      '@eslint-react/web-api/no-leaked-resize-observer': 1,
-      '@eslint-react/web-api/no-leaked-timeout': 1,
-      '@eslint-react/naming-convention/context-name': 1,
-      '@eslint-react/naming-convention/id-name': 1,
-      '@eslint-react/naming-convention/ref-name': 1,
+      '@eslint-react/jsx-no-children-prop': 1,
+      '@eslint-react/jsx-no-children-prop-with-children': 1,
+      '@eslint-react/jsx-no-comment-textnodes': 1,
+      '@eslint-react/jsx-no-useless-fragment': [1, { allowExpressions: false }],
+      '@eslint-react/jsx-no-key-after-spread': 1,
+      '@eslint-react/jsx-no-namespace': 1,
+      '@eslint-react/rsc-function-definition': 1,
+      '@eslint-react/dom-no-dangerously-set-innerhtml': 1,
+      '@eslint-react/dom-no-dangerously-set-innerhtml-with-children': 1,
+      '@eslint-react/dom-no-find-dom-node': 1,
+      '@eslint-react/dom-no-flush-sync': 0,
+      '@eslint-react/dom-no-hydrate': 1,
+      '@eslint-react/dom-no-missing-button-type': 1,
+      '@eslint-react/dom-no-missing-iframe-sandbox': 1,
+      '@eslint-react/dom-no-render': 1,
+      '@eslint-react/dom-no-render-return-value': 1,
+      '@eslint-react/dom-no-script-url': 1,
+      '@eslint-react/dom-no-string-style-prop': 1,
+      '@eslint-react/dom-no-unknown-property': 1,
+      '@eslint-react/dom-no-unsafe-iframe-sandbox': 1,
+      '@eslint-react/dom-no-unsafe-target-blank': 1,
+      '@eslint-react/dom-no-use-form-state': 1,
+      '@eslint-react/dom-no-void-elements-with-children': 1,
+      '@eslint-react/dom-prefer-namespace-import': 1,
+      '@eslint-react/web-api-no-leaked-event-listener': 1,
+      '@eslint-react/web-api-no-leaked-interval': 1,
+      '@eslint-react/web-api-no-leaked-resize-observer': 1,
+      '@eslint-react/web-api-no-leaked-timeout': 1,
+      '@eslint-react/naming-convention-context-name': 1,
+      '@eslint-react/naming-convention-id-name': 1,
+      '@eslint-react/naming-convention-ref-name': 1,
 
       // SonarJS rules
       // https://github.com/SonarSource/SonarJS/blob/master/packages/jsts/src/rules/README.md#rules
@@ -1103,20 +1094,38 @@ copy(
     name: 'markdown',
     files: ['**/*.md'],
     plugins: {
-      // @ts-expect-error
       markdown
     },
-    language: 'markdown/commonmark',
+    language: 'markdown/gfm',
     rules: {
+      // `@eslint/markdown` rules
+      // https://github.com/eslint/markdown/blob/main/README.md#rules
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select rules table
+      .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table tbody')
+      // select all rule links
+      .querySelectorAll(':any-link')
+  )
+    // map link to rule declaration
+    .map((link) => `'markdown/${link.textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       'markdown/fenced-code-language': 1,
+      'markdown/fenced-code-meta': 0,
       'markdown/heading-increment': 1,
       'markdown/no-bare-urls': 1,
       'markdown/no-duplicate-definitions': 1,
-      'markdown/no-duplicate-headings': 0,
+      'markdown/no-duplicate-headings': [1, { checkSiblingsOnly: true }],
       'markdown/no-empty-definitions': 1,
       'markdown/no-empty-images': 1,
       'markdown/no-empty-links': 1,
-      'markdown/no-html': 0,
+      'markdown/no-html': [1, { allowed: ['br', 'kbd'] }],
       'markdown/no-invalid-label-refs': 1,
       'markdown/no-missing-atx-heading-space': 1,
       'markdown/no-missing-label-refs': 1,

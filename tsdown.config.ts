@@ -1,28 +1,27 @@
-import { isAbsolute } from 'node:path';
 import { ecij } from 'ecij/plugin';
-import { defineConfig } from 'rolldown';
-import { dts } from 'rolldown-plugin-dts';
+import { defineConfig } from 'tsdown';
 
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
-  input: './src/index.ts',
-  output: {
-    dir: 'lib',
-    cssEntryFileNames: 'styles.css',
-    sourcemap: true,
-    cleanDir: true
-  },
+  outDir: 'lib',
   platform: 'neutral',
-  external: (id) => !id.startsWith('.') && !isAbsolute(id),
+  sourcemap: true,
+  deps: {
+    skipNodeModulesBundle: true
+  },
+  css: {
+    fileName: 'styles.css'
+  },
+  dts: {
+    build: true,
+    tsconfig: './tsconfig.src.json'
+  },
   plugins: [
     ecij({
       // We add the package version as prefix to avoid style conflicts
       // between multiple versions of RDG on the same page
       classPrefix: `rdg-${pkg.version.replaceAll('.', '-')}-`
-    }),
-    dts({
-      tsconfig: './tsconfig.src.json'
     })
   ]
 });
