@@ -47,7 +47,7 @@
     "typecheck": "tsc --build"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "^3.0.0",
+    "@eslint-react/eslint-plugin": "^4.2.1",
     "@eslint/markdown": "^8.0.1",
     "@faker-js/faker": "^10.3.0",
     "@tanstack/react-router": "^1.166.7",
