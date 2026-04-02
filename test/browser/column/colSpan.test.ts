@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../../src';
 import { getCellsAtRowIndex, safeTab, setup, validateCellPosition } from '../utils';
