@@ -882,7 +882,7 @@ copy(
         1,
         { path: 'never', types: 'never', lib: 'never' }
       ],
-      '@typescript-eslint/unbound-method': 0,
+      '@typescript-eslint/unbound-method': 0, // replaced by vitest/unbound-method
       '@typescript-eslint/unified-signatures': 0,
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 1
     }
@@ -1009,6 +1009,7 @@ copy(
       'vitest/require-test-timeout': 0,
       'vitest/require-to-throw-message': 1,
       'vitest/require-top-level-describe': 0,
+      'vitest/unbound-method': 0,
       'vitest/valid-describe-callback': 1,
       'vitest/valid-expect': [1, { alwaysAwait: true }],
       'vitest/valid-expect-in-promise': 1,
