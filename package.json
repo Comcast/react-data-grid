@@ -64,10 +64,8 @@
     "clsx": "^2.1.1",
     "ecij": "^0.4.1",
     "eslint": "^10.0.3",
-    "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-sonarjs": "^4.0.2",
-    "eslint-plugin-testing-library": "^7.16.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "oxfmt": "0.43.0",
@@ -87,6 +85,7 @@
     "react-dom": "^19.2"
   },
   "overrides": {
+    "eslint": "$eslint",
     "typescript": "$typescript"
   }
 }
