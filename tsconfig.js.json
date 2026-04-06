@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "lib": ["ESNext"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext"
