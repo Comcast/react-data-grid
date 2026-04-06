@@ -130,7 +130,10 @@ export default defineConfig(
               ...playwrightOptions,
               launchOptions: {
                 channel: 'chromium',
-                args: ['--disable-renderer-accessibility']
+                args: [
+                  '--disable-renderer-accessibility',
+                  '--disable-platform-accessibility-integration'
+                ]
               }
             })
           },
