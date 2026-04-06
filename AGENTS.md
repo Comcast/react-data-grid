@@ -1,6 +1,6 @@
 # AGENTS.md
 
-## Quick ref
+## Commands
 
 ```shell
 npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
