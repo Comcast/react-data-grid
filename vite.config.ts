@@ -129,13 +129,21 @@ export default defineConfig(
             provider: playwright({
               ...playwrightOptions,
               launchOptions: {
-                channel: 'chromium'
+                channel: 'chromium',
+                args: ['--disable-renderer-accessibility']
               }
             })
           },
           {
             browser: 'firefox',
-            provider: playwright(playwrightOptions),
+            provider: playwright({
+              ...playwrightOptions,
+              launchOptions: {
+                firefoxUserPrefs: {
+                  'accessibility.force_disabled': 1
+                }
+              }
+            }),
             // TODO: remove when FF tests are stable
             fileParallelism: false
           }
