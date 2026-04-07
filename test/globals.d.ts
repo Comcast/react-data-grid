@@ -13,5 +13,5 @@ declare module 'vitest/browser' {
   }
 }
 
-// somehow required to make types work
+// required to make types work
 export {};
