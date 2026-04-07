@@ -5,6 +5,6 @@
     "skipLibCheck": true,
     "types": ["vitest/globals"]
   },
-  "include": ["test/**/*"],
+  "include": ["src/css.d.ts", "test/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
 }
