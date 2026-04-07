@@ -34,21 +34,19 @@ locators.extend({
   },
 
   getHeaderRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(
-      this.getBySelector('.rdg-header-row')
-    );
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-header-row'));
   },
 
   getHeaderCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('columnheader', defaultToExactOpts(opts));
+    return this.getByRole('columnheader', opts);
   },
 
   getRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-row'));
   },
 
   getCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('gridcell', defaultToExactOpts(opts));
+    return this.getByRole('gridcell', opts);
   },
 
   getSelectAllCheckbox() {
@@ -67,19 +65,6 @@ locators.extend({
     return selector;
   }
 });
-
-function defaultToExactOpts(
-  opts: LocatorByRoleOptions | undefined
-): LocatorByRoleOptions | undefined {
-  if (opts != null && opts.exact == null && typeof opts.name === 'string') {
-    return {
-      ...opts,
-      exact: true
-    };
-  }
-
-  return opts;
-}
 
 beforeEach(async () => {
   // 1. reset cursor position to avoid hover issues
