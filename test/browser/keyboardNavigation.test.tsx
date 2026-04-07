@@ -13,7 +13,7 @@ import {
 
 const activeCell = page.getActiveCell();
 const activeSelectAllCheckbox = activeCell.getSelectAllCheckbox();
-const activeSelectCheckbox = activeCell.getByRole('checkbox', { name: 'Select', exact: true });
+const activeSelectCheckbox = activeCell.getByRole('checkbox', { name: 'Select' });
 
 type Row = undefined;
 
