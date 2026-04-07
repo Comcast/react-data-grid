@@ -1,11 +1,11 @@
 # AGENTS.md
 
-## Quick ref
+## Commands
 
 ```shell
 npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
 node --run build             # library → lib/
-node --run typecheck         # tsc --build
+node --run typecheck         # tsgo --build
 node --run eslint            # eslint --max-warnings 0
 node --run eslint:fix        # eslint --fix
 node --run format            # oxfmt
@@ -48,12 +48,12 @@ website/              # demo site (Vite + TanStack Router)
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
 - **Accessibility first** — ARIA attributes (e.g. `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
 - **Formatting** — oxfmt (not Prettier). **Linting** — ESLint (must pass with zero warnings).
-- **Build** — Rolldown bundles library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
+- **Build** — tsdown bundles library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
 
 ## Testing
 
-- Browser tests use `vitest/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getSelectedCell()`, etc. over raw `page.getByRole()`.
-- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `tabIntoGrid()`, `testCount()`, `testRowCount()`.
+- Browser tests use `vitest/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getActiveCell()`, etc. over raw `page.getByRole()`.
+- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `safeTab()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
 - **Never run visual regression tests** — screenshots are environment-dependent so visual regression tests must run in CI only.
 
