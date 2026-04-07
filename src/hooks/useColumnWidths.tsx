@@ -277,7 +277,7 @@ export function useColumnWidths<R, SR>(
         // this is necessary if the nextWidth is the same as the previous width
         // ResizeObserver won't trigger if the size doesn't change
         const cell = gridRef.current!.querySelector(
-          `:scope > [data-measuring-cell-key="${CSS.escape(key)}"]`
+          `& > [data-measuring-cell-key="${CSS.escape(key)}"]`
         )!;
         resizeObserver?.unobserve(cell);
         resizeObserver?.observe(cell);
@@ -332,7 +332,7 @@ function clampColumnWidth<R, SR>(
   width: number,
   { minWidth, maxWidth }: CalculatedColumn<R, SR>
 ): number {
-  // ignore maxWidth if it less than minWidth
+  // ignore maxWidth if minWidth is greater
   if (typeof maxWidth === 'number' && maxWidth >= minWidth) {
     width = min(width, maxWidth);
   }
