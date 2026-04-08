@@ -123,6 +123,9 @@ export default defineConfig(
             }
           }
         },
+        locators: {
+          exact: true
+        },
         instances: [
           {
             browser: 'chromium',

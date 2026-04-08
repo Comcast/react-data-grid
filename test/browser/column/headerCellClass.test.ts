@@ -21,9 +21,7 @@ test('headerCellClass is either nullish or a string', async () => {
 
   await setup({ columns, rows: [] });
   await expect.element(headerCells.nth(0)).toHaveClass(cellClassname, { exact: true });
-  await expect
-    .element(headerCells.nth(1))
-    .toHaveClass(`${cellClassname} my-header`, { exact: true });
+  await expect.element(headerCells.nth(1)).toHaveClass(cellClassname, 'my-header', { exact: true });
 });
 
 test('columnGroup.headerCellClass is either nullish or a string', async () => {
@@ -41,7 +39,5 @@ test('columnGroup.headerCellClass is either nullish or a string', async () => {
 
   await setup({ columns, rows: [] });
   await expect.element(headerCells.nth(0)).toHaveClass(cellClassname, { exact: true });
-  await expect
-    .element(headerCells.nth(1))
-    .toHaveClass(`${cellClassname} my-header`, { exact: true });
+  await expect.element(headerCells.nth(1)).toHaveClass(cellClassname, 'my-header', { exact: true });
 });
