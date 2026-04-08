@@ -102,49 +102,49 @@ test('virtualization is enabled', async () => {
   await assertHeaderCells(18, 0, 17);
   await assertRows(34, 0, 33);
   await assertCells(0, 18, 0, 17);
-  await scrollGrid({ top: 244 });
+  scrollGrid({ top: 244 });
   await assertRows(39, 2, 40);
 
-  await scrollGrid({ top: 245 });
+  scrollGrid({ top: 245 });
   await assertRows(38, 3, 40);
 
-  await scrollGrid({ top: 419 });
+  scrollGrid({ top: 419 });
   await assertRows(39, 7, 45);
 
-  await scrollGrid({ top: 420 });
+  scrollGrid({ top: 420 });
   await assertRows(38, 8, 45);
 
-  await scrollGrid({ top: 524 });
+  scrollGrid({ top: 524 });
   await assertRows(39, 10, 48);
 
-  await scrollGrid({ top: 525 });
+  scrollGrid({ top: 525 });
   await assertRows(38, 11, 48);
 
-  await scrollGrid({ top: 1000 });
+  scrollGrid({ top: 1000 });
   await assertRows(39, 24, 62);
 
   // scroll to the end
-  await scrollGrid({ top: 9999 });
+  scrollGrid({ top: 9999 });
   await assertRows(34, 66, 99);
 
-  await scrollGrid({ left: 92 });
+  scrollGrid({ left: 92 });
   await assertHeaderCells(18, 0, 17);
   await assertCells(66, 18, 0, 17);
 
-  await scrollGrid({ left: 93 });
+  scrollGrid({ left: 93 });
   await assertHeaderCells(19, 0, 18);
   await assertCells(66, 19, 0, 18);
 
-  await scrollGrid({ left: 209 });
+  scrollGrid({ left: 209 });
   await assertHeaderCells(19, 0, 18);
   await assertCells(66, 19, 0, 18);
 
-  await scrollGrid({ left: 210 });
+  scrollGrid({ left: 210 });
   await assertHeaderCells(18, 1, 18);
   await assertCells(66, 18, 1, 18);
 
   // scroll to the end
-  await scrollGrid({ left: 9999 });
+  scrollGrid({ left: 9999 });
   await assertHeaderCells(17, 13, 29);
   await assertCells(66, 17, 13, 29);
 });
@@ -156,13 +156,13 @@ test('virtualization is enabled with 4 frozen columns', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  await scrollGrid({ left: 1000 });
+  scrollGrid({ left: 1000 });
   indexes = [0, 1, 2, 3, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25];
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
   // scroll to the end
-  await scrollGrid({ left: 9999 });
+  scrollGrid({ left: 9999 });
   indexes = [0, 1, 2, 3, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
@@ -178,12 +178,12 @@ test('virtualization is enabled with all columns frozen', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  await scrollGrid({ left: 1000 });
+  scrollGrid({ left: 1000 });
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
   // scroll to the end
-  await scrollGrid({ left: 9999 });
+  scrollGrid({ left: 9999 });
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 });
@@ -196,7 +196,7 @@ test('virtualization is enabled with 2 summary rows', async () => {
     26, 27, 28, 29, 30, 31, 102, 103
   ]);
 
-  await scrollGrid({ top: 1000 });
+  scrollGrid({ top: 1000 });
   await assertRowIndexes([
     0, 1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
     48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 102, 103
