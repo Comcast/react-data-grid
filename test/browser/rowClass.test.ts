@@ -19,9 +19,9 @@ test('rowClass is undefined', async () => {
     rows: initialRows,
     rowClass: undefined
   });
-  await expect.element(rows.nth(0)).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
-  await expect.element(rows.nth(1)).toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
-  await expect.element(rows.nth(2)).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect.element(rows.nth(0)).toHaveClass(rowClassname, 'rdg-row-even', { exact: true });
+  await expect.element(rows.nth(1)).toHaveClass(rowClassname, 'rdg-row-odd', { exact: true });
+  await expect.element(rows.nth(2)).toHaveClass(rowClassname, 'rdg-row-even', { exact: true });
 });
 
 test('rowClass returns a string', async () => {
@@ -32,13 +32,13 @@ test('rowClass returns a string', async () => {
   });
   await expect
     .element(rows.nth(0))
-    .toHaveClass(`${rowClassname} rdg-row-even my-row-0`, { exact: true });
+    .toHaveClass(rowClassname, 'rdg-row-even my-row-0', { exact: true });
   await expect
     .element(rows.nth(1))
-    .toHaveClass(`${rowClassname} rdg-row-odd my-row-1`, { exact: true });
+    .toHaveClass(rowClassname, 'rdg-row-odd my-row-1', { exact: true });
   await expect
     .element(rows.nth(2))
-    .toHaveClass(`${rowClassname} rdg-row-even my-row-2`, { exact: true });
+    .toHaveClass(rowClassname, 'rdg-row-even my-row-2', { exact: true });
 });
 
 test('rowClass returns undefined', async () => {
@@ -47,7 +47,7 @@ test('rowClass returns undefined', async () => {
     rows: initialRows,
     rowClass: () => undefined
   });
-  await expect.element(rows.nth(0)).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
-  await expect.element(rows.nth(1)).toHaveClass(`${rowClassname} rdg-row-odd`, { exact: true });
-  await expect.element(rows.nth(2)).toHaveClass(`${rowClassname} rdg-row-even`, { exact: true });
+  await expect.element(rows.nth(0)).toHaveClass(rowClassname, 'rdg-row-even', { exact: true });
+  await expect.element(rows.nth(1)).toHaveClass(rowClassname, 'rdg-row-odd', { exact: true });
+  await expect.element(rows.nth(2)).toHaveClass(rowClassname, 'rdg-row-even', { exact: true });
 });

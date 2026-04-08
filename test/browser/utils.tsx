@@ -25,15 +25,9 @@ export async function validateCellPosition(columnIdx: number, rowIdx: number) {
   await expect.element(row).toHaveAttribute('aria-rowindex', `${rowIdx + 1}`);
 }
 
-export async function scrollGrid(options: ScrollToOptions) {
-  await new Promise((resolve) => {
-    // wait for browser state to stablize before scrolling, to avoid flaky scroll-related tests
-    requestAnimationFrame(() => {
-      const gridElement = page.getGrid().element();
-      gridElement.addEventListener('scrollend', resolve, { once: true });
-      gridElement.scroll(options);
-    });
-  });
+export function scrollGrid(options: ScrollToOptions) {
+  const grid = page.getGrid().element();
+  grid.scroll(options);
 }
 
 export function testCount(locator: Locator, expectedCount: number) {
