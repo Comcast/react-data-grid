@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "module": "NodeNext"
+  },
+  "include": ["eslint.config.ts"]
+}
