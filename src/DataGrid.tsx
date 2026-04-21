@@ -477,6 +477,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       } else {
         focusCell(gridRef.current!);
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldFocusPosition(false);
     }
   }, [shouldFocusPosition, activePositionIsRow, gridRef]);
