@@ -1,0 +1,2 @@
+import{n as e,r as t}from"./directionContext-CUUcuVMv.js";import{r as n}from"./index-D-28K3gl.js";import{t as r}from"./DataGrid-D58JN1q6.js";var i=t(),a=Array.from({length:500},(e,t)=>t),o=[];for(let e=0;e<30;e++){let t=String(e);o.push({key:t,name:t,frozen:e<5,resizable:!0,renderCell:n})}function s(){return(0,i.jsx)(r,{"aria-label":`Variable Row Height Example`,columns:o,rows:a,rowHeight:c,className:`fill-grid`,direction:e()})}function c(){return 25+Math.round(Math.random()*75)}export{s as component};
+//# sourceMappingURL=VariableRowHeight-BAj6mIZe.js.map
