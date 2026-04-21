@@ -2,32 +2,9 @@ import { memo } from 'react';
 import { css } from 'ecij';
 
 import { classnames } from './utils';
-import type { RenderRowProps } from './types';
-import {
-  bottomSummaryRowClassname,
-  rowClassname,
-  rowActiveClassname,
-  topSummaryRowClassname
-} from './style/row';
+import type { RenderSummaryRowProps } from './types';
+import { bottomSummaryRowClassname, rowClassname, topSummaryRowClassname } from './style/row';
 import SummaryCell from './SummaryCell';
-
-type SharedRenderRowProps<R, SR> = Pick<
-  RenderRowProps<R, SR>,
-  | 'iterateOverViewportColumnsForRow'
-  | 'rowIdx'
-  | 'gridRowStart'
-  | 'setActivePosition'
-  | 'activeCellIdx'
-  | 'isTreeGrid'
->;
-
-interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
-  'aria-rowindex': number;
-  row: SR;
-  top: number | undefined;
-  bottom: number | undefined;
-  isTop: boolean;
-}
 
 const summaryRow = css`
   @layer rdg.SummaryRow {
@@ -39,6 +16,8 @@ const summaryRow = css`
 const summaryRowClassname = `rdg-summary-row ${summaryRow}`;
 
 function SummaryRow<R, SR>({
+  tabIndex,
+  className,
   rowIdx,
   gridRowStart,
   row,
@@ -48,11 +27,8 @@ function SummaryRow<R, SR>({
   top,
   bottom,
   isTop,
-  isTreeGrid,
   'aria-rowindex': ariaRowIndex
-}: SummaryRowProps<R, SR>) {
-  const isPositionOnRow = activeCellIdx === -1;
-
+}: RenderSummaryRowProps<R, SR>) {
   const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
     .map(([column, isCellActive, colSpan]) => (
       <SummaryCell<R, SR>
@@ -71,13 +47,13 @@ function SummaryRow<R, SR>({
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
-      tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
+      tabIndex={tabIndex}
       className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
         isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
-        isPositionOnRow && rowActiveClassname
+        className
       )}
       style={{
         gridRowStart,
@@ -90,4 +66,15 @@ function SummaryRow<R, SR>({
   );
 }
 
-export default memo(SummaryRow) as <R, SR>(props: SummaryRowProps<R, SR>) => React.JSX.Element;
+const SummaryRowComponent = memo(SummaryRow) as <R, SR>(
+  props: RenderSummaryRowProps<R, SR>
+) => React.JSX.Element;
+
+export default SummaryRowComponent;
+
+export function defaultRenderSummaryRow<R, SR>(
+  key: React.Key,
+  props: RenderSummaryRowProps<R, SR>
+) {
+  return <SummaryRowComponent key={key} {...props} />;
+}
