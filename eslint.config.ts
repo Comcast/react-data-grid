@@ -255,10 +255,10 @@ export default defineConfig([
       'unicode-bom': 1,
 
       // React Hooks
-      // https://www.npmjs.com/package/eslint-plugin-react-hooks
+      // https://github.com/facebook/react/tree/main/packages/eslint-plugin-react-hooks
+      // https://react.dev/reference/eslint-plugin-react-hooks
       'react-hooks/rules-of-hooks': 1,
       'react-hooks/exhaustive-deps': 1,
-      'react-hooks/component-hook-factories': 1,
       'react-hooks/config': 1,
       'react-hooks/error-boundaries': 1,
       'react-hooks/gating': 1,
@@ -365,9 +365,11 @@ copy(
       '@eslint-react/jsx-no-children-prop': 1,
       '@eslint-react/jsx-no-children-prop-with-children': 1,
       '@eslint-react/jsx-no-comment-textnodes': 1,
-      '@eslint-react/jsx-no-useless-fragment': [1, { allowExpressions: false }],
       '@eslint-react/jsx-no-key-after-spread': 1,
+      '@eslint-react/jsx-no-leaked-dollar': 1,
+      '@eslint-react/jsx-no-leaked-semicolon': 1,
       '@eslint-react/jsx-no-namespace': 1,
+      '@eslint-react/jsx-no-useless-fragment': [1, { allowExpressions: false }],
       '@eslint-react/rsc-function-definition': 1,
       '@eslint-react/dom-no-dangerously-set-innerhtml': 1,
       '@eslint-react/dom-no-dangerously-set-innerhtml-with-children': 1,
@@ -395,7 +397,7 @@ copy(
       '@eslint-react/naming-convention-ref-name': 1,
 
       // SonarJS rules
-      // https://github.com/SonarSource/SonarJS/blob/master/packages/jsts/src/rules/README.md#rules
+      // https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md#rules
       /*
 // copy all the rules from the rules table for easy pasting
 copy(
@@ -442,11 +444,12 @@ copy(
       'sonarjs/aws-sqs-unencrypted-queue': 0,
       'sonarjs/bitwise-operators': 1,
       'sonarjs/block-scoped-var': 1,
-      'sonarjs/bool-param-default': 0,
+      'sonarjs/bool-param-default': 1,
       'sonarjs/call-argument-line': 1,
       'sonarjs/chai-determinate-assertion': 1,
       'sonarjs/class-name': 1,
       'sonarjs/class-prototype': 1,
+      'sonarjs/code-eval': 1,
       'sonarjs/cognitive-complexity': 0,
       'sonarjs/comma-or-logical-or-case': 1,
       'sonarjs/comment-regex': 1,
@@ -466,6 +469,7 @@ copy(
       'sonarjs/disabled-auto-escaping': 1,
       'sonarjs/disabled-resource-integrity': 1,
       'sonarjs/disabled-timeout': 1,
+      'sonarjs/dompurify-unsafe-config': 1,
       'sonarjs/duplicates-in-character-class': 1,
       'sonarjs/dynamically-constructed-templates': 1,
       'sonarjs/elseif-without-else': 0,
@@ -517,7 +521,7 @@ copy(
       'sonarjs/no-code-after-done': 1,
       'sonarjs/no-collapsible-if': 1,
       'sonarjs/no-collection-size-mischeck': 1,
-      'sonarjs/no-commented-code': 0,
+      'sonarjs/no-commented-code': 1,
       'sonarjs/no-control-regex': 1,
       'sonarjs/no-dead-store': 1,
       'sonarjs/no-delete-var': 1,
@@ -598,7 +602,6 @@ copy(
       'sonarjs/no-undefined-assignment': 0,
       'sonarjs/no-unenclosed-multiline-block': 1,
       'sonarjs/no-uniq-key': 1,
-      'sonarjs/no-unsafe-unzip': 1,
       'sonarjs/no-unthrown-error': 1,
       'sonarjs/no-unused-collection': 1,
       'sonarjs/no-unused-function-argument': 1,
@@ -617,7 +620,6 @@ copy(
       'sonarjs/null-dereference': 1,
       'sonarjs/object-alt-content': 1,
       'sonarjs/operation-returning-nan': 1,
-      'sonarjs/os-command': 1,
       'sonarjs/post-message': 1,
       'sonarjs/prefer-default-last': 1,
       'sonarjs/prefer-immediate-return': 1,
@@ -1025,21 +1027,6 @@ copy(
 
     rules: {
       'no-console': 0
-    }
-  },
-
-  {
-    name: 'node',
-
-    files: ['**/*.js'],
-
-    rules: {
-      // Best Practices
-      'default-param-last': 1,
-      // Possible Errors
-      'no-console': 0,
-      'no-undef': 1,
-      'no-use-before-define': [1, { functions: false, classes: false, variables: false }]
     }
   },
 
