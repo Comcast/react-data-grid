@@ -11,6 +11,10 @@
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "js/ts.experimental.useTsgo": true,
+  "eslint.options": {
+    "flags": ["unstable_native_nodejs_ts_config"]
+  },
+  "eslint.problems.shortenToSingleLine": true,
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },

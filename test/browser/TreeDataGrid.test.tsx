@@ -123,8 +123,7 @@ function TestGrid({
 }
 
 function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
+  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }
 
 function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
