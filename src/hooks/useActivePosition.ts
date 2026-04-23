@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import { focusCell, focusRow } from '../utils';
 import type { CalculatedColumn, Position, StateSetter } from '../types';
@@ -45,6 +45,7 @@ export function useActivePosition<R, SR>({
   const [positionToFocus, setPositionToFocus] = useState<ActivePosition | EditPosition<R> | null>(
     null
   );
+  const positionToFocusRef = useRef<ActivePosition | EditPosition<R>>(null);
 
   /**
    * Returns whether the given position represents a valid cell or row position in the grid.
@@ -133,7 +134,15 @@ export function useActivePosition<R, SR>({
   }
 
   useLayoutEffect(() => {
-    if (positionToFocus !== null) {
+    // Layout effects clean up when the component is replaced by a suspense fallback,
+    // or when under <Activity mode="hidden">, then re-mounts when the suspense boundary cleans,
+    // or when Activity switches back to `mode="visible"`.
+    // So we use a ref to:
+    // 1. avoid re-focusing after the effect re-mounts
+    // 2. avoid re-rendering by not re-setting the state
+    if (positionToFocus !== null && positionToFocus !== positionToFocusRef.current) {
+      positionToFocusRef.current = positionToFocus;
+
       if (positionToFocus.idx === -1) {
         focusRow(gridRef.current!);
       } else {

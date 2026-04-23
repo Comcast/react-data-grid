@@ -7,7 +7,7 @@ beforeEach(({ onTestFinished }) => {
     // https://github.com/vitest-dev/vitest/blob/0685b6f027576589464fc6109ddc071ef0079f16/packages/browser/src/client/public/error-catcher.js#L34-L38
     // https://github.com/vitest-dev/vitest/blob/0685b6f027576589464fc6109ddc071ef0079f16/test/browser/fixtures/unhandled-non-error/basic.test.ts
     if (
-      params[0] instanceof Error &&
+      Error.isError(params[0]) &&
       params[0].message === 'ResizeObserver loop completed with undelivered notifications.'
     ) {
       return;
