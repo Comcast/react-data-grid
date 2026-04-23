@@ -1,13 +1,11 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
+    "source.organizeLinkDefinitions": "explicit",
     "source.removeUnusedImports": "explicit",
-    // prevent removal of unreachable code
-    "source.fixAll.ts": "never"
+    "source.format.oxc": "explicit"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "js/ts.experimental.useTsgo": true,
