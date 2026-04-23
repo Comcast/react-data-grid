@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, useSyncExternalStore, type RefObject } from 'react';
 
 const initialSize: ResizeObserverSize = {
   inlineSize: 1,
@@ -43,35 +43,36 @@ function getServerSnapshot(): ResizeObserverSize {
   return initialSize;
 }
 
-export function useGridDimensions() {
-  const ref = useRef<HTMLDivElement>(null);
+export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null>) {
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      subscribers.set(gridRef, onStoreChange);
 
-  const subscribe = useCallback((onStoreChange: () => void) => {
-    subscribers.set(ref, onStoreChange);
-
-    return () => {
-      subscribers.delete(ref);
-    };
-  }, []);
+      return () => {
+        subscribers.delete(gridRef);
+      };
+    },
+    [gridRef]
+  );
 
   const getSnapshot = useCallback((): ResizeObserverSize => {
     // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
     // We use ref as key instead to access stable values regardless of rendering state.
-    return sizeMap.has(ref) ? sizeMap.get(ref)! : initialSize;
-  }, []);
+    return sizeMap.has(gridRef) ? sizeMap.get(gridRef)! : initialSize;
+  }, [gridRef]);
 
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.
   const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useLayoutEffect(() => {
-    const target = ref.current!;
+    const target = gridRef.current!;
 
-    targetToRefMap.set(target, ref);
+    targetToRefMap.set(target, gridRef);
     resizeObserver?.observe(target);
 
-    if (!sizeMap.has(ref)) {
-      updateSize(ref, {
+    if (!sizeMap.has(gridRef)) {
+      updateSize(gridRef, {
         inlineSize: target.clientWidth,
         blockSize: target.clientHeight
       });
@@ -80,7 +81,7 @@ export function useGridDimensions() {
     return () => {
       resizeObserver?.unobserve(target);
     };
-  }, []);
+  }, [gridRef]);
 
-  return [ref, inlineSize, blockSize] as const;
+  return [inlineSize, blockSize] as const;
 }

@@ -2,6 +2,7 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
+import { Features } from 'lightningcss';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import type { BrowserCommand } from 'vitest/node';
 
@@ -56,9 +57,24 @@ export default defineConfig(
     build: {
       modulePreload: { polyfill: false },
       sourcemap: true,
-      reportCompressedSize: false,
-      // https://github.com/parcel-bundler/lightningcss/issues/873
-      cssTarget: 'esnext'
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                name: 'faker',
+                test: '@faker-js/faker'
+              }
+            ]
+          }
+        }
+      }
+    },
+    css: {
+      lightningcss: {
+        // https://github.com/parcel-bundler/lightningcss/issues/873
+        exclude: Features.Nesting | Features.LightDark
+      }
     },
     plugins: isPreview
       ? []
