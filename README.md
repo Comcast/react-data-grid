@@ -6,16 +6,6 @@
 [![codecov-badge]][codecov-url]
 [![ci-badge]][ci-url]
 
-[npm-badge]: https://img.shields.io/npm/v/react-data-grid
-[npm-url]: https://www.npmjs.com/package/react-data-grid
-[size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid
-[size-url]: https://bundlephobia.com/package/react-data-grid
-[type-badge]: https://img.shields.io/npm/types/react-data-grid
-[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
-[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
-[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
-[ci-url]: https://github.com/Comcast/react-data-grid/actions
-
 The DataGrid component is designed to handle large datasets efficiently while offering a rich set of features for customization and interactivity.
 
 ## Table of contents
@@ -620,9 +610,9 @@ See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type in the 
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
-###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
+###### `onScroll?: React.UIEventHandler<HTMLDivElement> | undefined`
 
-Callback triggered when the grid is scrolled.
+Native DOM `onScroll` prop.
 
 ###### `onColumnResize?: Maybe<(column: CalculatedColumn<R, SR>, width: number) => void>`
 
@@ -2110,3 +2100,13 @@ type Maybe<T> = T | undefined | null;
 - `R`, `TRow`: Row type
 - `SR`, `TSummaryRow`: Summary row type
 - `K`: Row key type
+
+[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
+[ci-url]: https://github.com/Comcast/react-data-grid/actions
+[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
+[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
+[npm-badge]: https://img.shields.io/npm/v/react-data-grid
+[npm-url]: https://www.npmjs.com/package/react-data-grid
+[size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid
+[size-url]: https://bundlephobia.com/package/react-data-grid
+[type-badge]: https://img.shields.io/npm/types/react-data-grid

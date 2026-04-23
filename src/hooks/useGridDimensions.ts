@@ -1,8 +1,11 @@
-import { useDeferredValue, useLayoutEffect, useRef, useState } from 'react';
+import { useDeferredValue, useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-export function useGridDimensions() {
-  const gridRef = useRef<HTMLDivElement>(null);
+export function useGridDimensions({
+  gridRef
+}: {
+  gridRef: React.RefObject<HTMLDivElement | null>;
+}) {
   const [inlineSize, setInlineSize] = useState(1);
   const [blockSize, setBlockSize] = useState(1);
   const deferredInlineSize = useDeferredValue(inlineSize, -1);
@@ -33,7 +36,7 @@ export function useGridDimensions() {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [gridRef]);
 
-  return [gridRef, inlineSize, blockSize, isResizingWidth] as const;
+  return [inlineSize, blockSize, isResizingWidth] as const;
 }
