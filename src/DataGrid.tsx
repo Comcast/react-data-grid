@@ -313,7 +313,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * states
    */
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
-  const [gridWidth, gridHeight] = useGridDimensions({ gridRef });
+  const [gridWidth, gridHeight] = useGridDimensions(gridRef);
   const [columnWidthsInternal, setColumnWidthsInternal] = useState(
     (): ColumnWidths => columnWidthsRaw ?? new Map()
   );
