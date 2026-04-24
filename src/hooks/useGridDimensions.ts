@@ -58,7 +58,7 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
   const getSnapshot = useCallback((): ResizeObserverSize => {
     // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
     // We use ref as key instead to access stable values regardless of rendering state.
-    return sizeMap.has(gridRef) ? sizeMap.get(gridRef)! : initialSize;
+    return sizeMap.get(gridRef) ?? initialSize;
   }, [gridRef]);
 
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
