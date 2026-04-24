@@ -96,7 +96,7 @@ function getColumns(
     {
       key: 'title',
       name: 'Task',
-      frozen: true,
+      frozen: 'start',
       renderEditCell: renderTextEditor,
       renderSummaryCell({ row }) {
         return `${row.totalCount} records`;
@@ -225,6 +225,7 @@ function getColumns(
     {
       key: 'available',
       name: 'Available',
+      frozen: 'end',
       renderCell({ row, onRowChange, tabIndex }) {
         return (
           <SelectCellFormatter

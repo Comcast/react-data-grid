@@ -46,8 +46,9 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Enables cell editing. If set and no editor property specified, then a textinput will be used as the cell editor */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
-  /** Determines whether column is frozen */
-  readonly frozen?: Maybe<boolean>;
+  /** Determines whether column is frozen, and on which edge.
+   *  `true` is an alias for `'start'` for backwards compatibility. */
+  readonly frozen?: Maybe<boolean | 'start' | 'end'>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */
@@ -88,7 +89,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly resizable: boolean;
   readonly sortable: boolean;
   readonly draggable: boolean;
-  readonly frozen: boolean;
+  readonly frozen: boolean | 'start' | 'end';
   readonly renderCell: (props: RenderCellProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellProps<TRow, TSummaryRow>) => ReactNode;
 }
