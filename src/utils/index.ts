@@ -1,4 +1,9 @@
-import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
+import type {
+  CalculatedColumn,
+  CalculatedColumnOrColumnGroup,
+  ColumnFrozen,
+  Maybe
+} from '../types';
 
 export * from './activePositionUtils';
 export * from './colSpanUtils';
@@ -40,6 +45,6 @@ export function getHeaderCellRowSpan<R, SR>(
 }
 
 // Shared predicate — `frozen: true` is the backwards-compatible alias for `frozen: 'start'`.
-export function isStartFrozen(frozen: boolean | 'start' | 'end'): boolean {
+export function isStartFrozen(frozen: ColumnFrozen): boolean {
   return frozen === true || frozen === 'start';
 }

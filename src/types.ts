@@ -48,7 +48,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
   /** Determines whether column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backwards compatibility. */
-  readonly frozen?: Maybe<boolean | 'start' | 'end'>;
+  readonly frozen?: Maybe<ColumnFrozen>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */
@@ -89,7 +89,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly resizable: boolean;
   readonly sortable: boolean;
   readonly draggable: boolean;
-  readonly frozen: boolean | 'start' | 'end';
+  readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellProps<TRow, TSummaryRow>) => ReactNode;
 }
@@ -332,6 +332,7 @@ export interface SortColumn {
 }
 
 export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
+export type ColumnFrozen = boolean | 'start' | 'end';
 export type SortDirection = 'ASC' | 'DESC';
 
 export type ColSpanArgs<TRow, TSummaryRow> =

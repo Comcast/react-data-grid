@@ -74,11 +74,11 @@ import { default as defaultRenderSortStatus } from './sortStatus';
 import { cellDragHandleClassname, cellDragHandleFrozenClassname } from './style/cell';
 import {
   rootClassname,
-  frozenColumnShadowClassname,
   frozenColumnShadowEndClassname,
-  viewportDraggingClassname,
+  frozenColumnShadowEndTopClassname,
+  frozenColumnShadowStartClassname,
   frozenColumnShadowTopClassname,
-  frozenColumnShadowEndTopClassname
+  viewportDraggingClassname
 } from './style/core';
 import SummaryRow from './SummaryRow';
 
@@ -1292,7 +1292,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {lastFrozenColumnIndex > -1 &&
         renderFrozenShadow(
           frozenShadowStyles,
-          frozenColumnShadowClassname,
+          frozenColumnShadowStartClassname,
           frozenColumnShadowTopClassname
         )}
 
