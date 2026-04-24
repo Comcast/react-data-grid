@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
 
 import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
-import type { CalculatedColumn, CalculatedColumnParent, ColumnOrColumnGroup, Omit } from '../types';
+import type {
+  CalculatedColumn,
+  CalculatedColumnParent,
+  ColumnFrozen,
+  ColumnOrColumnGroup,
+  Omit
+} from '../types';
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
 import type { DataGridProps } from '../DataGrid';
@@ -94,7 +100,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen: boolean | 'start' | 'end' = rawColumn.frozen ?? false;
+        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
         const column: MutableCalculatedColumn<R, SR> = {
           ...rawColumn,

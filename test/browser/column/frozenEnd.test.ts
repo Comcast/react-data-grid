@@ -344,3 +344,40 @@ test('no unfrozen columns — one start + one end', async () => {
   await expect.element(cellA).toHaveClass(cellClassname, cellFrozenClassname, { exact: true });
   await expect.element(cellB).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
+
+test('selection outline paints on edge-frozen cells when row is active', async () => {
+  interface R {
+    id: number;
+    name: string;
+    trailing: string;
+  }
+  const columns: readonly Column<R>[] = [
+    { key: 'id', name: 'ID', frozen: 'start', width: 60 },
+    { key: 'name', name: 'Name', width: 100 },
+    { key: 'trailing', name: 'Trail', frozen: 'end', width: 80 }
+  ];
+  const rows: readonly R[] = [{ id: 1, name: 'one', trailing: 't1' }];
+
+  await setup({ columns, rows });
+
+  // Trigger the `&[tabindex='0']` rule by setting the attribute directly
+  const firstRow = page.getRow().nth(0).element() as HTMLElement;
+  firstRow.setAttribute('tabindex', '0');
+
+  const cells = firstRow.children;
+  const startCell = cells[0] as HTMLElement;
+  const endCell = cells[cells.length - 1] as HTMLElement;
+
+  const beforeStyle = getComputedStyle(startCell, '::before');
+  const afterStyle = getComputedStyle(endCell, '::after');
+
+  // Shared block (combined selector): both pseudo-elements get the same base properties.
+  expect(beforeStyle.content).toBe('""');
+  expect(beforeStyle.position).toBe('absolute');
+  expect(afterStyle.content).toBe('""');
+  expect(afterStyle.position).toBe('absolute');
+
+  // Direction-specific (split selectors): start gets inline-start border, end gets inline-end.
+  expect(beforeStyle.borderInlineStartWidth).not.toBe('0px');
+  expect(afterStyle.borderInlineEndWidth).not.toBe('0px');
+});
