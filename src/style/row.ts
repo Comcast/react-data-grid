@@ -1,6 +1,6 @@
 import { css } from 'ecij';
 
-import { cellFrozen } from './cell';
+import { cellFrozen, cellFrozenEnd } from './cell';
 
 export const row = css`
   @layer rdg.Row {
@@ -34,6 +34,15 @@ export const row = css`
         inset-block: 0;
         inset-inline-start: 0;
         border-inline-start: var(--rdg-selection-width) solid var(--rdg-selection-color);
+      }
+
+      & > .${cellFrozenEnd}:last-child::after {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0;
+        border-inline-end: var(--rdg-selection-width) solid var(--rdg-selection-color);
       }
     }
 

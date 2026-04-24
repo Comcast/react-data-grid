@@ -38,3 +38,8 @@ export function getHeaderCellRowSpan<R, SR>(
 ) {
   return column.parent === undefined ? rowIdx : column.level - column.parent.level;
 }
+
+// Shared predicate — `frozen: true` is the backwards-compatible alias for `frozen: 'start'`.
+export function isStartFrozen(frozen: boolean | 'start' | 'end'): boolean {
+  return frozen === true || frozen === 'start';
+}

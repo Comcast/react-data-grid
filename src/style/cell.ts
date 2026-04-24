@@ -40,6 +40,16 @@ export const cellFrozen = css`
 
 export const cellFrozenClassname = `rdg-cell-frozen ${cellFrozen}`;
 
+export const cellFrozenEnd = css`
+  @layer rdg.Cell {
+    position: sticky;
+    /* Should have a higher value than 0 to show up above unfrozen cells */
+    z-index: 1;
+  }
+`;
+
+export const cellFrozenEndClassname = `rdg-cell-frozen-end ${cellFrozenEnd}`;
+
 const cellDragHandle = css`
   @layer rdg.DragHandle {
     --rdg-drag-handle-size: 8px;

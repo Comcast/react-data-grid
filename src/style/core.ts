@@ -117,9 +117,36 @@ export const frozenColumnShadowClassname = css`
   }
 `;
 
+// Add shadow before the first end-frozen cell (mirror of the start shadow)
+export const frozenColumnShadowEndClassname = css`
+  position: sticky;
+  width: 10px;
+  background-image: linear-gradient(
+    to left,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+
+  opacity: 1;
+  transition: opacity 0.1s;
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-end) {
+    opacity: 0;
+  }
+
+  &:dir(rtl) {
+    transform: scaleX(-1);
+  }
+`;
+
 const topShadowClassname = css`
   /* render above header and summary rows */
   z-index: 2;
 `;
 
 export const frozenColumnShadowTopClassname = `${frozenColumnShadowClassname} ${topShadowClassname}`;
+
+export const frozenColumnShadowEndTopClassname = `${frozenColumnShadowEndClassname} ${topShadowClassname}`;

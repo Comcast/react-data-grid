@@ -1,5 +1,6 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { cellClassname, cellFrozenClassname } from '../style/cell';
+import { isStartFrozen } from './index';
+import { cellClassname, cellFrozenClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,
@@ -34,7 +35,10 @@ export function getCellStyle<R, SR>(
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined
+    insetInlineStart: isStartFrozen(column.frozen)
+      ? `var(--rdg-frozen-left-${column.idx})`
+      : undefined,
+    insetInlineEnd: column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx})` : undefined
   };
 }
 
@@ -56,5 +60,10 @@ export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
-  return classnames(cellClassname, column.frozen && cellFrozenClassname, ...extraClasses);
+  return classnames(
+    cellClassname,
+    isStartFrozen(column.frozen) && cellFrozenClassname,
+    column.frozen === 'end' && cellFrozenEndClassname,
+    ...extraClasses
+  );
 }
