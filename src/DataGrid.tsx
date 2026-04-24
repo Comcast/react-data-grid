@@ -313,7 +313,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * states
    */
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
-  const [gridWidth, gridHeight, isResizingWidth] = useGridDimensions({ gridRef });
+  const [gridWidth, gridHeight, isResizingWidth] = useGridDimensions(gridRef);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
