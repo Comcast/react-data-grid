@@ -8,7 +8,6 @@
     "jsx": "react-jsx",
     "lib": [],
     "moduleDetection": "force",
-    "moduleResolution": "bundler",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "./.cache/ts",
