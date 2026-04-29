@@ -7,17 +7,13 @@ const cellExpandClassname = css`
   cursor: pointer;
 `;
 
-interface CellExpanderFormatterProps {
+interface CellExpanderProps {
   tabIndex: number;
   expanded: boolean;
   onCellExpand: () => void;
 }
 
-export function CellExpanderFormatter({
-  tabIndex,
-  expanded,
-  onCellExpand
-}: CellExpanderFormatterProps) {
+export function CellExpander({ tabIndex, expanded, onCellExpand }: CellExpanderProps) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLSpanElement>) {
     if (e.key === ' ' || e.key === 'Enter') {
       // prevent scrolling

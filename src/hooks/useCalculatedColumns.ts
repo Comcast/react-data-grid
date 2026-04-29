@@ -5,7 +5,7 @@ import type { CalculatedColumn, CalculatedColumnParent, ColumnOrColumnGroup, Omi
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
 import type { DataGridProps } from '../DataGrid';
-import renderHeaderCell from '../renderHeaderCell';
+import { renderHeaderCell } from '../renderHeaderCell';
 
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P] extends readonly (infer V)[] ? Mutable<V>[] : T[P];
@@ -225,7 +225,7 @@ export function useCalculatedColumns<R, SR>({
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
       const { left, width } = columnMetrics.get(columns[colVisibleStartIdx])!;
-      // if the right side of the columnn is beyond the left side of the available viewport,
+      // if the right side of the column is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
         break;
@@ -238,7 +238,7 @@ export function useCalculatedColumns<R, SR>({
     while (colVisibleEndIdx < lastColIdx) {
       const { left, width } = columnMetrics.get(columns[colVisibleEndIdx])!;
       // if the right side of the column is beyond or equal to the right side of the available viewport,
-      // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
+      // then it is the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (left + width >= viewportRight) {
         break;
       }
