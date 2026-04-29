@@ -1,4 +1,4 @@
-import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
+import type { CalculatedColumnOrColumnGroup, Maybe } from '../types';
 
 export * from './activePositionUtils';
 export * from './colSpanUtils';
@@ -16,20 +16,6 @@ export function assertIsValidKeyGetter<R, K extends React.Key>(
   if (typeof keyGetter !== 'function') {
     throw new Error('Please specify the rowKeyGetter prop to use selection');
   }
-}
-
-export function clampColumnWidth<R, SR>(
-  width: number,
-  { minWidth, maxWidth }: CalculatedColumn<R, SR>
-): number {
-  width = max(width, minWidth);
-
-  // ignore maxWidth if it less than minWidth
-  if (typeof maxWidth === 'number' && maxWidth >= minWidth) {
-    return min(width, maxWidth);
-  }
-
-  return width;
 }
 
 export function getHeaderCellRowSpan<R, SR>(

@@ -123,9 +123,8 @@ test('virtualization is enabled', async () => {
   scrollGrid({ top: 1000 });
   await assertRows(39, 24, 62);
 
-  // scroll height = header height + row height * row count
-  // max top = scroll height - grid height
-  scrollGrid({ top: rowHeight + rowHeight * 100 - 1080 });
+  // scroll to the end
+  scrollGrid({ top: 9999 });
   await assertRows(34, 66, 99);
 
   scrollGrid({ left: 92 });
@@ -144,8 +143,8 @@ test('virtualization is enabled', async () => {
   await assertHeaderCells(18, 1, 18);
   await assertCells(66, 18, 1, 18);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   await assertHeaderCells(17, 13, 29);
   await assertCells(66, 17, 13, 29);
 });
@@ -162,8 +161,8 @@ test('virtualization is enabled with 4 frozen columns', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   indexes = [0, 1, 2, 3, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
@@ -183,8 +182,8 @@ test('virtualization is enabled with all columns frozen', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 });
@@ -236,10 +235,7 @@ test('virtualization is disabled with no frozen columns', async () => {
   await expect.element(cells).toHaveLength(40 * 100);
 });
 
-// failing test
-// cannot use `test.fails` as console logs lead to timeout in parallel tests
-// https://github.com/vitest-dev/vitest/issues/9941
-test.skip('virtualization is disabled with some frozen columns', async () => {
+test('virtualization is disabled with some frozen columns', async () => {
   await setupGrid(false, 40, 100, 3);
 
   await assertHeaderCells(40, 0, 39);

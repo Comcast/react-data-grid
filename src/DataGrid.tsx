@@ -1,4 +1,4 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -313,51 +313,37 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * states
    */
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
-  const [gridWidth, gridHeight] = useGridDimensions(gridRef);
-  const [columnWidthsInternal, setColumnWidthsInternal] = useState(
-    (): ColumnWidths => columnWidthsRaw ?? new Map()
-  );
-  const [isColumnResizing, setIsColumnResizing] = useState(false);
+  const [gridWidth, gridHeight, isResizingWidth] = useGridDimensions(gridRef);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
 
-  const isColumnWidthsControlled =
-    columnWidthsRaw != null && onColumnWidthsChangeRaw != null && !isColumnResizing;
-  const columnWidths = isColumnWidthsControlled ? columnWidthsRaw : columnWidthsInternal;
-  const onColumnWidthsChange = isColumnWidthsControlled
-    ? (columnWidths: ColumnWidths) => {
-        // we keep the internal state in sync with the prop but this prevents an extra render
-        setColumnWidthsInternal(columnWidths);
-        onColumnWidthsChangeRaw(columnWidths);
-      }
-    : setColumnWidthsInternal;
-
-  const getColumnWidth = useCallback(
-    (column: CalculatedColumn<R, SR>) => {
-      return columnWidths.get(column.key)?.width ?? column.width;
-    },
-    [columnWidths]
-  );
+  const { columns, colSpanColumns, lastFrozenColumnIndex, headerRowsCount } = useCalculatedColumns({
+    rawColumns,
+    defaultColumnOptions
+  });
 
   const {
-    columns,
-    colSpanColumns,
-    lastFrozenColumnIndex,
-    headerRowsCount,
     colOverscanStartIdx,
     colOverscanEndIdx,
-    templateColumns,
+    totalFrozenColumnWidth,
     layoutCssVars,
-    totalFrozenColumnWidth
-  } = useCalculatedColumns({
-    rawColumns,
-    defaultColumnOptions,
-    getColumnWidth,
+    columnMetrics,
+    observeMeasuringCellRef,
+    handleColumnResizeLatest,
+    handleColumnResizeEndLatest
+  } = useColumnWidths(
+    gridRef,
+    columns,
+    lastFrozenColumnIndex,
+    gridWidth,
     scrollLeft,
-    viewportWidth: gridWidth,
-    enableVirtualization
-  });
+    isResizingWidth,
+    enableVirtualization,
+    columnWidthsRaw,
+    onColumnResize,
+    onColumnWidthsChangeRaw
+  );
 
   /**
    * computed values
@@ -471,23 +457,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     bottomSummaryRows
   });
 
-  const { gridTemplateColumns, handleColumnResize } = useColumnWidths(
-    columns,
-    viewportColumns,
-    templateColumns,
-    gridRef,
-    gridWidth,
-    columnWidths,
-    onColumnWidthsChange,
-    onColumnResize,
-    setIsColumnResizing
-  );
-
   /**
    * The identity of the wrapper function is stable so it won't break memoization
    */
-  const handleColumnResizeLatest = useLatestFunc(handleColumnResize);
-  const handleColumnResizeEndLatest = useLatestFunc(handleColumnResizeEnd);
   const onColumnsReorderLastest = useLatestFunc(onColumnsReorder);
   const onSortColumnsChangeLatest = useLatestFunc(onSortColumnsChange);
   const onCellMouseDownLatest = useLatestFunc(onCellMouseDown);
@@ -681,21 +653,17 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
-      setActivePosition(({ idx, rowIdx }) => ({
-        idx,
-        rowIdx,
-        mode: 'EDIT',
-        row,
-        originalRow: row
-      }));
-    }
-  }
-
-  function handleColumnResizeEnd() {
-    // This check is needed as double click on the resize handle triggers onPointerMove
-    if (isColumnResizing) {
-      onColumnWidthsChangeRaw?.(columnWidths);
-      setIsColumnResizing(false);
+      // ensure we render the editor quickly enough,
+      // otherwise the user input might be lost in Firefox
+      flushSync(() => {
+        setActivePosition(({ idx, rowIdx }) => ({
+          idx,
+          rowIdx,
+          mode: 'EDIT',
+          row,
+          originalRow: row
+        }));
+      });
     }
   }
 
@@ -936,8 +904,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     const isLastRow = rowIdx === maxRowIdx;
-    const columnWidth = getColumnWidth(column);
-    const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
+    const columnWidth = columnMetrics.get(column)?.width ?? 0;
+    const colSpan =
+      getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row: getActiveRow() }) ?? 1;
     const { insetInlineStart, ...style } = getCellStyle(column, colSpan);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
     const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
@@ -1081,10 +1050,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   }
 
   // Keep the state and prop in sync
-  if (isColumnWidthsControlled && columnWidthsInternal !== columnWidthsRaw) {
-    setColumnWidthsInternal(columnWidthsRaw);
-  }
-
   let templateRows = `repeat(${headerRowsCount}, ${headerRowHeight}px)`;
   if (topSummaryRowsCount > 0) {
     templateRows += ` repeat(${topSummaryRowsCount}, ${summaryRowHeight}px)`;
@@ -1116,7 +1081,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         scrollPaddingInlineStart: totalFrozenColumnWidth,
         scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
         scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
-        gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
         ...layoutCssVars
@@ -1271,7 +1235,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {getDragHandle()}
 
       {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
-      {renderMeasuringCells(viewportColumns)}
+      {renderMeasuringCells(viewportColumns, observeMeasuringCellRef)}
 
       {scrollToPositionElement}
     </div>

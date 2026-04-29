@@ -34,7 +34,12 @@ export function getCellStyle<R, SR>(
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined
+    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined,
+    // minWidth/maxWidth constraints must be set on all cells for auto/min-content/max-content to work correctly,
+    // otherwise when auto-sizing a column, its width may be greater than `max-width`,
+    // leaving less room for other columns to grow, which in turn will not be adjusted correctly.
+    minWidth: column.minWidth,
+    maxWidth: colSpan === 1 ? column.maxWidth : undefined
   };
 }
 

@@ -18,54 +18,67 @@ interface Row {
 describe('Editor', () => {
   it('should open editor on double click', async () => {
     await page.render(<EditorTest />);
-    await userEvent.click(getCellsAtRowIndex(0).nth(0));
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await userEvent.click(cell);
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+    await userEvent.dblClick(cell);
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('2');
     await safeTab();
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^12$/);
+    await expect.element(cell).toHaveTextContent(/^12$/);
   });
 
   it('should open and commit changes on enter', async () => {
     await page.render(<EditorTest />);
-    await userEvent.click(getCellsAtRowIndex(0).nth(0));
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await userEvent.click(cell);
     await expect.element(col1Editor).not.toBeInTheDocument();
     await userEvent.keyboard('{enter}');
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('3{enter}');
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^13$/);
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
+    await expect.element(cell).toHaveTextContent(/^13$/);
+    await expect.element(cell).toHaveFocus();
     await expect.element(col1Editor).not.toBeInTheDocument();
   });
 
   it('should open editor when user types', async () => {
     await page.render(<EditorTest />);
-    await userEvent.click(getCellsAtRowIndex(0).nth(0));
-    // TODO: await userEvent.keyboard('123{enter}'); fails in FF
-    await userEvent.keyboard('{enter}123{enter}');
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^1123$/);
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await userEvent.click(cell);
+    await userEvent.keyboard('123{enter}');
+    await expect.element(cell).toHaveTextContent(/^1123$/);
+  });
+
+  it.fails('should open editor when test runs userEvent.type() on unfocused cell', async () => {
+    await page.render(<EditorTest />);
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await expect.element(cell).not.toHaveFocus();
+    await userEvent.type(cell, '123{enter}');
+    await expect.element(cell).toHaveFocus();
+    await expect.element(cell).toHaveTextContent(/^1123$/);
   });
 
   it('should close editor and discard changes on escape', async () => {
     await page.render(<EditorTest />);
-    await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await userEvent.dblClick(cell);
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('2222{escape}');
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^1$/);
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
+    await expect.element(cell).toHaveTextContent(/^1$/);
+    await expect.element(cell).toHaveFocus();
   });
 
   it('should commit changes and close editor when clicked outside', async () => {
     await page.render(<EditorTest />);
-    await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+    const cell = getCellsAtRowIndex(0).nth(0);
+    await userEvent.dblClick(cell);
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('2222');
     await userEvent.click(page.getByText('outside'));
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^12222$/);
+    await expect.element(cell).toHaveTextContent(/^12222$/);
   });
 
   it('should commit quickly enough on outside clicks so click event handlers access the latest rows state', async () => {
@@ -146,23 +159,24 @@ describe('Editor', () => {
       await page.render(
         <EditorTest createEditorPortal editorOptions={{ displayCellContent: true }} />
       );
-      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+      const cell = getCellsAtRowIndex(0).nth(1);
+      await userEvent.dblClick(cell);
       await expect.element(col2Editor).toHaveValue('a1');
       await userEvent.keyboard('23');
       // The cell value should update as the editor value is changed
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a123$/);
+      await expect.element(cell).toHaveTextContent(/^a123$/);
       // clicking in a portal does not count as an outside click
       await userEvent.click(col2Editor);
       await expect.element(col2Editor).toBeInTheDocument();
       // true outside clicks are still detected
       await userEvent.click(page.getByText('outside'));
       await expect.element(col2Editor).not.toBeInTheDocument();
-      await expect.element(getCellsAtRowIndex(0).nth(1)).not.toHaveFocus();
+      await expect.element(cell).not.toHaveFocus();
 
-      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+      await userEvent.dblClick(cell);
       await userEvent.click(col2Editor);
       await userEvent.keyboard('{enter}');
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveFocus();
+      await expect.element(cell).toHaveFocus();
     });
 
     it('should not commit on outside click if commitOnOutsideClick is false', async () => {
@@ -192,10 +206,11 @@ describe('Editor', () => {
           }}
         />
       );
-      await userEvent.click(getCellsAtRowIndex(0).nth(1));
+      const cell = getCellsAtRowIndex(0).nth(1);
+      await userEvent.click(cell);
       // TODO: await userEvent.keyboard('yz{enter}'); fails in FF
       await userEvent.keyboard('{enter}yz{enter}');
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a1yz$/);
+      await expect.element(cell).toHaveTextContent(/^a1yz$/);
       await userEvent.keyboard('x');
       await expect.element(col2Editor).not.toBeInTheDocument();
     });
@@ -211,9 +226,10 @@ describe('Editor', () => {
           }}
         />
       );
-      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+      const cell = getCellsAtRowIndex(0).nth(1);
+      await userEvent.dblClick(cell);
       await userEvent.keyboard('a{arrowleft}b{arrowright}c{arrowdown}'); // should commit changes on arrowdown
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a1bac$/);
+      await expect.element(cell).toHaveTextContent(/^a1bac$/);
     });
 
     it('should close the editor when closeOnExternalRowChange is true or undefined and row is changed from outside', async () => {

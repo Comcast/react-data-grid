@@ -1,4 +1,10 @@
-import { useCallback, useLayoutEffect, useSyncExternalStore, type RefObject } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useLayoutEffect,
+  useSyncExternalStore,
+  type RefObject
+} from 'react';
 
 const initialSize: ResizeObserverSize = {
   inlineSize: 1,
@@ -64,6 +70,8 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.
   const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const deferredInlineSize = useDeferredValue(inlineSize, -1);
+  const isResizingWidth = inlineSize !== deferredInlineSize;
 
   useLayoutEffect(() => {
     const target = gridRef.current!;
@@ -83,5 +91,5 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
     };
   }, [gridRef]);
 
-  return [inlineSize, blockSize] as const;
+  return [inlineSize, blockSize, isResizingWidth] as const;
 }
