@@ -1,0 +1,2 @@
+import{a as e}from"./index-CfMCKLBW.js";var t=e(),n=`rdg-text-editor css-2f8db206`;function r(e){e?.focus(),e?.select()}function i({row:e,column:i,onRowChange:a,onClose:o}){return(0,t.jsx)(`input`,{className:n,ref:r,value:e[i.key],onChange:t=>a({...e,[i.key]:t.target.value}),onBlur:()=>o(!0,!1)})}export{n,i as t};
+//# sourceMappingURL=renderTextEditor-Kaw0fVwd.js.map
