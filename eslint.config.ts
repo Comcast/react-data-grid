@@ -288,7 +288,7 @@ function getRules(id) {
         .querySelectorAll('tr a')
     )
       // map link to rule declaration
-      .map((a) => `'@eslint-react/${a.getAttribute('href')}': 1,`)
+      .map((a) => `'@eslint-react/${a.pathname.slice(a.pathname.lastIndexOf('/') + 1)}': 1,`)
   );
 }
 copy(
@@ -305,9 +305,9 @@ copy(
     .join('\n')
 );
       */
-      '@eslint-react/component-hook-factories': 1,
       '@eslint-react/error-boundaries': 1,
       '@eslint-react/exhaustive-deps': 1,
+      '@eslint-react/globals': 1,
       '@eslint-react/immutability': 1,
       '@eslint-react/no-access-state-in-setstate': 1,
       '@eslint-react/no-array-index-key': 0,
@@ -336,12 +336,9 @@ copy(
       '@eslint-react/no-misused-capture-owner-stack': 1,
       '@eslint-react/no-nested-component-definitions': 1,
       '@eslint-react/no-nested-lazy-component-declarations': 1,
-      '@eslint-react/no-redundant-should-component-update': 1,
       '@eslint-react/no-set-state-in-component-did-mount': 1,
       '@eslint-react/no-set-state-in-component-did-update': 1,
       '@eslint-react/no-set-state-in-component-will-update': 1,
-      '@eslint-react/no-unnecessary-use-callback': 1,
-      '@eslint-react/no-unnecessary-use-memo': 1,
       '@eslint-react/no-unnecessary-use-prefix': 1,
       '@eslint-react/no-unsafe-component-will-mount': 1,
       '@eslint-react/no-unsafe-component-will-receive-props': 1,
@@ -350,15 +347,13 @@ copy(
       '@eslint-react/no-unstable-default-props': 1,
       '@eslint-react/no-unused-class-component-members': 1,
       '@eslint-react/no-unused-props': 1,
-      '@eslint-react/no-unused-state': 1,
       '@eslint-react/no-use-context': 1,
-      '@eslint-react/prefer-destructuring-assignment': 1,
-      '@eslint-react/prefer-namespace-import': 1,
       '@eslint-react/purity': 1,
       '@eslint-react/refs': 1,
       '@eslint-react/rules-of-hooks': 1,
       '@eslint-react/set-state-in-effect': 0,
       '@eslint-react/set-state-in-render': 1,
+      '@eslint-react/static-components': 1,
       '@eslint-react/unsupported-syntax': 1,
       '@eslint-react/use-memo': 1,
       '@eslint-react/use-state': 1,
@@ -387,8 +382,8 @@ copy(
       '@eslint-react/dom-no-unsafe-target-blank': 1,
       '@eslint-react/dom-no-use-form-state': 1,
       '@eslint-react/dom-no-void-elements-with-children': 1,
-      '@eslint-react/dom-prefer-namespace-import': 1,
       '@eslint-react/web-api-no-leaked-event-listener': 1,
+      '@eslint-react/web-api-no-leaked-fetch': 1,
       '@eslint-react/web-api-no-leaked-interval': 1,
       '@eslint-react/web-api-no-leaked-resize-observer': 1,
       '@eslint-react/web-api-no-leaked-timeout': 1,

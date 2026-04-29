@@ -177,10 +177,12 @@ export function useCalculatedColumns<R, SR>({
       let width = getColumnWidth(column);
 
       if (typeof width === 'number') {
+        // eslint-disable-next-line @eslint-react/use-memo
         width = clampColumnWidth(width, column);
       } else {
         // This is a placeholder width so we can continue to use virtualization.
         // The actual value is set after the column is rendered
+        // eslint-disable-next-line @eslint-react/use-memo
         width = column.minWidth;
       }
       templateColumns.push(`${width}px`);
