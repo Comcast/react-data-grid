@@ -83,5 +83,12 @@
   "peerDependencies": {
     "react": "^19.2",
     "react-dom": "^19.2"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^26.0.0",
+      "onFail": "warn"
+    }
   }
 }
