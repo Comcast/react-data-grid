@@ -278,29 +278,14 @@ export default defineConfig([
       // https://www.eslint-react.xyz/docs/rules/overview
       /*
 // copy all the rules from the rules table for easy pasting
-function getRules(id) {
-  return (
-    Iterator.from(
-      document
-        // select rules table
-        .querySelector(`#${id} ~ *:has(table) > table`)
-        // select all rule links
-        .querySelectorAll('tr a')
-    )
-      // map link to rule declaration
-      .map((a) => `'@eslint-react/${a.pathname.slice(a.pathname.lastIndexOf('/') + 1)}': 1,`)
-  );
-}
 copy(
-  Iterator.from([
-    getRules('x-rules'),
-    getRules('jsx-rules'),
-    getRules('rsc-rules'),
-    getRules('dom-rules'),
-    getRules('web-api-rules'),
-    getRules('naming-convention-rules'),
-  ])
-    .flatMap((x) => x)
+  Iterator.from(
+    document
+      // select all non-debug rule links
+      .querySelectorAll('tr a:not([href*="rules/debug"])')
+  )
+    // map link to rule declaration
+    .map((a) => `'@eslint-react/${a.pathname.slice(a.pathname.lastIndexOf('/') + 1)}': 1,`)
     .toArray()
     .join('\n')
 );
