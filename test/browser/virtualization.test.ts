@@ -189,6 +189,72 @@ test('virtualization is enabled with all columns frozen', async () => {
   await assertCellIndexes(0, indexes);
 });
 
+test('virtualization is enabled with end-frozen columns', async () => {
+  // 30 columns total, cols 28 and 29 are end-frozen — always in DOM regardless of scroll
+  const columns: Column<unknown>[] = [];
+  const rows = Array.from({ length: 30 });
+
+  for (let i = 0; i < 30; i++) {
+    const key = String(i);
+    columns.push({
+      key,
+      name: key,
+      width: 100 + ((i * 10) % 50),
+      frozen: i >= 28 ? 'end' : false
+    });
+  }
+
+  await setup({ columns, rows, rowHeight });
+
+  // At scroll 0: first visible cells + end-frozen tail rendered; middle cells virtualized away.
+  scrollGrid({ left: 0 });
+  await expect.element(page.getHeaderCell({ name: '0' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '28' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '29' })).toBeInTheDocument();
+  // a far-right middle column is NOT in DOM at scroll 0
+  await expect.element(page.getHeaderCell({ name: '25' })).not.toBeInTheDocument();
+
+  // At max scroll: far-left unfrozen column virtualized away; end-frozen still rendered
+  scrollGrid({ left: 3600 - 1920 });
+  await expect.element(page.getHeaderCell({ name: '0' })).not.toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '28' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '29' })).toBeInTheDocument();
+});
+
+test('virtualization is enabled with start + end frozen columns', async () => {
+  // 30 columns total, cols 0-2 start-frozen, cols 28-29 end-frozen
+  const columns: Column<unknown>[] = [];
+  const rows = Array.from({ length: 30 });
+
+  for (let i = 0; i < 30; i++) {
+    const key = String(i);
+    columns.push({
+      key,
+      name: key,
+      width: 100 + ((i * 10) % 50),
+      frozen: i < 3 ? 'start' : i >= 28 ? 'end' : false
+    });
+  }
+
+  await setup({ columns, rows, rowHeight });
+
+  // At scroll 0: start (0,1,2) + early unfrozen + end (28,29) rendered; middle virtualized away.
+  scrollGrid({ left: 0 });
+  await expect.element(page.getHeaderCell({ name: '0' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '2' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '28' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '29' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '25' })).not.toBeInTheDocument();
+
+  // At max scroll: BOTH start and end bands still rendered; an early unfrozen column (3) virtualized away.
+  scrollGrid({ left: 3600 - 1920 });
+  await expect.element(page.getHeaderCell({ name: '0' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '2' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '3' })).not.toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '28' })).toBeInTheDocument();
+  await expect.element(page.getHeaderCell({ name: '29' })).toBeInTheDocument();
+});
+
 test('virtualization is enabled with 2 summary rows', async () => {
   await setupGrid(true, 1, 100, 0, 2);
 

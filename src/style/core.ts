@@ -92,34 +92,57 @@ const viewportDragging = css`
 
 export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDragging}`;
 
-// Add shadow after the last frozen cell
+// Common properties shared by both start- and end-edge frozen-column shadows.
+// Variants below add only the direction-dependent properties (gradient + scroll-state predicate).
 export const frozenColumnShadowClassname = css`
   position: sticky;
   width: 10px;
-  background-image: linear-gradient(
-    to right,
-    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
-    transparent
-  );
   pointer-events: none;
   z-index: 1;
-
   opacity: 1;
   transition: opacity 0.1s;
-
-  /* TODO: reverse 'opacity' and remove 'not' */
-  @container rdg-root not scroll-state(scrollable: inline-start) {
-    opacity: 0;
-  }
 
   &:dir(rtl) {
     transform: scaleX(-1);
   }
 `;
 
+const frozenColumnShadowStartOverrides = css`
+  background-image: linear-gradient(
+    to right,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-start) {
+    opacity: 0;
+  }
+`;
+
+const frozenColumnShadowEndOverrides = css`
+  background-image: linear-gradient(
+    to left,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-end) {
+    opacity: 0;
+  }
+`;
+
+// Add shadow after the last start-frozen cell
+export const frozenColumnShadowStartClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowStartOverrides}`;
+
+// Add shadow before the first end-frozen cell (mirror of the start shadow)
+export const frozenColumnShadowEndClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowEndOverrides}`;
+
 const topShadowClassname = css`
   /* render above header and summary rows */
   z-index: 2;
 `;
 
-export const frozenColumnShadowTopClassname = `${frozenColumnShadowClassname} ${topShadowClassname}`;
+export const frozenColumnShadowTopClassname = `${frozenColumnShadowStartClassname} ${topShadowClassname}`;
+export const frozenColumnShadowEndTopClassname = `${frozenColumnShadowEndClassname} ${topShadowClassname}`;

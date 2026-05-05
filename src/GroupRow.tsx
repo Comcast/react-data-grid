@@ -16,7 +16,8 @@ const groupRow = css`
     }
 
     > .${cell}:not(:last-child, .${cellFrozen}),
-    > :nth-last-child(n + 2 of .${cellFrozen}) {
+    > :nth-last-child(n + 2 of .rdg-cell-frozen),
+    > :nth-child(n + 2 of .rdg-cell-frozen-end) {
       border-inline-end: none;
     }
   }
