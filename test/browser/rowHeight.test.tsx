@@ -102,3 +102,64 @@ test('rowHeight with unique first height', async () => {
     return row === 0 ? 45 : 50;
   }, 'repeat(1, 35px) 45px repeat(49, 50px)');
 });
+
+test('rowHeight is "auto" sets gridTemplateRows to repeat(N, auto)', async () => {
+  await setupGrid('auto');
+
+  expect(grid.element().style.gridTemplateRows).toBe('repeat(1, 35px) repeat(50, auto)');
+});
+
+test('rowHeight as a string auto-disables virtualization and renders all rows', async () => {
+  await setupGrid('auto');
+
+  // virtualization is off by default when `rowHeight` is a string,
+  // so every row is rendered regardless of viewport size
+  await testRowCount(50);
+});
+
+test('rowHeight accepts arbitrary CSS track values', async () => {
+  await setupGrid('min-content');
+
+  expect(grid.element().style.gridTemplateRows).toBe('repeat(1, 35px) repeat(50, min-content)');
+  await testRowCount(50);
+});
+
+test('rowHeight is "auto" sizes rows to fit their content', async () => {
+  const columns: Column<{ id: number; content: string }>[] = [
+    { key: 'id', name: 'ID', width: 80 },
+    {
+      key: 'content',
+      name: 'Content',
+      width: 200,
+      renderCell: ({ row }) => <div style={{ whiteSpace: 'pre' }}>{row.content}</div>
+    }
+  ];
+  const rows = [
+    { id: 0, content: 'short' },
+    { id: 1, content: 'line one\nline two\nline three\nline four' }
+  ];
+
+  await setup({ columns, rows, rowHeight: 'auto' });
+
+  const row0 = page.getRow().nth(0).element() as HTMLElement;
+  const row1 = page.getRow().nth(1).element() as HTMLElement;
+
+  // multi-line cell must render taller than the single-line cell
+  expect(row1.clientHeight).toBeGreaterThan(row0.clientHeight);
+});
+
+test('rowHeight string + explicit enableVirtualization=true throws', async () => {
+  // Suppress React's error logging for this expected render error
+  vi.mocked(console.error).mockImplementation(() => {});
+
+  await expect(
+    setup({
+      columns: [{ key: 'id', name: 'ID' }],
+      rows: [{ id: 0 }],
+      rowHeight: 'auto',
+      enableVirtualization: true
+    })
+  ).rejects.toThrow('`rowHeight` cannot be a string when `enableVirtualization` is true.');
+
+  vi.mocked(console.error).mockClear();
+});

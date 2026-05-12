@@ -462,13 +462,17 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     getRowHeight,
     findRowIdx
   } = useViewportRows({
-    element: gridRef.current,
     rows,
-    rowHeight,
     clientHeight,
     scrollTop,
     enableVirtualization,
-    gridHeight
+    ...(typeof rowHeight === 'string'
+      ? {
+          rowHeight,
+          element: gridRef.current,
+          gridHeight
+        }
+      : { rowHeight })
   });
 
   const {
