@@ -7,6 +7,7 @@ interface ViewportRowsBaseArgs<R> {
   clientHeight: number;
   scrollTop: number;
   enableVirtualization: boolean;
+  gridHeight?: number;
 }
 
 interface ViewportRowsArgsStringHeight {
@@ -43,11 +44,6 @@ export function useViewportRows<R>({
 
     if (typeof rowHeight === 'string') {
       const { element, gridHeight } = rest as ViewportRowsArgsStringHeight;
-      if (!element) {
-        throw new Error(
-          'props.element is required when rowHeight is a string. This is needed to calculate the position of the rows.'
-        );
-      }
       if (!gridHeight) {
         throw new Error(
           'props.gridHeight is required when rowHeight is a string. This is needed to calculate the total height of the rows.'
@@ -180,7 +176,7 @@ export function useViewportRows<R>({
         return 0;
       }
     };
-  }, [element, gridHeight, rowHeight, rows]);
+  }, [rowHeight, rows]);
 
   let rowOverscanStartIdx = 0;
   let rowOverscanEndIdx = rows.length - 1;
