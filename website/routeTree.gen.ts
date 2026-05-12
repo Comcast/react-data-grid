@@ -19,6 +19,7 @@ import { Route as ColumnsReorderingRouteImport } from './routes/ColumnsReorderin
 import { Route as CommonFeaturesRouteImport } from './routes/CommonFeatures'
 import { Route as ContextMenuRouteImport } from './routes/ContextMenu'
 import { Route as CustomizableRenderersRouteImport } from './routes/CustomizableRenderers'
+import { Route as DynamicHeightCellsRouteImport } from './routes/DynamicHeightCells'
 import { Route as HeaderFiltersRouteImport } from './routes/HeaderFilters'
 import { Route as InfiniteScrollingRouteImport } from './routes/InfiniteScrolling'
 import { Route as MasterDetailRouteImport } from './routes/MasterDetail'
@@ -79,6 +80,11 @@ const ContextMenuRoute = ContextMenuRouteImport.update({
 const CustomizableRenderersRoute = CustomizableRenderersRouteImport.update({
   id: '/CustomizableRenderers',
   path: '/CustomizableRenderers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DynamicHeightCellsRoute = DynamicHeightCellsRouteImport.update({
+  id: '/DynamicHeightCells',
+  path: '/DynamicHeightCells',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HeaderFiltersRoute = HeaderFiltersRouteImport.update({
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/CommonFeatures': typeof CommonFeaturesRoute
   '/ContextMenu': typeof ContextMenuRoute
   '/CustomizableRenderers': typeof CustomizableRenderersRoute
+  '/DynamicHeightCells': typeof DynamicHeightCellsRoute
   '/HeaderFilters': typeof HeaderFiltersRoute
   '/InfiniteScrolling': typeof InfiniteScrollingRoute
   '/MasterDetail': typeof MasterDetailRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/CommonFeatures': typeof CommonFeaturesRoute
   '/ContextMenu': typeof ContextMenuRoute
   '/CustomizableRenderers': typeof CustomizableRenderersRoute
+  '/DynamicHeightCells': typeof DynamicHeightCellsRoute
   '/HeaderFilters': typeof HeaderFiltersRoute
   '/InfiniteScrolling': typeof InfiniteScrollingRoute
   '/MasterDetail': typeof MasterDetailRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/CommonFeatures': typeof CommonFeaturesRoute
   '/ContextMenu': typeof ContextMenuRoute
   '/CustomizableRenderers': typeof CustomizableRenderersRoute
+  '/DynamicHeightCells': typeof DynamicHeightCellsRoute
   '/HeaderFilters': typeof HeaderFiltersRoute
   '/InfiniteScrolling': typeof InfiniteScrollingRoute
   '/MasterDetail': typeof MasterDetailRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/CommonFeatures'
     | '/ContextMenu'
     | '/CustomizableRenderers'
+    | '/DynamicHeightCells'
     | '/HeaderFilters'
     | '/InfiniteScrolling'
     | '/MasterDetail'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/CommonFeatures'
     | '/ContextMenu'
     | '/CustomizableRenderers'
+    | '/DynamicHeightCells'
     | '/HeaderFilters'
     | '/InfiniteScrolling'
     | '/MasterDetail'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/CommonFeatures'
     | '/ContextMenu'
     | '/CustomizableRenderers'
+    | '/DynamicHeightCells'
     | '/HeaderFilters'
     | '/InfiniteScrolling'
     | '/MasterDetail'
@@ -290,6 +302,7 @@ export interface RootRouteChildren {
   CommonFeaturesRoute: typeof CommonFeaturesRoute
   ContextMenuRoute: typeof ContextMenuRoute
   CustomizableRenderersRoute: typeof CustomizableRenderersRoute
+  DynamicHeightCellsRoute: typeof DynamicHeightCellsRoute
   HeaderFiltersRoute: typeof HeaderFiltersRoute
   InfiniteScrollingRoute: typeof InfiniteScrollingRoute
   MasterDetailRoute: typeof MasterDetailRoute
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       path: '/CustomizableRenderers'
       fullPath: '/CustomizableRenderers'
       preLoaderRoute: typeof CustomizableRenderersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/DynamicHeightCells': {
+      id: '/DynamicHeightCells'
+      path: '/DynamicHeightCells'
+      fullPath: '/DynamicHeightCells'
+      preLoaderRoute: typeof DynamicHeightCellsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/HeaderFilters': {
@@ -466,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommonFeaturesRoute: CommonFeaturesRoute,
   ContextMenuRoute: ContextMenuRoute,
   CustomizableRenderersRoute: CustomizableRenderersRoute,
+  DynamicHeightCellsRoute: DynamicHeightCellsRoute,
   HeaderFiltersRoute: HeaderFiltersRoute,
   InfiniteScrollingRoute: InfiniteScrollingRoute,
   MasterDetailRoute: MasterDetailRoute,
