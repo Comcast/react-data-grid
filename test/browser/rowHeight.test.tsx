@@ -150,6 +150,7 @@ test('rowHeight is "auto" sizes rows to fit their content', async () => {
 
 test('rowHeight string + explicit enableVirtualization=true throws', async () => {
   // Suppress React's error logging for this expected render error
+  // eslint-disable-next-line no-console
   vi.mocked(console.error).mockImplementation(() => {});
 
   await expect(
@@ -161,5 +162,6 @@ test('rowHeight string + explicit enableVirtualization=true throws', async () =>
     })
   ).rejects.toThrow('`rowHeight` cannot be a string when `enableVirtualization` is true.');
 
+  // eslint-disable-next-line no-console
   vi.mocked(console.error).mockClear();
 });

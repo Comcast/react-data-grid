@@ -469,7 +469,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     ...(typeof rowHeight === 'string'
       ? {
           rowHeight,
-          element: gridRef.current,
+          gridRef,
           gridHeight
         }
       : { rowHeight })

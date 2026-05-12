@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type RefObject } from 'react';
 
 import { floor, max, min } from '../utils';
 
@@ -12,7 +12,7 @@ interface ViewportRowsBaseArgs<R> {
 
 interface ViewportRowsArgsStringHeight {
   rowHeight: string;
-  element: HTMLElement | null;
+  gridRef: RefObject<HTMLDivElement | null>;
   gridHeight: number;
 }
 
@@ -31,6 +31,7 @@ export function useViewportRows<R>({
   enableVirtualization,
   ...rest
 }: ViewportRowsArgs<R>) {
+  const { gridRef, gridHeight } = rest as Partial<ViewportRowsArgsStringHeight>;
   const { totalRowHeight, gridTemplateRows, getRowTop, getRowHeight, findRowIdx } = useMemo(() => {
     if (typeof rowHeight === 'number') {
       return {
@@ -43,7 +44,6 @@ export function useViewportRows<R>({
     }
 
     if (typeof rowHeight === 'string') {
-      const { element, gridHeight } = rest as ViewportRowsArgsStringHeight;
       if (!gridHeight) {
         throw new Error(
           'props.gridHeight is required when rowHeight is a string. This is needed to calculate the total height of the rows.'
@@ -62,21 +62,24 @@ export function useViewportRows<R>({
       };
 
       return {
-        totalRowHeight: gridHeight ?? 0,
+        totalRowHeight: gridHeight,
         gridTemplateRows: ` repeat(${rows.length}, ${rowHeight})`,
         getRowTop(rowIdx: number) {
+          const element = gridRef?.current;
           if (!element) return -1;
           const cell = getRowElementFirstCell(element, rowIdx);
           if (!cell) return -1;
           return cell.getBoundingClientRect().top + element.scrollTop;
         },
         getRowHeight(rowIdx: number) {
+          const element = gridRef?.current;
           if (!element) return -1;
           const cell = getRowElementFirstCell(element, rowIdx);
           if (!cell) return -1;
           return cell.clientHeight;
         },
         findRowIdx(offset: number) {
+          const element = gridRef?.current;
           if (!element) return -1;
           let start = 0;
           let end = rows.length - 1;
@@ -176,15 +179,21 @@ export function useViewportRows<R>({
         return 0;
       }
     };
-  }, [rowHeight, rows]);
+  }, [rowHeight, rows, gridRef, gridHeight]);
 
   let rowOverscanStartIdx = 0;
   let rowOverscanEndIdx = rows.length - 1;
 
   if (enableVirtualization) {
     const overscanThreshold = 4;
+    // `findRowIdx` only reads `gridRef.current` in the string-rowHeight branch,
+    // which is unreachable here because `enableVirtualization` is forced off when
+    // `rowHeight` is a string (see DataGrid.tsx).
+    /* eslint-disable react-hooks/refs */
     const rowVisibleStartIdx = findRowIdx(scrollTop);
     const rowVisibleEndIdx = findRowIdx(scrollTop + clientHeight);
+    /* eslint-enable react-hooks/refs */
+
     rowOverscanStartIdx = max(0, rowVisibleStartIdx - overscanThreshold);
     rowOverscanEndIdx = min(rows.length - 1, rowVisibleEndIdx + overscanThreshold);
   }
