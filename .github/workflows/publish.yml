@@ -10,8 +10,8 @@ on:
 
 jobs:
   publish:
-    name: Publish
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
       id-token: write
@@ -47,6 +47,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: npx playwright install chromium firefox
+        timeout-minutes: 2
 
       - name: Test
         run: node --run test:ci
