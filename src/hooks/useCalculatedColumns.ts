@@ -63,17 +63,17 @@ export function useCalculatedColumns<R, SR>({
   const {
     columns,
     colSpanColumns,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
     headerRowsCount
   } = useMemo((): {
     readonly columns: readonly CalculatedColumn<R, SR>[];
     readonly colSpanColumns: readonly CalculatedColumn<R, SR>[];
-    readonly lastFrozenColumnIndex: number;
+    readonly lastStartFrozenColumnIndex: number;
     readonly firstEndFrozenColumnIndex: number;
     readonly headerRowsCount: number;
   } => {
-    let lastFrozenColumnIndex = -1;
+    let lastStartFrozenColumnIndex = -1;
     let firstEndFrozenColumnIndex = -1;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
@@ -121,7 +121,7 @@ export function useCalculatedColumns<R, SR>({
         columns.push(column);
 
         if (isStartFrozen(frozen)) {
-          lastFrozenColumnIndex++;
+          lastStartFrozenColumnIndex++;
         }
 
         if (level > headerRowsCount) {
@@ -139,6 +139,8 @@ export function useCalculatedColumns<R, SR>({
       // Stable sort preserves definition order within each band.
       const ra = a.frozen === 'end' ? 2 : a.frozen === false ? 1 : 0;
       const rb = b.frozen === 'end' ? 2 : b.frozen === false ? 1 : 0;
+
+      // TODO: sort columns to keep them grouped if they have a parent
       return ra - rb;
     });
 
@@ -159,7 +161,7 @@ export function useCalculatedColumns<R, SR>({
     return {
       columns,
       colSpanColumns,
-      lastFrozenColumnIndex,
+      lastStartFrozenColumnIndex,
       firstEndFrozenColumnIndex,
       headerRowsCount
     };
@@ -178,19 +180,19 @@ export function useCalculatedColumns<R, SR>({
   const {
     templateColumns,
     layoutCssVars,
-    totalFrozenColumnWidth,
+    totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
     columnMetrics
   } = useMemo((): {
     templateColumns: readonly string[];
     layoutCssVars: Readonly<Record<string, string>>;
-    totalFrozenColumnWidth: number;
+    totalStartFrozenColumnWidth: number;
     totalEndFrozenColumnWidth: number;
     columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
   } => {
     const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
     let left = 0;
-    let totalFrozenColumnWidth = 0;
+    let totalStartFrozenColumnWidth = 0;
     let totalEndFrozenColumnWidth = 0;
     const templateColumns: string[] = [];
 
@@ -209,24 +211,25 @@ export function useCalculatedColumns<R, SR>({
       left += width;
     }
 
-    if (lastFrozenColumnIndex !== -1) {
-      const columnMetric = columnMetrics.get(columns[lastFrozenColumnIndex])!;
-      totalFrozenColumnWidth = columnMetric.left + columnMetric.width;
+    if (lastStartFrozenColumnIndex !== -1) {
+      const lastStartFrozenColumnMetric = columnMetrics.get(columns[lastStartFrozenColumnIndex])!;
+      totalStartFrozenColumnWidth =
+        lastStartFrozenColumnMetric.left + lastStartFrozenColumnMetric.width;
     }
 
     const layoutCssVars: Record<string, string> = {};
 
-    for (let i = 0; i <= lastFrozenColumnIndex; i++) {
+    for (let i = 0; i <= lastStartFrozenColumnIndex; i++) {
       const column = columns[i];
-      layoutCssVars[`--rdg-frozen-left-${column.idx}`] = `${columnMetrics.get(column)!.left}px`;
+      layoutCssVars[`--rdg-frozen-start-${column.idx}`] = `${columnMetrics.get(column)!.left}px`;
     }
 
     if (firstEndFrozenColumnIndex !== -1) {
       const lastColumn = columns[columns.length - 1];
-      const lastMetric = columnMetrics.get(lastColumn)!;
-      const gridEnd = lastMetric.left + lastMetric.width;
-      const firstEndMetric = columnMetrics.get(columns[firstEndFrozenColumnIndex])!;
-      totalEndFrozenColumnWidth = gridEnd - firstEndMetric.left;
+      const lastColumnMetric = columnMetrics.get(lastColumn)!;
+      const gridEnd = lastColumnMetric.left + lastColumnMetric.width;
+      const firstEndFrozenColumnMetric = columnMetrics.get(columns[firstEndFrozenColumnIndex])!;
+      totalEndFrozenColumnWidth = gridEnd - firstEndFrozenColumnMetric.left;
 
       for (let i = firstEndFrozenColumnIndex; i < columns.length; i++) {
         const column = columns[i];
@@ -239,22 +242,22 @@ export function useCalculatedColumns<R, SR>({
     return {
       templateColumns,
       layoutCssVars,
-      totalFrozenColumnWidth,
+      totalStartFrozenColumnWidth,
       totalEndFrozenColumnWidth,
       columnMetrics
     };
-  }, [getColumnWidth, columns, lastFrozenColumnIndex, firstEndFrozenColumnIndex]);
+  }, [getColumnWidth, columns, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex]);
 
   const [colOverscanStartIdx, colOverscanEndIdx] = useMemo((): [number, number] => {
     if (!enableVirtualization) {
       return [0, columns.length - 1];
     }
     // get the viewport's left side and right side positions for non-frozen columns
-    const viewportLeft = scrollLeft + totalFrozenColumnWidth;
+    const viewportLeft = scrollLeft + totalStartFrozenColumnWidth;
     const viewportRight = scrollLeft + viewportWidth;
     // get first and last non-frozen column indexes
     const lastColIdx = columns.length - 1;
-    const firstUnfrozenColumnIdx = min(lastFrozenColumnIndex + 1, lastColIdx);
+    const firstUnfrozenColumnIdx = min(lastStartFrozenColumnIndex + 1, lastColIdx);
 
     // skip rendering non-frozen columns if the frozen columns cover the entire viewport
     if (viewportLeft >= viewportRight) {
@@ -292,9 +295,9 @@ export function useCalculatedColumns<R, SR>({
   }, [
     columnMetrics,
     columns,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     scrollLeft,
-    totalFrozenColumnWidth,
+    totalStartFrozenColumnWidth,
     viewportWidth,
     enableVirtualization
   ]);
@@ -307,9 +310,9 @@ export function useCalculatedColumns<R, SR>({
     templateColumns,
     layoutCssVars,
     headerRowsCount,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
-    totalFrozenColumnWidth,
+    totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth
   };
 }

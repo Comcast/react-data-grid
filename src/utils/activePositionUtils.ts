@@ -30,7 +30,7 @@ interface GetNextPositionOpts<R, SR> {
   activePosition: Position;
   nextPosition: Position;
   nextPositionIsCellInActiveBounds: boolean;
-  lastFrozenColumnIndex: number;
+  lastStartFrozenColumnIndex: number;
   firstEndFrozenColumnIndex: number;
 }
 
@@ -40,7 +40,7 @@ function getCellColSpan<R, SR>({
   bottomSummaryRows,
   rowIdx,
   mainHeaderRowIdx,
-  lastFrozenColumnIndex,
+  lastStartFrozenColumnIndex,
   firstEndFrozenColumnIndex,
   column
 }: Pick<
@@ -48,7 +48,7 @@ function getCellColSpan<R, SR>({
   | 'rows'
   | 'topSummaryRows'
   | 'bottomSummaryRows'
-  | 'lastFrozenColumnIndex'
+  | 'lastStartFrozenColumnIndex'
   | 'firstEndFrozenColumnIndex'
   | 'mainHeaderRowIdx'
 > & {
@@ -57,7 +57,7 @@ function getCellColSpan<R, SR>({
 }) {
   const topSummaryRowsCount = topSummaryRows?.length ?? 0;
   if (rowIdx === mainHeaderRowIdx) {
-    return getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'HEADER'
     });
   }
@@ -67,7 +67,7 @@ function getCellColSpan<R, SR>({
     rowIdx > mainHeaderRowIdx &&
     rowIdx <= topSummaryRowsCount + mainHeaderRowIdx
   ) {
-    return getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'SUMMARY',
       row: topSummaryRows[rowIdx + topSummaryRowsCount]
     });
@@ -75,14 +75,14 @@ function getCellColSpan<R, SR>({
 
   if (rowIdx >= 0 && rowIdx < rows.length) {
     const row = rows[rowIdx];
-    return getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'ROW',
       row
     });
   }
 
   if (bottomSummaryRows) {
-    return getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'SUMMARY',
       row: bottomSummaryRows[rowIdx - rows.length]
     });
@@ -106,7 +106,7 @@ export function getNextActivePosition<R, SR>({
   activePosition: { idx: activeIdx, rowIdx: activeRowIdx },
   nextPosition,
   nextPositionIsCellInActiveBounds,
-  lastFrozenColumnIndex,
+  lastStartFrozenColumnIndex,
   firstEndFrozenColumnIndex
 }: GetNextPositionOpts<R, SR>): Position {
   let { idx: nextIdx, rowIdx: nextRowIdx } = nextPosition;
@@ -124,7 +124,7 @@ export function getNextActivePosition<R, SR>({
         bottomSummaryRows,
         rowIdx: nextRowIdx,
         mainHeaderRowIdx,
-        lastFrozenColumnIndex,
+        lastStartFrozenColumnIndex,
         firstEndFrozenColumnIndex,
         column
       });

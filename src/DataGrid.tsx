@@ -77,7 +77,7 @@ import {
   frozenColumnShadowEndClassname,
   frozenColumnShadowEndTopClassname,
   frozenColumnShadowStartClassname,
-  frozenColumnShadowTopClassname,
+  frozenColumnShadowStartTopClassname,
   viewportDraggingClassname
 } from './style/core';
 import SummaryRow from './SummaryRow';
@@ -345,14 +345,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const {
     columns,
     colSpanColumns,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
     headerRowsCount,
     colOverscanStartIdx,
     colOverscanEndIdx,
     templateColumns,
     layoutCssVars,
-    totalFrozenColumnWidth,
+    totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth
   } = useCalculatedColumns({
     rawColumns,
@@ -383,8 +383,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const { leftKey, rightKey } = getLeftRightKey(direction);
   const ariaRowCount = rawAriaRowCount ?? headerRowsCount + rows.length + summaryRowsCount;
   const frozenShadowStyles: React.CSSProperties = {
-    gridColumnStart: lastFrozenColumnIndex + 2,
-    insetInlineStart: totalFrozenColumnWidth
+    gridColumnStart: lastStartFrozenColumnIndex + 2,
+    insetInlineStart: totalStartFrozenColumnWidth
   };
   const frozenEndShadowStyles: React.CSSProperties = {
     gridColumnStart: firstEndFrozenColumnIndex + 1,
@@ -472,7 +472,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     colSpanColumns,
     colOverscanStartIdx,
     colOverscanEndIdx,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
     rowOverscanStartIdx,
     rowOverscanEndIdx,
@@ -519,7 +519,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       element: gridRef.current,
       scrollToCell({ idx, rowIdx }) {
         const scrollToIdx =
-          idx != null && idx > lastFrozenColumnIndex && idx < columns.length ? idx : undefined;
+          idx != null && idx > lastStartFrozenColumnIndex && idx < columns.length ? idx : undefined;
         const scrollToRowIdx =
           rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
             ? rowIdx + headerAndTopSummaryRowsCount
@@ -912,7 +912,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       minRowIdx,
       mainHeaderRowIdx,
       maxRowIdx,
-      lastFrozenColumnIndex,
+      lastStartFrozenColumnIndex,
       firstEndFrozenColumnIndex,
       cellNavigationMode,
       activePosition,
@@ -1036,7 +1036,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { row } = activePosition;
     const column = getActiveColumn();
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    const colSpan = getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'ROW',
       row
     });
@@ -1174,7 +1174,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       style={{
         ...style,
         // set scrollPadding to correctly scroll to non-sticky cells/rows
-        scrollPaddingInlineStart: totalFrozenColumnWidth,
+        scrollPaddingInlineStart: totalStartFrozenColumnWidth,
         scrollPaddingInlineEnd: totalEndFrozenColumnWidth,
         scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
         scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
@@ -1289,11 +1289,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         )}
       </DataGridDefaultRenderersContext>
 
-      {lastFrozenColumnIndex > -1 &&
+      {lastStartFrozenColumnIndex > -1 &&
         renderFrozenShadow(
           frozenShadowStyles,
           frozenColumnShadowStartClassname,
-          frozenColumnShadowTopClassname
+          frozenColumnShadowStartTopClassname
         )}
 
       {firstEndFrozenColumnIndex > -1 &&

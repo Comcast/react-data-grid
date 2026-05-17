@@ -25,7 +25,7 @@ export const row = css`
         border: var(--rdg-selection-width) solid var(--rdg-selection-color);
       }
 
-      & > .rdg-cell-frozen:first-child::before,
+      & > .rdg-cell-frozen-start:first-child::before,
       & > .rdg-cell-frozen-end:last-child::after {
         content: '';
         display: inline-block;
@@ -33,7 +33,7 @@ export const row = css`
         inset-block: 0;
       }
 
-      & > .rdg-cell-frozen:first-child::before {
+      & > .rdg-cell-frozen-start:first-child::before {
         inset-inline-start: 0;
         border-inline-start: var(--rdg-selection-width) solid var(--rdg-selection-color);
       }

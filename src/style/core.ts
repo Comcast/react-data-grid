@@ -144,5 +144,5 @@ const topShadowClassname = css`
   z-index: 2;
 `;
 
-export const frozenColumnShadowTopClassname = `${frozenColumnShadowStartClassname} ${topShadowClassname}`;
+export const frozenColumnShadowStartTopClassname = `${frozenColumnShadowStartClassname} ${topShadowClassname}`;
 export const frozenColumnShadowEndTopClassname = `${frozenColumnShadowEndClassname} ${topShadowClassname}`;

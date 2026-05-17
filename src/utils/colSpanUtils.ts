@@ -3,7 +3,7 @@ import { isStartFrozen } from './index';
 
 export function getColSpan<R, SR>(
   column: CalculatedColumn<R, SR>,
-  lastFrozenColumnIndex: number,
+  lastStartFrozenColumnIndex: number,
   firstEndFrozenColumnIndex: number,
   args: ColSpanArgs<R, SR>
 ): number | undefined {
@@ -16,7 +16,7 @@ export function getColSpan<R, SR>(
   const spanEnd = column.idx + colSpan! - 1;
 
   // start-frozen column: span must stay within the start-frozen band
-  if (isStartFrozen(column.frozen) && spanEnd > lastFrozenColumnIndex) return undefined;
+  if (isStartFrozen(column.frozen) && spanEnd > lastStartFrozenColumnIndex) return undefined;
   // unfrozen column: span must not enter the end-frozen band
   if (
     column.frozen === false &&

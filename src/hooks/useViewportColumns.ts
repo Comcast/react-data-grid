@@ -18,7 +18,7 @@ interface ViewportColumnsArgs<R, SR> {
   bottomSummaryRows: Maybe<readonly SR[]>;
   colOverscanStartIdx: number;
   colOverscanEndIdx: number;
-  lastFrozenColumnIndex: number;
+  lastStartFrozenColumnIndex: number;
   firstEndFrozenColumnIndex: number;
   rowOverscanStartIdx: number;
   rowOverscanEndIdx: number;
@@ -32,7 +32,7 @@ export function useViewportColumns<R, SR>({
   bottomSummaryRows,
   colOverscanStartIdx,
   colOverscanEndIdx,
-  lastFrozenColumnIndex,
+  lastStartFrozenColumnIndex,
   firstEndFrozenColumnIndex,
   rowOverscanStartIdx,
   rowOverscanEndIdx
@@ -71,7 +71,12 @@ export function useViewportColumns<R, SR>({
       if (colIdx >= colOverscanStartIdx) break;
 
       for (const args of iterateOverRowsForColSpanArgs()) {
-        const colSpan = getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, args);
+        const colSpan = getColSpan(
+          column,
+          lastStartFrozenColumnIndex,
+          firstEndFrozenColumnIndex,
+          args
+        );
 
         if (colSpan !== undefined && colIdx + colSpan > colOverscanStartIdx) {
           return colIdx;
@@ -87,7 +92,7 @@ export function useViewportColumns<R, SR>({
     topSummaryRows,
     bottomSummaryRows,
     colOverscanStartIdx,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
     colSpanColumns
   ]);
@@ -101,15 +106,15 @@ export function useViewportColumns<R, SR>({
 
   const iterateOverViewportColumns = useCallback<IterateOverViewportColumns<R, SR>>(
     function* (activeColumnIdx): Generator<CalculatedColumn<R, SR>> {
-      for (let colIdx = 0; colIdx <= lastFrozenColumnIndex; colIdx++) {
+      for (let colIdx = 0; colIdx <= lastStartFrozenColumnIndex; colIdx++) {
         yield columns[colIdx];
       }
 
       const unfrozenLastIdx =
         firstEndFrozenColumnIndex > -1 ? firstEndFrozenColumnIndex - 1 : columns.length - 1;
 
-      if (lastFrozenColumnIndex < unfrozenLastIdx) {
-        if (activeColumnIdx > lastFrozenColumnIndex && activeColumnIdx < startIdx) {
+      if (lastStartFrozenColumnIndex < unfrozenLastIdx) {
+        if (activeColumnIdx > lastStartFrozenColumnIndex && activeColumnIdx < startIdx) {
           yield columns[activeColumnIdx];
         }
 
@@ -129,7 +134,13 @@ export function useViewportColumns<R, SR>({
         }
       }
     },
-    [startIdx, effectiveOverscanEndIdx, columns, lastFrozenColumnIndex, firstEndFrozenColumnIndex]
+    [
+      startIdx,
+      effectiveOverscanEndIdx,
+      columns,
+      lastStartFrozenColumnIndex,
+      firstEndFrozenColumnIndex
+    ]
   );
 
   const iterateOverViewportColumnsForRow = useCallback<IterateOverViewportColumnsForRow<R, SR>>(
@@ -138,7 +149,7 @@ export function useViewportColumns<R, SR>({
 
       for (const column of iterator) {
         let colSpan =
-          args && getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, args);
+          args && getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, args);
 
         yield [column, column.idx === activeColumnIdx, colSpan];
 
@@ -149,7 +160,7 @@ export function useViewportColumns<R, SR>({
         }
       }
     },
-    [iterateOverViewportColumns, lastFrozenColumnIndex, firstEndFrozenColumnIndex]
+    [iterateOverViewportColumns, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex]
   );
 
   const iterateOverViewportColumnsForRowOutsideOfViewport = useCallback<
@@ -161,11 +172,11 @@ export function useViewportColumns<R, SR>({
         yield [
           column,
           true,
-          args && getColSpan(column, lastFrozenColumnIndex, firstEndFrozenColumnIndex, args)
+          args && getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, args)
         ];
       }
     },
-    [columns, lastFrozenColumnIndex, firstEndFrozenColumnIndex]
+    [columns, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex]
   );
 
   const viewportColumns = useMemo((): readonly CalculatedColumn<R, SR>[] => {

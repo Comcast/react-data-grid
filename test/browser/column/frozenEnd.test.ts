@@ -3,7 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import type { Column } from '../../../src';
 import {
   cellClassname,
-  cellFrozenClassname,
+  cellFrozenStartClassname,
   cellFrozenEndClassname
 } from '../../../src/style/cell';
 import { getCellsAtRowIndex, safeTab, setup } from '../utils';
@@ -49,7 +49,7 @@ test('end-frozen columns have a specific class and are stable-sorted at the tail
   await expect.element(cell4).toHaveTextContent('col3');
   await expect.element(cell5).toHaveTextContent('col5');
 
-  await expect.element(cell1).toHaveClass(cellClassname, cellFrozenClassname, { exact: true });
+  await expect.element(cell1).toHaveClass(cellClassname, cellFrozenStartClassname, { exact: true });
   await expect.element(cell2).toHaveClass(cellClassname, { exact: true });
   await expect.element(cell3).toHaveClass(cellClassname, { exact: true });
   await expect.element(cell4).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
@@ -82,7 +82,7 @@ test('frozen: true is normalized to start-frozen (backwards compat)', async () =
   await expect.element(cell2).toHaveTextContent('col2');
   await expect.element(cell3).toHaveTextContent('col3');
 
-  await expect.element(cell1).toHaveClass(cellClassname, cellFrozenClassname, { exact: true });
+  await expect.element(cell1).toHaveClass(cellClassname, cellFrozenStartClassname, { exact: true });
   await expect.element(cell2).toHaveClass(cellClassname, { exact: true });
   await expect.element(cell3).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
@@ -341,7 +341,7 @@ test('no unfrozen columns — one start + one end', async () => {
 
   await expect.element(cellA).toHaveTextContent('a');
   await expect.element(cellB).toHaveTextContent('b');
-  await expect.element(cellA).toHaveClass(cellClassname, cellFrozenClassname, { exact: true });
+  await expect.element(cellA).toHaveClass(cellClassname, cellFrozenStartClassname, { exact: true });
   await expect.element(cellB).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
 
