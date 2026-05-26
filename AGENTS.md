@@ -3,7 +3,7 @@
 ## Commands
 
 ```shell
-npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
+npm ci                       # setup
 node --run build             # library → lib/
 node --run typecheck         # tsgo --build
 node --run eslint            # eslint --max-warnings 0
