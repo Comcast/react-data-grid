@@ -11,6 +11,10 @@ updates:
         patterns:
           - 'react'
           - 'react-dom'
+      tanstack-router:
+        patterns:
+          - '@tanstack/react-router'
+          - '@tanstack/router-plugin'
       tsdown:
         patterns:
           - 'tsdown'
@@ -19,6 +23,8 @@ updates:
         patterns:
           - 'vitest'
           - '@vitest/*'
+        exclude-patterns:
+          - '@vitest/eslint-plugin'
 
   - package-ecosystem: 'github-actions'
     directory: '/'

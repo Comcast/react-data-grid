@@ -275,7 +275,7 @@ export default defineConfig([
       'react-hooks/use-memo': 1,
 
       // ESLint React
-      // https://www.eslint-react.xyz/docs/rules/overview
+      // https://eslint-react.xyz/docs/rules
       /*
 // copy all the rules from the rules table for easy pasting
 copy(
@@ -332,6 +332,7 @@ copy(
       '@eslint-react/no-unstable-default-props': 1,
       '@eslint-react/no-unused-class-component-members': 1,
       '@eslint-react/no-unused-props': 1,
+      '@eslint-react/no-unused-state': 1,
       '@eslint-react/no-use-context': 1,
       '@eslint-react/purity': 1,
       '@eslint-react/refs': 1,
@@ -369,6 +370,7 @@ copy(
       '@eslint-react/dom-no-void-elements-with-children': 1,
       '@eslint-react/web-api-no-leaked-event-listener': 1,
       '@eslint-react/web-api-no-leaked-fetch': 1,
+      '@eslint-react/web-api-no-leaked-intersection-observer': 1,
       '@eslint-react/web-api-no-leaked-interval': 1,
       '@eslint-react/web-api-no-leaked-resize-observer': 1,
       '@eslint-react/web-api-no-leaked-timeout': 1,
