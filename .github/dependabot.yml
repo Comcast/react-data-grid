@@ -23,6 +23,8 @@ updates:
         patterns:
           - 'vitest'
           - '@vitest/*'
+        exclude-patterns:
+          - '@vitest/eslint-plugin'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
