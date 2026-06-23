@@ -55,6 +55,7 @@ export default defineConfig(
     cacheDir: '.cache/vite',
     clearScreen: false,
     build: {
+      chunkImportMap: true,
       modulePreload: { polyfill: false },
       sourcemap: true,
       rolldownOptions: {
@@ -71,6 +72,7 @@ export default defineConfig(
       }
     },
     css: {
+      transformer: 'lightningcss',
       lightningcss: {
         // https://github.com/parcel-bundler/lightningcss/issues/873
         exclude: Features.Nesting | Features.LightDark
