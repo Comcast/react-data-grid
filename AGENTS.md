@@ -3,9 +3,9 @@
 ## Commands
 
 ```shell
-npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
+npm ci                       # setup
 node --run build             # library → lib/
-node --run typecheck         # tsgo --build
+node --run typecheck         # tsc --build
 node --run eslint            # eslint --max-warnings 0
 node --run eslint:fix        # eslint --fix
 node --run format            # oxfmt
