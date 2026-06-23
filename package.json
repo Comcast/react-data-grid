@@ -44,7 +44,7 @@
     "format:check": "oxfmt --check",
     "eslint": "eslint --max-warnings 0 --cache --cache-location .cache/eslint --cache-strategy content --flag unstable_native_nodejs_ts_config",
     "eslint:fix": "node --run eslint -- --fix",
-    "typecheck": "tsgo --build"
+    "typecheck": "tsc --build"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^5.6.0",
@@ -56,8 +56,7 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript/native-preview": "^7.0.0-dev.20260421.2",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.3",
     "@vitest/browser-playwright": "^4.1.5",
     "@vitest/coverage-istanbul": "^4.1.5",
     "@vitest/eslint-plugin": "^1.6.16",
@@ -73,9 +72,10 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "tsdown": "^0.22.0",
-    "typescript": "~6.0.3",
+    "typescript": "npm:@typescript/typescript6@~6.0.1",
+    "typescript-7": "npm:typescript@~7.0.1-rc",
     "typescript-eslint": "^8.59.0",
-    "vite": "^8.0.9",
+    "vite": "^8.1.0",
     "vitest": "^4.1.5",
     "vitest-browser-react": "^2.2.0"
   },
