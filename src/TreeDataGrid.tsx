@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
-import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
+import { assertIsValidKeyGetter, classnames, getLeftRightKey } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -14,6 +14,7 @@ import type {
   Maybe,
   Omit,
   RenderRowProps,
+  RenderSummaryRowProps,
   RowHeightArgs,
   RowsChangeData
 } from './types';
@@ -24,6 +25,8 @@ import type { DataGridProps } from './DataGrid';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import GroupedRow from './GroupRow';
 import { defaultRenderRow } from './Row';
+import { rowFocusable, rowActiveClassname } from './style/row';
+import SummaryRowComponent from './SummaryRow';
 
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
   DataGridProps<R, SR, K>,
@@ -379,11 +382,15 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
+      className,
       isRowSelectionDisabled,
-      isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
+    const isPositionOnRow = rowProps.activeCellIdx === -1;
+    const tabIndex = isPositionOnRow ? 0 : -1;
+    className = classnames(className, rowFocusable, isPositionOnRow && rowActiveClassname);
+
     if (isGroupRow(row)) {
       const { startRowIndex } = row;
       return (
@@ -391,6 +398,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           key={key}
           {...rowProps}
           aria-rowindex={headerAndTopSummaryRowsCount + startRowIndex + 1}
+          className={className}
+          tabIndex={tabIndex}
           row={row}
           groupBy={groupBy}
           toggleGroup={toggleGroupLatest}
@@ -411,6 +420,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       'aria-rowindex': ariaRowIndex,
       row,
       rowClass,
+      className,
+      tabIndex,
       onCellMouseDown,
       onCellClick,
       onCellDoubleClick,
@@ -418,8 +429,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
-      isRowSelectionDisabled,
-      isTreeGrid
+      isRowSelectionDisabled
     });
   }
 
@@ -442,7 +452,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
       renderers={{
         ...renderers,
-        renderRow
+        renderRow,
+        renderSummaryRow
       }}
     />
   );
@@ -450,6 +461,25 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
 function defaultGroupIdGetter(groupKey: string, parentId: string | undefined) {
   return parentId !== undefined ? `${parentId}__${groupKey}` : groupKey;
+}
+
+function renderSummaryRow<R, SR>(
+  key: React.Key,
+  { activeCellIdx, className, ...props }: RenderSummaryRowProps<R, SR>
+) {
+  const isPositionOnRow = activeCellIdx === -1;
+  const tabIndex = isPositionOnRow ? 0 : -1;
+  className = classnames(className, rowFocusable, isPositionOnRow && rowActiveClassname);
+
+  return (
+    <SummaryRowComponent
+      key={key}
+      tabIndex={tabIndex}
+      activeCellIdx={activeCellIdx}
+      className={className}
+      {...props}
+    />
+  );
 }
 
 function isReadonlyArray(arr: unknown): arr is readonly unknown[] {
