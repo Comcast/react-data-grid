@@ -33,7 +33,7 @@ export const cellClassname = `rdg-cell ${cell}`;
 // Single shared sticky/z-index rule reused by both edge-frozen variants.
 // Selectors that need to distinguish start vs end use the marker classes
 // (`.rdg-cell-frozen-start` / `.rdg-cell-frozen-end`) directly rather than this ecij identifier.
-export const cellFrozenStart = css`
+export const cellFrozenBase = css`
   @layer rdg.Cell {
     position: sticky;
     /* Should have a higher value than 0 to show up above unfrozen cells */
@@ -41,8 +41,8 @@ export const cellFrozenStart = css`
   }
 `;
 
-export const cellFrozenStartClassname = `rdg-cell-frozen-start ${cellFrozenStart}`;
-export const cellFrozenEndClassname = `rdg-cell-frozen-end ${cellFrozenStart}`;
+export const cellFrozenStartClassname = `rdg-cell-frozen-start ${cellFrozenBase}`;
+export const cellFrozenEndClassname = `rdg-cell-frozen-end ${cellFrozenBase}`;
 
 const cellDragHandle = css`
   @layer rdg.DragHandle {

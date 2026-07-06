@@ -87,39 +87,12 @@ test('frozen: true is normalized to start-frozen (backwards compat)', async () =
   await expect.element(cell3).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
 
-test('end-frozen cells expose insetInlineEnd and --rdg-frozen-end CSS var', async () => {
+test('end-frozen columns stay pinned to the inline-end edge when scrolling', async () => {
   const columns: readonly Column<never>[] = [
     {
       key: 'col1',
-      name: 'col1'
-    },
-    {
-      key: 'col2',
-      name: 'col2',
-      frozen: 'end',
-      width: 80
-    }
-  ];
-
-  await setup({ columns, rows: [] });
-
-  const grid = page.getGrid().element();
-  const rootStyle = getComputedStyle(grid);
-  // Last end-frozen column's var = 0 (flush with inline-end edge)
-  expect(rootStyle.getPropertyValue('--rdg-frozen-end-1').trim()).toBe('0px');
-
-  const endCell = headerCells.nth(1).element();
-  const cellStyle = getComputedStyle(endCell);
-  expect(cellStyle.position).toBe('sticky');
-  // insetInlineEnd should resolve to 0 (the value of --rdg-frozen-end-1)
-  expect(cellStyle.insetInlineEnd).toBe('0px');
-});
-
-test('multiple end-frozen columns stack via decreasing --rdg-frozen-end CSS vars', async () => {
-  const columns: readonly Column<never>[] = [
-    {
-      key: 'col1',
-      name: 'col1'
+      name: 'col1',
+      width: 2000
     },
     {
       key: 'col2',
@@ -138,11 +111,26 @@ test('multiple end-frozen columns stack via decreasing --rdg-frozen-end CSS vars
   await setup({ columns, rows: [] });
 
   const grid = page.getGrid().element();
-  const rootStyle = getComputedStyle(grid);
-  // First-of-end-frozen (col2 after sort, idx=1): width of col3 = 60px
-  expect(rootStyle.getPropertyValue('--rdg-frozen-end-1').trim()).toBe('60px');
-  // Last-of-end-frozen (col3, idx=2): 0 (flush)
-  expect(rootStyle.getPropertyValue('--rdg-frozen-end-2').trim()).toBe('0px');
+  const [, cell2, cell3] = headerCells.all().map((cell) => cell.element());
+
+  function assertPinnedToEndEdge() {
+    const gridRect = grid.getBoundingClientRect();
+    const gridBorderWidth = parseFloat(getComputedStyle(grid).borderInlineEndWidth);
+    const rect2 = cell2.getBoundingClientRect();
+    const rect3 = cell3.getBoundingClientRect();
+
+    // last end-frozen column is flush with the grid's inline-end edge
+    expect(rect3.right).toBeCloseTo(gridRect.right - gridBorderWidth);
+    // end-frozen columns stack: col2 sits directly before col3
+    expect(rect2.right).toBeCloseTo(rect3.left);
+  }
+
+  assertPinnedToEndEdge();
+
+  // end-frozen columns must not move when the grid is scrolled horizontally
+  grid.scrollLeft = 500;
+  await new Promise(requestAnimationFrame);
+  assertPinnedToEndEdge();
 });
 
 test('end-frozen cells in top summary rows carry the end-frozen class', async () => {

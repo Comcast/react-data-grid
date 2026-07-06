@@ -4,7 +4,7 @@ import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
-  ColumnFrozen,
+  ColumnFrozenState,
   ColumnOrColumnGroup,
   Omit
 } from '../types';
@@ -100,7 +100,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
+        const frozen: ColumnFrozenState = rawColumn.frozen ?? false;
 
         const column: MutableCalculatedColumn<R, SR> = {
           ...rawColumn,
@@ -254,7 +254,7 @@ export function useCalculatedColumns<R, SR>({
     }
     // get the viewport's left side and right side positions for non-frozen columns
     const viewportLeft = scrollLeft + totalStartFrozenColumnWidth;
-    const viewportRight = scrollLeft + viewportWidth;
+    const viewportRight = scrollLeft + viewportWidth - totalEndFrozenColumnWidth;
     // get first and last non-frozen column indexes
     const lastColIdx = columns.length - 1;
     const firstUnfrozenColumnIdx = min(lastStartFrozenColumnIndex + 1, lastColIdx);
@@ -298,6 +298,7 @@ export function useCalculatedColumns<R, SR>({
     lastStartFrozenColumnIndex,
     scrollLeft,
     totalStartFrozenColumnWidth,
+    totalEndFrozenColumnWidth,
     viewportWidth,
     enableVirtualization
   ]);

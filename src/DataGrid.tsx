@@ -518,8 +518,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     (): DataGridHandle => ({
       element: gridRef.current,
       scrollToCell({ idx, rowIdx }) {
+        // frozen columns are always visible — scrolling to them is a no-op
         const scrollToIdx =
-          idx != null && idx > lastStartFrozenColumnIndex && idx < columns.length ? idx : undefined;
+          idx != null &&
+          idx > lastStartFrozenColumnIndex &&
+          (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
+          idx < columns.length
+            ? idx
+            : undefined;
         const scrollToRowIdx =
           rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
             ? rowIdx + headerAndTopSummaryRowsCount

@@ -81,6 +81,39 @@ test('scrollToCell', async () => {
   await validateCellVisibility('49×30', true);
 });
 
+test('scrollToCell with end-frozen columns', async () => {
+  const ref = createRef<DataGridHandle>();
+  const endFrozenColumns: Column<number, number>[] = columns.map((column, i) => ({
+    ...column,
+    frozen: i < 5 ? true : i >= 48 ? 'end' : false
+  }));
+
+  await setup({
+    ref,
+    columns: endFrozenColumns,
+    rows,
+    topSummaryRows: summaryRows,
+    rowHeight: 60
+  });
+
+  // end-frozen columns are always visible, a far-right unfrozen column is not
+  await validateCellVisibility('48×0', true);
+  await validateCellVisibility('49×0', true);
+  await validateCellVisibility('40×0', false);
+
+  // should not scroll when scrolling to an end-frozen column
+  ref.current!.scrollToCell({ idx: 48 });
+  await validateCellVisibility('0×0', true);
+  await validateCellVisibility('40×0', false);
+  ref.current!.scrollToCell({ idx: 49 });
+  await validateCellVisibility('0×0', true);
+  await validateCellVisibility('40×0', false);
+
+  // should still scroll to an unfrozen column
+  ref.current!.scrollToCell({ idx: 40 });
+  await validateCellVisibility('40×0', true);
+});
+
 function validateCellVisibility(name: string, isVisible: boolean) {
   const cell = page.getCell({ name });
 
