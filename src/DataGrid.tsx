@@ -382,7 +382,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const isSelectable = selectedRows != null && onSelectedRowsChange != null;
   const { leftKey, rightKey } = getLeftRightKey(direction);
   const ariaRowCount = rawAriaRowCount ?? headerRowsCount + rows.length + summaryRowsCount;
-  const frozenShadowStyles: React.CSSProperties = {
+  const frozenStartShadowStyles: React.CSSProperties = {
     gridColumnStart: lastStartFrozenColumnIndex + 2,
     insetInlineStart: totalStartFrozenColumnWidth
   };
@@ -1297,7 +1297,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
       {lastStartFrozenColumnIndex > -1 &&
         renderFrozenShadow(
-          frozenShadowStyles,
+          frozenStartShadowStyles,
           frozenColumnShadowStartClassname,
           frozenColumnShadowStartTopClassname
         )}
