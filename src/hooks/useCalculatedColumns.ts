@@ -4,7 +4,7 @@ import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
-  ColumnFrozenState,
+  ColumnFrozen,
   ColumnOrColumnGroup,
   Omit
 } from '../types';
@@ -100,7 +100,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen: ColumnFrozenState = rawColumn.frozen ?? false;
+        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
         const column: MutableCalculatedColumn<R, SR> = {
           ...rawColumn,

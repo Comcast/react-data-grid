@@ -1,5 +1,5 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { isStartFrozen } from './index';
+import { isStartFrozen } from './frozenColumnUtils';
 import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(

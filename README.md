@@ -720,7 +720,7 @@ Custom class name for the header row.
 This property sets the text direction of the grid, it defaults to `'ltr'` (left-to-right). Setting `direction` to `'rtl'` has the following effects:
 
 - Columns flow from right to left
-- Frozen columns are pinned on the right
+- Start-frozen columns are pinned on the right, and end-frozen columns are pinned on the left
 - Column resize cursor is shown on the left edge of the column
 - Scrollbar is moved to the left
 

@@ -29,7 +29,7 @@ export type {
   CellRendererProps,
   ColSpanArgs,
   Column,
-  ColumnFrozenState as ColumnFrozen,
+  ColumnFrozen,
   ColumnGroup,
   ColumnOrColumnGroup,
   ColumnWidth,

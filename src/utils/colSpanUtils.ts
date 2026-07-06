@@ -1,5 +1,5 @@
 import type { CalculatedColumn, ColSpanArgs } from '../types';
-import { isStartFrozen } from './index';
+import { isStartFrozen } from './frozenColumnUtils';
 
 export function getColSpan<R, SR>(
   column: CalculatedColumn<R, SR>,
