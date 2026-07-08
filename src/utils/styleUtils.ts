@@ -38,7 +38,8 @@ export function getCellStyle<R, SR>(
     insetInlineStart: isStartFrozen(column.frozen)
       ? `var(--rdg-frozen-start-${column.idx})`
       : undefined,
-    insetInlineEnd: column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx})` : undefined
+    insetInlineEnd:
+      column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx + colSpan - 1})` : undefined
   };
 }
 

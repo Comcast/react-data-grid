@@ -111,18 +111,19 @@ test('end-frozen columns stay pinned to the inline-end edge when scrolling', asy
   await setup({ columns, rows: [] });
 
   const grid = page.getGrid().element();
-  const [, cell2, cell3] = headerCells.all().map((cell) => cell.element());
 
   function assertPinnedToEndEdge() {
     const gridRect = grid.getBoundingClientRect();
     const gridBorderWidth = parseFloat(getComputedStyle(grid).borderInlineEndWidth);
-    const rect2 = cell2.getBoundingClientRect();
-    const rect3 = cell3.getBoundingClientRect();
+    // resolve the cells fresh each call — scrolling re-renders the row and
+    // detaches any previously cached element references
+    const rect2 = headerCells.nth(1).element().getBoundingClientRect();
+    const rect3 = headerCells.nth(2).element().getBoundingClientRect();
 
     // last end-frozen column is flush with the grid's inline-end edge
-    expect(rect3.right).toBeCloseTo(gridRect.right - gridBorderWidth);
+    expect(rect3.right).toBeCloseTo(gridRect.right - gridBorderWidth, 0);
     // end-frozen columns stack: col2 sits directly before col3
-    expect(rect2.right).toBeCloseTo(rect3.left);
+    expect(rect2.right).toBeCloseTo(rect3.left, 0);
   }
 
   assertPinnedToEndEdge();
@@ -272,6 +273,46 @@ test('colSpan contained within the end-frozen band is respected', async () => {
 
   // colSpan=2 absorbs e2 → only 2 cells render in the body row (a + e1-spanning)
   await expect.element(getCellsAtRowIndex(0)).toHaveLength(2);
+});
+
+test('an end-frozen cell that spans the tail stays pinned to the inline-end edge', async () => {
+  // A wide unfrozen column forces horizontal overflow so the end-frozen band is
+  // sticky-pinned; the spanning cell must anchor by its RIGHT edge (last spanned
+  // column), not its first — regression guard for the colSpan inset-inline-end offset.
+  const columns: readonly Column<number>[] = [
+    { key: 'pad', name: 'pad', width: 2000 },
+    {
+      key: 'e1',
+      name: 'e1',
+      frozen: 'end',
+      width: 80,
+      colSpan(args) {
+        if (args.type === 'ROW') return 2;
+        return undefined;
+      }
+    },
+    { key: 'e2', name: 'e2', frozen: 'end', width: 60 }
+  ];
+
+  await setup({ columns, rows: [1] });
+
+  const grid = page.getGrid().element();
+  const gridBorderWidth = parseFloat(getComputedStyle(grid).borderInlineEndWidth);
+
+  function assertFlushWithEndEdge() {
+    // resolve the spanning cell fresh each call — scrolling re-renders the row
+    const spanningCellRect = getCellsAtRowIndex(0).nth(1).element().getBoundingClientRect();
+    expect(spanningCellRect.right).toBeCloseTo(
+      grid.getBoundingClientRect().right - gridBorderWidth,
+      0
+    );
+  }
+
+  assertFlushWithEndEdge();
+
+  grid.scrollLeft = 500;
+  await new Promise(requestAnimationFrame);
+  assertFlushWithEndEdge();
 });
 
 test('drag handle on an editable end-frozen column is anchored via inset-inline-end', async () => {
