@@ -1,6 +1,11 @@
 import { page, userEvent } from 'vitest/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
+import {
+  cellClassname,
+  cellFrozenEndClassname,
+  cellFrozenStartClassname
+} from '../../../src/style/cell';
 import { safeTab, setup, testCount, validateCellPosition } from '../utils';
 
 const grid = page.getGrid();
@@ -340,4 +345,52 @@ test('keyboard navigation', async () => {
   await validateCellPosition(0, 4);
   await safeTab(true);
   await validateCellPosition(11, 3);
+});
+
+test('grouped header cell is frozen when all its children share a frozen band', async () => {
+  const columns: readonly ColumnOrColumnGroup<never>[] = [
+    {
+      name: 'frozen start group',
+      children: [
+        { key: 'col1', name: 'col1', frozen: 'start' },
+        { key: 'col2', name: 'col2', frozen: true }
+      ]
+    },
+    {
+      name: 'unfrozen group',
+      children: [
+        { key: 'col3', name: 'col3' },
+        { key: 'col4', name: 'col4' }
+      ]
+    },
+    {
+      name: 'mixed group',
+      children: [
+        { key: 'col5', name: 'col5', frozen: 'start' },
+        { key: 'col6', name: 'col6' }
+      ]
+    },
+    {
+      name: 'frozen end group',
+      children: [
+        { key: 'col7', name: 'col7', frozen: 'end' },
+        { key: 'col8', name: 'col8', frozen: 'end' }
+      ]
+    }
+  ];
+
+  await setup({ columns, rows: [] });
+
+  await expect
+    .element(page.getHeaderCell({ name: 'frozen start group' }))
+    .toHaveClass(cellClassname, cellFrozenStartClassname, { exact: true });
+  await expect
+    .element(page.getHeaderCell({ name: 'frozen end group' }))
+    .toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
+  await expect
+    .element(page.getHeaderCell({ name: 'unfrozen group' }))
+    .toHaveClass(cellClassname, { exact: true });
+  await expect
+    .element(page.getHeaderCell({ name: 'mixed group' }))
+    .toHaveClass(cellClassname, { exact: true });
 });
