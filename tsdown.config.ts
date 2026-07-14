@@ -9,8 +9,15 @@ export default defineConfig({
   target: ['baseline-widely-available', 'node24.0.0'],
   platform: 'neutral',
   sourcemap: true,
+  treeshake: {
+    moduleSideEffects: false,
+    propertyReadSideEffects: false,
+    propertyWriteSideEffects: false
+  },
   deps: {
-    skipNodeModulesBundle: true
+    // fail the build if it would result in bundling devDependencies like ecij,
+    // unless explicitely listed in the `onlyBundle` array
+    onlyBundle: []
   },
   css: {
     fileName: 'styles.css',
