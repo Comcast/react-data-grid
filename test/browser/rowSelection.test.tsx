@@ -202,6 +202,7 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
 
     function onSelectedRowsChange(selectedRows: Set<number>) {
       setSelectedRows(selectedRows);
+      // eslint-disable-next-line @eslint-react/immutability
       set = selectedRows;
     }
 
@@ -211,6 +212,7 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
         columns={columns}
         rows={defaultRows}
         selectedRows={selectedRows}
+        // eslint-disable-next-line @eslint-react/immutability
         onSelectedRowsChange={onSelectedRowsChange}
       />
     );
