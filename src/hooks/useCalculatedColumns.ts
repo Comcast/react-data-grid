@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 
-import type { CalculatedColumn, CalculatedColumnParent, ColumnOrColumnGroup, Omit } from '../types';
+import { isStartFrozen } from '../utils';
+import type {
+  CalculatedColumn,
+  CalculatedColumnParent,
+  ColumnFrozen,
+  ColumnOrColumnGroup,
+  Omit
+} from '../types';
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
 import type { DataGridProps } from '../DataGrid';
@@ -40,13 +47,21 @@ export function useCalculatedColumns<R, SR>({
   const defaultResizable = defaultColumnOptions?.resizable ?? false;
   const defaultDraggable = defaultColumnOptions?.draggable ?? false;
 
-  const { columns, colSpanColumns, lastFrozenColumnIndex, headerRowsCount } = useMemo((): {
+  const {
+    columns,
+    colSpanColumns,
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex,
+    headerRowsCount
+  } = useMemo((): {
     readonly columns: readonly CalculatedColumn<R, SR>[];
     readonly colSpanColumns: readonly CalculatedColumn<R, SR>[];
-    readonly lastFrozenColumnIndex: number;
+    readonly lastStartFrozenColumnIndex: number;
+    readonly firstEndFrozenColumnIndex: number;
     readonly headerRowsCount: number;
   } => {
-    let lastFrozenColumnIndex = -1;
+    let lastStartFrozenColumnIndex = -1;
+    let firstEndFrozenColumnIndex = -1;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
 
@@ -72,7 +87,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen = rawColumn.frozen ?? false;
+        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
         const column: MutableCalculatedColumn<R, SR> = {
           ...rawColumn,
@@ -92,8 +107,8 @@ export function useCalculatedColumns<R, SR>({
 
         columns.push(column);
 
-        if (frozen) {
-          lastFrozenColumnIndex++;
+        if (isStartFrozen(frozen)) {
+          lastStartFrozenColumnIndex++;
         }
 
         if (level > headerRowsCount) {
@@ -102,22 +117,18 @@ export function useCalculatedColumns<R, SR>({
       }
     }
 
-    columns.sort(({ key: aKey, frozen: frozenA }, { key: bKey, frozen: frozenB }) => {
+    columns.sort((a, b) => {
       // Sort select column first:
-      if (aKey === SELECT_COLUMN_KEY) return -1;
-      if (bKey === SELECT_COLUMN_KEY) return 1;
+      if (a.key === SELECT_COLUMN_KEY) return -1;
+      if (b.key === SELECT_COLUMN_KEY) return 1;
 
-      // Sort frozen columns second:
-      if (frozenA) {
-        if (frozenB) return 0;
-        return -1;
-      }
-      if (frozenB) return 1;
+      // Sort by band: start-frozen → unfrozen → end-frozen.
+      // Stable sort preserves definition order within each band.
+      const ra = a.frozen === 'end' ? 2 : a.frozen === false ? 1 : 0;
+      const rb = b.frozen === 'end' ? 2 : b.frozen === false ? 1 : 0;
 
       // TODO: sort columns to keep them grouped if they have a parent
-
-      // Sort other columns last:
-      return 0;
+      return ra - rb;
     });
 
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
@@ -128,12 +139,17 @@ export function useCalculatedColumns<R, SR>({
       if (column.colSpan != null) {
         colSpanColumns.push(column);
       }
+
+      if (column.frozen === 'end' && firstEndFrozenColumnIndex === -1) {
+        firstEndFrozenColumnIndex = idx;
+      }
     });
 
     return {
       columns,
       colSpanColumns,
-      lastFrozenColumnIndex,
+      lastStartFrozenColumnIndex,
+      firstEndFrozenColumnIndex,
       headerRowsCount
     };
   }, [
@@ -152,7 +168,8 @@ export function useCalculatedColumns<R, SR>({
     columns,
     colSpanColumns,
     headerRowsCount,
-    lastFrozenColumnIndex
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex
   };
 }
 

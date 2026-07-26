@@ -1,5 +1,6 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { cellClassname, cellFrozenClassname } from '../style/cell';
+import { isStartFrozen } from './frozenColumnUtils';
+import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,
@@ -34,7 +35,11 @@ export function getCellStyle<R, SR>(
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined,
+    insetInlineStart: isStartFrozen(column.frozen)
+      ? `var(--rdg-frozen-start-${column.idx})`
+      : undefined,
+    insetInlineEnd:
+      column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx + colSpan - 1})` : undefined,
     // minWidth/maxWidth constraints must be set on all cells for auto/min-content/max-content to work correctly,
     // otherwise when auto-sizing a column, its width may be greater than `max-width`,
     // leaving less room for other columns to grow, which in turn will not be adjusted correctly.
@@ -61,5 +66,10 @@ export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
-  return classnames(cellClassname, column.frozen && cellFrozenClassname, ...extraClasses);
+  return classnames(
+    cellClassname,
+    isStartFrozen(column.frozen) && cellFrozenStartClassname,
+    column.frozen === 'end' && cellFrozenEndClassname,
+    ...extraClasses
+  );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-import { max, min } from '../utils';
+import { isStartFrozen, max, min } from '../utils';
 import type { CalculatedColumn, ColumnWidths, ResizedWidth } from '../types';
 import { useLatestFunc } from './useLatestFunc';
 import type { DataGridProps } from '../DataGrid';
@@ -71,7 +71,8 @@ function getServerSnapshot(): ColumnWidths {
 export function useColumnWidths<R, SR>(
   gridRef: React.RefObject<HTMLDivElement | null>,
   columns: readonly CalculatedColumn<R, SR>[],
-  lastFrozenColumnIndex: number,
+  lastStartFrozenColumnIndex: number,
+  firstEndFrozenColumnIndex: number,
   gridWidth: number,
   scrollLeft: number,
   isResizingWidth: boolean,
@@ -99,17 +100,25 @@ export function useColumnWidths<R, SR>(
 
   const widthsMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const { columnMetrics, totalColumnWidth, totalFrozenColumnWidth, layoutCssVars } = useMemo((): {
+  const {
+    columnMetrics,
+    totalColumnWidth,
+    totalStartFrozenColumnWidth,
+    totalEndFrozenColumnWidth,
+    layoutCssVars
+  } = useMemo((): {
     columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
     totalColumnWidth: number;
-    totalFrozenColumnWidth: number;
+    totalStartFrozenColumnWidth: number;
+    totalEndFrozenColumnWidth: number;
     layoutCssVars: Readonly<React.CSSProperties>;
   } => {
     const gridTemplateColumns: string[] = [];
     const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
     let left = 0;
     let totalColumnWidth = 0;
-    let totalFrozenColumnWidth = 0;
+    let totalStartFrozenColumnWidth = 0;
+    let totalEndFrozenColumnWidth = 0;
     const layoutCssVars: React.CSSProperties = {};
 
     const isRevalidatingWidths =
@@ -152,9 +161,9 @@ export function useColumnWidths<R, SR>(
         gridTemplateColumns.push(width);
       }
 
-      if (column.frozen) {
-        totalFrozenColumnWidth += resolvedWidth;
-        layoutCssVars[`--rdg-frozen-left-${idx}`] = `${left}px`;
+      if (isStartFrozen(column.frozen)) {
+        totalStartFrozenColumnWidth += resolvedWidth;
+        layoutCssVars[`--rdg-frozen-start-${idx}`] = `${left}px`;
       }
 
       totalColumnWidth += resolvedWidth;
@@ -162,42 +171,57 @@ export function useColumnWidths<R, SR>(
       left += resolvedWidth;
     }
 
+    // end frozen columns are a contiguous tail, so their offsets are measured from the grid's end
+    if (firstEndFrozenColumnIndex !== -1) {
+      for (let i = columns.length - 1; i >= firstEndFrozenColumnIndex; i--) {
+        const column = columns[i];
+        layoutCssVars[`--rdg-frozen-end-${column.idx}`] = `${totalEndFrozenColumnWidth}px`;
+        totalEndFrozenColumnWidth += columnMetrics.get(column)!.width;
+      }
+    }
+
     layoutCssVars.gridTemplateColumns = gridTemplateColumns.join(' ');
 
     return {
       columnMetrics,
       totalColumnWidth,
-      totalFrozenColumnWidth,
+      totalStartFrozenColumnWidth,
+      totalEndFrozenColumnWidth,
       layoutCssVars
     };
-  }, [widthsMap, columnWidthsRaw, isResizingWidth, columns]);
+  }, [widthsMap, columnWidthsRaw, isResizingWidth, columns, firstEndFrozenColumnIndex]);
 
   const renderAllColumns = !enableVirtualization || totalColumnWidth <= gridWidth;
 
   const [colOverscanStartIdx, colOverscanEndIdx] = useMemo((): [number, number] => {
-    const lastColumnIndex = columns.length - 1;
+    // the non-frozen band ends right before the first end frozen column
+    const lastUnfrozenColumnIdx =
+      firstEndFrozenColumnIndex === -1 ? columns.length - 1 : firstEndFrozenColumnIndex - 1;
 
     // render frozen columns only when all columns are frozen,
     // or when frozen columns cover the entire viewport
-    if (lastColumnIndex === lastFrozenColumnIndex || totalFrozenColumnWidth >= gridWidth) {
+    if (
+      lastUnfrozenColumnIdx === lastStartFrozenColumnIndex ||
+      totalStartFrozenColumnWidth + totalEndFrozenColumnWidth >= gridWidth
+    ) {
       return [0, -1];
     }
 
     // get first and last non-frozen column indexes
-    const firstUnfrozenColumnIdx = lastFrozenColumnIndex + 1;
+    const firstUnfrozenColumnIdx = lastStartFrozenColumnIndex + 1;
 
     // render all columns
     if (renderAllColumns) {
-      return [firstUnfrozenColumnIdx, lastColumnIndex];
+      return [firstUnfrozenColumnIdx, lastUnfrozenColumnIdx];
     }
 
     // get the viewport's left side and right side positions for non-frozen columns
-    const viewportLeft = scrollLeft + totalFrozenColumnWidth;
-    const viewportRight = scrollLeft + gridWidth;
+    const viewportLeft = scrollLeft + totalStartFrozenColumnWidth;
+    const viewportRight = scrollLeft + gridWidth - totalEndFrozenColumnWidth;
 
     // get the first visible non-frozen column index
     let colOverscanStartIdx = firstUnfrozenColumnIdx;
-    while (colOverscanStartIdx < lastColumnIndex) {
+    while (colOverscanStartIdx < lastUnfrozenColumnIdx) {
       const { right } = columnMetrics.get(columns[colOverscanStartIdx])!;
       // if the right side of the columnn is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
@@ -209,7 +233,7 @@ export function useColumnWidths<R, SR>(
 
     // get the last visible non-frozen column index
     let colOverscanEndIdx = colOverscanStartIdx;
-    while (colOverscanEndIdx < lastColumnIndex) {
+    while (colOverscanEndIdx < lastUnfrozenColumnIdx) {
       const { right } = columnMetrics.get(columns[colOverscanEndIdx])!;
       // if the right side of the column is beyond or equal to the right side of the available viewport,
       // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
@@ -221,16 +245,18 @@ export function useColumnWidths<R, SR>(
 
     return [
       max(firstUnfrozenColumnIdx, colOverscanStartIdx - 1),
-      min(lastColumnIndex, colOverscanEndIdx + 1)
+      min(lastUnfrozenColumnIdx, colOverscanEndIdx + 1)
     ];
   }, [
     columnMetrics,
     columns,
     gridWidth,
-    lastFrozenColumnIndex,
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex,
     renderAllColumns,
     scrollLeft,
-    totalFrozenColumnWidth
+    totalStartFrozenColumnWidth,
+    totalEndFrozenColumnWidth
   ]);
 
   const observeMeasuringCellRef = useCallback(
@@ -319,7 +345,8 @@ export function useColumnWidths<R, SR>(
   return {
     colOverscanStartIdx,
     colOverscanEndIdx,
-    totalFrozenColumnWidth,
+    totalStartFrozenColumnWidth,
+    totalEndFrozenColumnWidth,
     layoutCssVars,
     columnMetrics,
     observeMeasuringCellRef,

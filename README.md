@@ -720,7 +720,7 @@ Custom class name for the header row.
 This property sets the text direction of the grid, it defaults to `'ltr'` (left-to-right). Setting `direction` to `'rtl'` has the following effects:
 
 - Columns flow from right to left
-- Frozen columns are pinned on the right
+- Start-frozen columns are pinned on the right, and end-frozen columns are pinned on the left
 - Column resize cursor is shown on the left edge of the column
 - Scrollbar is moved to the left
 
@@ -1377,11 +1377,23 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-##### `frozen?: Maybe<boolean>`
+##### `frozen?: Maybe<boolean | 'start' | 'end'>`
 
 **Default**: `false`
 
-Determines whether column is frozen. Frozen columns are pinned to the start edge (left in LTR, right in RTL). Per-column pinning to the end edge is not supported at the moment.
+Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally.
+
+- `'start'` (or `true` for backwards compatibility) — pins the column to the start edge (left in LTR, right in RTL).
+- `'end'` — pins the column to the end edge (right in LTR, left in RTL).
+- `false` (default) — the column scrolls with the rest of the grid.
+
+```tsx
+const columns: readonly Column<Row>[] = [
+  { key: 'id', name: 'ID', frozen: 'start' },
+  { key: 'name', name: 'Name' },
+  { key: 'actions', name: 'Actions', frozen: 'end' }
+];
+```
 
 ##### `resizable?: Maybe<boolean>`
 

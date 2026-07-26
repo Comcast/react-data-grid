@@ -1,15 +1,3 @@
 @layer rdg {
-  @layer Defaults,
-    CheckboxInput,
-    CheckboxIcon,
-    CheckboxLabel,
-    Cell,
-    HeaderCell,
-    SummaryCell,
-    EditCell,
-    Row,
-    HeaderRow,
-    SummaryRow,
-    GroupedRow,
-    Root;
+  @layer Defaults, CheckboxInput, CheckboxIcon, CheckboxLabel, Cell, HeaderCell, SummaryCell, EditCell, Row, HeaderRow, SummaryRow, GroupedRow, Root;
 }
