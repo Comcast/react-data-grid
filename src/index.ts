@@ -28,6 +28,7 @@ export type {
   CellPasteArgs,
   ColSpanArgs,
   Column,
+  ColumnFrozen,
   ColumnGroup,
   ColumnOrColumnGroup,
   ColumnWidth,
