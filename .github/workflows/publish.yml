@@ -33,8 +33,11 @@ jobs:
       - name: Typecheck
         run: node --run typecheck
 
-      - name: ESLint
-        run: node --run eslint
+      - name: Oxlint
+        run: node --run lint
+
+      - name: ESLint (markdown)
+        run: node --run lint:md
 
       - name: Oxfmt
         run: node --run format:check

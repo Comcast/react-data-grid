@@ -6,8 +6,9 @@
 npm ci                       # setup
 node --run build             # library → lib/
 node --run typecheck         # tsc --build
-node --run eslint            # eslint --max-warnings 0
-node --run eslint:fix        # eslint --fix
+node --run lint              # oxlint --max-warnings 0 --type-aware
+node --run lint:fix          # oxlint --fix
+node --run lint:md           # eslint --max-warnings 0 (markdown only)
 node --run format            # oxfmt
 node --run test              # vitest (browser + node)
 node --run test -- <path>    # single test, e.g. test/browser/rowHeight.test.ts
@@ -59,4 +60,4 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `node --run typecheck`, `node --run eslint`, `node --run format`, `node --run test`.
+Run before submitting changes: `node --run typecheck`, `node --run lint`, `node --run format`, `node --run test`.

@@ -19,12 +19,14 @@ updates:
         patterns:
           - 'tsdown'
           - '@tsdown/*'
+      oxlint:
+        patterns:
+          - 'oxlint'
+          - 'oxlint-tsgolint'
       vitest:
         patterns:
           - 'vitest'
           - '@vitest/*'
-        exclude-patterns:
-          - '@vitest/eslint-plugin'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
