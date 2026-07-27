@@ -11,7 +11,6 @@
     "builtin": true
   },
   "ignorePatterns": [
-    ".agents",
     ".cache",
     ".claude",
     ".nitro",

@@ -5,7 +5,6 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 // `@eslint/markdown` is built on ESLint's language plugin API, which oxlint does not support.
 export default defineConfig([
   globalIgnores([
-    '.agents',
     '.cache',
     '.claude',
     '.nitro',
