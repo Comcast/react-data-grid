@@ -28,10 +28,10 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
 
   for (const entry of entries) {
     const cell = entry.target as HTMLDivElement;
+    const gridRef = cellToGridRefMap.get(cell);
 
-    if (!cellToGridRefMap.has(cell)) continue;
+    if (gridRef === undefined) continue;
 
-    const gridRef = cellToGridRefMap.get(cell)!;
     const key = cell.dataset.measuringCellKey!;
     const previousWidthsMap = gridRefToWidthsMap.get(gridRef);
     const widthItem = previousWidthsMap?.get(key);
@@ -121,9 +121,14 @@ export function useColumnWidths<R, SR>(
     let totalEndFrozenColumnWidth = 0;
     const layoutCssVars: React.CSSProperties = {};
 
+    // only look at the columns that are currently rendered,
+    // stale entries of removed columns must not keep the widths revalidating forever
     const isRevalidatingWidths =
       isResizingWidth ||
-      widthsMap.values().some((item) => item.type === 'resizing' || item.type === 'autosizing');
+      columns.some((column) => {
+        const type = widthsMap.get(column.key)?.type;
+        return type === 'resizing' || type === 'autosizing';
+      });
 
     for (const column of columns) {
       const { key, idx, minWidth, maxWidth } = column;
@@ -142,15 +147,17 @@ export function useColumnWidths<R, SR>(
 
       // This represents the width that will be used to compute virtualization.
       // Use the previously measured width if available, otherwise width or minWidth.
+      const unclampedResolvedWidth =
+        typeof widthItem?.width === 'number' ? widthItem.width : column.width;
       const resolvedWidth: number =
-        typeof widthItem?.width === 'number'
-          ? widthItem.width
-          : typeof column.width === 'number'
-            ? clampColumnWidth(column.width, column)
-            : column.minWidth;
+        typeof unclampedResolvedWidth === 'number'
+          ? clampColumnWidth(unclampedResolvedWidth, column)
+          : column.minWidth;
 
       if (typeof width === 'number') {
-        gridTemplateColumns.push(`${width}px`);
+        // the width can come from the `columnWidths` prop or the column definition,
+        // it is not necessarily within the column's bounds
+        gridTemplateColumns.push(`${clampColumnWidth(width, column)}px`);
       } else if (width === 'auto') {
         gridTemplateColumns.push(
           typeof maxWidth === 'number'
@@ -259,6 +266,23 @@ export function useColumnWidths<R, SR>(
     totalEndFrozenColumnWidth
   ]);
 
+  // Measurements are only ever re-evaluated, but a `resized` width is intentional and must be
+  // preserved: it is not measured internally when it comes from a column that is not rendered,
+  // and it is marked as `measured` when the column is rendered, which would lose the intent.
+  function withResizedWidths(widthsMap: ColumnWidths): ColumnWidths {
+    if (columnWidthsRaw == null) return widthsMap;
+
+    const newWidthsMap = new Map(widthsMap);
+
+    for (const [key, widthItem] of columnWidthsRaw) {
+      if (widthItem.type === 'resized' && newWidthsMap.get(key)?.type !== 'resized') {
+        newWidthsMap.set(key, widthItem);
+      }
+    }
+
+    return newWidthsMap;
+  }
+
   const observeMeasuringCellRef = useCallback(
     (cell: HTMLDivElement) => {
       cellToGridRefMap.set(cell, gridRef);
@@ -313,7 +337,7 @@ export function useColumnWidths<R, SR>(
         promise.then((newWidth) => {
           if (newWidth !== previousWidth) {
             onColumnResize?.(column, newWidth);
-            onColumnWidthsChangeRaw?.(getSnapshot());
+            onColumnWidthsChangeRaw?.(withResizedWidths(getSnapshot()));
           }
         });
       } else {
@@ -339,7 +363,7 @@ export function useColumnWidths<R, SR>(
 
     subscribers.get(gridRef)?.();
 
-    onColumnWidthsChangeRaw?.(widthsMap);
+    onColumnWidthsChangeRaw?.(withResizedWidths(widthsMap));
   });
 
   return {
