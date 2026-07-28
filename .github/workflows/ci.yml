@@ -35,6 +35,9 @@ jobs:
       - name: Build website
         run: node --run build:website
 
+      - name: Check routeTree.gen.ts
+        run: git diff --exit-code website/routeTree.gen.ts
+
       - name: Install Playwright Browsers
         run: npx playwright install chromium firefox
         timeout-minutes: 2
