@@ -375,9 +375,21 @@ export interface SetActivePositionOptions {
   shouldFocus?: Maybe<boolean>;
 }
 
-export type ColumnWidth =
+export interface ColumnWidth {
+  readonly type: 'measured' | 'resized';
+  readonly width: number;
+}
+
+export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
+
+/**
+ * `resizing` and `autosizing` are transient states that only exist while the user is
+ * resizing a column. They are internal and are never exposed via `onColumnWidthsChange`.
+ */
+export type InternalColumnWidth =
+  | ColumnWidth
   | {
-      readonly type: 'measured' | 'resizing' | 'resized';
+      readonly type: 'resizing';
       readonly width: number;
     }
   | {
@@ -386,8 +398,8 @@ export type ColumnWidth =
       readonly onMeasure: (width: number) => void;
     };
 
-export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
+export type InternalColumnWidths = ReadonlyMap<string, InternalColumnWidth>;
 
-export type ResizedWidth = ColumnWidth['width'];
+export type ResizedWidth = InternalColumnWidth['width'];
 
 export type Direction = 'ltr' | 'rtl';

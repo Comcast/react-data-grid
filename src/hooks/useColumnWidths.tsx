@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
 import { isStartFrozen, max, min } from '../utils';
-import type { CalculatedColumn, ColumnWidths, ResizedWidth } from '../types';
+import type {
+  CalculatedColumn,
+  ColumnWidth,
+  ColumnWidths,
+  InternalColumnWidths,
+  ResizedWidth
+} from '../types';
 import { useLatestFunc } from './useLatestFunc';
 import type { DataGridProps } from '../DataGrid';
 
@@ -10,12 +16,12 @@ interface ColumnMetric {
   readonly right: number;
 }
 
-const initialWidthsMap: ColumnWidths = new Map();
+const initialWidthsMap: InternalColumnWidths = new Map();
 
 // use unmanaged WeakMaps so we preserve the cache even when
 // the component partially unmounts via Suspense or Activity
 const cellToGridRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
-const gridRefToWidthsMap = new WeakMap<RefObject<HTMLDivElement | null>, ColumnWidths>();
+const gridRefToWidthsMap = new WeakMap<RefObject<HTMLDivElement | null>, InternalColumnWidths>();
 const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
 
 // don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
@@ -64,7 +70,7 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   }
 }
 
-function getServerSnapshot(): ColumnWidths {
+function getServerSnapshot(): InternalColumnWidths {
   return initialWidthsMap;
 }
 
@@ -92,7 +98,7 @@ export function useColumnWidths<R, SR>(
     [gridRef]
   );
 
-  const getSnapshot = useCallback((): ColumnWidths => {
+  const getSnapshot = useCallback((): InternalColumnWidths => {
     // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
     // We use ref as key instead to access stable values regardless of rendering state.
     return gridRefToWidthsMap.get(gridRef) ?? initialWidthsMap;
@@ -266,15 +272,20 @@ export function useColumnWidths<R, SR>(
     totalEndFrozenColumnWidth
   ]);
 
-  // Measurements are only ever re-evaluated, but a `resized` width is intentional and must be
-  // preserved: it is not measured internally when it comes from a column that is not rendered,
-  // and it is marked as `measured` when the column is rendered, which would lose the intent.
-  function withResizedWidths(widthsMap: ColumnWidths): ColumnWidths {
-    if (columnWidthsRaw == null) return widthsMap;
+  function getPublicWidths(widthsMap: InternalColumnWidths): ColumnWidths {
+    const newWidthsMap = new Map<string, ColumnWidth>();
 
-    const newWidthsMap = new Map(widthsMap);
+    for (const [key, widthItem] of widthsMap) {
+      // `resizing`/`autosizing` only exist mid-interaction and are not part of the public type
+      if (widthItem.type === 'measured' || widthItem.type === 'resized') {
+        newWidthsMap.set(key, widthItem);
+      }
+    }
 
-    for (const [key, widthItem] of columnWidthsRaw) {
+    // Measurements are only ever re-evaluated, but a `resized` width is intentional and must be
+    // preserved: it is not measured internally when it comes from a column that is not rendered,
+    // and it is marked as `measured` when the column is rendered, which would lose the intent.
+    for (const [key, widthItem] of columnWidthsRaw ?? []) {
       if (widthItem.type === 'resized' && newWidthsMap.get(key)?.type !== 'resized') {
         newWidthsMap.set(key, widthItem);
       }
@@ -337,7 +348,7 @@ export function useColumnWidths<R, SR>(
         promise.then((newWidth) => {
           if (newWidth !== previousWidth) {
             onColumnResize?.(column, newWidth);
-            onColumnWidthsChangeRaw?.(withResizedWidths(getSnapshot()));
+            onColumnWidthsChangeRaw?.(getPublicWidths(getSnapshot()));
           }
         });
       } else {
@@ -363,7 +374,7 @@ export function useColumnWidths<R, SR>(
 
     subscribers.get(gridRef)?.();
 
-    onColumnWidthsChangeRaw?.(withResizedWidths(widthsMap));
+    onColumnWidthsChangeRaw?.(getPublicWidths(widthsMap));
   });
 
   return {
