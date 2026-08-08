@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
+import { clampColumnWidth, combineFrozen, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
@@ -93,6 +93,7 @@ export function useCalculatedColumns<R, SR>({
             idx: -1,
             colSpan: 0,
             level: 0,
+            frozen: false,
             headerCellClass: rawColumn.headerCellClass
           };
 
@@ -147,7 +148,7 @@ export function useCalculatedColumns<R, SR>({
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
     columns.forEach((column, idx) => {
       column.idx = idx;
-      updateColumnParent(column, idx, 0);
+      updateColumnParent(column, idx, 0, column.frozen);
 
       if (column.colSpan != null) {
         colSpanColumns.push(column);
@@ -321,7 +322,8 @@ export function useCalculatedColumns<R, SR>({
 function updateColumnParent<R, SR>(
   column: MutableCalculatedColumn<R, SR> | MutableCalculatedColumnParent<R, SR>,
   index: number,
-  level: number
+  level: number,
+  frozen: ColumnFrozen
 ) {
   if (level < column.level) {
     column.level = level;
@@ -331,8 +333,11 @@ function updateColumnParent<R, SR>(
     const { parent } = column;
     if (parent.idx === -1) {
       parent.idx = index;
+      parent.frozen = frozen;
+    } else {
+      parent.frozen = combineFrozen(parent.frozen, frozen);
     }
     parent.colSpan += 1;
-    updateColumnParent(parent, index, level - 1);
+    updateColumnParent(parent, index, level - 1, frozen);
   }
 }
