@@ -28,6 +28,14 @@ async function expectGridRows(rowHeightFn: (row: number) => number, expected: st
   expect(grid.element().style.gridTemplateRows).toBe(expected);
 }
 
+// Data rows are rendered with `aria-rowindex` starting at 2 (the header row is 1),
+// so the zero-based row index of the active cell is `aria-rowindex - 2`.
+function getActiveDataRowIdx() {
+  const cell = page.getActiveCell().element();
+  const row = cell.closest('[role="row"]')!;
+  return Number(row.getAttribute('aria-rowindex')) - 2;
+}
+
 test('rowHeight is number', async () => {
   await setupGrid(40);
 
@@ -164,4 +172,49 @@ test('rowHeight string + explicit enableVirtualization=true throws', async () =>
 
   // eslint-disable-next-line no-console
   vi.mocked(console.error).mockClear();
+});
+
+test('PageDown/PageUp navigate through string (auto) height rows', async () => {
+  const columns: Column<{ id: number; content: string }>[] = [
+    { key: 'id', name: 'ID', width: 80 },
+    {
+      key: 'content',
+      name: 'Content',
+      width: 200,
+      renderCell: ({ row }) => <div style={{ whiteSpace: 'pre' }}>{row.content}</div>
+    }
+  ];
+  // Multi-line content makes each auto-sized row tall, and the fixed grid height
+  // forces a scrollable viewport so paging moves through several rows at a time.
+  // This exercises the string-height getRowTop/getRowHeight/findRowIdx DOM paths,
+  // which measure the rendered cells rather than computing offsets from a number.
+  const rows = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    content: `row ${i}\nline two\nline three`
+  }));
+
+  await setup({ columns, rows, rowHeight: 'auto', style: { blockSize: 300 } });
+
+  // tab into the grid (lands on the header row) then move onto the first data row
+  await safeTab();
+  await userEvent.keyboard('{arrowdown}');
+  expect(getActiveDataRowIdx()).toBe(0);
+
+  // PageDown moves the active cell forward through the measured rows
+  await userEvent.keyboard('{PageDown}');
+  const afterPageDown = getActiveDataRowIdx();
+  expect(afterPageDown).toBeGreaterThan(0);
+
+  // PageUp moves it back up
+  await userEvent.keyboard('{PageUp}');
+  const afterPageUp = getActiveDataRowIdx();
+  expect(afterPageUp).toBeLessThan(afterPageDown);
+
+  // and PageDown again moves forward from there
+  await userEvent.keyboard('{PageDown}');
+  expect(getActiveDataRowIdx()).toBeGreaterThan(afterPageUp);
+
+  // Ctrl+End reaches the last row with string heights
+  await userEvent.keyboard('{Control>}{end}{/Control}');
+  expect(getActiveDataRowIdx()).toBe(rows.length - 1);
 });
