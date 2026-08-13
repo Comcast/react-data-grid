@@ -1,10 +1,13 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
+import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import {
+  type ActivePosition,
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,
+  type HeaderRowSelectionContextValue,
+  type PartialPosition,
   RowSelectionChangeContext,
   useActivePosition,
   useCalculatedColumns,
@@ -14,10 +17,7 @@ import {
   useScrollState,
   useScrollToPosition,
   useViewportColumns,
-  useViewportRows,
-  type ActivePosition,
-  type HeaderRowSelectionContextValue,
-  type PartialPosition
+  useViewportRows
 } from './hooks';
 import {
   assertIsValidKeyGetter,
@@ -45,7 +45,6 @@ import type {
   CellMouseEventHandler,
   CellNavigationMode,
   CellPasteArgs,
-  PositionChangeArgs,
   Column,
   ColumnOrColumnGroup,
   ColumnWidths,
@@ -53,11 +52,12 @@ import type {
   FillEvent,
   Maybe,
   Position,
+  PositionChangeArgs,
   Renderers,
   RowsChangeData,
-  SetActivePositionOptions,
   SelectHeaderRowEvent,
   SelectRowEvent,
+  SetActivePositionOptions,
   SortColumn
 } from './types';
 import { defaultRenderCell } from './Cell';
@@ -138,7 +138,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
    * Height of each row in pixels
    * @default 35
    */
-  rowHeight?: Maybe<number | ((row: NoInfer<R>) => number)>;
+  rowHeight?: Maybe<number | string | ((row: NoInfer<R>) => number)>;
   /**
    * Height of the header row in pixels
    * @default 35
@@ -303,8 +303,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const renderCheckbox =
     renderers?.renderCheckbox ?? defaultRenderers?.renderCheckbox ?? defaultRenderCheckbox;
   const noRowsFallback = renderers?.noRowsFallback ?? defaultRenderers?.noRowsFallback;
-  const enableVirtualization = rawEnableVirtualization ?? true;
+  const enableVirtualization = rawEnableVirtualization ?? typeof rawRowHeight !== 'string';
   const direction = rawDirection ?? 'ltr';
+
+  if (enableVirtualization && typeof rowHeight === 'string') {
+    throw new Error('`rowHeight` cannot be a string when `enableVirtualization` is true.');
+  }
 
   /**
    * ref
@@ -413,7 +417,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     maxRowIdx,
     setDraggedOverRowIdx
   });
-  const { setScrollToPosition, scrollToPositionElement } = useScrollToPosition({ gridRef });
+  const { setScrollToPosition, scrollToPositionElement } = useScrollToPosition({
+    gridRef
+  });
 
   const defaultGridComponents = useMemo(
     () => ({
@@ -457,10 +463,16 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     findRowIdx
   } = useViewportRows({
     rows,
-    rowHeight,
     clientHeight,
     scrollTop,
-    enableVirtualization
+    enableVirtualization,
+    ...(typeof rowHeight === 'string'
+      ? {
+          rowHeight,
+          gridRef,
+          gridHeight
+        }
+      : { rowHeight })
   });
 
   const {
@@ -690,7 +702,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (isSelectable && shiftKey && key === ' ') {
       assertIsValidKeyGetter<R, K>(rowKeyGetter);
       const rowKey = rowKeyGetter(row);
-      selectRow({ row, checked: !selectedRows.has(rowKey), isShiftClick: false });
+      selectRow({
+        row,
+        checked: !selectedRows.has(rowKey),
+        isShiftClick: false
+      });
       // prevent scrolling
       event.preventDefault();
       return;
@@ -776,7 +792,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const indexes: number[] = [];
     for (let i = startRowIdx; i < endRowIdx; i++) {
       if (isCellEditable({ rowIdx: i, idx })) {
-        const updatedRow = onFill!({ columnKey: column.key, sourceRow, targetRow: rows[i] });
+        const updatedRow = onFill!({
+          columnKey: column.key,
+          sourceRow,
+          targetRow: rows[i]
+        });
         if (updatedRow !== rows[i]) {
           updatedRows[i] = updatedRow;
           indexes.push(i);
@@ -1048,7 +1068,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     });
 
     function closeEditor(shouldFocus: boolean) {
-      const newPosition: ActivePosition = { idx: activePosition.idx, rowIdx, mode: 'ACTIVE' };
+      const newPosition: ActivePosition = {
+        idx: activePosition.idx,
+        rowIdx,
+        mode: 'ACTIVE'
+      };
       setActivePosition(newPosition);
       if (shouldFocus) {
         setPositionToFocus(newPosition);
