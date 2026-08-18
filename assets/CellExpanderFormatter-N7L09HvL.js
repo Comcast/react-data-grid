@@ -1,0 +1,2 @@
+import{r as e}from"./directionContext-Cxp0yfQU.js";var t=e(),n=`css-9c1b520f`;function r({tabIndex:e,expanded:r,onCellExpand:i}){function a(e){(e.key===` `||e.key===`Enter`)&&(e.preventDefault(),i())}return(0,t.jsx)(`div`,{className:n,onClick:i,onKeyDown:a,children:(0,t.jsx)(`span`,{tabIndex:e,children:r?`▼`:`▶`})})}export{r as t};
+//# sourceMappingURL=CellExpanderFormatter-N7L09HvL.js.map
