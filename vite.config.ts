@@ -55,7 +55,7 @@ export default defineConfig(
     cacheDir: '.cache/vite',
     clearScreen: false,
     build: {
-      chunkImportMap: true,
+      // chunkImportMap: true,
       modulePreload: { polyfill: false },
       sourcemap: true,
       rolldownOptions: {
