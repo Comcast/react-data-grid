@@ -336,5 +336,21 @@ async function testGridTemplateColumns(obj: {
           ? (obj.firefoxCI ?? obj.firefox)
           : obj.firefox;
 
+  const a = grid.element().style.gridTemplateColumns;
+  const b = window.getComputedStyle(grid.element()).gridTemplateColumns;
+  const c =
+    server.browser === 'firefox'
+      ? ''
+      : grid.element().computedStyleMap().get('grid-template-columns')?.toString();
+
+  console.log(
+    server.browser,
+    gridTemplateColumns,
+    a === gridTemplateColumns,
+    b === gridTemplateColumns,
+    c === gridTemplateColumns,
+    { a, b, c }
+  );
+
   await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }
