@@ -120,7 +120,6 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
       }
     },
     slowTestThreshold: 1000,
-    testTimeout: 40_000,
     browser: {
       headless: true,
       ui: false,
