@@ -422,29 +422,33 @@ test('copy/paste when grouping is enabled', async () => {
 
   await userEvent.click(page.getCell({ name: 'USA' }));
   await userEvent.copy();
-  expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
-    {
-      column: expect.objectContaining(columns[2]),
-      row: {
-        country: 'USA',
-        id: 2,
-        year: 2021
-      }
-    },
-    expect.anything()
-  );
+  await expect
+    .poll(() => onCellCopySpy)
+    .toHaveBeenCalledExactlyOnceWith(
+      {
+        column: expect.objectContaining(columns[2]),
+        row: {
+          country: 'USA',
+          id: 2,
+          year: 2021
+        }
+      },
+      expect.anything()
+    );
   await userEvent.paste();
-  expect(onCellPasteSpy).toHaveBeenCalledExactlyOnceWith(
-    {
-      column: expect.objectContaining(columns[2]),
-      row: {
-        country: 'USA',
-        id: 2,
-        year: 2021
-      }
-    },
-    expect.anything()
-  );
+  await expect
+    .poll(() => onCellPasteSpy)
+    .toHaveBeenCalledExactlyOnceWith(
+      {
+        column: expect.objectContaining(columns[2]),
+        row: {
+          country: 'USA',
+          id: 2,
+          year: 2021
+        }
+      },
+      expect.anything()
+    );
 });
 
 test('update row using cell renderer', async () => {
