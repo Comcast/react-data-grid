@@ -8,6 +8,7 @@ import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vi
 // avoid priting huge stack traces
 // chromium defaults to 10
 // firefox defaults to 128
+// webkit defaults to 100
 // @ts-expect-error
 Error.stackTraceLimit = 10;
 
