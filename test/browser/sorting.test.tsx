@@ -77,7 +77,7 @@ test('multi column sort', async () => {
 
   // aria-sort is only added for single sort
   await expect.element(headerCell1).not.toHaveAttribute('aria-sort');
-  await expect.element(priority1).toHaveTextContent('1'); // priority
+  await expect.element(priority1).toHaveTextContent('1');
   await expect.element(headerCell2).not.toHaveAttribute('aria-sort');
   await expect.element(priority2).toHaveTextContent('2');
   await expect.element(headerCell3).not.toHaveAttribute('aria-sort');
