@@ -40,7 +40,6 @@ jobs:
 
       - name: Install Playwright Browsers
         run: |
-          npx playwright install --list
           npx playwright install chromium firefox --no-shell
           npx playwright install webkit --with-deps
         timeout-minutes: 2
