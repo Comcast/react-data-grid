@@ -513,31 +513,28 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   /**
    * Misc hooks
    */
-  useImperativeHandle(
-    ref,
-    (): DataGridHandle => ({
-      element: gridRef.current,
-      scrollToCell({ idx, rowIdx }) {
-        // frozen columns are always visible — scrolling to them is a no-op
-        const scrollToIdx =
-          idx != null &&
-          idx > lastStartFrozenColumnIndex &&
-          (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
-          idx < columns.length
-            ? idx
-            : undefined;
-        const scrollToRowIdx =
-          rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
-            ? rowIdx + headerAndTopSummaryRowsCount
-            : undefined;
+  useImperativeHandle(ref, (): DataGridHandle => ({
+    element: gridRef.current,
+    scrollToCell({ idx, rowIdx }) {
+      // frozen columns are always visible — scrolling to them is a no-op
+      const scrollToIdx =
+        idx != null &&
+        idx > lastStartFrozenColumnIndex &&
+        (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
+        idx < columns.length
+          ? idx
+          : undefined;
+      const scrollToRowIdx =
+        rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
+          ? rowIdx + headerAndTopSummaryRowsCount
+          : undefined;
 
-        if (scrollToIdx != null || scrollToRowIdx != null) {
-          setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
-        }
-      },
-      setActivePosition: setPosition
-    })
-  );
+      if (scrollToIdx != null || scrollToRowIdx != null) {
+        setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
+      }
+    },
+    setActivePosition: setPosition
+  }));
 
   /**
    * event handlers

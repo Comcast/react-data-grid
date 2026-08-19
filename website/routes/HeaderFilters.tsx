@@ -84,16 +84,14 @@ function selectStopPropagation(event: React.KeyboardEvent<HTMLSelectElement>) {
 function HeaderFilters() {
   const direction = useDirection();
   const [rows] = useState(createRows);
-  const [filters, setFilters] = useState(
-    (): Filter => ({
-      task: '',
-      priority: 'Critical',
-      issueType: 'All',
-      developer: '',
-      complete: undefined,
-      enabled: true
-    })
-  );
+  const [filters, setFilters] = useState((): Filter => ({
+    task: '',
+    priority: 'Critical',
+    issueType: 'All',
+    developer: '',
+    complete: undefined,
+    enabled: true
+  }));
 
   const developerOptions = useMemo(
     () =>
