@@ -49,159 +49,157 @@ const playwrightOptions: PlaywrightProviderOptions = {
   }
 };
 
-export default defineConfig(
-  ({ isPreview }): ViteUserConfig => ({
-    base: '/react-data-grid/',
-    cacheDir: '.cache/vite',
-    clearScreen: false,
-    build: {
-      // chunkImportMap: true,
-      modulePreload: { polyfill: false },
-      sourcemap: true,
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              {
-                name: 'faker',
-                test: '@faker-js/faker'
-              }
-            ]
-          }
-        }
-      }
-    },
-    css: {
-      transformer: 'lightningcss',
-      lightningcss: {
-        // https://github.com/parcel-bundler/lightningcss/issues/873
-        exclude: Features.Nesting | Features.LightDark
-      }
-    },
-    plugins: isPreview
-      ? []
-      : [
-          ecij(),
-          !isTest &&
-            tanstackRouter({
-              target: 'react',
-              generatedRouteTree: 'website/routeTree.gen.ts',
-              routesDirectory: 'website/routes',
-              autoCodeSplitting: true
-            }),
-          react()
-        ],
-    server: {
-      open: true
-    },
-    test: {
-      dir: 'test',
-      globals: true,
-      printConsoleTrace: true,
-      env: {
-        // @ts-expect-error
-        CI: isCI
-      },
-      coverage: {
-        provider: 'istanbul',
-        enabled: isCI,
-        include: ['src/**/*.{ts,tsx}'],
-        reporter: ['json']
-      },
-      restoreMocks: true,
-      sequence: {
-        shuffle: {
-          files: false,
-          tests: true
-        }
-      },
-      expect: {
-        poll: {
-          timeout: actionTimeout
-        }
-      },
-      slowTestThreshold: 1000,
-      browser: {
-        headless: true,
-        ui: false,
-        viewport,
-        commands: { resizeColumn, dragFill },
-        expect: {
-          toMatchScreenshot: {
-            resolveScreenshotPath({
-              root,
-              testFileDirectory,
-              testFileName,
-              arg,
-              browserName,
-              platform,
-              ext
-            }) {
-              return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
+export default defineConfig(({ isPreview }): ViteUserConfig => ({
+  base: '/react-data-grid/',
+  cacheDir: '.cache/vite',
+  clearScreen: false,
+  build: {
+    // chunkImportMap: true,
+    modulePreload: { polyfill: false },
+    sourcemap: true,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'faker',
+              test: '@faker-js/faker'
             }
+          ]
+        }
+      }
+    }
+  },
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      // https://github.com/parcel-bundler/lightningcss/issues/873
+      exclude: Features.Nesting | Features.LightDark
+    }
+  },
+  plugins: isPreview
+    ? []
+    : [
+        ecij(),
+        !isTest &&
+          tanstackRouter({
+            target: 'react',
+            generatedRouteTree: 'website/routeTree.gen.ts',
+            routesDirectory: 'website/routes',
+            autoCodeSplitting: true
+          }),
+        react()
+      ],
+  server: {
+    open: true
+  },
+  test: {
+    dir: 'test',
+    globals: true,
+    printConsoleTrace: true,
+    env: {
+      // @ts-expect-error
+      CI: isCI
+    },
+    coverage: {
+      provider: 'istanbul',
+      enabled: isCI,
+      include: ['src/**/*.{ts,tsx}'],
+      reporter: ['json']
+    },
+    restoreMocks: true,
+    sequence: {
+      shuffle: {
+        files: false,
+        tests: true
+      }
+    },
+    expect: {
+      poll: {
+        timeout: actionTimeout
+      }
+    },
+    slowTestThreshold: 1000,
+    browser: {
+      headless: true,
+      ui: false,
+      viewport,
+      commands: { resizeColumn, dragFill },
+      expect: {
+        toMatchScreenshot: {
+          resolveScreenshotPath({
+            root,
+            testFileDirectory,
+            testFileName,
+            arg,
+            browserName,
+            platform,
+            ext
+          }) {
+            return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
           }
-        },
-        locators: {
-          exact: true
-        },
-        instances: [
-          {
-            browser: 'chromium',
-            provider: playwright({
-              ...playwrightOptions,
-              launchOptions: {
-                channel: 'chromium',
-                args: [
-                  '--disable-renderer-accessibility',
-                  '--disable-platform-accessibility-integration'
-                ]
-              }
-            })
-          },
-          {
-            browser: 'firefox',
-            provider: playwright({
-              ...playwrightOptions,
-              launchOptions: {
-                firefoxUserPrefs: {
-                  'accessibility.force_disabled': 1
-                }
-              }
-            }),
-            // TODO: remove when FF tests are stable
-            fileParallelism: false
-          }
-        ]
+        }
       },
-      projects: [
+      locators: {
+        exact: true
+      },
+      instances: [
         {
-          extends: true,
-          test: {
-            name: 'browser',
-            include: ['browser/**/*.test.*'],
-            browser: { enabled: true },
-            setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
-          }
+          browser: 'chromium',
+          provider: playwright({
+            ...playwrightOptions,
+            launchOptions: {
+              channel: 'chromium',
+              args: [
+                '--disable-renderer-accessibility',
+                '--disable-platform-accessibility-integration'
+              ]
+            }
+          })
         },
         {
-          extends: true,
-          test: {
-            name: 'visual',
-            include: ['visual/*.test.*'],
-            browser: { enabled: true },
-            setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
-          }
-        },
-        {
-          extends: true,
-          test: {
-            name: 'node',
-            include: ['node/**/*.test.*'],
-            environment: 'node',
-            setupFiles: ['test/failOnConsole.ts']
-          }
+          browser: 'firefox',
+          provider: playwright({
+            ...playwrightOptions,
+            launchOptions: {
+              firefoxUserPrefs: {
+                'accessibility.force_disabled': 1
+              }
+            }
+          }),
+          // TODO: remove when FF tests are stable
+          fileParallelism: false
         }
       ]
-    }
-  })
-);
+    },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'browser',
+          include: ['browser/**/*.test.*'],
+          browser: { enabled: true },
+          setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
+        }
+      },
+      {
+        extends: true,
+        test: {
+          name: 'visual',
+          include: ['visual/*.test.*'],
+          browser: { enabled: true },
+          setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
+        }
+      },
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          include: ['node/**/*.test.*'],
+          environment: 'node',
+          setupFiles: ['test/failOnConsole.ts']
+        }
+      }
+    ]
+  }
+}));
