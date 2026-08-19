@@ -39,8 +39,7 @@ jobs:
         run: git diff --exit-code website/routeTree.gen.ts
 
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install --with-deps --no-shell
+        run: npx playwright install --with-deps --no-shell
         timeout-minutes: 3
 
       - name: Test

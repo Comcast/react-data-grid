@@ -38,9 +38,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-        timeout-minutes: 2
+        run: npx playwright install --with-deps --no-shell
+        timeout-minutes: 3
 
       - name: Update screenshots
         run: |

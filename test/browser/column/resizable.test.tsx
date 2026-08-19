@@ -130,7 +130,8 @@ test('should auto resize column when resize handle is double clicked', async () 
     chrome: '100px 327.703px',
     firefox: '100px 327.833px',
     firefoxCI: '100px 400px',
-    webkit: '100px 327.703125px'
+    webkit: '100px 327.703125px',
+    webkitCI: '100px 400px'
   });
   expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
@@ -139,7 +140,7 @@ test('should auto resize column when resize handle is double clicked', async () 
       (width) =>
         // Chrome and Firefox on windows
         (width >= 327.7 && width <= 327.9) ||
-        // Firefox on CI
+        // Firefox/WebKit in CI
         width === 400
     )
   );
@@ -221,7 +222,8 @@ test('should remeasure flex columns when resizing a column', async () => {
   await testGridTemplateColumns({
     chrome: '79.1406px 919.422px 919.438px',
     firefox: '79.1667px 919.417px 919.417px',
-    webkit: '79.140625px 919.421875px 919.421875px'
+    webkit: '79.140625px 919.421875px 919.421875px',
+    webkitCI: '102.796875px 907.59375px 907.59375px'
   });
   expect(onColumnResize).toHaveBeenCalledOnce();
   // onColumnResize is not called if width is not changed
@@ -229,7 +231,8 @@ test('should remeasure flex columns when resizing a column', async () => {
   await testGridTemplateColumns({
     chrome: '79.1406px 919.422px 919.438px',
     firefox: '79.1667px 919.417px 919.417px',
-    webkit: '79.140625px 919.421875px 919.421875px'
+    webkit: '79.140625px 919.421875px 919.421875px',
+    webkitCI: '102.796875px 907.59375px 907.59375px'
   });
   expect(onColumnResize).toHaveBeenCalledOnce();
 });
