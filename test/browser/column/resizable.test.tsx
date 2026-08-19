@@ -126,7 +126,12 @@ test('should auto resize column when resize handle is double clicked', async () 
   });
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   await autoResize('col2');
-  await testGridTemplateColumns('100px 327.703px', '100px 327.833px', '100px 400px');
+  await testGridTemplateColumns({
+    chrome: '100px 327.703px',
+    firefox: '100px 327.833px',
+    firefoxCI: '100px 400px',
+    webkit: '100px 327.703125px'
+  });
   expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
     // Due to differences in text rendering between browsers the measured width can vary
@@ -207,21 +212,25 @@ test('should remeasure flex columns when resizing a column', async () => {
     onColumnResize
   });
 
-  await testGridTemplateColumns('639.328px 639.328px 639.344px', '639.333px 639.333px 639.333px');
+  await testGridTemplateColumns({
+    chrome: '639.328px 639.328px 639.344px',
+    firefox: '639.333px 639.333px 639.333px',
+    webkit: '639.328125px 639.328125px 639.328125px'
+  });
   await autoResize('col1');
-  await testGridTemplateColumns(
-    '79.1406px 919.422px 919.438px',
-    '79.1667px 919.417px 919.417px',
-    '100.5px 908.75px 908.75px'
-  );
+  await testGridTemplateColumns({
+    chrome: '79.1406px 919.422px 919.438px',
+    firefox: '79.1667px 919.417px 919.417px',
+    webkit: '79.140625px 919.421875px 919.421875px'
+  });
   expect(onColumnResize).toHaveBeenCalledOnce();
   // onColumnResize is not called if width is not changed
   await autoResize('col1');
-  await testGridTemplateColumns(
-    '79.1406px 919.422px 919.438px',
-    '79.1667px 919.417px 919.417px',
-    '100.5px 908.75px 908.75px'
-  );
+  await testGridTemplateColumns({
+    chrome: '79.1406px 919.422px 919.438px',
+    firefox: '79.1667px 919.417px 919.417px',
+    webkit: '79.140625px 919.421875px 919.421875px'
+  });
   expect(onColumnResize).toHaveBeenCalledOnce();
 });
 
@@ -312,9 +321,20 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   );
 });
 
-async function testGridTemplateColumns(chrome: string, firefox: string, firefoxCI = firefox) {
+async function testGridTemplateColumns(obj: {
+  chrome: string;
+  firefox: string;
+  firefoxCI?: string;
+  webkit: string;
+}) {
   const gridTemplateColumns =
-    server.browser === 'chromium' ? chrome : import.meta.env.CI ? firefoxCI : firefox;
+    server.browser === 'chromium'
+      ? obj.chrome
+      : server.browser === 'webkit'
+        ? obj.webkit
+        : import.meta.env.CI
+          ? (obj.firefoxCI ?? obj.firefox)
+          : obj.firefox;
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }
