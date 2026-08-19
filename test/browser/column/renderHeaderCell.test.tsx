@@ -1,7 +1,11 @@
-import type { Column } from '../../../src';
-import { getHeaderCells, setup } from '../utils';
+import { page } from 'vitest/browser';
 
-test('renderHeaderCell is either undefined or a component', () => {
+import type { Column } from '../../../src';
+import { setup } from '../utils';
+
+const headerCells = page.getHeaderCell();
+
+test('renderHeaderCell is either undefined or a component', async () => {
   const columns: readonly Column<never>[] = [
     {
       key: 'id',
@@ -10,12 +14,11 @@ test('renderHeaderCell is either undefined or a component', () => {
     {
       key: 'name',
       name: 'Name',
-      renderHeaderCell: ({ column }) => `Fancy! ${column.name}`
+      renderHeaderCell: ({ column }) => `Fancy! ${column.name as string}`
     }
   ];
 
-  setup({ columns, rows: [] });
-  const [cell1, cell2] = getHeaderCells();
-  expect(cell1).toHaveTextContent('ID');
-  expect(cell2).toHaveTextContent('Fancy! Name');
+  await setup({ columns, rows: [] });
+  await expect.element(headerCells.nth(0)).toHaveTextContent('ID');
+  await expect.element(headerCells.nth(1)).toHaveTextContent('Fancy! Name');
 });

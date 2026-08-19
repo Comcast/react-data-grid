@@ -21,7 +21,7 @@ export function useColumnWidths<R, SR>(
   } | null>(null);
   const [columnsToMeasureOnResize, setColumnsToMeasureOnResize] =
     useState<ReadonlySet<string> | null>(null);
-  const [prevGridWidth, setPreviousGridWidth] = useState(gridWidth);
+  const [prevGridWidth, setPrevGridWidth] = useState(gridWidth);
   const columnsCanFlex: boolean = columns.length === viewportColumns.length;
   const ignorePreviouslyMeasuredColumnsOnGridWidthChange =
     // Allow columns to flex again when...
@@ -57,7 +57,7 @@ export function useColumnWidths<R, SR>(
   useLayoutEffect(updateMeasuredAndResizedWidths);
 
   function updateMeasuredAndResizedWidths() {
-    setPreviousGridWidth(gridWidth);
+    setPrevGridWidth(gridWidth);
     if (columnsToMeasure.length === 0) return;
 
     const newColumnWidths = new Map(columnWidths);

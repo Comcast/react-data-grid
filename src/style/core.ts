@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import { cell } from './cell';
 import { bottomSummaryRowClassname, row, topSummaryRowClassname } from './row';
@@ -16,7 +16,6 @@ const root = css`
     --rdg-selection-width: 2px;
     --rdg-selection-color: hsl(207, 75%, 66%);
     --rdg-font-size: 14px;
-    --rdg-cell-frozen-box-shadow: 2px 0 5px -2px rgba(136, 136, 136, 0.3);
     --rdg-border-width: 1px;
     --rdg-summary-border-width: calc(var(--rdg-border-width) * 2);
     --rdg-color: light-dark(#000, #ddd);
@@ -31,17 +30,11 @@ const root = css`
     --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
 
     &.rdg-dark {
-      --rdg-color-scheme: dark;
+      color-scheme: dark;
     }
 
     &.rdg-light {
-      --rdg-color-scheme: light;
-    }
-
-    color-scheme: var(--rdg-color-scheme, light dark);
-
-    &:dir(rtl) {
-      --rdg-cell-frozen-box-shadow: -2px 0 5px -2px rgba(136, 136, 136, 0.3);
+      color-scheme: light;
     }
 
     display: grid;
@@ -60,12 +53,15 @@ const root = css`
     background-color: var(--rdg-background-color);
     color: var(--rdg-color);
     font-size: var(--rdg-font-size);
+    font-variant-numeric: tabular-nums;
+
+    container-name: rdg-root;
+    container-type: scroll-state;
 
     /* needed on Firefox to fix scrollbars */
     &::before {
       content: '';
-      grid-column: 1/-1;
-      grid-row: 1/-1;
+      grid-area: -2 / -2 / -1 / -1;
     }
 
     > :nth-last-child(1 of .${topSummaryRowClassname}) {
@@ -96,18 +92,57 @@ const viewportDragging = css`
 
 export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDragging}`;
 
-export const focusSinkClassname = css`
-  @layer rdg.FocusSink {
-    grid-column: 1/-1;
-    pointer-events: none;
-    /* Should have a higher value than 1 to show up above regular frozen cells */
-    z-index: 1;
+// Common properties shared by both start- and end-edge frozen-column shadows.
+// Variants below add only the direction-dependent properties (gradient + scroll-state predicate).
+export const frozenColumnShadowClassname = css`
+  position: sticky;
+  width: 10px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.1s;
+
+  &:dir(rtl) {
+    transform: scaleX(-1);
   }
 `;
 
-export const focusSinkHeaderAndSummaryClassname = css`
-  @layer rdg.FocusSink {
-    /* Should have a higher value than 3 to show up above header and summary rows */
-    z-index: 3;
+const frozenColumnShadowStartOverrides = css`
+  background-image: linear-gradient(
+    to right,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-start) {
+    opacity: 0;
   }
 `;
+
+const frozenColumnShadowEndOverrides = css`
+  background-image: linear-gradient(
+    to left,
+    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
+    transparent
+  );
+
+  /* TODO: reverse 'opacity' and remove 'not' */
+  @container rdg-root not scroll-state(scrollable: inline-end) {
+    opacity: 0;
+  }
+`;
+
+// Add shadow after the last start-frozen cell
+export const frozenColumnShadowStartClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowStartOverrides}`;
+
+// Add shadow before the first end-frozen cell (mirror of the start shadow)
+export const frozenColumnShadowEndClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowEndOverrides}`;
+
+const topShadowClassname = css`
+  /* render above header and summary rows */
+  z-index: 2;
+`;
+
+export const frozenColumnShadowStartTopClassname = `${frozenColumnShadowStartClassname} ${topShadowClassname}`;
+export const frozenColumnShadowEndTopClassname = `${frozenColumnShadowEndClassname} ${topShadowClassname}`;

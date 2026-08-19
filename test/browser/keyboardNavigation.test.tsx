@@ -1,16 +1,27 @@
-import { commands, page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
-import { getSelectedCell, setup, tabIntoGrid, validateCellPosition } from './utils';
+import {
+  getRowWithCell,
+  safeTab,
+  scrollGrid,
+  setup,
+  testCount,
+  validateCellPosition
+} from './utils';
+
+const activeCell = page.getActiveCell();
+const activeSelectAllCheckbox = activeCell.getSelectAllCheckbox();
+const activeSelectCheckbox = activeCell.getByRole('checkbox', { name: 'Select' });
 
 type Row = undefined;
 
-const rows: readonly Row[] = new Array(100);
+const rows: readonly Row[] = Array.from({ length: 100 });
 const topSummaryRows: readonly Row[] = [undefined];
 const bottomSummaryRows: readonly Row[] = [undefined, undefined];
 
-const columns = [
+const columns: readonly Column<Row, Row>[] = [
   SelectColumn,
   { key: 'col2', name: 'col2' },
   { key: 'col3', name: 'col3' },
@@ -18,24 +29,24 @@ const columns = [
   { key: 'col5', name: 'col5' },
   { key: 'col6', name: 'col6' },
   { key: 'col7', name: 'col7' }
-] as const satisfies Column<Row, Row>[];
+];
 
 test('keyboard navigation', async () => {
-  setup({ columns, rows, topSummaryRows, bottomSummaryRows }, true);
+  await setup({ columns, rows, topSummaryRows, bottomSummaryRows });
 
-  // no initial selection
-  await expect.element(getSelectedCell()).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(activeCell).not.toBeInTheDocument();
 
   // tab into the grid
-  await tabIntoGrid();
+  await safeTab();
   await validateCellPosition(0, 0);
 
   // tab to the next cell
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(1, 0);
 
   // tab back to the previous cell
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await validateCellPosition(0, 0);
 
   // arrow navigation
@@ -86,21 +97,21 @@ test('keyboard navigation', async () => {
   await userEvent.keyboard('{PageUp}');
   await validateCellPosition(0, 0);
 
-  // tab at the end of a row selects the first cell on the next row
+  // tab at the end of a row focuses the first cell on the next row
   await userEvent.keyboard('{end}');
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(0, 1);
 
-  // shift tab should select the last cell of the previous row
-  await userEvent.tab({ shift: true });
+  // shift tab should focus the last cell of the previous row
+  await safeTab(true);
   await validateCellPosition(6, 0);
 });
 
 test('arrow and tab navigation', async () => {
-  setup({ columns, rows, bottomSummaryRows }, true);
+  await setup({ columns, rows, bottomSummaryRows });
 
   // pressing arrowleft on the leftmost cell does nothing
-  await tabIntoGrid();
+  await safeTab();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 1);
   await userEvent.keyboard('{arrowleft}');
@@ -113,72 +124,87 @@ test('arrow and tab navigation', async () => {
   await validateCellPosition(6, 1);
 
   // pressing tab on the rightmost cell navigates to the leftmost cell on the next row
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(0, 2);
 
   // pressing shift+tab on the leftmost cell navigates to the rightmost cell on the previous row
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await validateCellPosition(6, 1);
 });
 
 test('grid enter/exit', async () => {
-  setup({ columns, rows: new Array(5), bottomSummaryRows }, true);
+  await page.render(
+    <>
+      <button type="button">Before</button>
+      <DataGrid
+        columns={columns}
+        rows={Array.from<Row>({ length: 5 })}
+        bottomSummaryRows={bottomSummaryRows}
+      />
+      <button type="button">After</button>
+    </>
+  );
 
   const beforeButton = page.getByRole('button', { name: 'Before' });
   const afterButton = page.getByRole('button', { name: 'After' });
 
-  // no initial selection
-  await expect.element(getSelectedCell()).not.toBeInTheDocument();
+  // no initial active position
+  await expect.element(activeCell).not.toBeInTheDocument();
 
   // tab into the grid
-  await tabIntoGrid();
+  await safeTab();
+  await safeTab();
   await validateCellPosition(0, 0);
+  await expect.element(activeSelectAllCheckbox).toHaveFocus();
 
   // shift+tab tabs out of the grid if we are at the first cell
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await expect.element(beforeButton).toHaveFocus();
 
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(0, 0);
+  await expect.element(activeSelectAllCheckbox).toHaveFocus();
 
   await userEvent.keyboard('{arrowdown}{arrowdown}');
   await validateCellPosition(0, 2);
+  await expect.element(activeSelectCheckbox).toHaveFocus();
 
-  // tab should select the last selected cell
+  // tab should focus the last active cell
   // click outside the grid
   await userEvent.click(beforeButton);
-  await userEvent.tab();
+  await safeTab();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 3);
+  await expect.element(activeSelectCheckbox).toHaveFocus();
 
-  // shift+tab should select the last selected cell
+  // shift+tab should focus the last active cell
+  // click outside the grid
   await userEvent.click(afterButton);
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await validateCellPosition(0, 3);
-  await expect.element(getSelectedCell().getByRole('checkbox')).toHaveFocus();
+  await expect.element(activeSelectCheckbox).toHaveFocus();
 
   // tab tabs out of the grid if we are at the last cell
   await userEvent.keyboard('{Control>}{end}{/Control}');
-  await userEvent.tab();
+  await safeTab();
   await expect.element(afterButton).toHaveFocus();
 });
 
 test('navigation with focusable cell renderer', async () => {
-  setup({ columns, rows: new Array(1), bottomSummaryRows }, true);
-  await tabIntoGrid();
+  await setup({ columns, rows: Array.from<Row>({ length: 1 }), bottomSummaryRows });
+  await safeTab();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 1);
 
   // cell should not set tabIndex to 0 if it contains a focusable cell renderer
-  await expect.element(getSelectedCell()).toHaveAttribute('tabIndex', '-1');
-  const checkbox = getSelectedCell().getByRole('checkbox');
-  await expect.element(checkbox).toHaveFocus();
-  await expect.element(checkbox).toHaveAttribute('tabIndex', '0');
+  await expect.element(activeCell).toHaveAttribute('tabIndex', '-1');
+  await expect.element(activeSelectCheckbox).toHaveFocus();
+  await expect.element(activeSelectCheckbox).toHaveAttribute('tabIndex', '0');
 
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(1, 1);
   // cell should set tabIndex to 0 if it does not have focusable cell renderer
-  await expect.element(getSelectedCell()).toHaveAttribute('tabIndex', '0');
+  await expect.element(activeCell).toHaveAttribute('tabIndex', '0');
 });
 
 test('navigation when header and summary rows have focusable elements', async () => {
@@ -205,65 +231,61 @@ test('navigation when header and summary rows have focusable elements', async ()
     }
   ];
 
-  setup({ columns, rows: new Array(2), bottomSummaryRows: [1, 2] }, true);
-  await tabIntoGrid();
+  await setup({ columns, rows: Array.from<Row>({ length: 2 }), bottomSummaryRows: [1, 2] });
+  await safeTab();
 
   // should set focus on the header filter
   await expect.element(page.getByTestId('header-filter1')).toHaveFocus();
 
-  await userEvent.tab();
+  await safeTab();
   await expect.element(page.getByTestId('header-filter2')).toHaveFocus();
 
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(0, 1);
 
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await expect.element(page.getByTestId('header-filter2')).toHaveFocus();
 
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
   await expect.element(page.getByTestId('header-filter1')).toHaveFocus();
 
-  await userEvent.tab();
-  await userEvent.tab();
+  await safeTab();
+  await safeTab();
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(1, 2);
 
-  await userEvent.tab();
+  await safeTab();
   await expect.element(page.getByTestId('summary-col2-1')).toHaveFocus();
 
-  await userEvent.tab();
+  await safeTab();
   await expect.element(page.getByTestId('summary-col3-1')).toHaveFocus();
 
-  await userEvent.tab({ shift: true });
-  await userEvent.tab({ shift: true });
+  await safeTab(true);
+  await safeTab(true);
   await validateCellPosition(1, 2);
-  await expect.element(getSelectedCell()).toHaveFocus();
+  await expect.element(activeCell).toHaveFocus();
 });
 
-test('navigation when selected cell not in the viewport', async () => {
+test('navigation when active cell not in the viewport', async () => {
   const columns: Column<Row, Row>[] = [SelectColumn];
-  const selectedRowCells = page
-    .getByRole('row')
-    .filter({ has: getSelectedCell() })
-    .getByRole('gridcell');
+  const activeRowCells = getRowWithCell(activeCell).getCell();
   for (let i = 0; i < 99; i++) {
     columns.push({ key: `col${i}`, name: `col${i}`, frozen: i < 5 });
   }
-  setup({ columns, rows, bottomSummaryRows }, true);
-  await tabIntoGrid();
+  await setup({ columns, rows, bottomSummaryRows });
+  await safeTab();
   await validateCellPosition(0, 0);
 
   await userEvent.keyboard('{Control>}{end}{/Control}{arrowup}{arrowup}');
   await validateCellPosition(99, 100);
-  // TODO: replace with `toHaveLength` when migrating to v4
-  await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
-  await commands.scrollGrid({ scrollTop: 0 });
-  await expect.poll(() => selectedRowCells.elements().length).toBe(1);
+  await expect.element(activeRowCells).not.toHaveLength(1);
+  scrollGrid({ top: 0 });
+  await testCount(activeRowCells, 1);
   await userEvent.keyboard('{arrowup}');
   await validateCellPosition(99, 99);
-  await expect.poll(() => selectedRowCells.elements().length).not.toBe(1);
+  await expect.element(activeRowCells).not.toHaveLength(1);
 
-  await commands.scrollGrid({ scrollLeft: 0 });
+  scrollGrid({ left: 0 });
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(99, 100);
 
@@ -271,12 +293,12 @@ test('navigation when selected cell not in the viewport', async () => {
     '{home}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}{arrowright}'
   );
   await validateCellPosition(7, 100);
-  await commands.scrollGrid({ scrollLeft: 2000 });
+  scrollGrid({ left: 2000 });
   await userEvent.keyboard('{arrowleft}');
   await validateCellPosition(6, 100);
 });
 
-test('reset selected cell when column is removed', async () => {
+test('reset active cell when column is removed', async () => {
   const columns: readonly Column<Row>[] = [
     { key: '1', name: '1' },
     { key: '2', name: '2' }
@@ -287,18 +309,18 @@ test('reset selected cell when column is removed', async () => {
     return <DataGrid columns={columns} rows={rows} />;
   }
 
-  const { rerender } = page.render(<Test columns={columns} />);
+  const { rerender } = await page.render(<Test columns={columns} />);
 
-  await userEvent.tab();
+  await safeTab();
   await userEvent.keyboard('{arrowdown}{arrowright}');
   await validateCellPosition(1, 1);
 
-  rerender(<Test columns={[columns[0]]} />);
+  await rerender(<Test columns={[columns[0]]} />);
 
-  await expect.element(getSelectedCell()).not.toBeInTheDocument();
+  await expect.element(activeCell).not.toBeInTheDocument();
 });
 
-test('reset selected cell when row is removed', async () => {
+test('reset active cell when row is removed', async () => {
   const columns: readonly Column<Row>[] = [
     { key: '1', name: '1' },
     { key: '2', name: '2' }
@@ -309,22 +331,22 @@ test('reset selected cell when row is removed', async () => {
     return <DataGrid columns={columns} rows={rows} />;
   }
 
-  const { rerender } = page.render(<Test rows={rows} />);
+  const { rerender } = await page.render(<Test rows={rows} />);
 
-  await userEvent.tab();
+  await safeTab();
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowright}');
   await validateCellPosition(1, 2);
 
-  rerender(<Test rows={[rows[0]]} />);
+  await rerender(<Test rows={[rows[0]]} />);
 
-  await expect.element(getSelectedCell()).not.toBeInTheDocument();
+  await expect.element(activeCell).not.toBeInTheDocument();
 });
 
 test('should not change the left and right arrow behavior for right to left languages', async () => {
-  setup({ rows, columns, direction: 'rtl' }, true);
-  await tabIntoGrid();
+  await setup<Row, Row>({ columns, rows, direction: 'rtl' });
+  await safeTab();
   await validateCellPosition(0, 0);
-  await userEvent.tab();
+  await safeTab();
   await validateCellPosition(1, 0);
   await userEvent.keyboard('{arrowright}');
   await validateCellPosition(0, 0);

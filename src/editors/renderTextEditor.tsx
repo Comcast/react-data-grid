@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import type { RenderEditCellProps } from '../types';
 
@@ -38,7 +38,7 @@ function autoFocusAndSelect(input: HTMLInputElement | null) {
   input?.select();
 }
 
-export default function textEditor<TRow, TSummaryRow>({
+export function renderTextEditor<TRow, TSummaryRow>({
   row,
   column,
   onRowChange,

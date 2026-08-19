@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, SortColumn } from '../../src/types';
-import { getHeaderCell, getHeaderCellsNew } from './utils';
 
 const columns: readonly Column<never>[] = [
   { key: 'colA', name: 'colA' },
@@ -30,7 +29,7 @@ function TestGrid() {
 }
 
 function setup() {
-  page.render(<TestGrid />);
+  return page.render(<TestGrid />);
 }
 
 function testSortColumns(expectedValue: readonly SortColumn[]) {
@@ -40,16 +39,16 @@ function testSortColumns(expectedValue: readonly SortColumn[]) {
 }
 
 test('should not sort if sortable is false', async () => {
-  setup();
-  const headerCell = getHeaderCell('colD');
+  await setup();
+  const headerCell = page.getHeaderCell({ name: 'colD' });
   await userEvent.click(headerCell);
   await expect.element(headerCell).not.toHaveAttribute('aria-sort');
   await testSortColumns([]);
 });
 
 test('single column sort', async () => {
-  setup();
-  const headerCell = getHeaderCell('colA');
+  await setup();
+  const headerCell = page.getHeaderCell({ name: 'colA' });
   await userEvent.click(headerCell);
   await expect.element(headerCell).toHaveAttribute('aria-sort', 'ascending');
   // priority is not shown for single sort
@@ -64,10 +63,10 @@ test('single column sort', async () => {
 });
 
 test('multi column sort', async () => {
-  setup();
-  const headerCell1 = getHeaderCell('colA', false);
-  const headerCell2 = getHeaderCell('colB', false);
-  const headerCell3 = getHeaderCell('colC', false);
+  await setup();
+  const headerCell1 = page.getHeaderCell({ name: 'colA', exact: false });
+  const headerCell2 = page.getHeaderCell({ name: 'colB', exact: false });
+  const headerCell3 = page.getHeaderCell({ name: 'colC', exact: false });
   await userEvent.click(headerCell1);
   await userEvent.keyboard('{Control>}');
   await userEvent.click(headerCell2);
@@ -108,11 +107,10 @@ test('multi column sort', async () => {
 });
 
 test('multi column sort with metakey', async () => {
-  setup();
-  const [headerCell1, headerCell2] = getHeaderCellsNew('colA', 'colB');
-  await userEvent.click(headerCell1);
+  await setup();
+  await userEvent.click(page.getHeaderCell({ name: 'colA' }));
   await userEvent.keyboard('{Meta>}');
-  await userEvent.click(headerCell2);
+  await userEvent.click(page.getHeaderCell({ name: 'colB' }));
   await testSortColumns([
     { columnKey: 'colA', direction: 'ASC' },
     { columnKey: 'colB', direction: 'DESC' }
@@ -120,8 +118,8 @@ test('multi column sort with metakey', async () => {
 });
 
 test('multi column sort with keyboard', async () => {
-  setup();
-  const headerCell1 = getHeaderCell('colA');
+  await setup();
+  const headerCell1 = page.getHeaderCell({ name: 'colA' });
   await userEvent.click(headerCell1);
   await userEvent.keyboard(' {arrowright}{Control>}{enter}');
   await testSortColumns([

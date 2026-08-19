@@ -1,10 +1,17 @@
-declare module '@vitest/browser/context' {
-  interface BrowserCommands {
-    dragFill: (from: string, to: string) => Promise<void>;
-    resizeColumn: (resizeBy: number | readonly number[]) => Promise<void>;
-    scrollGrid: (position: { scrollLeft?: number; scrollTop?: number }) => Promise<void>;
+declare global {
+  interface ImportMeta {
+    readonly env: {
+      readonly CI: boolean;
+    };
   }
 }
 
-// somehow required to make `declare global` work
+declare module 'vitest/browser' {
+  interface BrowserCommands {
+    dragFill: (from: string, to: string) => Promise<void>;
+    resizeColumn: (name: string, resizeBy: number | readonly number[]) => Promise<void>;
+  }
+}
+
+// required to make types work
 export {};

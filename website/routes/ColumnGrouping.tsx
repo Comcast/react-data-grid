@@ -1,9 +1,10 @@
-import { DataGrid } from '../../src';
-import type { ColumnOrColumnGroup } from '../../src';
+import { createFileRoute } from '@tanstack/react-router';
+
+import { DataGrid, type ColumnOrColumnGroup } from '../../src';
 import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/ColumnGrouping')({
   component: ColumnGrouping
 });
 

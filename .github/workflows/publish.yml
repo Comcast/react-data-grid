@@ -1,0 +1,75 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.1, 0.2.0, 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: 'package.json'
+          check-latest: true
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: node --run typecheck
+
+      - name: ESLint
+        run: node --run eslint
+
+      - name: Oxfmt
+        run: node --run format:check
+
+      - name: Bundle
+        run: node --run build
+
+      - name: Build website
+        run: node --run build:website
+
+      - name: Check routeTree.gen.ts
+        run: git diff --exit-code website/routeTree.gen.ts
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        timeout-minutes: 2
+
+      - name: Test
+        run: node --run test:ci
+        timeout-minutes: 10
+
+      - name: Update version
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          npm version ${{ inputs.version }}
+
+      # https://docs.npmjs.com/trusted-publishers
+      - name: Publish to npm
+        run: npm publish --tag latest
+
+      - name: Push tag
+        run: git push origin v${{ inputs.version }}
+
+      - name: Create GitHub Release
+        run: gh release create v${{ inputs.version }} --title "v${{ inputs.version }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

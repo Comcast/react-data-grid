@@ -1,13 +1,13 @@
 import { memo, useMemo } from 'react';
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
-import { classnames, getRowStyle } from './utils';
-import type { BaseRenderRowProps, GroupRow } from './types';
+import { classnames } from './utils';
+import type { BaseRenderRowProps, GroupRow, Omit } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
-import { cell, cellFrozen } from './style/cell';
-import { rowClassname, rowSelectedClassname } from './style/row';
+import { cell, cellFrozenBase } from './style/cell';
+import { rowClassname, rowActiveClassname } from './style/row';
 
 const groupRow = css`
   @layer rdg.GroupedRow {
@@ -15,8 +15,7 @@ const groupRow = css`
       background-color: var(--rdg-header-background-color);
     }
 
-    > .${cell}:not(:last-child, .${cellFrozen}),
-    > :nth-last-child(n + 2 of .${cellFrozen}) {
+    > .${cell}:not(:last-child, .${cellFrozenBase}), > :nth-last-child(n + 2 of .rdg-cell-frozen-start), > :nth-last-child(n + 2 of .rdg-cell-frozen-end) {
       border-inline-end: none;
     }
   }
@@ -24,7 +23,10 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupRowRendererProps<R, SR> extends BaseRenderRowProps<R, SR> {
+interface GroupRowRendererProps<R, SR> extends Omit<
+  BaseRenderRowProps<R, SR>,
+  'isRowSelectionDisabled'
+> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
@@ -34,21 +36,21 @@ function GroupedRow<R, SR>({
   className,
   row,
   rowIdx,
-  viewportColumns,
-  selectedCellIdx,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
   isRowSelected,
-  selectCell,
+  setActivePosition,
   gridRowStart,
   groupBy,
   toggleGroup,
-  isRowSelectionDisabled,
   ...props
 }: GroupRowRendererProps<R, SR>) {
-  // Select is always the first column
-  const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
+  const isPositionOnRow = activeCellIdx === -1;
+
+  let idx = row.level;
 
   function handleSelectGroup() {
-    selectCell({ rowIdx, idx: -1 }, { shouldFocusCell: true });
+    setActivePosition({ rowIdx, idx: -1 }, { shouldFocus: true });
   }
 
   const selectionValue = useMemo(
@@ -64,32 +66,45 @@ function GroupedRow<R, SR>({
         aria-setsize={row.setSize}
         aria-posinset={row.posInSet + 1} // aria-posinset is 1-based
         aria-expanded={row.isExpanded}
+        tabIndex={isPositionOnRow ? 0 : -1}
         className={classnames(
           rowClassname,
           groupRowClassname,
           `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-          selectedCellIdx === -1 && rowSelectedClassname,
+          isPositionOnRow && rowActiveClassname,
           className
         )}
         onMouseDown={handleSelectGroup}
-        style={getRowStyle(gridRowStart)}
+        style={{ gridRowStart }}
         {...props}
       >
-        {viewportColumns.map((column) => (
-          <GroupCell
-            key={column.key}
-            id={row.id}
-            groupKey={row.groupKey}
-            childRows={row.childRows}
-            isExpanded={row.isExpanded}
-            isCellSelected={selectedCellIdx === column.idx}
-            column={column}
-            row={row}
-            groupColumnIndex={idx}
-            toggleGroup={toggleGroup}
-            isGroupByColumn={groupBy.includes(column.key)}
-          />
-        ))}
+        {iterateOverViewportColumnsForRow(activeCellIdx)
+          .map(([column, isCellActive], index) => {
+            // Select is always the first column
+            if (index === 0 && column.key === SELECT_COLUMN_KEY) {
+              // eslint-disable-next-line @eslint-react/immutability
+              idx += 1;
+            }
+
+            return (
+              <GroupCell
+                key={column.key}
+                id={row.id}
+                groupKey={row.groupKey}
+                childRows={row.childRows}
+                isExpanded={row.isExpanded}
+                // eslint-disable-next-line @eslint-react/immutability
+                isCellActive={isCellActive}
+                // eslint-disable-next-line @eslint-react/immutability
+                column={column}
+                row={row}
+                groupColumnIndex={idx}
+                toggleGroup={toggleGroup}
+                isGroupByColumn={groupBy.includes(column.key)}
+              />
+            );
+          })
+          .toArray()}
       </div>
     </RowSelectionContext>
   );

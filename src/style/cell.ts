@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 export const cell = css`
   @layer rdg.Cell {
@@ -13,7 +13,6 @@ export const cell = css`
     padding-inline: 8px;
     border-inline-end: var(--rdg-border-width) solid var(--rdg-border-color);
     border-block-end: var(--rdg-border-width) solid var(--rdg-border-color);
-    grid-row-start: var(--rdg-grid-row-start);
     align-content: center;
     background-color: inherit;
 
@@ -31,20 +30,19 @@ export const cell = css`
 
 export const cellClassname = `rdg-cell ${cell}`;
 
-export const cellFrozen = css`
+// Single shared sticky/z-index rule reused by both edge-frozen variants.
+// Selectors that need to distinguish start vs end use the marker classes
+// (`.rdg-cell-frozen-start` / `.rdg-cell-frozen-end`) directly rather than this ecij identifier.
+export const cellFrozenBase = css`
   @layer rdg.Cell {
     position: sticky;
     /* Should have a higher value than 0 to show up above unfrozen cells */
     z-index: 1;
-
-    /* Add box-shadow on the last frozen cell */
-    &:nth-last-child(1 of &) {
-      box-shadow: var(--rdg-cell-frozen-box-shadow);
-    }
   }
 `;
 
-export const cellFrozenClassname = `rdg-cell-frozen ${cellFrozen}`;
+export const cellFrozenStartClassname = `rdg-cell-frozen-start ${cellFrozenBase}`;
+export const cellFrozenEndClassname = `rdg-cell-frozen-end ${cellFrozenBase}`;
 
 const cellDragHandle = css`
   @layer rdg.DragHandle {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 // https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_general_within
-export function useRovingTabIndex(isSelected: boolean) {
+export function useRovingTabIndex(isActive: boolean) {
   // https://www.w3.org/WAI/ARIA/apg/patterns/grid/#keyboardinteraction-settingfocusandnavigatinginsidecells
   const [isChildFocused, setIsChildFocused] = useState(false);
 
-  if (isChildFocused && !isSelected) {
+  if (isChildFocused && !isActive) {
     setIsChildFocused(false);
   }
 
@@ -28,11 +28,11 @@ export function useRovingTabIndex(isSelected: boolean) {
     }
   }
 
-  const isFocusable = isSelected && !isChildFocused;
+  const isFocusable = isActive && !isChildFocused;
 
   return {
     tabIndex: isFocusable ? 0 : -1,
-    childTabIndex: isSelected ? 0 : -1,
-    onFocus: isSelected ? onFocus : undefined
+    childTabIndex: isActive ? 0 : -1,
+    onFocus: isActive ? onFocus : undefined
   };
 }

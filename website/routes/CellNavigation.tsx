@@ -1,10 +1,11 @@
 import { useId, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid } from '../../src';
 import type { CellKeyboardEvent, CellKeyDownArgs, Column } from '../../src';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/CellNavigation')({
   component: CellNavigation
 });
 
@@ -84,8 +85,8 @@ function CellNavigation() {
 
   function handleCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, selectCell } = args;
-    const { idx } = column;
+    const { column, rowIdx, setActivePosition } = args;
+    const idx = column?.idx ?? -1;
     const { key, shiftKey } = event;
 
     const preventDefault = () => {
@@ -95,10 +96,10 @@ function CellNavigation() {
 
     const loopOverNavigation = () => {
       if ((key === 'ArrowRight' || (key === 'Tab' && !shiftKey)) && idx === columns.length - 1) {
-        selectCell({ rowIdx, idx: 0 });
+        setActivePosition({ rowIdx, idx: 0 });
         preventDefault();
       } else if ((key === 'ArrowLeft' || (key === 'Tab' && shiftKey)) && idx === 0) {
-        selectCell({ rowIdx, idx: columns.length - 1 });
+        setActivePosition({ rowIdx, idx: columns.length - 1 });
         preventDefault();
       }
     };
@@ -107,15 +108,15 @@ function CellNavigation() {
       if (key === 'ArrowRight' && idx === columns.length - 1) {
         if (rows.length === 0) return;
         if (rowIdx === -1) {
-          selectCell({ rowIdx: 0, idx: 0 });
+          setActivePosition({ rowIdx: 0, idx: 0 });
         } else {
           if (rowIdx === rows.length - 1) return;
-          selectCell({ rowIdx: rowIdx + 1, idx: 0 });
+          setActivePosition({ rowIdx: rowIdx + 1, idx: 0 });
         }
         preventDefault();
       } else if (key === 'ArrowLeft' && idx === 0) {
         if (rowIdx === -1) return;
-        selectCell({ rowIdx: rowIdx - 1, idx: columns.length - 1 });
+        setActivePosition({ rowIdx: rowIdx - 1, idx: columns.length - 1 });
         preventDefault();
       }
     };
@@ -127,7 +128,7 @@ function CellNavigation() {
       } else {
         newRowIdx = shiftKey ? rowIdx - 1 : rowIdx === rows.length - 1 ? -1 : rowIdx + 1;
       }
-      selectCell({ rowIdx: newRowIdx, idx });
+      setActivePosition({ rowIdx: newRowIdx, idx });
       preventDefault();
     };
 

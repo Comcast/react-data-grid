@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
-import { DataGrid, textEditor } from '../../src';
+import { DataGrid, renderTextEditor } from '../../src';
 import type { Column } from '../../src';
+import { safeTab } from './utils';
 
 interface Row {
   readonly name: string;
@@ -12,7 +13,7 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'name',
     name: 'Name',
-    renderEditCell: textEditor,
+    renderEditCell: renderTextEditor,
     editorOptions: {
       commitOnOutsideClick: false
     }
@@ -26,9 +27,9 @@ function Test() {
   return <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />;
 }
 
-test('TextEditor', async () => {
-  page.render(<Test />);
-  const cell = page.getByRole('gridcell');
+test('renderTextEditor', async () => {
+  await page.render(<Test />);
+  const cell = page.getCell();
   await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);
   await userEvent.dblClick(cell);
   const input = page.getByRole('textbox');
@@ -48,7 +49,7 @@ test('TextEditor', async () => {
   // blurring the input closes and commits the editor
   await userEvent.dblClick(cell);
   await userEvent.fill(input, 'Jim Milton');
-  await userEvent.tab();
+  await safeTab();
   await expect.element(input).not.toBeInTheDocument();
   await expect.element(cell).toHaveTextContent(/^Jim Milton$/);
 });

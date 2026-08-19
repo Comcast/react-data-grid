@@ -7,22 +7,6 @@ import type {
 } from '../types';
 import { getColSpan } from './colSpanUtils';
 
-interface IsSelectedCellEditableOpts<R, SR> {
-  selectedPosition: Position;
-  columns: readonly CalculatedColumn<R, SR>[];
-  rows: readonly R[];
-}
-
-export function isSelectedCellEditable<R, SR>({
-  selectedPosition,
-  columns,
-  rows
-}: IsSelectedCellEditableOpts<R, SR>): boolean {
-  const column = columns[selectedPosition.idx];
-  const row = rows[selectedPosition.rowIdx];
-  return isCellEditableUtil(column, row);
-}
-
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
   return (
@@ -31,7 +15,7 @@ export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: 
   );
 }
 
-interface GetNextSelectedCellPositionOpts<R, SR> {
+interface GetNextPositionOpts<R, SR> {
   moveUp: boolean;
   moveNext: boolean;
   cellNavigationMode: CellNavigationMode;
@@ -43,30 +27,39 @@ interface GetNextSelectedCellPositionOpts<R, SR> {
   minRowIdx: number;
   mainHeaderRowIdx: number;
   maxRowIdx: number;
-  currentPosition: Position;
+  activePosition: Position;
   nextPosition: Position;
-  lastFrozenColumnIndex: number;
-  isCellWithinBounds: (position: Position) => boolean;
+  nextPositionIsCellInActiveBounds: boolean;
+  lastStartFrozenColumnIndex: number;
+  firstEndFrozenColumnIndex: number;
 }
 
-function getSelectedCellColSpan<R, SR>({
+function getCellColSpan<R, SR>({
   rows,
   topSummaryRows,
   bottomSummaryRows,
   rowIdx,
   mainHeaderRowIdx,
-  lastFrozenColumnIndex,
+  lastStartFrozenColumnIndex,
+  firstEndFrozenColumnIndex,
   column
 }: Pick<
-  GetNextSelectedCellPositionOpts<R, SR>,
-  'rows' | 'topSummaryRows' | 'bottomSummaryRows' | 'lastFrozenColumnIndex' | 'mainHeaderRowIdx'
+  GetNextPositionOpts<R, SR>,
+  | 'rows'
+  | 'topSummaryRows'
+  | 'bottomSummaryRows'
+  | 'lastStartFrozenColumnIndex'
+  | 'firstEndFrozenColumnIndex'
+  | 'mainHeaderRowIdx'
 > & {
   rowIdx: number;
   column: CalculatedColumn<R, SR>;
 }) {
   const topSummaryRowsCount = topSummaryRows?.length ?? 0;
   if (rowIdx === mainHeaderRowIdx) {
-    return getColSpan(column, lastFrozenColumnIndex, { type: 'HEADER' });
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
+      type: 'HEADER'
+    });
   }
 
   if (
@@ -74,7 +67,7 @@ function getSelectedCellColSpan<R, SR>({
     rowIdx > mainHeaderRowIdx &&
     rowIdx <= topSummaryRowsCount + mainHeaderRowIdx
   ) {
-    return getColSpan(column, lastFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'SUMMARY',
       row: topSummaryRows[rowIdx + topSummaryRowsCount]
     });
@@ -82,11 +75,14 @@ function getSelectedCellColSpan<R, SR>({
 
   if (rowIdx >= 0 && rowIdx < rows.length) {
     const row = rows[rowIdx];
-    return getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
+      type: 'ROW',
+      row
+    });
   }
 
   if (bottomSummaryRows) {
-    return getColSpan(column, lastFrozenColumnIndex, {
+    return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'SUMMARY',
       row: bottomSummaryRows[rowIdx - rows.length]
     });
@@ -95,7 +91,7 @@ function getSelectedCellColSpan<R, SR>({
   return undefined;
 }
 
-export function getNextSelectedCellPosition<R, SR>({
+export function getNextActivePosition<R, SR>({
   moveUp,
   moveNext,
   cellNavigationMode,
@@ -107,27 +103,29 @@ export function getNextSelectedCellPosition<R, SR>({
   minRowIdx,
   mainHeaderRowIdx,
   maxRowIdx,
-  currentPosition: { idx: currentIdx, rowIdx: currentRowIdx },
+  activePosition: { idx: activeIdx, rowIdx: activeRowIdx },
   nextPosition,
-  lastFrozenColumnIndex,
-  isCellWithinBounds
-}: GetNextSelectedCellPositionOpts<R, SR>): Position {
+  nextPositionIsCellInActiveBounds,
+  lastStartFrozenColumnIndex,
+  firstEndFrozenColumnIndex
+}: GetNextPositionOpts<R, SR>): Position {
   let { idx: nextIdx, rowIdx: nextRowIdx } = nextPosition;
   const columnsCount = columns.length;
 
   const setColSpan = (moveNext: boolean) => {
-    // If a cell within the colspan range is selected then move to the
+    // If a cell within the colspan range is active then move to the
     // previous or the next cell depending on the navigation direction
     for (const column of colSpanColumns) {
       const colIdx = column.idx;
       if (colIdx > nextIdx) break;
-      const colSpan = getSelectedCellColSpan({
+      const colSpan = getCellColSpan({
         rows,
         topSummaryRows,
         bottomSummaryRows,
         rowIdx: nextRowIdx,
         mainHeaderRowIdx,
-        lastFrozenColumnIndex,
+        lastStartFrozenColumnIndex,
+        firstEndFrozenColumnIndex,
         column
       });
 
@@ -146,19 +144,19 @@ export function getNextSelectedCellPosition<R, SR>({
     if (moveNext) {
       // find the parent at the same row level
       const nextColumn = columns[nextIdx];
-      let parent = nextColumn.parent;
+      let { parent } = nextColumn;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
         if (nextRowIdx === parentRowIdx) {
           nextIdx = parent.idx + parent.colSpan;
           break;
         }
-        parent = parent.parent;
+        ({ parent } = parent);
       }
     } else if (moveUp) {
       // find the first reachable parent
       const nextColumn = columns[nextIdx];
-      let parent = nextColumn.parent;
+      let { parent } = nextColumn;
       let found = false;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
@@ -168,18 +166,18 @@ export function getNextSelectedCellPosition<R, SR>({
           found = true;
           break;
         }
-        parent = parent.parent;
+        ({ parent } = parent);
       }
 
       // keep the current position if there is no parent matching the new row position
       if (!found) {
-        nextIdx = currentIdx;
-        nextRowIdx = currentRowIdx;
+        nextIdx = activeIdx;
+        nextRowIdx = activeRowIdx;
       }
     }
   };
 
-  if (isCellWithinBounds(nextPosition)) {
+  if (nextPositionIsCellInActiveBounds) {
     setColSpan(moveNext);
 
     if (nextRowIdx < mainHeaderRowIdx) {
@@ -212,7 +210,7 @@ export function getNextSelectedCellPosition<R, SR>({
     // This check is needed when navigating to a column
     // that does not have a parent matching the new rowIdx
     const nextColumn = columns[nextIdx];
-    let parent = nextColumn.parent;
+    let { parent } = nextColumn;
     const nextParentRowIdx = nextRowIdx;
     nextRowIdx = mainHeaderRowIdx;
     while (parent !== undefined) {
@@ -221,7 +219,7 @@ export function getNextSelectedCellPosition<R, SR>({
         nextRowIdx = parentRowIdx;
         nextIdx = parent.idx;
       }
-      parent = parent.parent;
+      ({ parent } = parent);
     }
   }
 
@@ -232,7 +230,7 @@ interface CanExitGridOpts {
   maxColIdx: number;
   minRowIdx: number;
   maxRowIdx: number;
-  selectedPosition: Position;
+  activePosition: Position;
   shiftKey: boolean;
 }
 
@@ -240,7 +238,7 @@ export function canExitGrid({
   maxColIdx,
   minRowIdx,
   maxRowIdx,
-  selectedPosition: { rowIdx, idx },
+  activePosition: { rowIdx, idx },
   shiftKey
 }: CanExitGridOpts): boolean {
   // Exit the grid if we're at the first or last cell of the grid

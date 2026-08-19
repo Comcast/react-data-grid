@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
-import { getCellsAtRowIndex, getSelectedCell } from './utils';
+import { getCellsAtRowIndex, safeTab } from './utils';
 
 interface Row {
   col: string;
@@ -65,12 +65,12 @@ function CopyPasteTest() {
 function setup() {
   onCellCopySpy.mockClear();
   onCellPasteSpy.mockClear();
-  page.render(<CopyPasteTest />);
+  return page.render(<CopyPasteTest />);
 }
 
 test('should call onCellCopy on cell copy', async () => {
-  setup();
-  await userEvent.click(getCellsAtRowIndex(0)[0]);
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.copy();
   expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -82,8 +82,8 @@ test('should call onCellCopy on cell copy', async () => {
 });
 
 test('should call onCellPaste on cell paste', async () => {
-  setup();
-  await userEvent.click(getCellsAtRowIndex(0)[0]);
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.paste();
   expect(onCellPasteSpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -95,15 +95,15 @@ test('should call onCellPaste on cell paste', async () => {
 });
 
 test('should not allow paste on readonly cells', async () => {
-  setup();
-  await userEvent.click(getCellsAtRowIndex(2)[0]);
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.paste();
   expect(onCellPasteSpy).not.toHaveBeenCalled();
 });
 
 test('should allow copying a readonly cell', async () => {
-  setup();
-  await userEvent.click(getCellsAtRowIndex(2)[0]);
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.copy();
   expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -115,8 +115,8 @@ test('should allow copying a readonly cell', async () => {
 });
 
 test('should not allow copy/paste on header or summary cells', async () => {
-  setup();
-  await userEvent.tab();
+  await setup();
+  await safeTab();
   await userEvent.copy();
   expect(onCellCopySpy).not.toHaveBeenCalled();
   await userEvent.paste();
@@ -130,8 +130,8 @@ test('should not allow copy/paste on header or summary cells', async () => {
 });
 
 test('should not start editing when pressing ctrl+<input key>', async () => {
-  setup();
-  await userEvent.click(getCellsAtRowIndex(1)[0]);
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(1).nth(0));
   await userEvent.keyboard('{Control>}b');
-  await expect.element(getSelectedCell()).not.toHaveClass('rdg-editor-container');
+  await expect.element(page.getActiveCell()).not.toHaveClass('rdg-editor-container');
 });

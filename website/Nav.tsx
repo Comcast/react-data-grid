@@ -1,9 +1,8 @@
 import { useId, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import type { Direction } from '../src/types';
-import { startViewTransition } from './utils';
 
 const headerClassname = css`
   border-inline-start: 4px solid light-dark(hsl(210deg 50% 80%), hsl(210deg 50% 40%));
@@ -64,7 +63,7 @@ export default function Nav({ direction, onDirectionChange }: Props) {
   const [theme, setTheme] = useState<Theme>('system');
 
   function onThemeChange(theme: Theme) {
-    startViewTransition(() => {
+    document.startViewTransition(() => {
       setTheme(theme);
     });
   }

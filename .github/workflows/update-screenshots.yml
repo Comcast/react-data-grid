@@ -1,0 +1,57 @@
+name: Update Screenshots
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+jobs:
+  update-screenshots:
+    if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    # one at a time per branch
+    concurrency:
+      group: update-screenshots@${{ github.head_ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: 'package.json'
+          check-latest: true
+
+      - name: Remove label
+        if: github.event_name == 'pull_request'
+        run: gh pr edit --remove-label 'Update Screenshots'
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        timeout-minutes: 2
+
+      - name: Update screenshots
+        run: |
+          rm -r test/**/screenshots/**
+          node --run test:ci:update
+        timeout-minutes: 10
+
+      - name: Push new screenshots
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git add "test/**/screenshots/**"
+          git diff-index --quiet HEAD || git commit -m "Update screenshots"
+          git push

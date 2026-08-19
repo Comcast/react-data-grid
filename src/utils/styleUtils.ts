@@ -1,11 +1,6 @@
-import type { CSSProperties } from 'react';
-
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { cellClassname, cellFrozenClassname } from '../style/cell';
-
-export function getRowStyle(rowIdx: number): CSSProperties {
-  return { '--rdg-grid-row-start': rowIdx };
-}
+import { isStartFrozen } from './frozenColumnUtils';
+import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,
@@ -40,30 +35,26 @@ export function getCellStyle<R, SR>(
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined
+    insetInlineStart: isStartFrozen(column.frozen)
+      ? `var(--rdg-frozen-start-${column.idx})`
+      : undefined,
+    insetInlineEnd:
+      column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx + colSpan - 1})` : undefined
   };
 }
 
-type ClassValue = Maybe<string> | Record<string, boolean> | false;
+type ClassValue = Maybe<string | false>;
 
 export function classnames(...args: readonly ClassValue[]) {
   let classname = '';
 
   for (const arg of args) {
-    if (arg) {
-      if (typeof arg === 'string') {
-        classname += ` ${arg}`;
-      } else if (typeof arg === 'object') {
-        for (const key in arg) {
-          if (arg[key]) {
-            classname += ` ${key}`;
-          }
-        }
-      }
+    if (typeof arg === 'string') {
+      classname += ` ${arg}`;
     }
   }
 
-  return classname.trimStart();
+  return classname.slice(1);
 }
 
 export function getCellClassname<R, SR>(
@@ -72,9 +63,8 @@ export function getCellClassname<R, SR>(
 ): string {
   return classnames(
     cellClassname,
-    {
-      [cellFrozenClassname]: column.frozen
-    },
+    isStartFrozen(column.frozen) && cellFrozenStartClassname,
+    column.frozen === 'end' && cellFrozenEndClassname,
     ...extraClasses
   );
 }

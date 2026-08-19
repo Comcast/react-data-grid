@@ -1,20 +1,12 @@
 import { memo } from 'react';
-import { css } from '@linaria/core';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
 import type { CellRendererProps } from './types';
 
-export const summaryCellClassname = css`
-  @layer rdg.SummaryCell {
-    inset-block-start: var(--rdg-summary-row-top);
-    inset-block-end: var(--rdg-summary-row-bottom);
-  }
-`;
-
 type SharedCellRendererProps<R, SR> = Pick<
   CellRendererProps<R, SR>,
-  'rowIdx' | 'column' | 'colSpan' | 'isCellSelected' | 'selectCell'
+  'rowIdx' | 'column' | 'colSpan' | 'isCellActive' | 'setActivePosition'
 >;
 
 interface SummaryCellProps<R, SR> extends SharedCellRendererProps<R, SR> {
@@ -26,19 +18,18 @@ function SummaryCell<R, SR>({
   colSpan,
   row,
   rowIdx,
-  isCellSelected,
-  selectCell
+  isCellActive,
+  setActivePosition
 }: SummaryCellProps<R, SR>) {
-  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellSelected);
+  const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
   const { summaryCellClass } = column;
   const className = getCellClassname(
     column,
-    summaryCellClassname,
     typeof summaryCellClass === 'function' ? summaryCellClass(row) : summaryCellClass
   );
 
   function onMouseDown() {
-    selectCell({ rowIdx, idx: column.idx });
+    setActivePosition({ rowIdx, idx: column.idx });
   }
 
   return (
@@ -46,7 +37,7 @@ function SummaryCell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1}
       aria-colspan={colSpan}
-      aria-selected={isCellSelected}
+      aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={className}
       style={getCellStyle(column, colSpan)}

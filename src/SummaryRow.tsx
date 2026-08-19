@@ -1,20 +1,24 @@
 import { memo } from 'react';
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
-import { classnames, getColSpan, getRowStyle } from './utils';
+import { classnames } from './utils';
 import type { RenderRowProps } from './types';
-import { cell, cellFrozen } from './style/cell';
 import {
   bottomSummaryRowClassname,
   rowClassname,
-  rowSelectedClassname,
+  rowActiveClassname,
   topSummaryRowClassname
 } from './style/row';
 import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
   RenderRowProps<R, SR>,
-  'viewportColumns' | 'rowIdx' | 'gridRowStart' | 'selectCell'
+  | 'iterateOverViewportColumnsForRow'
+  | 'rowIdx'
+  | 'gridRowStart'
+  | 'setActivePosition'
+  | 'activeCellIdx'
+  | 'isTreeGrid'
 >;
 
 interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
@@ -22,28 +26,13 @@ interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
   row: SR;
   top: number | undefined;
   bottom: number | undefined;
-  lastFrozenColumnIndex: number;
-  selectedCellIdx: number | undefined;
   isTop: boolean;
 }
 
 const summaryRow = css`
   @layer rdg.SummaryRow {
-    > .${cell} {
-      position: sticky;
-    }
-  }
-`;
-
-const topSummaryRow = css`
-  @layer rdg.SummaryRow {
-    > .${cell} {
-      z-index: 2;
-    }
-
-    > .${cellFrozen} {
-      z-index: 3;
-    }
+    position: sticky;
+    z-index: 2;
   }
 `;
 
@@ -53,56 +42,47 @@ function SummaryRow<R, SR>({
   rowIdx,
   gridRowStart,
   row,
-  viewportColumns,
+  iterateOverViewportColumnsForRow,
+  activeCellIdx,
+  setActivePosition,
   top,
   bottom,
-  lastFrozenColumnIndex,
-  selectedCellIdx,
   isTop,
-  selectCell,
+  isTreeGrid,
   'aria-rowindex': ariaRowIndex
 }: SummaryRowProps<R, SR>) {
-  const cells = [];
-  for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
-    const colSpan = getColSpan(column, lastFrozenColumnIndex, { type: 'SUMMARY', row });
-    if (colSpan !== undefined) {
-      index += colSpan - 1;
-    }
+  const isPositionOnRow = activeCellIdx === -1;
 
-    const isCellSelected = selectedCellIdx === column.idx;
-
-    cells.push(
+  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
+    .map(([column, isCellActive, colSpan]) => (
       <SummaryCell<R, SR>
         key={column.key}
         column={column}
         colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
-        isCellSelected={isCellSelected}
-        selectCell={selectCell}
+        isCellActive={isCellActive}
+        setActivePosition={setActivePosition}
       />
-    );
-  }
+    ))
+    .toArray();
 
   return (
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
+      tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
       className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
-        {
-          [rowSelectedClassname]: selectedCellIdx === -1,
-          [`${topSummaryRowClassname} ${topSummaryRow}`]: isTop,
-          [bottomSummaryRowClassname]: !isTop
-        }
+        isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
+        isPositionOnRow && rowActiveClassname
       )}
       style={{
-        ...getRowStyle(gridRowStart),
-        '--rdg-summary-row-top': top !== undefined ? `${top}px` : undefined,
-        '--rdg-summary-row-bottom': bottom !== undefined ? `${bottom}px` : undefined
+        gridRowStart,
+        top,
+        bottom
       }}
     >
       {cells}

@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type {
@@ -11,21 +11,6 @@ import type {
   RenderEditCellProps
 } from './types';
 
-declare global {
-  const scheduler: Scheduler | undefined;
-}
-
-interface Scheduler {
-  readonly postTask?: (
-    callback: () => void,
-    options?: {
-      priority?: 'user-blocking' | 'user-visible' | 'background';
-      signal?: AbortSignal;
-      delay?: number;
-    }
-  ) => Promise<unknown>;
-}
-
 /*
  * To check for outside `mousedown` events, we listen to all `mousedown` events at their birth,
  * i.e. on the window during the capture phase, and at their death, i.e. on the window during the bubble phase.
@@ -36,7 +21,7 @@ interface Scheduler {
  * The event can be `stopPropagation()`ed halfway through, so they may not always bubble back up to the window,
  * so an alternative check must be used. The check must happen after the event can reach the "inside" container,
  * and not before it run to completion. `postTask`/`requestAnimationFrame` are the best way we know to achieve this.
- * Usually we want click event handlers from parent components to access the latest commited values,
+ * Usually we want click event handlers from parent components to access the latest committed values,
  * so `mousedown` is used instead of `click`.
  *
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
@@ -53,11 +38,12 @@ const cellEditing = css`
 type SharedCellRendererProps<R, SR> = Pick<CellRendererProps<R, SR>, 'colSpan'>;
 
 interface EditCellProps<R, SR>
-  extends Omit<RenderEditCellProps<R, SR>, 'onRowChange' | 'onClose'>,
+  extends
+    Omit<RenderEditCellProps<R, SR>, 'onRowChange' | 'onClose'>,
     SharedCellRendererProps<R, SR> {
   rowIdx: number;
-  onRowChange: (row: R, commitChanges: boolean, shouldFocusCell: boolean) => void;
-  closeEditor: (shouldFocusCell: boolean) => void;
+  onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
+  closeEditor: (shouldFocus: boolean) => void;
   navigate: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   onKeyDown: Maybe<(args: EditCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>;
 }
@@ -79,7 +65,7 @@ export default function EditCell<R, SR>({
 
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
-  // To that end we instead access the latest props via useLatestFunc.
+  // To that end we instead access the latest props via useEffectEvent.
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
@@ -114,12 +100,12 @@ export default function EditCell<R, SR>({
       }
     }
 
-    addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-    addEventListener('mousedown', onWindowMouseDown);
+    window.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+    window.addEventListener('mousedown', onWindowMouseDown);
 
     return () => {
-      removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-      removeEventListener('mousedown', onWindowMouseDown);
+      window.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+      window.removeEventListener('mousedown', onWindowMouseDown);
       cancelTask();
     };
   }, [commitOnOutsideClick]);
@@ -165,11 +151,11 @@ export default function EditCell<R, SR>({
     }
   }
 
-  function onClose(commitChanges = false, shouldFocusCell = true) {
+  function onClose(commitChanges = false, shouldFocus = true) {
     if (commitChanges) {
-      onRowChange(row, true, shouldFocusCell);
+      onRowChange(row, true, shouldFocus);
     } else {
-      closeEditor(shouldFocusCell);
+      closeEditor(shouldFocus);
     }
   }
 

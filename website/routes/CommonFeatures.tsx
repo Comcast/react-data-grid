@@ -1,23 +1,24 @@
 import { useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import { faker } from '@faker-js/faker';
-import { css } from '@linaria/core';
+import { createFileRoute } from '@tanstack/react-router';
+import { css } from 'ecij';
 
 import {
   DataGrid,
+  renderTextEditor,
   SelectCellFormatter,
   SelectColumn,
-  textEditor,
   type Column,
   type DataGridHandle,
+  type Direction,
   type SortColumn
 } from '../../src';
-import { textEditorClassname } from '../../src/editors/textEditor';
-import type { Direction } from '../../src/types';
+import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { exportToCsv, exportToPdf } from '../utils';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/CommonFeatures')({
   component: CommonFeatures
 });
 
@@ -33,7 +34,7 @@ const dialogContainerClassname = css`
   inset: 0;
   display: flex;
   place-items: center;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(0 0 0 / 10%);
 
   > dialog {
     width: 300px;
@@ -95,8 +96,8 @@ function getColumns(
     {
       key: 'title',
       name: 'Task',
-      frozen: true,
-      renderEditCell: textEditor,
+      frozen: 'start',
+      renderEditCell: renderTextEditor,
       renderSummaryCell({ row }) {
         return `${row.totalCount} records`;
       }
@@ -106,12 +107,12 @@ function getColumns(
       name: 'Client',
       width: 'max-content',
       draggable: true,
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'area',
       name: 'Area',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'country',
@@ -132,12 +133,12 @@ function getColumns(
     {
       key: 'contact',
       name: 'Contact',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'assignee',
       name: 'Assignee',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'progress',
@@ -219,11 +220,12 @@ function getColumns(
     {
       key: 'version',
       name: 'Version',
-      renderEditCell: textEditor
+      renderEditCell: renderTextEditor
     },
     {
       key: 'available',
       name: 'Available',
+      frozen: 'end',
       renderCell({ row, onRowChange, tabIndex }) {
         return (
           <SelectCellFormatter

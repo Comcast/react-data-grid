@@ -1,12 +1,47 @@
-import { css } from '@linaria/core';
+import { css } from 'ecij';
 
 export const row = css`
   @layer rdg.Row {
-    display: contents;
+    display: grid;
+    grid-column: 1/-1;
+    grid-template: subgrid / subgrid;
     background-color: var(--rdg-background-color);
 
     &:hover {
       background-color: var(--rdg-row-hover-background-color);
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &[tabindex='0'] {
+      /* we render the outline in a pseudo element as otherwise cells render above it */
+      &::after {
+        content: '';
+        grid-column: 1 / -1;
+        z-index: 1;
+        pointer-events: none;
+        border: var(--rdg-selection-width) solid var(--rdg-selection-color);
+      }
+
+      & > .rdg-cell-frozen-start:first-child::before,
+      & > .rdg-cell-frozen-end:last-child::after {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        inset-block: 0;
+      }
+
+      & > .rdg-cell-frozen-start:first-child::before {
+        inset-inline-start: 0;
+        border-inline-start: var(--rdg-selection-width) solid var(--rdg-selection-color);
+      }
+
+      & > .rdg-cell-frozen-end:last-child::after {
+        inset-inline-end: 0;
+        border-inline-end: var(--rdg-selection-width) solid var(--rdg-selection-color);
+      }
     }
 
     &[aria-selected='true'] {
@@ -21,27 +56,7 @@ export const row = css`
 
 export const rowClassname = `rdg-row ${row}`;
 
-export const rowSelected = css`
-  @layer rdg.FocusSink {
-    outline: 2px solid var(--rdg-selection-color);
-    outline-offset: -2px;
-  }
-`;
-
-export const rowSelectedClassname = 'rdg-row-selected';
-
-export const rowSelectedWithFrozenCell = css`
-  @layer rdg.FocusSink {
-    &::before {
-      content: '';
-      display: inline-block;
-      block-size: 100%;
-      position: sticky;
-      inset-inline-start: 0;
-      border-inline-start: 2px solid var(--rdg-selection-color);
-    }
-  }
-`;
+export const rowActiveClassname = 'rdg-row-active';
 
 export const topSummaryRowClassname = 'rdg-top-summary-row';
 

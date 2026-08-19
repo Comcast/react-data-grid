@@ -6,17 +6,18 @@ body {
 }
 
 :root {
+  color-scheme: light dark;
+
   &:has([value='light']:checked) {
-    --rdg-color-scheme: light;
+    color-scheme: light;
   }
 
   &:has([value='dark']:checked) {
-    --rdg-color-scheme: dark;
+    color-scheme: dark;
   }
 }
 
 body {
-  color-scheme: var(--rdg-color-scheme, light dark);
   background-color: light-dark(#fff, hsl(0deg 0% 10%));
   color: light-dark(#111, #fff);
 }

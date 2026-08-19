@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { page, userEvent } from '@vitest/browser/context';
+import { page, userEvent } from 'vitest/browser';
 
 import type { Column } from '../../src';
-import { SelectColumn, textEditor, TreeDataGrid } from '../../src';
-import { focusSinkClassname } from '../../src/style/core';
-import { rowSelected } from '../../src/style/row';
-import { getCellsAtRowIndex, getHeaderCells, getRows, getSelectedCell, getTreeGrid } from './utils';
+import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import { rowActiveClassname } from '../../src/style/row';
+import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
 
-const rowSelectedClassname = 'rdg-row-selected';
+const treeGrid = page.getTreeGrid();
+const headerRow = treeGrid.getHeaderRow();
+const headerCells = headerRow.getHeaderCell();
+const headerCheckbox = headerRow.getSelectAllCheckbox();
+const rows = treeGrid.getRow();
+const activeCell = treeGrid.getActiveCell();
 
 interface Row {
   id: number;
@@ -29,7 +33,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   {
     key: 'country',
     name: 'Country',
-    renderEditCell: textEditor
+    renderEditCell: renderTextEditor
   },
   {
     key: 'year',
@@ -119,286 +123,304 @@ function TestGrid({
 }
 
 function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
+  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }
 
 function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
-  page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
+  return page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
 }
 
-function getHeaderCellsContent() {
-  return getHeaderCells().map((cell) => cell.textContent);
+async function testHeaderCellsContent(expected: readonly string[]) {
+  await testCount(headerCells, expected.length);
+
+  for (const [n, text] of expected.entries()) {
+    await expect.element(headerCells.nth(n)).toHaveTextContent(text);
+  }
 }
 
 test('should not group if groupBy is empty', async () => {
-  setup([]);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '7');
-  expect(getHeaderCellsContent()).toStrictEqual(['', 'Sport', 'Country', 'Year', 'Id']);
-  expect(getRows()).toHaveLength(6);
+  await setup([]);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '7');
+  await testHeaderCellsContent(['', 'Sport', 'Country', 'Year', 'Id']);
+  await testRowCount(6);
 });
 
 test('should not group if column does not exist', async () => {
-  setup(['abc']);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '7');
-  expect(getRows()).toHaveLength(6);
+  await setup(['abc']);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '7');
+  await testRowCount(6);
 });
 
 test('should group by single column', async () => {
-  setup(['country']);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '9');
-  expect(getHeaderCellsContent()).toStrictEqual(['', 'Country', 'Sport', 'Year', 'Id']);
-  expect(getRows()).toHaveLength(4);
+  await setup(['country']);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '9');
+  await testHeaderCellsContent(['', 'Country', 'Sport', 'Year', 'Id']);
+  await testRowCount(4);
 });
 
 test('should group by multiple columns', async () => {
-  setup(['country', 'year']);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '13');
-  expect(getHeaderCellsContent()).toStrictEqual(['', 'Country', 'Year', 'Sport', 'Id']);
-  expect(getRows()).toHaveLength(4);
+  await setup(['country', 'year']);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
+  await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
+  await testRowCount(4);
 });
 
 test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
     parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
   );
-  setup(['country', 'year'], groupIdGetter);
+  await setup(['country', 'year'], groupIdGetter);
   expect(groupIdGetter).toHaveBeenCalled();
-  expect(getTreeGrid()).toHaveAttribute('aria-rowcount', '13');
-  expect(getHeaderCellsContent()).toStrictEqual(['', 'Country', 'Year', 'Sport', 'Id']);
-  expect(getRows()).toHaveLength(4);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
+  await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
+  await testRowCount(4);
   groupIdGetter.mockClear();
-  await userEvent.click(page.getByRole('gridcell', { name: 'USA' }));
-  expect(getRows()).toHaveLength(6);
+  await userEvent.click(page.getCell({ name: 'USA' }));
+  await testRowCount(6);
   expect(groupIdGetter).toHaveBeenCalled();
-  await userEvent.click(page.getByRole('gridcell', { name: 'Canada' }));
-  expect(getRows()).toHaveLength(8);
-  await userEvent.click(page.getByRole('gridcell', { name: '2020' }));
-  expect(getRows()).toHaveLength(9);
+  await userEvent.click(page.getCell({ name: 'Canada' }));
+  await testRowCount(8);
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await testRowCount(9);
 });
 
 test('should ignore duplicate groupBy columns', async () => {
-  setup(['year', 'year', 'year']);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '10');
-  expect(getRows()).toHaveLength(5);
+  await setup(['year', 'year', 'year']);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '10');
+  await testRowCount(5);
 });
 
 test('should use groupBy order while grouping', async () => {
-  setup(['year', 'country']);
-  await expect.element(getTreeGrid()).toHaveAttribute('aria-rowcount', '14');
-  expect(getHeaderCellsContent()).toStrictEqual(['', 'Year', 'Country', 'Sport', 'Id']);
-  expect(getRows()).toHaveLength(5);
+  await setup(['year', 'country']);
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '14');
+  await testHeaderCellsContent(['', 'Year', 'Country', 'Sport', 'Id']);
+  await testRowCount(5);
 });
 
 test('should toggle group when group cell is clicked', async () => {
-  setup(['year']);
-  expect(getRows()).toHaveLength(5);
-  const groupCell = page.getByRole('gridcell', { name: '2021' });
+  await setup(['year']);
+  await testRowCount(5);
+  const groupCell = page.getCell({ name: '2021' });
   await userEvent.click(groupCell);
-  expect(getRows()).toHaveLength(7);
+  await testRowCount(7);
   await userEvent.click(groupCell);
-  expect(getRows()).toHaveLength(5);
+  await testRowCount(5);
 });
 
 test('should toggle group using keyboard', async () => {
-  setup(['year']);
-  expect(getRows()).toHaveLength(5);
-  const groupCell = page.getByRole('gridcell', { name: '2021' });
+  await setup(['year']);
+  await testRowCount(5);
+  const groupCell = page.getCell({ name: '2021' });
   await userEvent.click(groupCell);
-  expect(getRows()).toHaveLength(7);
-  // clicking on the group cell selects the row
-  await expect.element(getSelectedCell()).not.toBeInTheDocument();
-  await expect.element(getRows()[2]).toHaveClass(rowSelectedClassname);
+  await testRowCount(7);
+  // clicking on the group cell focuses the row
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(getRowWithCell(groupCell)).toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowright}{arrowright}{enter}');
-  expect(getRows()).toHaveLength(5);
+  await testRowCount(5);
   await userEvent.keyboard('{enter}');
-  expect(getRows()).toHaveLength(7);
+  await testRowCount(7);
 });
 
 test('should set aria-attributes', async () => {
-  setup(['year', 'country']);
+  await setup(['year', 'country']);
 
-  const groupCell1 = page.getByRole('gridcell', { name: '2020' }).element();
-  const groupRow1 = groupCell1.parentElement!;
-  expect(groupRow1).toHaveAttribute('aria-level', '1');
-  expect(groupRow1).toHaveAttribute('aria-setsize', '3');
-  expect(groupRow1).toHaveAttribute('aria-posinset', '1');
-  expect(groupRow1).toHaveAttribute('aria-rowindex', '3');
-  expect(groupRow1).toHaveAttribute('aria-expanded', 'false');
+  const groupCell1 = page.getCell({ name: '2020' });
+  const groupRow1 = getRowWithCell(groupCell1);
+  await expect.element(groupRow1).toHaveAttribute('aria-level', '1');
+  await expect.element(groupRow1).toHaveAttribute('aria-setsize', '3');
+  await expect.element(groupRow1).toHaveAttribute('aria-posinset', '1');
+  await expect.element(groupRow1).toHaveAttribute('aria-rowindex', '3');
+  await expect.element(groupRow1).toHaveAttribute('aria-expanded', 'false');
 
-  const groupCell2 = page.getByRole('gridcell', { name: '2021' }).element();
-  const groupRow2 = groupCell2.parentElement!;
-  expect(groupRow2).toHaveAttribute('aria-level', '1');
-  expect(groupRow2).toHaveAttribute('aria-setsize', '3');
-  expect(groupRow2).toHaveAttribute('aria-posinset', '2');
-  expect(groupRow2).toHaveAttribute('aria-rowindex', '6');
-  expect(groupRow1).toHaveAttribute('aria-expanded', 'false');
+  const groupCell2 = page.getCell({ name: '2021' });
+  const groupRow2 = getRowWithCell(groupCell2);
+  await expect.element(groupRow2).toHaveAttribute('aria-level', '1');
+  await expect.element(groupRow2).toHaveAttribute('aria-setsize', '3');
+  await expect.element(groupRow2).toHaveAttribute('aria-posinset', '2');
+  await expect.element(groupRow2).toHaveAttribute('aria-rowindex', '6');
+  await expect.element(groupRow1).toHaveAttribute('aria-expanded', 'false');
 
   await userEvent.click(groupCell2);
-  expect(groupRow2).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(groupRow2).toHaveAttribute('aria-expanded', 'true');
 
-  const groupCell3 = page.getByRole('gridcell', { name: 'Canada' }).element();
-  const groupRow3 = groupCell3.parentElement!;
-  expect(groupRow3).toHaveAttribute('aria-level', '2');
-  expect(groupRow3).toHaveAttribute('aria-setsize', '2');
-  expect(groupRow3).toHaveAttribute('aria-posinset', '2');
-  expect(groupRow3).toHaveAttribute('aria-rowindex', '9');
-  expect(groupRow1).toHaveAttribute('aria-expanded', 'false');
+  const groupCell3 = page.getCell({ name: 'Canada' });
+  const groupRow3 = getRowWithCell(groupCell3);
+  await expect.element(groupRow3).toHaveAttribute('aria-level', '2');
+  await expect.element(groupRow3).toHaveAttribute('aria-setsize', '2');
+  await expect.element(groupRow3).toHaveAttribute('aria-posinset', '2');
+  await expect.element(groupRow3).toHaveAttribute('aria-rowindex', '9');
+  await expect.element(groupRow1).toHaveAttribute('aria-expanded', 'false');
 
   await userEvent.click(groupCell3);
-  expect(groupRow3).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(groupRow3).toHaveAttribute('aria-expanded', 'true');
 });
 
 test('should select rows in a group', async () => {
-  setup(['year', 'country']);
+  await setup(['year', 'country']);
 
-  const headerCheckbox = page.getByRole('checkbox', { name: 'Select All' });
   await expect.element(headerCheckbox).not.toBeChecked();
 
   // expand group
-  const groupCell1 = page.getByRole('gridcell', { name: '2021' }).element();
+  const groupCell1 = page.getCell({ name: '2021' });
   await userEvent.click(groupCell1);
-  const groupCell2 = page.getByRole('gridcell', { name: 'Canada' }).element();
+  const groupCell2 = page.getCell({ name: 'Canada' });
   await userEvent.click(groupCell2);
 
-  expect(page.getByRole('row', { selected: true }).all()).toHaveLength(0);
+  const selectedRows = page.getRow({ selected: true });
+  await testCount(selectedRows, 0);
 
   // select parent row
-  await userEvent.click(
-    page.elementLocator(groupCell1.parentElement!).getByRole('checkbox', { name: 'Select Group' })
-  );
-  let selectedRows = page.getByRole('row', { selected: true }).all();
-  expect(selectedRows).toHaveLength(4);
-  await expect.element(selectedRows[0]).toHaveAttribute('aria-rowindex', '6');
-  await expect.element(selectedRows[1]).toHaveAttribute('aria-rowindex', '7');
-  await expect.element(selectedRows[2]).toHaveAttribute('aria-rowindex', '9');
-  await expect.element(selectedRows[3]).toHaveAttribute('aria-rowindex', '10');
+  await userEvent.click(getRowWithCell(groupCell1).getByRole('checkbox', { name: 'Select Group' }));
+  await testCount(selectedRows, 4);
+  await expect.element(selectedRows.nth(0)).toHaveAttribute('aria-rowindex', '6');
+  await expect.element(selectedRows.nth(1)).toHaveAttribute('aria-rowindex', '7');
+  await expect.element(selectedRows.nth(2)).toHaveAttribute('aria-rowindex', '9');
+  await expect.element(selectedRows.nth(3)).toHaveAttribute('aria-rowindex', '10');
 
   // unselecting child should unselect the parent row
-  await userEvent.click(selectedRows[3].getByRole('checkbox', { name: 'Select' }));
-  selectedRows = page.getByRole('row', { selected: true }).all();
-  expect(selectedRows).toHaveLength(1);
-  await expect.element(selectedRows[0]).toHaveAttribute('aria-rowindex', '7');
+  await userEvent.click(selectedRows.nth(3).getByRole('checkbox', { name: 'Select' }));
+  await testCount(selectedRows, 1);
+  await expect.element(selectedRows.nth(0)).toHaveAttribute('aria-rowindex', '7');
 
   // select child group
-  const checkbox = page.elementLocator(groupCell2.parentElement!).getByRole('checkbox', {
+  const checkbox = getRowWithCell(groupCell2).getByRole('checkbox', {
     name: 'Select Group'
   });
   await userEvent.click(checkbox);
-  selectedRows = page.getByRole('row', { selected: true }).all();
-  expect(selectedRows).toHaveLength(4);
+  await testCount(selectedRows, 4);
 
   // unselect child group
   await userEvent.click(checkbox);
-  selectedRows = page.getByRole('row', { selected: true }).all();
-  expect(selectedRows).toHaveLength(1);
+  await testCount(selectedRows, 1);
 
-  await userEvent.click(page.getByRole('gridcell', { name: '2020' }));
-  await userEvent.click(page.getByRole('gridcell', { name: '2022' }));
-
-  await userEvent.click(headerCheckbox);
-  await expect.element(page.getByRole('row', { selected: true })).not.toBeInTheDocument();
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await userEvent.click(page.getCell({ name: '2022' }));
 
   await userEvent.click(headerCheckbox);
-  expect(page.getByRole('row', { selected: true }).all()).toHaveLength(8);
+  await testCount(selectedRows, 0);
 
   await userEvent.click(headerCheckbox);
-  await expect.element(page.getByRole('row', { selected: true })).not.toBeInTheDocument();
+  await testCount(selectedRows, 8);
+
+  await userEvent.click(headerCheckbox);
+  await testCount(selectedRows, 0);
 });
 
 test('cell navigation in a treegrid', async () => {
-  setup(['country', 'year']);
-  expect(getRows()).toHaveLength(4);
-  const focusSink = document.querySelector(`.${focusSinkClassname}`);
+  await setup(['country', 'year']);
+  await testRowCount(4);
+
+  const topSummaryRow = rows.nth(0);
+  const row1 = rows.nth(1);
+  const row3 = rows.nth(3);
 
   // expand group
-  const groupCell1 = page.getByRole('gridcell', { name: 'USA' });
-  expect(document.body).toHaveFocus();
-  expect(focusSink).toHaveAttribute('tabIndex', '-1');
+  const groupCell1 = row1.getCell({ name: 'USA' });
+  await expect.element(document.body).toHaveFocus();
+  await expect.element(row1).toHaveAttribute('tabIndex', '-1');
+  await expect.element(row1).not.toHaveClass(rowActiveClassname);
+
   await userEvent.click(groupCell1);
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveAttribute('tabIndex', '0');
-  expect(focusSink).toHaveStyle('grid-row-start:3');
-  expect(focusSink).toHaveClass(rowSelected);
+  await expect.element(row1).toHaveFocus();
+  await expect.element(row1).toHaveAttribute('tabIndex', '0');
+  await expect.element(row1).toHaveClass(rowActiveClassname);
+
   await userEvent.keyboard('{arrowup}');
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveStyle('grid-row-start:2');
-  expect(focusSink).toHaveClass(rowSelected);
+  await expect.element(topSummaryRow).toHaveFocus();
+  await expect.element(topSummaryRow).toHaveAttribute('tabIndex', '0');
+  await expect.element(topSummaryRow).toHaveClass(rowActiveClassname);
+
+  // header row does not get focused
   await userEvent.keyboard('{arrowup}');
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveStyle('grid-row-start:1');
-  expect(focusSink).toHaveClass(rowSelected);
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveStyle('grid-row-start:1');
-  expect(focusSink).toHaveClass(rowSelected);
+  await expect.element(headerCheckbox).toHaveFocus();
+  await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
+
+  // header row cannot get focused
+  await userEvent.keyboard('{arrowleft}');
+  await expect.element(headerCheckbox).toHaveFocus();
+  await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
+
   await userEvent.keyboard('{arrowdown}');
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveStyle('grid-row-start:2');
-  expect(focusSink).toHaveClass(rowSelected);
-  const groupCell2 = page.getByRole('gridcell', { name: '2021' });
+  await expect.element(topSummaryRow.getCell().nth(0)).toHaveFocus();
+  await expect.element(topSummaryRow.getCell().nth(0)).toHaveAttribute('tabIndex', '0');
+  await expect.element(topSummaryRow).not.toHaveClass(rowActiveClassname);
+
+  // can focus summary row
+  await userEvent.keyboard('{arrowleft}');
+  await expect.element(topSummaryRow).toHaveFocus();
+  await expect.element(topSummaryRow).toHaveAttribute('tabIndex', '0');
+  await expect.element(topSummaryRow).toHaveClass(rowActiveClassname);
+
+  const groupCell2 = page.getCell({ name: '2021' });
   await userEvent.click(groupCell2);
-  expect(focusSink).toHaveFocus();
-  expect(focusSink).toHaveAttribute('tabIndex', '0');
+  await expect.element(row3).toHaveFocus();
+  await expect.element(row3).toHaveAttribute('tabIndex', '0');
 
-  // select cell
-  await userEvent.click(getCellsAtRowIndex(5)[1]);
-  expect(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'true');
-  expect(focusSink).toHaveAttribute('tabIndex', '-1');
+  // focus cell
+  const cells = getCellsAtRowIndex(5);
+  await userEvent.click(cells.nth(1));
+  await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(1)).toHaveFocus();
+  await expect.element(cells.nth(1)).toHaveAttribute('tabIndex', '0');
 
-  // select the previous cell
+  // focus the previous cell
   await userEvent.keyboard('{arrowleft}');
-  expect(getCellsAtRowIndex(5)[1]).toHaveAttribute('aria-selected', 'false');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'false');
+  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
 
-  // if the first cell is selected then arrowleft should select the row
+  // if the first cell is focused then arrowleft should focus the row
   await userEvent.keyboard('{arrowleft}');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'false');
-  await expect.element(getRows()[4]).toHaveClass(rowSelectedClassname);
-  expect(focusSink).toHaveFocus();
+  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'false');
+  await expect.element(rows.nth(4)).toHaveClass(rowActiveClassname);
+  await expect.element(rows.nth(4)).toHaveFocus();
 
-  // if the row is selected then arrowright should select the first cell on the same row
+  // if the row is focused then arrowright should focus the first cell on the same row
   await userEvent.keyboard('{arrowright}');
-  expect(getCellsAtRowIndex(5)[0]).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
 
   await userEvent.keyboard('{arrowleft}{arrowup}');
 
-  expect(getRows()).toHaveLength(7);
+  await testRowCount(7);
 
   // left arrow should collapse the group
   await userEvent.keyboard('{arrowleft}');
-  expect(getRows()).toHaveLength(6);
+  await testRowCount(6);
 
   // right arrow should expand the group
   await userEvent.keyboard('{arrowright}');
-  expect(getRows()).toHaveLength(7);
+  await testRowCount(7);
 
-  // left arrow on a collapsed group should select the parent group
-  await expect.element(getRows()[1]).not.toHaveClass(rowSelectedClassname);
+  // left arrow on a collapsed group should focus the parent group
+  await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowleft}{arrowleft}');
-  await expect.element(getRows()[1]).toHaveClass(rowSelectedClassname);
+  await expect.element(rows.nth(1)).toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{end}');
-  await expect.element(getRows()[5]).toHaveClass(rowSelectedClassname);
+  await expect.element(rows.nth(5)).toHaveClass(rowActiveClassname);
 
   await userEvent.keyboard('{home}');
-  await expect.element(page.getByRole('row').all()[0]).toHaveClass(rowSelectedClassname);
+  await expect.element(headerCheckbox).toHaveFocus();
+  await expect.element(headerCheckbox).toHaveAttribute('tabIndex', '0');
+  await expect.element(headerRow).not.toHaveClass(rowActiveClassname);
 
-  // collpase parent group
-  await userEvent.keyboard('{arrowdown}{arrowdown}{arrowleft}');
-  await expect.element(page.getByRole('gridcell', { name: '2021' })).not.toBeInTheDocument();
-  expect(getRows()).toHaveLength(4);
+  // collapse parent group
+  await userEvent.keyboard('{arrowdown}{arrowdown}{arrowleft}{arrowleft}');
+  await expect.element(page.getCell({ name: '2021' })).not.toBeInTheDocument();
+  await testRowCount(4);
 });
 
 test('copy/paste when grouping is enabled', async () => {
-  setup(['year']);
-  await userEvent.click(page.getByRole('gridcell', { name: '2021' }));
+  await setup(['year']);
+  await userEvent.click(page.getCell({ name: '2021' }));
   await userEvent.copy();
   expect(onCellCopySpy).not.toHaveBeenCalled();
   await userEvent.paste();
   expect(onCellPasteSpy).not.toHaveBeenCalled();
 
-  await userEvent.click(page.getByRole('gridcell', { name: 'USA' }));
+  await userEvent.click(page.getCell({ name: 'USA' }));
   await userEvent.copy();
   expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
     {
@@ -426,17 +448,58 @@ test('copy/paste when grouping is enabled', async () => {
 });
 
 test('update row using cell renderer', async () => {
-  setup(['year']);
-  await userEvent.click(page.getByRole('gridcell', { name: '2021' }));
-  await userEvent.click(page.getByRole('gridcell', { name: 'USA' }));
+  await setup(['year']);
+  await userEvent.click(page.getCell({ name: '2021' }));
+  await userEvent.click(page.getCell({ name: 'USA' }));
   await userEvent.keyboard('{arrowright}{arrowright}');
-  await expect.element(getSelectedCell()).toHaveTextContent('value: 2');
+  await expect.element(activeCell).toHaveTextContent('value: 2');
   await userEvent.click(page.getByRole('button', { name: 'value: 2' }));
-  await expect.element(getSelectedCell()).toHaveTextContent('value: 12');
+  await expect.element(activeCell).toHaveTextContent('value: 12');
 });
 
-test('custom renderGroupCell', () => {
-  setup(['country']);
-  expect(getCellsAtRowIndex(1)[4]).toHaveTextContent('1');
-  expect(getCellsAtRowIndex(4)[4]).toHaveTextContent('3');
+test('custom renderGroupCell', async () => {
+  await setup(['country']);
+  const usaCell = page.getCell({ name: 'USA' });
+  const canadaCell = page.getCell({ name: 'Canada' });
+  await expect.element(getRowWithCell(usaCell).getCell().nth(4)).toHaveTextContent('1');
+  await expect.element(getRowWithCell(canadaCell).getCell().nth(4)).toHaveTextContent('3');
+});
+
+test('adding a top summary row when no rows or cells are active should not focus the summary row', async () => {
+  const rows: readonly Row[] = [];
+
+  function Test() {
+    const [topSummaryRows, setTopSummaryRows] = useState((): readonly SummaryRow[] => []);
+
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setTopSummaryRows((topSummaryRows) => [...topSummaryRows, undefined])}
+        >
+          Add summary row
+        </button>
+        <TreeDataGrid
+          columns={columns}
+          rows={rows}
+          topSummaryRows={topSummaryRows}
+          groupBy={[]}
+          rowGrouper={() => ({})}
+          expandedGroupIds={new Set()}
+          onExpandedGroupIdsChange={() => {}}
+        />
+      </>
+    );
+  }
+
+  await page.render(<Test />);
+  const addSummaryRowButton = page.getByRole('button', { name: 'Add summary row' });
+  const activeRow = page.getBySelector(`.${rowActiveClassname}`);
+
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
+
+  await userEvent.click(addSummaryRowButton);
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
 });

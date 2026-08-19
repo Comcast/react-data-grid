@@ -1,11 +1,16 @@
 /.cache
-/coverage
+/.claude
 /dist
 /lib
 /node_modules
-/package-lock.json
-__screenshots__
 
 npm-debug.log
 **.orig
 .idea
+
+# Vitest
+/.vitest-attachments
+/coverage
+/test/**/__screenshots__
+/test/**/__traces__
+/test/**/screenshots/**/*-win32.png

@@ -1,12 +1,11 @@
 import { useCallback, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 
-import { DataGrid, textEditor } from '../../src';
-import type { CellRendererProps, Column } from '../../src';
-import { DraggableCellRenderer } from '../components';
-import { startViewTransition } from '../utils';
+import { DataGrid, renderTextEditor, type Column, type RenderRowProps } from '../../src';
+import { DraggableRowRenderer } from '../components';
 import { useDirection } from '../directionContext';
 
-export const Route = createFileRoute({
+export const Route = createFileRoute('/RowsReordering')({
   component: RowsReordering
 });
 
@@ -43,7 +42,7 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'task',
     name: 'Title',
-    renderEditCell: textEditor
+    renderEditCell: renderTextEditor
   },
   {
     key: 'priority',
@@ -63,7 +62,7 @@ function RowsReordering() {
   const direction = useDirection();
   const [rows, setRows] = useState(createRows);
 
-  const renderCell = useCallback((key: React.Key, props: CellRendererProps<Row, unknown>) => {
+  const renderRow = useCallback((key: React.Key, props: RenderRowProps<Row>) => {
     function onRowReorder(fromIndex: number, toIndex: number) {
       function reorderRows() {
         setRows((rows) => {
@@ -74,10 +73,10 @@ function RowsReordering() {
         });
       }
 
-      startViewTransition(reorderRows);
+      document.startViewTransition(reorderRows);
     }
 
-    return <DraggableCellRenderer key={key} {...props} onRowReorder={onRowReorder} />;
+    return <DraggableRowRenderer<Row, unknown> key={key} {...props} onRowReorder={onRowReorder} />;
   }, []);
 
   return (
@@ -86,7 +85,7 @@ function RowsReordering() {
       columns={columns}
       rows={rows}
       onRowsChange={setRows}
-      renderers={{ renderCell }}
+      renderers={{ renderRow }}
       direction={direction}
     />
   );

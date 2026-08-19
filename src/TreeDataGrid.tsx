@@ -25,11 +25,10 @@ import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import GroupedRow from './GroupRow';
 import { defaultRenderRow } from './Row';
 
-export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key>
-  extends Omit<
-    DataGridProps<R, SR, K>,
-    'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
-  > {
+export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
+  DataGridProps<R, SR, K>,
+  'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
+> {
   columns: readonly Column<NoInfer<R>, NoInfer<SR>>[];
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
   groupBy: readonly string[];
@@ -140,13 +139,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   }, [groupBy, rowGrouper, rawRows]);
 
   const [rows, isGroupRow] = useMemo((): [
-    ReadonlyArray<R | GroupRow<R>>,
+    readonly (R | GroupRow<R>)[],
     (row: R | GroupRow<R>) => row is GroupRow<R>
   ] => {
     const allGroupRows = new Set<unknown>();
     if (!groupedRows) return [rawRows, isGroupRow];
 
-    const flattenedRows: Array<R | GroupRow<R>> = [];
+    const flattenedRows: (R | GroupRow<R>)[] = [];
 
     const expandGroup = (
       rows: GroupByDictionary<R> | readonly R[],
@@ -298,8 +297,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (event.isGridDefaultPrevented()) return;
 
     if (args.mode === 'EDIT') return;
-    const { column, rowIdx, selectCell } = args;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const { column, rowIdx, setActivePosition } = args;
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 
@@ -322,7 +320,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const parentRowAndIndex = getParentRowAndIndex(row);
       if (parentRowAndIndex !== undefined) {
         event.preventGridDefault();
-        selectCell({ idx, rowIdx: parentRowAndIndex[1] });
+        setActivePosition({ idx, rowIdx: parentRowAndIndex[1] });
       }
     }
   }
@@ -379,9 +377,10 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor,
+      activeCellEditor,
+      isRowSelectionDisabled,
+      isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
@@ -417,9 +416,10 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onCellDoubleClick,
       onCellContextMenu,
       onRowChange,
-      lastFrozenColumnIndex,
       draggedOverCellIdx,
-      selectedCellEditor
+      activeCellEditor,
+      isRowSelectionDisabled,
+      isTreeGrid
     });
   }
 

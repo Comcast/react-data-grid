@@ -8,35 +8,60 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: 'package.json'
           check-latest: true
-      - name: npm install
-        run: npm i
-      - name: Biome
-        run: node --run biome:ci
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Typecheck
         run: node --run typecheck
+
       - name: ESLint
         run: node --run eslint
-      - name: Prettier
-        run: node --run prettier:check
+
+      - name: Oxfmt
+        run: node --run format:check
+
       - name: Bundle
         run: node --run build
+
       - name: Build website
         run: node --run build:website
+
+      - name: Check routeTree.gen.ts
+        run: git diff --exit-code website/routeTree.gen.ts
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+        timeout-minutes: 2
+
       - name: Test
-        run: node --run test
+        run: node --run test:ci
         timeout-minutes: 10
+
+      - name: Upload test failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-artifacts
+          path: |
+            test/**/__screenshots__/**
+            test/**/__traces__/**
+            .vitest-attachments/test/**
+          if-no-files-found: ignore
+
       - name: Upload coverage
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Deploy gh-pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |

@@ -1,14 +1,16 @@
 {
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.organizeLinkDefinitions": "explicit",
+    "source.removeUnusedImports": "explicit",
+    "source.format.oxc": "explicit"
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "[javascript][json][jsonc][css]": {
-    "editor.defaultFormatter": "biomejs.biome"
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "js/ts.experimental.useTsgo": true,
+  "eslint.options": {
+    "flags": ["unstable_native_nodejs_ts_config"]
   },
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.problems.shortenToSingleLine": true,
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
