@@ -89,7 +89,7 @@ describe('Editor', () => {
   it(
     'should scroll to the editor if active cell is not in the viewport',
     // TODO: make the test pass in webkit
-    { skip: server.browser === 'webkit' },
+    { fails: server.browser === 'webkit' },
     async () => {
       const rows: Row[] = [];
       for (let i = 0; i < 99; i++) {

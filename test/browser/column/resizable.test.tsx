@@ -333,10 +333,11 @@ async function testGridTemplateColumns(obj: {
   webkit: string;
   webkitCI?: string;
 }) {
+  const { browser } = server;
   const gridTemplateColumns =
-    server.browser === 'chromium'
+    browser === 'chromium'
       ? obj.chrome
-      : server.browser === 'webkit'
+      : browser === 'webkit'
         ? import.meta.env.CI
           ? (obj.webkitCI ?? obj.webkit)
           : obj.webkit

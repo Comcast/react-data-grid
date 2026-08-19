@@ -167,7 +167,7 @@ test('Focus child if it sets tabIndex', async () => {
 test(
   'Cell should not steal focus when the focus is outside the grid and cell is recreated',
   // TODO: make the test pass in webkit
-  { skip: server.browser === 'webkit' },
+  { fails: server.browser === 'webkit' },
   async () => {
     const columns: readonly Column<Row>[] = [{ key: 'id', name: 'ID' }];
 
