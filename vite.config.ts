@@ -128,21 +128,8 @@ export default defineConfig(
         commands: { resizeColumn, dragFill },
         expect: {
           toMatchScreenshot: {
-            resolveScreenshotPath({
-              root,
-              testFileDirectory,
-              testFileName,
-              arg,
-              browserName,
-              platform,
-              ext
-            }) {
-              return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
-            }
+            screenshotDirectory: 'screenshots'
           }
-        },
-        locators: {
-          exact: true
         },
         instances: [
           {
@@ -175,7 +162,6 @@ export default defineConfig(
       },
       projects: [
         {
-          extends: true,
           test: {
             name: 'browser',
             include: ['browser/**/*.test.*'],
@@ -184,7 +170,6 @@ export default defineConfig(
           }
         },
         {
-          extends: true,
           test: {
             name: 'visual',
             include: ['visual/*.test.*'],
@@ -193,7 +178,6 @@ export default defineConfig(
           }
         },
         {
-          extends: true,
           test: {
             name: 'node',
             include: ['node/**/*.test.*'],

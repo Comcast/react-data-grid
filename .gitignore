@@ -9,8 +9,6 @@ npm-debug.log
 .idea
 
 # Vitest
-/.vitest-attachments
+/.vitest
 /coverage
-/test/**/__screenshots__
-/test/**/__traces__
 /test/**/screenshots/**/*-win32.png
