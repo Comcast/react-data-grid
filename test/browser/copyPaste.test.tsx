@@ -72,30 +72,26 @@ test('should call onCellCopy on cell copy', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.copy();
-  await expect
-    .poll(() => onCellCopySpy)
-    .toHaveBeenCalledExactlyOnceWith(
-      {
-        row: initialRows[0],
-        column: expect.objectContaining(columns[0])
-      },
-      expect.anything()
-    );
+  expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
+    {
+      row: initialRows[0],
+      column: expect.objectContaining(columns[0])
+    },
+    expect.anything()
+  );
 });
 
 test('should call onCellPaste on cell paste', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.paste();
-  await expect
-    .poll(() => onCellPasteSpy)
-    .toHaveBeenCalledExactlyOnceWith(
-      {
-        row: initialRows[0],
-        column: expect.objectContaining(columns[0])
-      },
-      expect.anything()
-    );
+  expect(onCellPasteSpy).toHaveBeenCalledExactlyOnceWith(
+    {
+      row: initialRows[0],
+      column: expect.objectContaining(columns[0])
+    },
+    expect.anything()
+  );
 });
 
 test('should not allow paste on readonly cells', async () => {
@@ -109,15 +105,13 @@ test('should allow copying a readonly cell', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.copy();
-  await expect
-    .poll(() => onCellCopySpy)
-    .toHaveBeenCalledExactlyOnceWith(
-      {
-        row: initialRows[2],
-        column: expect.objectContaining(columns[0])
-      },
-      expect.anything()
-    );
+  expect(onCellCopySpy).toHaveBeenCalledExactlyOnceWith(
+    {
+      row: initialRows[2],
+      column: expect.objectContaining(columns[0])
+    },
+    expect.anything()
+  );
 });
 
 test('should not allow copy/paste on header or summary cells', async () => {
