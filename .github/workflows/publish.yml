@@ -54,7 +54,7 @@ jobs:
 
       - name: Test
         run: node --run test:ci
-        timeout-minutes: 10
+        timeout-minutes: 4
 
       - name: Update version
         run: |

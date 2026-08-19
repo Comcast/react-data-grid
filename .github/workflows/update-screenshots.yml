@@ -46,7 +46,7 @@ jobs:
         run: |
           rm -r test/**/screenshots/**
           node --run test:ci:update
-        timeout-minutes: 10
+        timeout-minutes: 4
 
       - name: Push new screenshots
         run: |
