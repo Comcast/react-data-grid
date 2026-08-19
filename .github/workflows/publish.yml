@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps --no-shell
-        timeout-minutes: 3
+        timeout-minutes: 4
 
       - name: Test
         run: node --run test:ci
