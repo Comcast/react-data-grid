@@ -326,12 +326,15 @@ async function testGridTemplateColumns(obj: {
   firefox: string;
   firefoxCI?: string;
   webkit: string;
+  webkitCI?: string;
 }) {
   const gridTemplateColumns =
     server.browser === 'chromium'
       ? obj.chrome
       : server.browser === 'webkit'
-        ? obj.webkit
+        ? import.meta.env.CI
+          ? (obj.webkitCI ?? obj.webkit)
+          : obj.webkit
         : import.meta.env.CI
           ? (obj.firefoxCI ?? obj.firefox)
           : obj.firefox;
@@ -343,6 +346,7 @@ async function testGridTemplateColumns(obj: {
       ? ''
       : grid.element().computedStyleMap().get('grid-template-columns')?.toString();
 
+  // eslint-disable-next-line no-console
   console.log(
     server.browser,
     gridTemplateColumns,
