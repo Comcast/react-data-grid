@@ -222,6 +222,7 @@ test('should remeasure flex columns when resizing a column', async () => {
   await testGridTemplateColumns({
     chrome: '79.1406px 919.422px 919.438px',
     firefox: '79.1667px 919.417px 919.417px',
+    firefoxCI: '100.5px 908.75px 908.75px',
     webkit: '79.140625px 919.421875px 919.421875px',
     webkitCI: '102.796875px 907.59375px 907.59375px'
   });
@@ -231,6 +232,7 @@ test('should remeasure flex columns when resizing a column', async () => {
   await testGridTemplateColumns({
     chrome: '79.1406px 919.422px 919.438px',
     firefox: '79.1667px 919.417px 919.417px',
+    firefoxCI: '100.5px 908.75px 908.75px',
     webkit: '79.140625px 919.421875px 919.421875px',
     webkitCI: '102.796875px 907.59375px 907.59375px'
   });
@@ -341,23 +343,6 @@ async function testGridTemplateColumns(obj: {
         : import.meta.env.CI
           ? (obj.firefoxCI ?? obj.firefox)
           : obj.firefox;
-
-  const a = grid.element().style.gridTemplateColumns;
-  const b = window.getComputedStyle(grid.element()).gridTemplateColumns;
-  const c =
-    server.browser === 'firefox'
-      ? ''
-      : grid.element().computedStyleMap().get('grid-template-columns')?.toString();
-
-  // eslint-disable-next-line no-console
-  console.log(
-    server.browser,
-    gridTemplateColumns,
-    a === gridTemplateColumns,
-    b === gridTemplateColumns,
-    c === gridTemplateColumns,
-    { a, b, c }
-  );
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }
