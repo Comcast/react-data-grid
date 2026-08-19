@@ -40,7 +40,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps --no-shell
+        run: npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 4
 
       - name: Update screenshots
