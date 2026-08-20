@@ -46,7 +46,7 @@ jobs:
           Acquire::https::Timeout "10";
           EOF
           npx playwright install chromium firefox webkit --with-deps --no-shell
-        timeout-minutes: 4
+        timeout-minutes: 2
 
       - name: Test
         run: node --run test:ci
