@@ -694,6 +694,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
+      const { target } = event;
+
+      // ensure cell is fully visible
+      if (target instanceof HTMLElement) {
+        scrollIntoView(target.closest('.rdg-cell'));
+      }
+
       setActivePosition(({ idx, rowIdx }) => ({
         idx,
         rowIdx,

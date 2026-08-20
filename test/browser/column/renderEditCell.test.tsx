@@ -86,31 +86,26 @@ describe('Editor', () => {
     ]);
   });
 
-  it(
-    'should scroll to the editor if active cell is not in the viewport',
-    // TODO: make the test pass in webkit
-    { fails: server.browser === 'webkit' },
-    async () => {
-      const rows: Row[] = [];
-      for (let i = 0; i < 99; i++) {
-        rows.push({ col1: i, col2: `${i}` });
-      }
-
-      await page.render(<EditorTest gridRows={rows} />);
-      await userEvent.click(getCellsAtRowIndex(0).nth(0));
-      const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
-      await testCount(activeRowCells, 2);
-      scrollGrid({ top: 2001 });
-      await testCount(activeRowCells, 1);
-      await expect.element(col1Editor).not.toBeInTheDocument();
-      await expect.element(grid).toHaveProperty('scrollTop', 2001);
-      // TODO: await userEvent.keyboard('123'); fails in FF
-      await userEvent.keyboard('{enter}123');
-      await testCount(activeRowCells, 2);
-      await expect.element(col1Editor).toHaveValue(123);
-      await expect.element(grid).toHaveProperty('scrollTop', 0);
+  it('should scroll to the editor if active cell is not in the viewport', async () => {
+    const rows: Row[] = [];
+    for (let i = 0; i < 99; i++) {
+      rows.push({ col1: i, col2: `${i}` });
     }
-  );
+
+    await page.render(<EditorTest gridRows={rows} />);
+    await userEvent.click(getCellsAtRowIndex(0).nth(0));
+    const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
+    await testCount(activeRowCells, 2);
+    scrollGrid({ top: 2001 });
+    await testCount(activeRowCells, 1);
+    await expect.element(col1Editor).not.toBeInTheDocument();
+    await expect.element(grid).toHaveProperty('scrollTop', 2001);
+    // TODO: await userEvent.keyboard('123'); fails in FF
+    await userEvent.keyboard('{enter}123');
+    await testCount(activeRowCells, 2);
+    await expect.element(col1Editor).toHaveValue(123);
+    await expect.element(grid).toHaveProperty('scrollTop', 0);
+  });
 
   describe('editable', () => {
     it('should be editable if an editor is specified and editable is undefined/null', async () => {
