@@ -1959,15 +1959,17 @@ interface GroupRow<TRow> {
 A map of column widths.
 
 ```tsx
-type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
-
 interface ColumnWidth {
-  readonly type: 'resized' | 'measured';
+  readonly type: 'measured' | 'resized';
   readonly width: number;
 }
+
+type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
 ```
 
 Used with `columnWidths` and `onColumnWidthsChange` props to control column widths externally.
+
+`measured` widths are re-evaluated against the current column definitions, so they are only a cache. `resized` widths are intentional, and are preserved and clamped, including for columns that are not currently rendered.
 
 #### `Position`
 

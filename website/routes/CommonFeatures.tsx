@@ -62,7 +62,7 @@ interface SummaryRow {
 
 interface Row {
   id: number;
-  title: string;
+  task: string;
   client: string;
   area: string;
   country: string;
@@ -94,7 +94,7 @@ function getColumns(
       }
     },
     {
-      key: 'title',
+      key: 'task',
       name: 'Task',
       frozen: 'start',
       renderEditCell: renderTextEditor,
@@ -261,7 +261,7 @@ function createRows(): readonly Row[] {
 
     rows.push({
       id: i,
-      title: `Task #${i + 1}`,
+      task: `Task #${i + 1}`,
       client: faker.company.name(),
       area: faker.person.jobArea(),
       country,
@@ -288,7 +288,7 @@ type Comparator = (a: Row, b: Row) => number;
 function getComparator(sortColumn: string): Comparator {
   switch (sortColumn) {
     case 'assignee':
-    case 'title':
+    case 'task':
     case 'client':
     case 'area':
     case 'country':
