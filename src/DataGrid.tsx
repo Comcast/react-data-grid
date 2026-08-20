@@ -620,7 +620,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     if (!(target instanceof Element)) return;
 
-    const isCellEvent = target.closest('.rdg-cell') !== null;
+    const cell = target.closest('.rdg-cell');
+    const isCellEvent = cell !== null;
     const isRowEvent = isTreeGrid && target.role === 'row';
 
     if (!isCellEvent && !isRowEvent) return;
@@ -638,7 +639,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         navigate(event);
         break;
       default:
-        handleCellInput(event);
+        handleCellInput(event, cell);
         break;
     }
   }
@@ -678,7 +679,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     updateRow(column, activePosition.rowIdx, updatedRow);
   }
 
-  function handleCellInput(event: KeyboardEvent<HTMLDivElement>) {
+  function handleCellInput(event: KeyboardEvent<HTMLDivElement>, cell: Element | null) {
     if (!activePositionIsCellInViewport) return;
     const row = getActiveRow();
     const { key, shiftKey } = event;
@@ -694,12 +695,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
-      const { target } = event;
-
       // ensure cell is fully visible
-      if (target instanceof HTMLElement) {
-        scrollIntoView(target.closest('.rdg-cell'));
-      }
+      scrollIntoView(cell);
 
       setActivePosition(({ idx, rowIdx }) => ({
         idx,
