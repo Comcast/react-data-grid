@@ -44,9 +44,6 @@ jobs:
           Acquire::Retries "0";
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
-          Acquire::http::Dl-Limit "0";
-          Acquire::Languages "none";
-          APT::Install-Recommends "false";
           EOF
           npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 4
