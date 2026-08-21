@@ -58,7 +58,7 @@ copy(
       'markdown/no-empty-definitions': 1,
       'markdown/no-empty-images': 1,
       'markdown/no-empty-links': 1,
-      'markdown/no-html': [1, { allowed: ['br', 'kbd'] }],
+      'markdown/no-html': [1, { allowed: ['kbd'] }],
       'markdown/no-invalid-label-refs': 1,
       'markdown/no-missing-atx-heading-space': 1,
       'markdown/no-missing-label-refs': 1,
