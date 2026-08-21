@@ -11,4 +11,5 @@ npm-debug.log
 # Vitest
 /.vitest
 /coverage
+/test/**/__traces__
 /test/**/screenshots/**/*-win32.png
