@@ -7,8 +7,8 @@ npm ci                       # setup
 node --run build             # library → lib/
 node --run typecheck         # tsc --build
 node --run lint              # oxlint --max-warnings 0 --type-aware
-node --run lint:fix          # oxlint --fix
 node --run lint:md           # eslint --max-warnings 0 (markdown only)
+node --run lint:fix          # oxlint --fix && eslint --fix
 node --run format            # oxfmt
 node --run test              # vitest (browser + node)
 node --run test -- <path>    # single test, e.g. test/browser/rowHeight.test.ts
