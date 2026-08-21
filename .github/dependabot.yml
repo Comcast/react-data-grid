@@ -7,28 +7,54 @@ updates:
     schedule:
       interval: 'weekly'
     groups:
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@typescript/*'
+      build-tooling:
+        patterns:
+          - 'vite'
+          - '@vitejs/*'
+          - 'vitest'
+          - 'vitest-*'
+          - '@vitest/*'
+          - 'tsdown'
+          - '@tsdown/*'
+          - 'playwright'
+        exclude-patterns:
+          - '@vitest/eslint-plugin'
+      quality:
+        patterns:
+          - 'eslint'
+          - 'eslint-*'
+          - '@eslint/*'
+          - '@eslint-react/*'
+          - 'oxfmt'
+          - 'oxlint'
+          - 'oxlint-*'
       react:
         patterns:
           - 'react'
           - 'react-dom'
-      tanstack-router:
+          - '@types/react'
+          - '@types/react-dom'
+      tanstack:
         patterns:
-          - '@tanstack/react-router'
-          - '@tanstack/router-plugin'
-      tsdown:
+          - '@tanstack/*'
+      # everything else: single PR for minor/patch bumps,
+      # majors still land individually
+      dependencies:
         patterns:
-          - 'tsdown'
-          - '@tsdown/*'
-      oxlint:
-        patterns:
-          - 'oxlint'
-          - 'oxlint-tsgolint'
-      vitest:
-        patterns:
-          - 'vitest'
-          - '@vitest/*'
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'

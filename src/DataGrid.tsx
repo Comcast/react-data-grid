@@ -513,31 +513,28 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   /**
    * Misc hooks
    */
-  useImperativeHandle(
-    ref,
-    (): DataGridHandle => ({
-      element: gridRef.current,
-      scrollToCell({ idx, rowIdx }) {
-        // frozen columns are always visible — scrolling to them is a no-op
-        const scrollToIdx =
-          idx != null &&
-          idx > lastStartFrozenColumnIndex &&
-          (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
-          idx < columns.length
-            ? idx
-            : undefined;
-        const scrollToRowIdx =
-          rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
-            ? rowIdx + headerAndTopSummaryRowsCount
-            : undefined;
+  useImperativeHandle(ref, (): DataGridHandle => ({
+    element: gridRef.current,
+    scrollToCell({ idx, rowIdx }) {
+      // frozen columns are always visible — scrolling to them is a no-op
+      const scrollToIdx =
+        idx != null &&
+        idx > lastStartFrozenColumnIndex &&
+        (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
+        idx < columns.length
+          ? idx
+          : undefined;
+      const scrollToRowIdx =
+        rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
+          ? rowIdx + headerAndTopSummaryRowsCount
+          : undefined;
 
-        if (scrollToIdx != null || scrollToRowIdx != null) {
-          setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
-        }
-      },
-      setActivePosition: setPosition
-    })
-  );
+      if (scrollToIdx != null || scrollToRowIdx != null) {
+        setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
+      }
+    },
+    setActivePosition: setPosition
+  }));
 
   /**
    * event handlers
@@ -623,7 +620,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     if (!(target instanceof Element)) return;
 
-    const isCellEvent = target.closest('.rdg-cell') !== null;
+    const cell = target.closest('.rdg-cell');
+    const isCellEvent = cell !== null;
     const isRowEvent = isTreeGrid && target.role === 'row';
 
     if (!isCellEvent && !isRowEvent) return;
@@ -641,7 +639,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         navigate(event);
         break;
       default:
-        handleCellInput(event);
+        handleCellInput(event, cell);
         break;
     }
   }
@@ -681,7 +679,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     updateRow(column, activePosition.rowIdx, updatedRow);
   }
 
-  function handleCellInput(event: KeyboardEvent<HTMLDivElement>) {
+  function handleCellInput(event: KeyboardEvent<HTMLDivElement>, cell: Element | null) {
     if (!activePositionIsCellInViewport) return;
     const row = getActiveRow();
     const { key, shiftKey } = event;
@@ -697,6 +695,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
+      // ensure cell is fully visible
+      scrollIntoView(cell);
+
       setActivePosition(({ idx, rowIdx }) => ({
         idx,
         rowIdx,

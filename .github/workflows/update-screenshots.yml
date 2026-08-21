@@ -38,8 +38,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
       - name: Install Playwright Browsers
-        run: npx playwright install chromium firefox
+        run: |
+          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
+          Acquire::Retries "0";
+          Acquire::http::Timeout "10";
+          Acquire::https::Timeout "10";
+          EOF
+          npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 2
 
       - name: Update screenshots
