@@ -8,8 +8,7 @@
     "denyWarnings": true,
     "reportUnusedDisableDirectives": "warn",
     "respectEslintDisableDirectives": false,
-    // TODO
-    "typeAware": false,
+    "typeAware": true,
     // TODO
     "typeCheck": false
   },

@@ -62,6 +62,7 @@ export function isDefaultCellInput(
   event: React.KeyboardEvent<HTMLDivElement>,
   isUserHandlingPaste: boolean
 ): boolean {
+  // oxlint-disable-next-line typescript/no-deprecated
   if (isCtrlKeyHeldDown(event) && (event.keyCode !== vKey || isUserHandlingPaste)) return false;
   return !nonInputKeys.has(event.key);
 }

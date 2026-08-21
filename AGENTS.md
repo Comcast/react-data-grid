@@ -6,7 +6,7 @@
 npm ci                       # setup
 node --run build             # library → lib/
 node --run typecheck         # tsc --build
-node --run lint              # oxlint --max-warnings 0 --type-aware
+node --run lint              # oxlint
 node --run lint:md           # eslint --max-warnings 0 (markdown only)
 node --run lint:fix          # oxlint --fix && eslint --fix
 node --run format            # oxfmt
