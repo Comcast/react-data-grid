@@ -9,8 +9,7 @@
     "reportUnusedDisableDirectives": "warn",
     "respectEslintDisableDirectives": false,
     "typeAware": true,
-    // TODO
-    "typeCheck": false
+    "typeCheck": true
   },
   "env": {
     "builtin": true

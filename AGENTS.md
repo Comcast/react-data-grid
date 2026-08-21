@@ -5,7 +5,6 @@
 ```shell
 npm ci                       # setup
 node --run build             # library → lib/
-node --run typecheck         # tsc --build
 node --run lint              # oxlint
 node --run lint:md           # eslint --max-warnings 0 (markdown only)
 node --run lint:fix          # oxlint --fix && eslint --fix
@@ -60,4 +59,4 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `node --run typecheck`, `node --run lint`, `node --run format`, `node --run test`.
+Run before submitting changes: `node --run lint`, `node --run format`, `node --run test`.
