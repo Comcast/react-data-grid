@@ -26,13 +26,15 @@ jobs:
       - name: Oxlint
         run: node --run lint
 
-      - name: ESLint (markdown)
-        run: node --run lint:md
+      - name: Lint
+        run: |
+          node --run lint
+          node --run lint:md
 
-      - name: Oxfmt
+      - name: Format
         run: node --run format:check
 
-      - name: Bundle
+      - name: Build lib
         run: node --run build
 
       - name: Build website
