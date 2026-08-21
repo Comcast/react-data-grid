@@ -23,9 +23,6 @@ jobs:
       - name: Typecheck
         run: node --run typecheck
 
-      - name: Oxlint
-        run: node --run lint
-
       - name: Lint
         run: |
           node --run lint
