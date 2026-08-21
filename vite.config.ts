@@ -31,12 +31,21 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
 };
 
 // TODO: remove when `userEvent.pointer` is supported
-const dragFill: BrowserCommand<[from: string, to: string]> = async ({ page, iframe }, from, to) => {
+const dragFill: BrowserCommand<[from: string, to: string]> = async (
+  { page, iframe, project },
+  from,
+  to
+) => {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  const toCell = iframe.getByRole('gridcell', { name: to, exact: true });
-  await toCell.hover();
+  await iframe.getByRole('gridcell', { name: to, exact: true }).hover();
+  if (project.name.includes('webkit')) {
+    // let React re-render after handleDragHandlePointerMove calls setDraggedOverRowIdx()
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+  }
   await page.mouse.up();
 };
 
@@ -169,6 +178,10 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
           }),
           // TODO: remove when FF tests are stable
           fileParallelism: false
+        },
+        {
+          browser: 'webkit',
+          provider: playwright(playwrightOptions)
         }
       ]
     },
