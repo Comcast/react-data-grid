@@ -13,8 +13,6 @@
   // ESLint is only used for markdown; JS/TS is linted by the oxc extension
   "eslint.validate": ["markdown"],
   "eslint.problems.shortenToSingleLine": true,
-  "oxc.typeAware": true,
-  "oxc.unusedDisableDirectives": "warn",
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },

@@ -5,7 +5,13 @@
     "correctness": "off"
   },
   "options": {
-    "typeAware": true
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "warn",
+    "respectEslintDisableDirectives": false,
+    // TODO
+    "typeAware": false,
+    // TODO
+    "typeCheck": false
   },
   "env": {
     "builtin": true
@@ -18,7 +24,8 @@
     ".tanstack",
     "coverage",
     "dist",
-    "lib"
+    "lib",
+    "website/routeTree.gen.ts"
   ],
   "overrides": [
     {

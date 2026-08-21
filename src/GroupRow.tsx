@@ -82,7 +82,7 @@ function GroupedRow<R, SR>({
           .map(([column, isCellActive], index) => {
             // Select is always the first column
             if (index === 0 && column.key === SELECT_COLUMN_KEY) {
-              // eslint-disable-next-line @eslint-react/immutability
+              // oxlint-disable-next-line @eslint-react/immutability
               idx += 1;
             }
 
@@ -93,9 +93,9 @@ function GroupedRow<R, SR>({
                 groupKey={row.groupKey}
                 childRows={row.childRows}
                 isExpanded={row.isExpanded}
-                // eslint-disable-next-line @eslint-react/immutability
+                // oxlint-disable-next-line @eslint-react/immutability
                 isCellActive={isCellActive}
-                // eslint-disable-next-line @eslint-react/immutability
+                // oxlint-disable-next-line @eslint-react/immutability
                 column={column}
                 row={row}
                 groupColumnIndex={idx}
