@@ -33,303 +33,285 @@
     "website/routeTree.gen.ts"
   ],
 
+  // https://oxc.rs/docs/guide/usage/linter/rules.html
+  /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select all rule links
+      .querySelectorAll('table :any-link')
+  )
+    // map link to rule declaration
+    .map((link) => {
+      const [group, rule] = link.pathname.split('/').slice(-2);
+      return `"${group}/${rule}": "warn",`;
+    })
+    .toArray()
+    .sort()
+    .join('\n')
+);
+  */
   "rules": {
-    "array-callback-return": [
+    "eslint/array-callback-return": ["warn", { "checkForEach": true }],
+    "eslint/constructor-super": "off",
+    "eslint/for-direction": "warn",
+    "eslint/getter-return": "warn",
+    "eslint/no-async-promise-executor": "warn",
+    "eslint/no-await-in-loop": "off",
+    "eslint/no-class-assign": "off",
+    "eslint/no-compare-neg-zero": "warn",
+    "eslint/no-cond-assign": "warn",
+    "eslint/no-const-assign": "off",
+    "eslint/no-constant-binary-expression": "warn",
+    "eslint/no-constant-condition": "warn",
+    "eslint/no-constructor-return": "warn",
+    "eslint/no-control-regex": "warn",
+    "eslint/no-debugger": "warn",
+    "eslint/no-dupe-class-members": "off",
+    "eslint/no-dupe-else-if": "warn",
+    "eslint/no-dupe-keys": "warn",
+    "eslint/no-duplicate-case": "warn",
+    "eslint/no-duplicate-imports": "off",
+    "eslint/no-empty-character-class": "warn",
+    "eslint/no-empty-pattern": "warn",
+    "eslint/no-ex-assign": "warn",
+    "eslint/no-fallthrough": ["warn", { "reportUnusedFallthroughComment": true }],
+    "eslint/no-func-assign": "warn",
+    "eslint/no-import-assign": "warn",
+    "eslint/no-inner-declarations": "off",
+    "eslint/no-invalid-regexp": "warn",
+    "eslint/no-irregular-whitespace": "warn",
+    "eslint/no-loss-of-precision": "warn",
+    "eslint/no-misleading-character-class": "warn",
+    "eslint/no-new-native-nonconstructor": "warn",
+    "eslint/no-obj-calls": "warn",
+    "eslint/no-promise-executor-return": "warn",
+    "eslint/no-prototype-builtins": "warn",
+    "eslint/no-self-assign": "warn",
+    "eslint/no-self-compare": "warn",
+    "eslint/no-setter-return": "warn",
+    "eslint/no-sparse-arrays": "warn",
+    "eslint/no-template-curly-in-string": "warn",
+    "eslint/no-this-before-super": "off",
+    "eslint/no-unassigned-vars": "warn",
+    "eslint/no-undef": "off",
+    "eslint/no-unexpected-multiline": "off",
+    "eslint/no-unmodified-loop-condition": "warn",
+    "eslint/no-unreachable": "warn",
+    "eslint/no-unreachable-loop": "warn",
+    "eslint/no-unsafe-finally": "warn",
+    "eslint/no-unsafe-negation": ["warn", { "enforceForOrderingRelations": true }],
+    "eslint/no-unsafe-optional-chaining": ["warn", { "disallowArithmeticOperators": true }],
+    "eslint/no-unused-private-class-members": "off",
+    "eslint/no-unused-vars": [
       "warn",
       {
-        "checkForEach": true
-      }
-    ],
-    "constructor-super": "off",
-    "for-direction": "warn",
-    "getter-return": "warn",
-    "no-async-promise-executor": "warn",
-    "no-await-in-loop": "off",
-    "no-class-assign": "off",
-    "no-compare-neg-zero": "warn",
-    "no-cond-assign": "warn",
-    "no-const-assign": "off",
-    "no-constant-binary-expression": "warn",
-    "no-constant-condition": "warn",
-    "no-constructor-return": "warn",
-    "no-control-regex": "warn",
-    "no-debugger": "warn",
-    "no-dupe-class-members": "off",
-    "no-dupe-else-if": "warn",
-    "no-dupe-keys": "warn",
-    "no-duplicate-case": "warn",
-    "no-duplicate-imports": "off",
-    "no-empty-character-class": "warn",
-    "no-empty-pattern": "warn",
-    "no-ex-assign": "warn",
-    "no-fallthrough": [
-      "warn",
-      {
-        "reportUnusedFallthroughComment": true
-      }
-    ],
-    "no-func-assign": "warn",
-    "no-import-assign": "warn",
-    "no-inner-declarations": "off",
-    "no-invalid-regexp": "warn",
-    "no-irregular-whitespace": "warn",
-    "no-loss-of-precision": "warn",
-    "no-misleading-character-class": "warn",
-    "no-new-native-nonconstructor": "warn",
-    "no-obj-calls": "warn",
-    "no-promise-executor-return": "warn",
-    "no-prototype-builtins": "warn",
-    "no-self-assign": [
-      "warn",
-      {
-        "props": true
-      }
-    ],
-    "no-self-compare": "warn",
-    "no-setter-return": "warn",
-    "no-sparse-arrays": "warn",
-    "no-template-curly-in-string": "warn",
-    "no-this-before-super": "off",
-    "no-unassigned-vars": "warn",
-    "no-undef": "off",
-    "no-unexpected-multiline": "off",
-    "no-unmodified-loop-condition": "warn",
-    "no-unreachable": "warn",
-    "no-unreachable-loop": "warn",
-    "no-unsafe-finally": "warn",
-    "no-unsafe-negation": [
-      "warn",
-      {
-        "enforceForOrderingRelations": true
-      }
-    ],
-    "no-unsafe-optional-chaining": [
-      "warn",
-      {
-        "disallowArithmeticOperators": true
-      }
-    ],
-    "no-unused-private-class-members": "off",
-    "no-unused-vars": [
-      "warn",
-      {
-        "enableAutofixRemoval": {
-          "imports": true
-        },
+        "fix": { "imports": "safe-fix" },
         "ignoreRestSiblings": true
       }
     ],
-    "no-use-before-define": "off",
-    "no-useless-backreference": "warn",
-    "use-isnan": [
-      "warn",
-      {
-        "enforceForIndexOf": true
-      }
-    ],
-    "valid-typeof": [
-      "warn",
-      {
-        "requireStringLiterals": true
-      }
-    ],
-    "accessor-pairs": "warn",
-    "arrow-body-style": "off",
-    "block-scoped-var": "warn",
-    "capitalized-comments": "off",
-    "class-methods-use-this": "warn",
-    "complexity": "off",
-    "curly": "off",
-    "default-case": "warn",
-    "default-case-last": "warn",
-    "default-param-last": "off",
-    "eqeqeq": [
+    "eslint/no-use-before-define": "off",
+    "eslint/no-useless-backreference": "warn",
+    "eslint/use-isnan": ["warn", { "enforceForIndexOf": true }],
+    "eslint/valid-typeof": ["warn", { "requireStringLiterals": true }],
+    "eslint/accessor-pairs": "warn",
+    "eslint/arrow-body-style": "off",
+    "eslint/block-scoped-var": "warn",
+    "eslint/capitalized-comments": "off",
+    "eslint/class-methods-use-this": "warn",
+    "eslint/complexity": "off",
+    "eslint/curly": "off",
+    "eslint/default-case": "warn",
+    "eslint/default-case-last": "warn",
+    "eslint/default-param-last": "off",
+    "eslint/eqeqeq": [
       "warn",
       "always",
       {
         "null": "ignore"
       }
     ],
-    "func-name-matching": "off",
-    "func-names": "off",
-    "func-style": "off",
-    "grouped-accessor-pairs": ["warn", "getBeforeSet"],
-    "guard-for-in": "off",
-    "id-denylist": "off",
-    "id-length": "off",
-    "id-match": "off",
-    "init-declarations": "off",
-    "logical-assignment-operators": [
+    "eslint/func-name-matching": "off",
+    "eslint/func-names": "off",
+    "eslint/func-style": "off",
+    "eslint/grouped-accessor-pairs": ["warn", "getBeforeSet"],
+    "eslint/guard-for-in": "off",
+    "eslint/id-denylist": "off",
+    "eslint/id-length": "off",
+    "eslint/id-match": "off",
+    "eslint/init-declarations": "off",
+    "eslint/logical-assignment-operators": [
       "warn",
       "always",
       {
         "enforceForIfStatements": true
       }
     ],
-    "max-classes-per-file": "off",
-    "max-depth": "off",
-    "max-lines": "off",
-    "max-lines-per-function": "off",
-    "max-nested-callbacks": "off",
-    "max-params": "off",
-    "max-statements": "off",
-    "new-cap": "off",
-    "no-alert": "off",
-    "no-array-constructor": "warn",
-    "no-bitwise": "off",
-    "no-caller": "warn",
-    "no-case-declarations": "warn",
-    "no-console": "warn",
-    "no-continue": "off",
-    "no-delete-var": "warn",
-    "no-div-regex": "off",
-    "no-else-return": [
+    "eslint/max-classes-per-file": "off",
+    "eslint/max-depth": "off",
+    "eslint/max-lines": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-nested-callbacks": "off",
+    "eslint/max-params": "off",
+    "eslint/max-statements": "off",
+    "eslint/new-cap": "off",
+    "eslint/no-alert": "off",
+    "eslint/no-array-constructor": "warn",
+    "eslint/no-bitwise": "off",
+    "eslint/no-caller": "warn",
+    "eslint/no-case-declarations": "warn",
+    "eslint/no-console": "warn",
+    "eslint/no-continue": "off",
+    "eslint/no-delete-var": "warn",
+    "eslint/no-div-regex": "off",
+    "eslint/no-else-return": [
       "warn",
       {
         "allowElseIf": false
       }
     ],
-    "no-empty": [
+    "eslint/no-empty": [
       "warn",
       {
         "allowEmptyCatch": true
       }
     ],
-    "no-empty-function": "off",
-    "no-empty-static-block": "warn",
-    "no-eq-null": "off",
-    "no-eval": "warn",
-    "no-extend-native": "warn",
-    "no-extra-bind": "warn",
-    "no-extra-boolean-cast": [
+    "eslint/no-empty-function": "off",
+    "eslint/no-empty-static-block": "warn",
+    "eslint/no-eq-null": "off",
+    "eslint/no-eval": "warn",
+    "eslint/no-extend-native": "warn",
+    "eslint/no-extra-bind": "warn",
+    "eslint/no-extra-boolean-cast": [
       "warn",
       {
         "enforceForLogicalOperands": true
       }
     ],
-    "no-extra-label": "warn",
-    "no-global-assign": "warn",
-    "no-implicit-coercion": "off",
-    "no-implicit-globals": "off",
-    "no-implied-eval": "off",
-    "no-inline-comments": "off",
-    "no-iterator": "warn",
-    "no-label-var": "warn",
-    "no-labels": "warn",
-    "no-lone-blocks": "warn",
-    "no-lonely-if": "warn",
-    "no-loop-func": "off",
-    "no-magic-numbers": "off",
-    "no-multi-assign": "off",
-    "no-multi-str": "warn",
-    "no-negated-condition": "off",
-    "no-nested-ternary": "off",
-    "no-new": "warn",
-    "no-new-func": "warn",
-    "no-new-wrappers": "warn",
-    "no-nonoctal-decimal-escape": "warn",
-    "no-object-constructor": "warn",
-    "no-param-reassign": "off",
-    "no-plusplus": "off",
-    "no-proto": "warn",
-    "no-redeclare": "warn",
-    "no-regex-spaces": "warn",
-    "no-restricted-exports": "off",
-    "no-restricted-globals": [
+    "eslint/no-extra-label": "warn",
+    "eslint/no-global-assign": "warn",
+    "eslint/no-implicit-coercion": "off",
+    "eslint/no-implicit-globals": "off",
+    "eslint/no-implied-eval": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/no-iterator": "warn",
+    "eslint/no-label-var": "warn",
+    "eslint/no-labels": "warn",
+    "eslint/no-lone-blocks": "warn",
+    "eslint/no-lonely-if": "warn",
+    "eslint/no-loop-func": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/no-multi-assign": "off",
+    "eslint/no-multi-str": "warn",
+    "eslint/no-negated-condition": "off",
+    "eslint/no-nested-ternary": "off",
+    "eslint/no-new": "warn",
+    "eslint/no-new-func": "warn",
+    "eslint/no-new-wrappers": "warn",
+    "eslint/no-nonoctal-decimal-escape": "warn",
+    "eslint/no-object-constructor": "warn",
+    "eslint/no-param-reassign": "off",
+    "eslint/no-plusplus": "off",
+    "eslint/no-proto": "warn",
+    "eslint/no-redeclare": "warn",
+    "eslint/no-regex-spaces": "warn",
+    "eslint/no-restricted-exports": "off",
+    "eslint/no-restricted-globals": [
       "warn",
       {
         "name": "Omit",
         "message": "Use Omit from types instead."
       }
     ],
-    "no-restricted-imports": "off",
-    "no-restricted-properties": "off",
-    "no-return-assign": "off",
-    "no-script-url": "warn",
-    "no-sequences": [
+    "eslint/no-restricted-imports": "off",
+    "eslint/no-restricted-properties": "off",
+    "eslint/no-return-assign": "off",
+    "eslint/no-script-url": "warn",
+    "eslint/no-sequences": [
       "warn",
       {
         "allowInParentheses": false
       }
     ],
-    "no-shadow": "off",
-    "no-shadow-restricted-names": "warn",
-    "no-ternary": "off",
-    "no-throw-literal": "off",
-    "no-undefined": "off",
-    "no-underscore-dangle": "off",
-    "no-unneeded-ternary": [
+    "eslint/no-shadow": "off",
+    "eslint/no-shadow-restricted-names": "warn",
+    "eslint/no-ternary": "off",
+    "eslint/no-throw-literal": "off",
+    "eslint/no-undefined": "off",
+    "eslint/no-underscore-dangle": "off",
+    "eslint/no-unneeded-ternary": [
       "warn",
       {
         "defaultAssignment": false
       }
     ],
-    "no-unused-expressions": [
+    "eslint/no-unused-expressions": [
       "warn",
       {
         "enforceForJSX": true
       }
     ],
-    "no-unused-labels": "warn",
-    "no-useless-call": "warn",
-    "no-useless-catch": "warn",
-    "no-useless-computed-key": "warn",
-    "no-useless-concat": "warn",
-    "no-useless-constructor": "warn",
-    "no-useless-escape": "warn",
-    "no-useless-rename": "warn",
-    "no-useless-return": "warn",
-    "no-var": "warn",
-    "no-void": "warn",
-    "no-warning-comments": "off",
-    "no-with": "warn",
-    "object-shorthand": [
+    "eslint/no-unused-labels": "warn",
+    "eslint/no-useless-call": "warn",
+    "eslint/no-useless-catch": "warn",
+    "eslint/no-useless-computed-key": "warn",
+    "eslint/no-useless-concat": "warn",
+    "eslint/no-useless-constructor": "warn",
+    "eslint/no-useless-escape": "warn",
+    "eslint/no-useless-rename": "warn",
+    "eslint/no-useless-return": "warn",
+    "eslint/no-var": "warn",
+    "eslint/no-void": "warn",
+    "eslint/no-warning-comments": "off",
+    "eslint/no-with": "warn",
+    "eslint/object-shorthand": [
       "warn",
       "always",
       {
         "avoidExplicitReturnArrows": true
       }
     ],
-    "operator-assignment": "warn",
-    "prefer-arrow-callback": [
+    "eslint/operator-assignment": "warn",
+    "eslint/prefer-arrow-callback": [
       "warn",
       {
         "allowNamedFunctions": true
       }
     ],
-    "prefer-const": [
+    "eslint/prefer-const": [
       "warn",
       {
         "destructuring": "all"
       }
     ],
-    "prefer-destructuring": "off",
-    "prefer-exponentiation-operator": "warn",
-    "prefer-named-capture-group": "off",
-    "prefer-numeric-literals": "warn",
-    "prefer-object-has-own": "warn",
-    "prefer-object-spread": "warn",
-    "prefer-promise-reject-errors": "off",
-    "prefer-regex-literals": [
+    "eslint/prefer-destructuring": "off",
+    "eslint/prefer-exponentiation-operator": "warn",
+    "eslint/prefer-named-capture-group": "off",
+    "eslint/prefer-numeric-literals": "warn",
+    "eslint/prefer-object-has-own": "warn",
+    "eslint/prefer-object-spread": "warn",
+    "eslint/prefer-promise-reject-errors": "off",
+    "eslint/prefer-regex-literals": [
       "warn",
       {
         "disallowRedundantWrapping": true
       }
     ],
-    "prefer-rest-params": "warn",
-    "prefer-spread": "warn",
-    "prefer-template": "warn",
-    "preserve-caught-error": "warn",
-    "radix": "warn",
-    "require-await": "off",
-    "require-unicode-regexp": "off",
-    "require-yield": "warn",
-    "sort-keys": "off",
-    "sort-vars": "off",
-    "symbol-description": "warn",
-    "vars-on-top": "off",
-    "yoda": "off",
-    "unicode-bom": "warn",
+    "eslint/prefer-rest-params": "warn",
+    "eslint/prefer-spread": "warn",
+    "eslint/prefer-template": "warn",
+    "eslint/preserve-caught-error": "warn",
+    "eslint/radix": "warn",
+    "eslint/require-await": "off",
+    "eslint/require-unicode-regexp": "off",
+    "eslint/require-yield": "warn",
+    "eslint/sort-keys": "off",
+    "eslint/sort-vars": "off",
+    "eslint/symbol-description": "warn",
+    "eslint/vars-on-top": "off",
+    "eslint/yoda": "off",
+    "eslint/unicode-bom": "warn",
     "@eslint-react/error-boundaries": "warn",
     "@eslint-react/exhaustive-deps": "warn",
     "@eslint-react/globals": "warn",
@@ -702,11 +684,12 @@
         "typescript/no-floating-promises": "warn"
       }
     },
+
     {
       "files": ["test/failOnConsole.ts"],
 
       "rules": {
-        "no-console": "off"
+        "eslint/no-console": "off"
       }
     }
   ]
