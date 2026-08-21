@@ -1,8 +1,6 @@
 import markdown from '@eslint/markdown';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
-// ESLint is only kept for markdown linting. Everything else has moved to oxlint (`.oxlintrc.json`).
-// `@eslint/markdown` is built on ESLint's language plugin API, which oxlint does not support.
 export default defineConfig([
   globalIgnores([
     '.cache',

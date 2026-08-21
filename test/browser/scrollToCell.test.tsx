@@ -118,7 +118,6 @@ function validateCellVisibility(name: string, isVisible: boolean) {
   const cell = page.getCell({ name });
 
   if (isVisible) {
-    // this helper is not a test block, but oxlint's implementation flags it anyway
     // oxlint-disable-next-line vitest/no-conditional-expect
     return expect.element(cell).toBeVisible();
   }

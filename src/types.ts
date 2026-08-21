@@ -358,8 +358,6 @@ export interface RenderCheckboxProps extends Pick<
   React.ComponentProps<'input'>,
   'aria-label' | 'aria-labelledby' | 'checked' | 'tabIndex' | 'disabled'
 > {
-  // `| undefined` is required by `exactOptionalPropertyTypes`, which oxlint's JS plugins cannot see
-  // oxlint-disable-next-line sonarjs/no-redundant-optional
   indeterminate?: boolean | undefined;
   onChange: (checked: boolean, shift: boolean) => void;
 }
