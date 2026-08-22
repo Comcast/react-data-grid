@@ -154,7 +154,7 @@ function RowGrouping() {
   ]);
   const [expandedGroupIds, setExpandedGroupIds] = useState(
     (): ReadonlySet<unknown> =>
-      new Set<unknown>(['United States of America', 'United States of America__2015'])
+      new Set(['United States of America', 'United States of America__2015'])
   );
 
   function toggleOption(option: string, enabled: boolean) {

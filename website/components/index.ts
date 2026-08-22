@@ -1,3 +1,3 @@
-export * from './CellExpanderFormatter';
+export * from './CellExpander';
 export * from './ChildRowDeleteButton';
-export * from './DraggableRowRenderer';
+export * from './DraggableRow';

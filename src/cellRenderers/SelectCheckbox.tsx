@@ -6,11 +6,11 @@ type SharedInputProps = Pick<
   'disabled' | 'tabIndex' | 'aria-label' | 'aria-labelledby' | 'indeterminate' | 'onChange'
 >;
 
-interface SelectCellFormatterProps extends SharedInputProps {
+interface SelectCheckboxProps extends SharedInputProps {
   value: boolean;
 }
 
-export function SelectCellFormatter({
+export function SelectCheckbox({
   value,
   tabIndex,
   indeterminate,
@@ -18,7 +18,7 @@ export function SelectCellFormatter({
   onChange,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy
-}: SelectCellFormatterProps) {
+}: SelectCheckboxProps) {
   const renderCheckbox = useDefaultRenderers()!.renderCheckbox!;
 
   return renderCheckbox({

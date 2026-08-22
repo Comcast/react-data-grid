@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -96,17 +96,15 @@ function loadMoreRows(newRowsCount: number, length: number): Promise<Row[]> {
 function InfiniteScrolling() {
   const direction = useDirection();
   const [rows, setRows] = useState(() => createRows(50));
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleScroll(event: React.UIEvent<HTMLDivElement>) {
-    if (isLoading || !isAtBottom(event)) return;
+  function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+    if (isPending || !isAtBottom(event)) return;
 
-    setIsLoading(true);
-
-    const newRows = await loadMoreRows(50, rows.length);
-
-    setRows([...rows, ...newRows]);
-    setIsLoading(false);
+    startTransition(async () => {
+      const newRows = await loadMoreRows(50, rows.length);
+      setRows([...rows, ...newRows]);
+    });
   }
 
   return (
@@ -122,7 +120,7 @@ function InfiniteScrolling() {
         className="fill-grid"
         direction={direction}
       />
-      {isLoading && <div className={loadMoreRowsClassname}>Loading more rows...</div>}
+      {isPending && <div className={loadMoreRowsClassname}>Loading more rows...</div>}
     </>
   );
 }
