@@ -29,8 +29,6 @@ updates:
           - 'eslint-*'
           - '@eslint/*'
           - '@eslint-react/*'
-          - 'typescript-eslint'
-          - '@vitest/eslint-plugin'
           - 'oxfmt'
           - 'oxlint'
           - 'oxlint-*'

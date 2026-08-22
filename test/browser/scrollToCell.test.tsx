@@ -118,6 +118,7 @@ function validateCellVisibility(name: string, isVisible: boolean) {
   const cell = page.getCell({ name });
 
   if (isVisible) {
+    // oxlint-disable-next-line vitest/no-conditional-expect
     return expect.element(cell).toBeVisible();
   }
 
