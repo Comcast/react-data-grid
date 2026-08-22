@@ -36,12 +36,12 @@
   // https://oxc.rs/docs/guide/usage/linter/rules.html
   /*
 // copy all the rules from the rules table for easy pasting
-const groups = new Set(['eslint', 'oxc', 'react', 'typescript']);
+const groups = new Set(['eslint', 'oxc', 'react', 'typescript', 'vitest']);
 copy(
-  Iterator.from(document.querySelectorAll('tr'))
+  Iterator.from(document.querySelectorAll('tbody tr'))
     .map((row) => [
       row.children[1].textContent,
-      row.querySelector(':any-link').textContent,
+      row.querySelector(':any-link').textContent
     ])
     .filter(([group]) => groups.has(group))
     .map(([group, rule]) => `"${group}/${rule}": "warn",`)
@@ -60,8 +60,8 @@ copy(
     "eslint/complexity": "off",
     "eslint/constructor-super": "off",
     "eslint/curly": "off",
-    "eslint/default-case-last": "warn",
     "eslint/default-case": "warn",
+    "eslint/default-case-last": "warn",
     "eslint/default-param-last": "off",
     "eslint/eqeqeq": ["warn", "always", { "null": "ignore" }],
     "eslint/for-direction": "warn",
@@ -78,8 +78,8 @@ copy(
     "eslint/logical-assignment-operators": ["warn", "always", { "enforceForIfStatements": true }],
     "eslint/max-classes-per-file": "off",
     "eslint/max-depth": "off",
-    "eslint/max-lines-per-function": "off",
     "eslint/max-lines": "off",
+    "eslint/max-lines-per-function": "off",
     "eslint/max-nested-callbacks": "off",
     "eslint/max-params": "off",
     "eslint/max-statements": "off",
@@ -110,11 +110,11 @@ copy(
     "eslint/no-duplicate-case": "warn",
     "eslint/no-duplicate-imports": "off",
     "eslint/no-else-return": ["warn", { "allowElseIf": false }],
+    "eslint/no-empty": ["warn", { "allowEmptyCatch": true }],
     "eslint/no-empty-character-class": "warn",
     "eslint/no-empty-function": "off",
     "eslint/no-empty-pattern": "warn",
     "eslint/no-empty-static-block": "warn",
-    "eslint/no-empty": ["warn", { "allowEmptyCatch": true }],
     "eslint/no-eq-null": "off",
     "eslint/no-eval": "warn",
     "eslint/no-ex-assign": "warn",
@@ -146,10 +146,10 @@ copy(
     "eslint/no-multi-str": "warn",
     "eslint/no-negated-condition": "off",
     "eslint/no-nested-ternary": "off",
+    "eslint/no-new": "warn",
     "eslint/no-new-func": "warn",
     "eslint/no-new-native-nonconstructor": "warn",
     "eslint/no-new-wrappers": "warn",
-    "eslint/no-new": "warn",
     "eslint/no-nonoctal-decimal-escape": "warn",
     "eslint/no-obj-calls": "warn",
     "eslint/no-object-constructor": "warn",
@@ -173,8 +173,8 @@ copy(
     "eslint/no-self-compare": "warn",
     "eslint/no-sequences": ["warn", { "allowInParentheses": false }],
     "eslint/no-setter-return": "warn",
-    "eslint/no-shadow-restricted-names": "warn",
     "eslint/no-shadow": "off",
+    "eslint/no-shadow-restricted-names": "warn",
     "eslint/no-sparse-arrays": "warn",
     "eslint/no-template-curly-in-string": "warn",
     "eslint/no-ternary": "off",
@@ -187,8 +187,8 @@ copy(
     "eslint/no-unexpected-multiline": "off",
     "eslint/no-unmodified-loop-condition": "warn",
     "eslint/no-unneeded-ternary": ["warn", { "defaultAssignment": false }],
-    "eslint/no-unreachable-loop": "warn",
     "eslint/no-unreachable": "warn",
+    "eslint/no-unreachable-loop": "warn",
     "eslint/no-unsafe-finally": "warn",
     "eslint/no-unsafe-negation": ["warn", { "enforceForOrderingRelations": true }],
     "eslint/no-unsafe-optional-chaining": ["warn", { "disallowArithmeticOperators": true }],
@@ -200,6 +200,7 @@ copy(
       { "fix": { "imports": "safe-fix" }, "ignoreRestSiblings": true }
     ],
     "eslint/no-use-before-define": "off",
+    "eslint/no-useless-assignment": "warn",
     "eslint/no-useless-backreference": "warn",
     "eslint/no-useless-call": "warn",
     "eslint/no-useless-catch": "warn",
@@ -214,8 +215,9 @@ copy(
     "eslint/no-warning-comments": "off",
     "eslint/no-with": "warn",
     "eslint/object-shorthand": ["warn", "always", { "avoidExplicitReturnArrows": true }],
+    "eslint/one-var": ["warn", "never"],
     "eslint/operator-assignment": "warn",
-    "eslint/prefer-arrow-callback": ["warn", { "allowNamedFunctions": true }],
+    "eslint/prefer-arrow-callback": "warn",
     "eslint/prefer-const": ["warn", { "destructuring": "all" }],
     "eslint/prefer-destructuring": "off",
     "eslint/prefer-exponentiation-operator": "warn",
@@ -233,6 +235,7 @@ copy(
     "eslint/require-await": "off",
     "eslint/require-unicode-regexp": "off",
     "eslint/require-yield": "warn",
+    "eslint/sort-imports": "off",
     "eslint/sort-keys": "off",
     "eslint/sort-vars": "off",
     "eslint/symbol-description": "warn",
@@ -248,6 +251,7 @@ copy(
     "typescript/await-thenable": "warn",
     "typescript/ban-ts-comment": ["warn", { "ts-expect-error": false }],
     "typescript/ban-tslint-comment": "off",
+    "typescript/ban-types": "off",
     "typescript/class-literal-property-style": "off",
     "typescript/consistent-generic-constructors": "warn",
     "typescript/consistent-indexed-object-style": "warn",
@@ -273,14 +277,12 @@ copy(
     "typescript/no-array-delete": "warn",
     "typescript/no-base-to-string": "off",
     "typescript/no-confusing-non-null-assertion": "off",
-    "typescript/no-confusing-void-expression": [
-      "warn",
-      { "ignoreArrowShorthand": true, "ignoreVoidReturningFunctions": true }
-    ],
+    "typescript/no-confusing-void-expression": ["warn", { "ignoreArrowShorthand": true }],
     "typescript/no-deprecated": "warn",
     "typescript/no-duplicate-enum-values": "warn",
     "typescript/no-duplicate-type-constituents": "warn",
     "typescript/no-dynamic-delete": "off",
+    "typescript/no-empty-interface": "off",
     "typescript/no-empty-object-type": "warn",
     "typescript/no-explicit-any": ["warn", { "fixToUnknown": true }],
     "typescript/no-extra-non-null-assertion": "warn",
@@ -307,7 +309,10 @@ copy(
     "typescript/no-unnecessary-boolean-literal-compare": "warn",
     "typescript/no-unnecessary-condition": [
       "warn",
-      { "allowConstantLoopConditions": "only-allowed-literals", "checkTypePredicates": true }
+      {
+        "allowConstantLoopConditions": "only-allowed-literals",
+        "checkTypePredicates": true
+      }
     ],
     "typescript/no-unnecessary-parameter-property-assignment": "warn",
     "typescript/no-unnecessary-qualifier": "off",
@@ -329,6 +334,7 @@ copy(
     "typescript/no-unsafe-unary-minus": "warn",
     "typescript/no-useless-default-assignment": "warn",
     "typescript/no-useless-empty-export": "warn",
+    "typescript/no-var-requires": "off",
     "typescript/no-wrapper-object-types": "warn",
     "typescript/non-nullable-type-assertion-style": "warn",
     "typescript/only-throw-error": [
@@ -354,12 +360,15 @@ copy(
     "typescript/prefer-namespace-keyword": "warn",
     "typescript/prefer-nullish-coalescing": [
       "warn",
-      { "ignoreConditionalTests": false, "ignorePrimitives": true }
+      {
+        "ignoreConditionalTests": false,
+        "ignorePrimitives": true
+      }
     ],
     "typescript/prefer-optional-chain": "warn",
     "typescript/prefer-promise-reject-errors": "warn",
-    "typescript/prefer-readonly-parameter-types": "off",
     "typescript/prefer-readonly": "warn",
+    "typescript/prefer-readonly-parameter-types": "off",
     "typescript/prefer-reduce-type-parameter": "warn",
     "typescript/prefer-regexp-exec": "warn",
     "typescript/prefer-return-this-type": "warn",
@@ -384,10 +393,7 @@ copy(
     "typescript/strict-boolean-expressions": "off",
     "typescript/strict-void-return": "off",
     "typescript/switch-exhaustiveness-check": "warn",
-    "typescript/triple-slash-reference": [
-      "warn",
-      { "path": "never", "types": "never", "lib": "never" }
-    ],
+    "typescript/triple-slash-reference": ["warn", { "lib": "never", "types": "never" }],
     "typescript/unbound-method": "off",
     "typescript/unified-signatures": "off",
     "typescript/use-unknown-in-catch-callback-variable": "warn",
@@ -571,12 +577,7 @@ copy(
         "vitest/require-to-throw-message": "warn",
         "vitest/require-top-level-describe": "off",
         "vitest/valid-describe-callback": "warn",
-        "vitest/valid-expect": [
-          "warn",
-          {
-            "alwaysAwait": true
-          }
-        ],
+        "vitest/valid-expect": "warn",
         "vitest/valid-expect-in-promise": "warn",
         "vitest/valid-title": "warn",
         "vitest/warn-todo": "warn",
