@@ -5,10 +5,6 @@
 
   "jsPlugins": ["@eslint-react/eslint-plugin"],
 
-  "categories": {
-    "correctness": "off"
-  },
-
   "options": {
     "denyWarnings": true,
     "reportUnusedDisableDirectives": "warn",
@@ -400,7 +396,7 @@ copy(
     "@eslint-react/error-boundaries": "warn",
     "@eslint-react/exhaustive-deps": "warn",
     "@eslint-react/globals": "warn",
-    "@eslint-react/immutability": "warn",
+    "@eslint-react/immutability": "off",
     "@eslint-react/no-access-state-in-setstate": "warn",
     "@eslint-react/no-array-index-key": "off",
     "@eslint-react/no-children-count": "warn",
