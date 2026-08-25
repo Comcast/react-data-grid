@@ -145,7 +145,9 @@ export default function EditCell<R, SR>({
       // Discard changes
       onClose();
     } else if (event.key === 'Enter') {
-      onClose(true);
+      // Commit changes and move to the cell below, like Excel
+      onClose(true, false);
+      navigate(event);
     } else if (onEditorNavigation(event)) {
       navigate(event);
     }

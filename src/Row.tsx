@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
-import { classnames } from './utils';
+import { classnames, getRowSpan, isRowSpanCovered } from './utils';
 import type { RenderRowProps } from './types';
 import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
 import { rowClassname, rowActiveClassname } from './style/row';
@@ -40,8 +40,19 @@ function Row<R, SR>({
     className
   );
 
+  // Track the largest rowSpan among this row's master cells so the row's own grid track
+  // can be stretched to match via gridRowEnd below — otherwise the `subgrid` row template
+  // only exposes a single track and a cell's `grid-row-end: span N` has nowhere to span into.
+  let maxRowSpan = 1;
+
   const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'ROW', row })
+    .filter(([column]) => !isRowSpanCovered(column, { type: 'ROW', row }))
     .map(([column, isCellActive, colSpan]) => {
+      const rowSpan = getRowSpan(column, { type: 'ROW', row });
+      if (rowSpan !== undefined && rowSpan > maxRowSpan) {
+        maxRowSpan = rowSpan;
+      }
+
       if (isCellActive && activeCellEditor) {
         return activeCellEditor;
       }
@@ -49,6 +60,7 @@ function Row<R, SR>({
       return renderCell(column.key, {
         column,
         colSpan,
+        rowSpan,
         row,
         rowIdx,
         isDraggedOver: draggedOverCellIdx === column.idx,
@@ -76,6 +88,7 @@ function Row<R, SR>({
         className={className}
         style={{
           gridRowStart,
+          gridRowEnd: maxRowSpan > 1 ? `span ${maxRowSpan}` : undefined,
           ...style
         }}
         {...props}
