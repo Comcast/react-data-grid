@@ -21,7 +21,7 @@ import type {
  * The event can be `stopPropagation()`ed halfway through, so they may not always bubble back up to the window,
  * so an alternative check must be used. The check must happen after the event can reach the "inside" container,
  * and not before it run to completion. `postTask`/`requestAnimationFrame` are the best way we know to achieve this.
- * Usually we want click event handlers from parent components to access the latest commited values,
+ * Usually we want click event handlers from parent components to access the latest committed values,
  * so `mousedown` is used instead of `click`.
  *
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
@@ -65,7 +65,7 @@ export default function EditCell<R, SR>({
 
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
-  // To that end we instead access the latest props via useLatestFunc.
+  // To that end we instead access the latest props via useEffectEvent.
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });

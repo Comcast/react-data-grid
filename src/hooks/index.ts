@@ -5,5 +5,7 @@ export * from './useGridDimensions';
 export * from './useLatestFunc';
 export * from './useRovingTabIndex';
 export * from './useRowSelection';
+export * from './useScrollState';
+export * from './useScrollToPosition';
 export * from './useViewportColumns';
 export * from './useViewportRows';

@@ -5,5 +5,5 @@ declare module 'react' {
   }
 }
 
-// somehow required to make types work
+// required to make types work
 export {};

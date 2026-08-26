@@ -15,7 +15,7 @@ export const router = createRouter({
 });
 
 // Register the router instance for type safety
-declare module '@tanstack/react-router' {
+declare module '@tanstack/router-core' {
   interface Register {
     router: typeof router;
   }

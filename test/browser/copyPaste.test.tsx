@@ -3,7 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
-import { getCellsAtRowIndex, safeTab } from './utils';
+import { canCopyPaste, getCellsAtRowIndex, safeTab } from './utils';
 
 interface Row {
   col: string;
@@ -68,7 +68,7 @@ function setup() {
   return page.render(<CopyPasteTest />);
 }
 
-test('should call onCellCopy on cell copy', async () => {
+test('should call onCellCopy on cell copy', { fails: !canCopyPaste }, async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.copy();
@@ -81,7 +81,7 @@ test('should call onCellCopy on cell copy', async () => {
   );
 });
 
-test('should call onCellPaste on cell paste', async () => {
+test('should call onCellPaste on cell paste', { fails: !canCopyPaste }, async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
   await userEvent.paste();
@@ -101,7 +101,7 @@ test('should not allow paste on readonly cells', async () => {
   expect(onCellPasteSpy).not.toHaveBeenCalled();
 });
 
-test('should allow copying a readonly cell', async () => {
+test('should allow copying a readonly cell', { fails: !canCopyPaste }, async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(2).nth(0));
   await userEvent.copy();

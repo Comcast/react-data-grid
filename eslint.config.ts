@@ -1,14 +1,8 @@
 import eslintReact from '@eslint-react/eslint-plugin';
 import markdown from '@eslint/markdown';
 import vitest from '@vitest/eslint-plugin';
-import jestDom from 'eslint-plugin-jest-dom';
-import reactDom from 'eslint-plugin-react-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactNamingConvention from 'eslint-plugin-react-naming-convention';
-import reactRsc from 'eslint-plugin-react-rsc';
-import reactWebApi from 'eslint-plugin-react-web-api';
 import sonarjs from 'eslint-plugin-sonarjs';
-import testingLibrary from 'eslint-plugin-testing-library';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
@@ -29,10 +23,6 @@ export default defineConfig([
       // @ts-expect-error
       'react-hooks': reactHooks,
       '@eslint-react': eslintReact,
-      '@eslint-react/rsc': reactRsc,
-      '@eslint-react/dom': reactDom,
-      '@eslint-react/web-api': reactWebApi,
-      '@eslint-react/naming-convention': reactNamingConvention,
       sonarjs,
       '@typescript-eslint': tseslint.plugin
     },
@@ -265,10 +255,10 @@ export default defineConfig([
       'unicode-bom': 1,
 
       // React Hooks
-      // https://www.npmjs.com/package/eslint-plugin-react-hooks
+      // https://github.com/facebook/react/tree/main/packages/eslint-plugin-react-hooks
+      // https://react.dev/reference/eslint-plugin-react-hooks
       'react-hooks/rules-of-hooks': 1,
       'react-hooks/exhaustive-deps': 1,
-      'react-hooks/component-hook-factories': 1,
       'react-hooks/config': 1,
       'react-hooks/error-boundaries': 1,
       'react-hooks/gating': 1,
@@ -285,51 +275,31 @@ export default defineConfig([
       'react-hooks/use-memo': 1,
 
       // ESLint React
-      // https://www.eslint-react.xyz/docs/rules/overview
+      // https://eslint-react.xyz/docs/rules
       /*
 // copy all the rules from the rules table for easy pasting
-function getRules(id, prefix) {
-  return (
-    Iterator.from(
-      document
-        // select rules table
-        .querySelector(`#${id} ~ *:has(table) > table`)
-        // select all rule links
-        .querySelectorAll('tr a')
-    )
-      // map link to rule declaration
-      .map((a) => `'@eslint-react/${prefix}${a.textContent}': 1,`)
-  );
-}
 copy(
-  Iterator.from([
-    getRules('x-rules', ''),
-    getRules('rsc-rules', 'rsc/'),
-    getRules('dom-rules', 'dom/'),
-    getRules('web-api-rules', 'web-api/'),
-    getRules('naming-convention-rules', 'naming-convention/'),
-  ])
-    .flatMap((x) => x)
+  Iterator.from(
+    document
+      // select all non-debug rule links
+      .querySelectorAll('tr a:not([href*="rules/debug"])')
+  )
+    // map link to rule declaration
+    .map((a) => `'@eslint-react/${a.pathname.slice(a.pathname.lastIndexOf('/') + 1)}': 1,`)
     .toArray()
     .join('\n')
 );
       */
-      '@eslint-react/jsx-dollar': 1,
-      '@eslint-react/jsx-key-before-spread': 1,
-      '@eslint-react/jsx-no-comment-textnodes': 1,
-      '@eslint-react/jsx-shorthand-boolean': 1,
-      '@eslint-react/jsx-shorthand-fragment': 1,
-      '@eslint-react/component-hook-factories': 1,
       '@eslint-react/error-boundaries': 1,
       '@eslint-react/exhaustive-deps': 1,
-      '@eslint-react/immutability': 0,
+      '@eslint-react/globals': 1,
+      '@eslint-react/immutability': 1,
       '@eslint-react/no-access-state-in-setstate': 1,
       '@eslint-react/no-array-index-key': 0,
       '@eslint-react/no-children-count': 1,
       '@eslint-react/no-children-for-each': 1,
       '@eslint-react/no-children-map': 1,
       '@eslint-react/no-children-only': 1,
-      '@eslint-react/no-children-prop': 1,
       '@eslint-react/no-children-to-array': 1,
       '@eslint-react/no-class-component': 1,
       '@eslint-react/no-clone-element': 1,
@@ -351,12 +321,9 @@ copy(
       '@eslint-react/no-misused-capture-owner-stack': 1,
       '@eslint-react/no-nested-component-definitions': 1,
       '@eslint-react/no-nested-lazy-component-declarations': 1,
-      '@eslint-react/no-redundant-should-component-update': 1,
       '@eslint-react/no-set-state-in-component-did-mount': 1,
       '@eslint-react/no-set-state-in-component-did-update': 1,
       '@eslint-react/no-set-state-in-component-will-update': 1,
-      '@eslint-react/no-unnecessary-use-callback': 1,
-      '@eslint-react/no-unnecessary-use-memo': 1,
       '@eslint-react/no-unnecessary-use-prefix': 1,
       '@eslint-react/no-unsafe-component-will-mount': 1,
       '@eslint-react/no-unsafe-component-will-receive-props': 1,
@@ -367,46 +334,52 @@ copy(
       '@eslint-react/no-unused-props': 1,
       '@eslint-react/no-unused-state': 1,
       '@eslint-react/no-use-context': 1,
-      '@eslint-react/no-useless-fragment': [1, { allowExpressions: false }],
-      '@eslint-react/prefer-destructuring-assignment': 1,
-      '@eslint-react/prefer-namespace-import': 1,
       '@eslint-react/purity': 1,
       '@eslint-react/refs': 1,
       '@eslint-react/rules-of-hooks': 1,
       '@eslint-react/set-state-in-effect': 0,
       '@eslint-react/set-state-in-render': 1,
+      '@eslint-react/static-components': 1,
       '@eslint-react/unsupported-syntax': 1,
       '@eslint-react/use-memo': 1,
       '@eslint-react/use-state': 1,
-      '@eslint-react/rsc/function-definition': 1,
-      '@eslint-react/dom/no-dangerously-set-innerhtml': 1,
-      '@eslint-react/dom/no-dangerously-set-innerhtml-with-children': 1,
-      '@eslint-react/dom/no-find-dom-node': 1,
-      '@eslint-react/dom/no-flush-sync': 0,
-      '@eslint-react/dom/no-hydrate': 1,
-      '@eslint-react/dom/no-missing-button-type': 1,
-      '@eslint-react/dom/no-missing-iframe-sandbox': 1,
-      '@eslint-react/dom/no-namespace': 1,
-      '@eslint-react/dom/no-render': 1,
-      '@eslint-react/dom/no-render-return-value': 1,
-      '@eslint-react/dom/no-script-url': 1,
-      '@eslint-react/dom/no-string-style-prop': 1,
-      '@eslint-react/dom/no-unknown-property': 0,
-      '@eslint-react/dom/no-unsafe-iframe-sandbox': 1,
-      '@eslint-react/dom/no-unsafe-target-blank': 1,
-      '@eslint-react/dom/no-use-form-state': 1,
-      '@eslint-react/dom/no-void-elements-with-children': 1,
-      '@eslint-react/dom/prefer-namespace-import': 1,
-      '@eslint-react/web-api/no-leaked-event-listener': 1,
-      '@eslint-react/web-api/no-leaked-interval': 1,
-      '@eslint-react/web-api/no-leaked-resize-observer': 1,
-      '@eslint-react/web-api/no-leaked-timeout': 1,
-      '@eslint-react/naming-convention/context-name': 1,
-      '@eslint-react/naming-convention/id-name': 1,
-      '@eslint-react/naming-convention/ref-name': 1,
+      '@eslint-react/jsx-no-children-prop': 1,
+      '@eslint-react/jsx-no-children-prop-with-children': 1,
+      '@eslint-react/jsx-no-comment-textnodes': 1,
+      '@eslint-react/jsx-no-key-after-spread': 1,
+      '@eslint-react/jsx-no-leaked-dollar': 1,
+      '@eslint-react/jsx-no-leaked-semicolon': 1,
+      '@eslint-react/jsx-no-namespace': 1,
+      '@eslint-react/jsx-no-useless-fragment': [1, { allowExpressions: false }],
+      '@eslint-react/rsc-function-definition': 1,
+      '@eslint-react/dom-no-dangerously-set-innerhtml': 1,
+      '@eslint-react/dom-no-dangerously-set-innerhtml-with-children': 1,
+      '@eslint-react/dom-no-find-dom-node': 1,
+      '@eslint-react/dom-no-flush-sync': 0,
+      '@eslint-react/dom-no-hydrate': 1,
+      '@eslint-react/dom-no-missing-button-type': 1,
+      '@eslint-react/dom-no-missing-iframe-sandbox': 1,
+      '@eslint-react/dom-no-render': 1,
+      '@eslint-react/dom-no-render-return-value': 1,
+      '@eslint-react/dom-no-script-url': 1,
+      '@eslint-react/dom-no-string-style-prop': 1,
+      '@eslint-react/dom-no-unknown-property': 1,
+      '@eslint-react/dom-no-unsafe-iframe-sandbox': 1,
+      '@eslint-react/dom-no-unsafe-target-blank': 1,
+      '@eslint-react/dom-no-use-form-state': 1,
+      '@eslint-react/dom-no-void-elements-with-children': 1,
+      '@eslint-react/web-api-no-leaked-event-listener': 1,
+      '@eslint-react/web-api-no-leaked-fetch': 1,
+      '@eslint-react/web-api-no-leaked-intersection-observer': 1,
+      '@eslint-react/web-api-no-leaked-interval': 1,
+      '@eslint-react/web-api-no-leaked-resize-observer': 1,
+      '@eslint-react/web-api-no-leaked-timeout': 1,
+      '@eslint-react/naming-convention-context-name': 1,
+      '@eslint-react/naming-convention-id-name': 1,
+      '@eslint-react/naming-convention-ref-name': 1,
 
       // SonarJS rules
-      // https://github.com/SonarSource/SonarJS/blob/master/packages/jsts/src/rules/README.md#rules
+      // https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md#rules
       /*
 // copy all the rules from the rules table for easy pasting
 copy(
@@ -453,11 +426,12 @@ copy(
       'sonarjs/aws-sqs-unencrypted-queue': 0,
       'sonarjs/bitwise-operators': 1,
       'sonarjs/block-scoped-var': 1,
-      'sonarjs/bool-param-default': 0,
+      'sonarjs/bool-param-default': 1,
       'sonarjs/call-argument-line': 1,
       'sonarjs/chai-determinate-assertion': 1,
       'sonarjs/class-name': 1,
       'sonarjs/class-prototype': 1,
+      'sonarjs/code-eval': 1,
       'sonarjs/cognitive-complexity': 0,
       'sonarjs/comma-or-logical-or-case': 1,
       'sonarjs/comment-regex': 1,
@@ -477,6 +451,7 @@ copy(
       'sonarjs/disabled-auto-escaping': 1,
       'sonarjs/disabled-resource-integrity': 1,
       'sonarjs/disabled-timeout': 1,
+      'sonarjs/dompurify-unsafe-config': 1,
       'sonarjs/duplicates-in-character-class': 1,
       'sonarjs/dynamically-constructed-templates': 1,
       'sonarjs/elseif-without-else': 0,
@@ -528,7 +503,7 @@ copy(
       'sonarjs/no-code-after-done': 1,
       'sonarjs/no-collapsible-if': 1,
       'sonarjs/no-collection-size-mischeck': 1,
-      'sonarjs/no-commented-code': 0,
+      'sonarjs/no-commented-code': 1,
       'sonarjs/no-control-regex': 1,
       'sonarjs/no-dead-store': 1,
       'sonarjs/no-delete-var': 1,
@@ -609,7 +584,6 @@ copy(
       'sonarjs/no-undefined-assignment': 0,
       'sonarjs/no-unenclosed-multiline-block': 1,
       'sonarjs/no-uniq-key': 1,
-      'sonarjs/no-unsafe-unzip': 1,
       'sonarjs/no-unthrown-error': 1,
       'sonarjs/no-unused-collection': 1,
       'sonarjs/no-unused-function-argument': 1,
@@ -628,7 +602,6 @@ copy(
       'sonarjs/null-dereference': 1,
       'sonarjs/object-alt-content': 1,
       'sonarjs/operation-returning-nan': 1,
-      'sonarjs/os-command': 1,
       'sonarjs/post-message': 1,
       'sonarjs/prefer-default-last': 1,
       'sonarjs/prefer-immediate-return': 1,
@@ -893,7 +866,7 @@ copy(
         1,
         { path: 'never', types: 'never', lib: 'never' }
       ],
-      '@typescript-eslint/unbound-method': 0,
+      '@typescript-eslint/unbound-method': 0, // replaced by vitest/unbound-method
       '@typescript-eslint/unified-signatures': 0,
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 1
     }
@@ -905,9 +878,7 @@ copy(
     files: ['test/**/*'],
 
     plugins: {
-      vitest,
-      'jest-dom': jestDom,
-      'testing-library': testingLibrary
+      vitest
     },
 
     rules: {
@@ -917,6 +888,24 @@ copy(
       '@eslint-react/no-create-ref': 0,
 
       // https://github.com/vitest-dev/eslint-plugin-vitest#rules
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select rules table
+      .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table')
+      // select all rows with a rule
+      .querySelectorAll('tr:has(a)')
+  )
+    // filter out deprecated rules
+    .filter((row) => row.lastElementChild.textContent === '')
+    // map row to rule declaration
+    .map((row) => `'vitest/${row.firstElementChild.textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       'vitest/consistent-each-for': 1,
       'vitest/consistent-test-filename': 0,
       'vitest/consistent-test-it': 1,
@@ -931,7 +920,6 @@ copy(
       'vitest/no-conditional-in-test': 0,
       'vitest/no-conditional-tests': 1,
       'vitest/no-disabled-tests': 0,
-      'vitest/no-done-callback': 1,
       'vitest/no-duplicate-hooks': 1,
       'vitest/no-focused-tests': [1, { fixable: false }],
       'vitest/no-hooks': 0,
@@ -943,7 +931,19 @@ copy(
       'vitest/no-mocks-import': 1,
       'vitest/no-restricted-matchers': 0,
       'vitest/no-restricted-vi-methods': 0,
-      'vitest/no-standalone-expect': 1,
+      'vitest/no-standalone-expect': [
+        1,
+        {
+          additionalTestBlockFunctions: [
+            'beforeAll',
+            'beforeEach',
+            'afterAll',
+            'afterEach',
+            'aroundAll',
+            'aroundEach'
+          ]
+        }
+      ],
       'vitest/no-test-prefixes': 1,
       'vitest/no-test-return-statement': 1,
       'vitest/no-unneeded-async-expect-function': 1,
@@ -979,7 +979,7 @@ copy(
       'vitest/prefer-strict-equal': 1,
       'vitest/prefer-to-be': 1,
       'vitest/prefer-to-be-falsy': 0,
-      'vitest/prefer-to-be-object': 0,
+      'vitest/prefer-to-be-object': 1,
       'vitest/prefer-to-be-truthy': 0,
       'vitest/prefer-to-contain': 1,
       'vitest/prefer-to-have-been-called-times': 1,
@@ -990,57 +990,15 @@ copy(
       'vitest/require-hook': 0,
       'vitest/require-local-test-context-for-concurrent-snapshots': 0,
       'vitest/require-mock-type-parameters': 0,
-      'vitest/require-to-throw-message': 0,
+      'vitest/require-test-timeout': 0,
+      'vitest/require-to-throw-message': 1,
       'vitest/require-top-level-describe': 0,
+      'vitest/unbound-method': 0,
       'vitest/valid-describe-callback': 1,
       'vitest/valid-expect': [1, { alwaysAwait: true }],
       'vitest/valid-expect-in-promise': 1,
       'vitest/valid-title': 1,
-      'vitest/warn-todo': 1,
-
-      // https://github.com/testing-library/eslint-plugin-jest-dom#supported-rules
-      'jest-dom/prefer-checked': 1,
-      'jest-dom/prefer-empty': 1,
-      'jest-dom/prefer-enabled-disabled': 1,
-      'jest-dom/prefer-focus': 1,
-      'jest-dom/prefer-in-document': 1,
-      'jest-dom/prefer-required': 1,
-      'jest-dom/prefer-to-have-attribute': 1,
-      'jest-dom/prefer-to-have-class': 1,
-      'jest-dom/prefer-to-have-style': 1,
-      'jest-dom/prefer-to-have-text-content': 1,
-      'jest-dom/prefer-to-have-value': 1,
-
-      // eslint-plugin-testing-library Rules
-      // https://github.com/testing-library/eslint-plugin-testing-library#supported-rules
-      'testing-library/await-async-events': 0,
-      'testing-library/await-async-queries': 0,
-      'testing-library/await-async-utils': 0,
-      'testing-library/consistent-data-testid': 0,
-      'testing-library/no-await-sync-events': 0,
-      'testing-library/no-await-sync-queries': 0,
-      'testing-library/no-container': 1,
-      'testing-library/no-debugging-utils': 1,
-      'testing-library/no-dom-import': 1,
-      'testing-library/no-global-regexp-flag-in-query': 1,
-      'testing-library/no-manual-cleanup': 0,
-      'testing-library/no-node-access': 0,
-      'testing-library/no-promise-in-fire-event': 0,
-      'testing-library/no-render-in-lifecycle': 0,
-      'testing-library/no-test-id-queries': 0,
-      'testing-library/no-unnecessary-act': 1,
-      'testing-library/no-wait-for-multiple-assertions': 1,
-      'testing-library/no-wait-for-side-effects': 1,
-      'testing-library/no-wait-for-snapshot': 0,
-      'testing-library/prefer-explicit-assert': 1,
-      'testing-library/prefer-find-by': 1,
-      'testing-library/prefer-implicit-assert': 0,
-      'testing-library/prefer-presence-queries': 0,
-      'testing-library/prefer-query-by-disappearance': 1,
-      'testing-library/prefer-query-matchers': 0,
-      'testing-library/prefer-screen-queries': 0,
-      'testing-library/prefer-user-event': 1,
-      'testing-library/render-result-naming-convention': 0
+      'vitest/warn-todo': 1
     }
   },
 
@@ -1055,38 +1013,41 @@ copy(
   },
 
   {
-    name: 'node',
-
-    files: ['**/*.js'],
-
-    rules: {
-      // Best Practices
-      'default-param-last': 1,
-      // Possible Errors
-      'no-console': 0,
-      'no-undef': 1,
-      'no-use-before-define': [1, { functions: false, classes: false, variables: false }]
-    }
-  },
-
-  {
     name: 'markdown',
     files: ['**/*.md'],
     plugins: {
-      // @ts-expect-error
       markdown
     },
-    language: 'markdown/commonmark',
+    language: 'markdown/gfm',
     rules: {
+      // `@eslint/markdown` rules
+      // https://github.com/eslint/markdown/blob/main/README.md#rules
+      /*
+// copy all the rules from the rules table for easy pasting
+copy(
+  Iterator.from(
+    document
+      // select rules table
+      .querySelector('.markdown-heading:has(> a[href="#rules"]) ~ markdown-accessiblity-table tbody')
+      // select all rule links
+      .querySelectorAll(':any-link')
+  )
+    // map link to rule declaration
+    .map((link) => `'markdown/${link.textContent}': 1,`)
+    .toArray()
+    .join('\n')
+);
+      */
       'markdown/fenced-code-language': 1,
+      'markdown/fenced-code-meta': 0,
       'markdown/heading-increment': 1,
       'markdown/no-bare-urls': 1,
       'markdown/no-duplicate-definitions': 1,
-      'markdown/no-duplicate-headings': 0,
+      'markdown/no-duplicate-headings': [1, { checkSiblingsOnly: true }],
       'markdown/no-empty-definitions': 1,
       'markdown/no-empty-images': 1,
       'markdown/no-empty-links': 1,
-      'markdown/no-html': 0,
+      'markdown/no-html': [1, { allowed: ['br', 'kbd'] }],
       'markdown/no-invalid-label-refs': 1,
       'markdown/no-missing-atx-heading-space': 1,
       'markdown/no-missing-label-refs': 1,

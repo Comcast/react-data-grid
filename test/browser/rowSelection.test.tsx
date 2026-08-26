@@ -202,6 +202,7 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
 
     function onSelectedRowsChange(selectedRows: Set<number>) {
       setSelectedRows(selectedRows);
+      // eslint-disable-next-line @eslint-react/immutability
       set = selectedRows;
     }
 
@@ -211,6 +212,7 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
         columns={columns}
         rows={defaultRows}
         selectedRows={selectedRows}
+        // eslint-disable-next-line @eslint-react/immutability
         onSelectedRowsChange={onSelectedRowsChange}
       />
     );
@@ -239,13 +241,31 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
 
 test('select/deselect rows using shift click', async () => {
   await setup();
+
+  // forward selection
   await toggleSelection(0);
   await toggleSelection(2, true);
   await testSelection(0, true);
   await testSelection(1, true);
   await testSelection(2, true);
+
+  // forward deselection
   await toggleSelection(0);
   await toggleSelection(2, true);
+  await testSelection(0, false);
+  await testSelection(1, false);
+  await testSelection(2, false);
+
+  // backward selection
+  await toggleSelection(2);
+  await toggleSelection(0, true);
+  await testSelection(0, true);
+  await testSelection(1, true);
+  await testSelection(2, true);
+
+  // backward deselection
+  await toggleSelection(2);
+  await toggleSelection(0, true);
   await testSelection(0, false);
   await testSelection(1, false);
   await testSelection(2, false);

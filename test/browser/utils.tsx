@@ -1,7 +1,10 @@
-import { page, userEvent, type Locator } from 'vitest/browser';
+import { page, server, userEvent, type Locator } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
+
+// copy/paste do not work in webkit in CI
+export const canCopyPaste = !(import.meta.env.CI && server.browser === 'webkit');
 
 export function setup<R, SR, K extends React.Key = React.Key>(props: DataGridProps<R, SR, K>) {
   return page.render(<DataGrid {...props} />);
@@ -25,15 +28,9 @@ export async function validateCellPosition(columnIdx: number, rowIdx: number) {
   await expect.element(row).toHaveAttribute('aria-rowindex', `${rowIdx + 1}`);
 }
 
-export async function scrollGrid(options: ScrollToOptions) {
-  await new Promise((resolve) => {
-    // wait for browser state to stablize before scrolling, to avoid flaky scroll-related tests
-    requestAnimationFrame(() => {
-      const gridElement = page.getGrid().element();
-      gridElement.addEventListener('scrollend', resolve, { once: true });
-      gridElement.scroll(options);
-    });
-  });
+export function scrollGrid(options: ScrollToOptions) {
+  const grid = page.getGrid().element();
+  grid.scroll(options);
 }
 
 export function testCount(locator: Locator, expectedCount: number) {

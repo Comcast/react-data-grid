@@ -1,4 +1,4 @@
-# https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 
 version: 2
 updates:
@@ -7,16 +7,56 @@ updates:
     schedule:
       interval: 'weekly'
     groups:
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@typescript/*'
+      build-tooling:
+        patterns:
+          - 'vite'
+          - '@vitejs/*'
+          - 'vitest'
+          - 'vitest-*'
+          - '@vitest/*'
+          - 'tsdown'
+          - '@tsdown/*'
+          - 'playwright'
+        exclude-patterns:
+          - '@vitest/eslint-plugin'
+      quality:
+        patterns:
+          - 'eslint'
+          - 'eslint-*'
+          - '@eslint/*'
+          - '@eslint-react/*'
+          - 'typescript-eslint'
+          - '@vitest/eslint-plugin'
+          - 'oxfmt'
+          - 'oxlint'
+          - 'oxlint-*'
       react:
         patterns:
           - 'react'
           - 'react-dom'
-      vitest:
+          - '@types/react'
+          - '@types/react-dom'
+      tanstack:
         patterns:
-          - 'vitest'
-          - '@vitest/*'
+          - '@tanstack/*'
+      # everything else: single PR for minor/patch bumps,
+      # majors still land individually
+      dependencies:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'

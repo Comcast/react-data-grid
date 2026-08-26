@@ -6,7 +6,7 @@ import { classnames } from './utils';
 import type { BaseRenderRowProps, GroupRow, Omit } from './types';
 import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
-import { cell, cellFrozen } from './style/cell';
+import { cell, cellFrozenBase } from './style/cell';
 import { rowClassname } from './style/row';
 
 const groupRow = css`
@@ -15,8 +15,7 @@ const groupRow = css`
       background-color: var(--rdg-header-background-color);
     }
 
-    > .${cell}:not(:last-child, .${cellFrozen}),
-    > :nth-last-child(n + 2 of .${cellFrozen}) {
+    > .${cell}:not(:last-child, .${cellFrozenBase}), > :nth-last-child(n + 2 of .rdg-cell-frozen-start), > :nth-last-child(n + 2 of .rdg-cell-frozen-end) {
       border-inline-end: none;
     }
   }
@@ -79,6 +78,7 @@ function GroupedRow<R, SR>({
           .map(([column, isCellActive], index) => {
             // Select is always the first column
             if (index === 0 && column.key === SELECT_COLUMN_KEY) {
+              // eslint-disable-next-line @eslint-react/immutability
               idx += 1;
             }
 
@@ -89,7 +89,9 @@ function GroupedRow<R, SR>({
                 groupKey={row.groupKey}
                 childRows={row.childRows}
                 isExpanded={row.isExpanded}
+                // eslint-disable-next-line @eslint-react/immutability
                 isCellActive={isCellActive}
+                // eslint-disable-next-line @eslint-react/immutability
                 column={column}
                 row={row}
                 groupColumnIndex={idx}

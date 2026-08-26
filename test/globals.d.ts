@@ -1,5 +1,9 @@
 declare global {
-  const __IS_CI__: boolean;
+  interface ImportMeta {
+    readonly env: {
+      readonly CI: boolean;
+    };
+  }
 }
 
 declare module 'vitest/browser' {
@@ -9,5 +13,5 @@ declare module 'vitest/browser' {
   }
 }
 
-// somehow required to make types work
+// required to make types work
 export {};

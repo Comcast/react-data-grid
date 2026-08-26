@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { page, userEvent } from 'vitest/browser';
+import { page, server, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
@@ -96,7 +96,7 @@ describe('Editor', () => {
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
     const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
     await testCount(activeRowCells, 2);
-    await scrollGrid({ top: 2001 });
+    scrollGrid({ top: 2001 });
     await testCount(activeRowCells, 1);
     await expect.element(col1Editor).not.toBeInTheDocument();
     await expect.element(grid).toHaveProperty('scrollTop', 2001);
@@ -258,11 +258,19 @@ describe('Editor', () => {
 
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
       await userEvent.keyboard('abc');
-
-      await scrollGrid({ top: 1500 });
+      if (server.browser === 'firefox') {
+        // When typing, Firefox scroll to the caret asynchronously,
+        // but does not to cancel the scroll task when calling `.scroll()` on the grid
+        // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/html/TextControlElement.cpp#L330
+        // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/base/Selection.cpp#L3828
+        await new Promise(requestAnimationFrame);
+        // Alternatively, configuring playwright's launchOptions.slowMo to 1 works,
+        // but slows down the tests.
+      }
+      scrollGrid({ top: 1500 });
       await userEvent.click(page.getCell({ name: 'name43' }));
       await expect.element(page.getActiveCell()).toHaveTextContent(/^name43$/);
-      await scrollGrid({ top: 0 });
+      scrollGrid({ top: 0 });
       await expect.element(page.getCell({ name: 'name0abc' })).toBeVisible();
     });
 

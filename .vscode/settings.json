@@ -1,15 +1,16 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
+    "source.organizeLinkDefinitions": "explicit",
     "source.removeUnusedImports": "explicit",
-    // prevent removal of unreachable code
-    "source.fixAll.ts": "never"
+    "source.format.oxc": "explicit"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "js/ts.experimental.useTsgo": true,
+  "eslint.options": {
+    "flags": ["unstable_native_nodejs_ts_config"]
+  },
+  "eslint.problems.shortenToSingleLine": true,
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
