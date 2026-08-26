@@ -67,7 +67,7 @@
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
-    "oxfmt": "0.63.0",
+    "oxfmt": "0.64.0",
     "oxlint": "^1.79.0",
     "oxlint-tsgolint": "^7.0.2001",
     "playwright": "~1.62.1",
