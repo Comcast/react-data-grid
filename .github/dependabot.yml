@@ -26,7 +26,6 @@ updates:
       quality:
         patterns:
           - 'eslint'
-          - 'eslint-*'
           - '@eslint/*'
           - '@eslint-react/*'
           - 'oxfmt'
