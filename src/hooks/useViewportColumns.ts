@@ -88,6 +88,7 @@ export function useViewportColumns<R, SR>({
   }, [
     rowOverscanStartIdx,
     rowOverscanEndIdx,
+    // oxlint-disable-next-line react/memo-dependencies
     rows,
     topSummaryRows,
     bottomSummaryRows,
@@ -176,6 +177,7 @@ export function useViewportColumns<R, SR>({
         ];
       }
     },
+    // oxlint-disable-next-line react/memo-dependencies
     [columns, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex]
   );
 
