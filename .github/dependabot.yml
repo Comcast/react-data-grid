@@ -27,7 +27,6 @@ updates:
         patterns:
           - 'eslint'
           - '@eslint/*'
-          - '@eslint-react/*'
           - 'oxfmt'
           - 'oxlint'
           - 'oxlint-*'
