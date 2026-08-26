@@ -15,7 +15,7 @@
     "builtin": true
   },
 
-  "ignorePatterns": ["website/routeTree.gen.ts"],
+  "ignorePatterns": ["/website/routeTree.gen.ts"],
 
   // https://oxc.rs/docs/guide/usage/linter/rules.html
   /*
