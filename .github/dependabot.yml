@@ -26,11 +26,8 @@ updates:
       quality:
         patterns:
           - 'eslint'
-          - 'eslint-*'
           - '@eslint/*'
           - '@eslint-react/*'
-          - 'typescript-eslint'
-          - '@vitest/eslint-plugin'
           - 'oxfmt'
           - 'oxlint'
           - 'oxlint-*'
