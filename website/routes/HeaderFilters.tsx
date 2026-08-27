@@ -95,7 +95,7 @@ function HeaderFilters() {
 
   const developerOptions = useMemo(
     () =>
-      [...new Set(rows.map((r) => r.developer))].map((d) => ({
+      Array.from(new Set(rows.map((r) => r.developer)), (d) => ({
         label: d,
         value: d
       })),

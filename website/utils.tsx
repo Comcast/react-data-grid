@@ -37,8 +37,9 @@ function getGridContent(gridEl: HTMLDivElement) {
   };
 
   function getRows(selector: string) {
-    return [...gridEl.querySelectorAll<HTMLDivElement>(selector)].map((gridRow) => {
-      return [...gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell')].map(
+    return Array.from(gridEl.querySelectorAll<HTMLDivElement>(selector), (gridRow) => {
+      return Array.from(
+        gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell'),
         (gridCell) => gridCell.textContent
       );
     });
