@@ -52,16 +52,14 @@ export function useViewportRows<R>({
         // If the current row height is the same as the previous one, increment the repeat count
         repeatCount++;
       } else {
-        gridTemplateRows +=
-          repeatCount > 1 ? `repeat(${repeatCount}, ${currentHeight}px) ` : `${currentHeight}px `;
+        gridTemplateRows += `${getRowTracks(repeatCount, currentHeight)} `;
 
         currentHeight = currentRowHeight;
         repeatCount = 1;
       }
 
       if (index === rows.length - 1) {
-        gridTemplateRows +=
-          repeatCount > 1 ? `repeat(${repeatCount}, ${currentHeight}px)` : `${currentHeight}px`;
+        gridTemplateRows += getRowTracks(repeatCount, currentHeight);
       }
 
       return position;
@@ -118,4 +116,8 @@ export function useViewportRows<R>({
     getRowHeight,
     findRowIdx
   };
+}
+
+function getRowTracks(repeatCount: number, height: number) {
+  return repeatCount > 1 ? `repeat(${repeatCount}, ${height}px)` : `${height}px`;
 }
