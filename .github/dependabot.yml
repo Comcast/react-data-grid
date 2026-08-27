@@ -10,7 +10,6 @@ updates:
       typescript:
         patterns:
           - 'typescript'
-          - '@typescript/*'
       build-tooling:
         patterns:
           - 'vite'
