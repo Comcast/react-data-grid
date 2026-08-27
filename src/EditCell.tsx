@@ -110,6 +110,8 @@ export default function EditCell<R, SR>({
     };
   }, [commitOnOutsideClick]);
 
+  // TODO: report react compiler bug
+  // oxlint-disable-next-line react/invariant
   function cancelTask() {
     captureEventRef.current = undefined;
     if (abortControllerRef.current !== undefined) {
