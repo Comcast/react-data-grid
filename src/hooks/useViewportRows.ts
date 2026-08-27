@@ -52,22 +52,16 @@ export function useViewportRows<R>({
         // If the current row height is the same as the previous one, increment the repeat count
         repeatCount++;
       } else {
-        if (repeatCount > 1) {
-          gridTemplateRows += `repeat(${repeatCount}, ${currentHeight}px) `;
-        } else {
-          gridTemplateRows += `${currentHeight}px `;
-        }
+        gridTemplateRows +=
+          repeatCount > 1 ? `repeat(${repeatCount}, ${currentHeight}px) ` : `${currentHeight}px `;
 
         currentHeight = currentRowHeight;
         repeatCount = 1;
       }
 
       if (index === rows.length - 1) {
-        if (repeatCount > 1) {
-          gridTemplateRows += `repeat(${repeatCount}, ${currentHeight}px)`;
-        } else {
-          gridTemplateRows += `${currentHeight}px`;
-        }
+        gridTemplateRows +=
+          repeatCount > 1 ? `repeat(${repeatCount}, ${currentHeight}px)` : `${currentHeight}px`;
       }
 
       return position;

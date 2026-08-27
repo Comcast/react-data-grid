@@ -88,20 +88,20 @@ function ColumnsReordering() {
     if (sortColumns.length === 0) return rows;
     const { columnKey, direction } = sortColumns[0];
 
-    let sortedRows: Row[] = [...rows];
+    let sortedRows: readonly Row[] = rows;
 
     switch (columnKey) {
       case 'task':
       case 'priority':
       case 'issueType':
-        sortedRows = sortedRows.sort((a, b) => a[columnKey].localeCompare(b[columnKey]));
+        sortedRows = rows.toSorted((a, b) => a[columnKey].localeCompare(b[columnKey]));
         break;
       case 'complete':
-        sortedRows = sortedRows.sort((a, b) => a[columnKey] - b[columnKey]);
+        sortedRows = rows.toSorted((a, b) => a[columnKey] - b[columnKey]);
         break;
       default:
     }
-    return direction === 'DESC' ? sortedRows.reverse() : sortedRows;
+    return direction === 'DESC' ? sortedRows.toReversed() : sortedRows;
   }, [rows, sortColumns]);
 
   function onColumnsReorder(sourceKey: string, targetKey: string) {

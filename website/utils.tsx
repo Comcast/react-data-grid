@@ -1,7 +1,7 @@
 export function exportToCsv(gridEl: HTMLDivElement, fileName: string) {
   const { head, body, foot } = getGridContent(gridEl);
   const content = [...head, ...body, ...foot]
-    .map((cells) => cells.map(serialiseCellValue).join(','))
+    .map((cells) => cells.map((cell) => serialiseCellValue(cell)).join(','))
     .join('\n');
 
   downloadFile(fileName, new Blob([content], { type: 'text/csv;charset=utf-8;' }));
@@ -37,9 +37,9 @@ function getGridContent(gridEl: HTMLDivElement) {
   };
 
   function getRows(selector: string) {
-    return Array.from(gridEl.querySelectorAll<HTMLDivElement>(selector)).map((gridRow) => {
-      return Array.from(gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell')).map(
-        (gridCell) => gridCell.innerText
+    return [...gridEl.querySelectorAll<HTMLDivElement>(selector)].map((gridRow) => {
+      return [...gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell')].map(
+        (gridCell) => gridCell.textContent
       );
     });
   }
@@ -47,7 +47,7 @@ function getGridContent(gridEl: HTMLDivElement) {
 
 function serialiseCellValue(value: unknown) {
   if (typeof value === 'string') {
-    const formattedValue = value.replace(/"/g, '""');
+    const formattedValue = value.replaceAll('"', '""');
     return formattedValue.includes(',') ? `"${formattedValue}"` : formattedValue;
   }
   return value;

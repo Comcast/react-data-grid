@@ -156,7 +156,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         flattenedRows.push(...rows);
         return;
       }
-      Object.keys(rows).forEach((groupKey, posInSet, keys) => {
+      const keys = Object.keys(rows);
+      for (const [posInSet, groupKey] of keys.entries()) {
         const id = groupIdGetter(groupKey, parentId);
         const isExpanded = expandedGroupIds.has(id);
         const { childRows, childGroups, startRowIndex } = rows[groupKey];
@@ -178,7 +179,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         if (isExpanded) {
           expandGroup(childGroups, id, level + 1);
         }
-      });
+      }
     };
 
     expandGroup(groupedRows, undefined, 0);

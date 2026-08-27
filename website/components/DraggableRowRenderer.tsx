@@ -40,12 +40,6 @@ export function DraggableRowRenderer<R, SR>({
     setIsDragging(false);
   }
 
-  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
-    // prevent default to allow drop
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }
-
   function onDrop(event: React.DragEvent<HTMLDivElement>) {
     setIsOver(false);
     // prevent the browser from redirecting in some cases
@@ -79,6 +73,12 @@ export function DraggableRowRenderer<R, SR>({
       {...props}
     />
   );
+}
+
+function onDragOver(event: React.DragEvent<HTMLDivElement>) {
+  // prevent default to allow drop
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
 }
 
 // only accept pertinent drag events:

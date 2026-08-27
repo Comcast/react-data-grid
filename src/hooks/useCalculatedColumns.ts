@@ -145,7 +145,7 @@ export function useCalculatedColumns<R, SR>({
     });
 
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
-    columns.forEach((column, idx) => {
+    for (const [idx, column] of columns.entries()) {
       column.idx = idx;
       updateColumnParent(column, idx, 0);
 
@@ -156,7 +156,7 @@ export function useCalculatedColumns<R, SR>({
       if (column.frozen === 'end' && firstEndFrozenColumnIndex === -1) {
         firstEndFrozenColumnIndex = idx;
       }
-    });
+    }
 
     return {
       columns,
@@ -197,15 +197,12 @@ export function useCalculatedColumns<R, SR>({
     const templateColumns: string[] = [];
 
     for (const column of columns) {
-      let width = getColumnWidth(column);
+      const rawWidth = getColumnWidth(column);
+      // A non-numeric width is a placeholder so we can continue to use virtualization.
+      // The actual value is set after the column is rendered
+      const width =
+        typeof rawWidth === 'number' ? clampColumnWidth(rawWidth, column) : column.minWidth;
 
-      if (typeof width === 'number') {
-        width = clampColumnWidth(width, column);
-      } else {
-        // This is a placeholder width so we can continue to use virtualization.
-        // The actual value is set after the column is rendered
-        width = column.minWidth;
-      }
       templateColumns.push(`${width}px`);
       columnMetrics.set(column, { width, left });
       left += width;

@@ -270,7 +270,7 @@ function createRows(): readonly Row[] {
       progress: Math.random() * 100,
       startTimestamp: now - Math.round(Math.random() * 1e10),
       endTimestamp: now + Math.round(Math.random() * 1e10),
-      budget: 500 + Math.random() * 10500,
+      budget: 500 + Math.random() * 10_500,
       transaction: faker.finance.transactionType(),
       account: faker.finance.iban(),
       version: faker.system.semver(),

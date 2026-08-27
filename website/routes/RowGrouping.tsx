@@ -126,7 +126,7 @@ function rowKeyGetter(row: Row) {
 
 function createRows(): readonly Row[] {
   const rows: Row[] = [];
-  for (let i = 1; i < 10000; i++) {
+  for (let i = 1; i < 10_000; i++) {
     rows.push({
       id: i,
       year: 2015 + faker.number.int(3),
@@ -139,7 +139,9 @@ function createRows(): readonly Row[] {
     });
   }
 
-  return rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
+  rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
+
+  return rows;
 }
 
 const options = ['country', 'year', 'sport', 'athlete'] as const;

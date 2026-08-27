@@ -98,7 +98,7 @@ function TestGrid({
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
   const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> => new Set<unknown>([])
+    (): ReadonlySet<unknown> => new Set<unknown>()
   );
 
   return (
