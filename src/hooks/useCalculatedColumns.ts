@@ -145,7 +145,8 @@ export function useCalculatedColumns<R, SR>({
     });
 
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
-    for (const [idx, column] of columns.entries()) {
+    for (let idx = 0; idx < columns.length; idx++) {
+      const column = columns[idx];
       column.idx = idx;
       updateColumnParent(column, idx, 0);
 
