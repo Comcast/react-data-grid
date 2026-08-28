@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column, type ColumnWidths, type SortColumn } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
@@ -16,7 +17,7 @@ interface Row {
   readonly issueType: string;
 }
 
-function createRows(): Row[] {
+function createRows(): readonly Row[] {
   const rows: Row[] = [];
 
   for (let i = 1; i < 500; i++) {
@@ -88,20 +89,27 @@ function ColumnsReordering() {
     if (sortColumns.length === 0) return rows;
     const { columnKey, direction } = sortColumns[0];
 
-    let sortedRows: readonly Row[] = rows;
+    let sortFn: (a: Row, b: Row) => number;
 
     switch (columnKey) {
       case 'task':
       case 'priority':
       case 'issueType':
-        sortedRows = rows.toSorted((a, b) => a[columnKey].localeCompare(b[columnKey]));
+        sortFn = (a, b) => compare(a[columnKey], b[columnKey]);
         break;
       case 'complete':
-        sortedRows = rows.toSorted((a, b) => a[columnKey] - b[columnKey]);
+        sortFn = (a, b) => a[columnKey] - b[columnKey];
         break;
       default:
+        throw new Error(`unsupported columnKey: "${columnKey}"`);
     }
-    return direction === 'DESC' ? sortedRows.toReversed() : sortedRows;
+
+    if (direction === 'DESC') {
+      const sortImpl = sortFn;
+      sortFn = (a, b) => sortImpl(b, a);
+    }
+
+    return rows.toSorted(sortFn);
   }, [rows, sortColumns]);
 
   function onColumnsReorder(sourceKey: string, targetKey: string) {

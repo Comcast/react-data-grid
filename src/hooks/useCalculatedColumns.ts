@@ -77,6 +77,7 @@ export function useCalculatedColumns<R, SR>({
     let firstEndFrozenColumnIndex = -1;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
+    const colSpanColumns: CalculatedColumn<R, SR>[] = [];
 
     collectColumns(rawColumns, 1);
 
@@ -144,7 +145,6 @@ export function useCalculatedColumns<R, SR>({
       return ra - rb;
     });
 
-    const colSpanColumns: CalculatedColumn<R, SR>[] = [];
     for (let idx = 0; idx < columns.length; idx++) {
       const column = columns[idx];
       column.idx = idx;
@@ -198,11 +198,15 @@ export function useCalculatedColumns<R, SR>({
     const templateColumns: string[] = [];
 
     for (const column of columns) {
-      const rawWidth = getColumnWidth(column);
-      // A non-numeric width is a placeholder so we can continue to use virtualization.
-      // The actual value is set after the column is rendered
-      const width =
-        typeof rawWidth === 'number' ? clampColumnWidth(rawWidth, column) : column.minWidth;
+      let width = getColumnWidth(column);
+
+      if (typeof width === 'number') {
+        width = clampColumnWidth(width, column);
+      } else {
+        // This is a placeholder width so we can continue to use virtualization.
+        // The actual value is set after the column is rendered
+        width = column.minWidth;
+      }
 
       templateColumns.push(`${width}px`);
       columnMetrics.set(column, { width, left });

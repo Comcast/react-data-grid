@@ -616,7 +616,7 @@ copy(
     "unicorn/prefer-string-starts-ends-with": "off",
     "unicorn/prefer-string-trim-start-end": "warn",
     "unicorn/prefer-structured-clone": "warn",
-    "unicorn/prefer-ternary": ["warn", "only-single-line"],
+    "unicorn/prefer-ternary": "off",
     "unicorn/prefer-top-level-await": "warn",
     "unicorn/prefer-type-error": "warn",
     "unicorn/relative-url-style": "warn",

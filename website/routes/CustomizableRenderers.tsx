@@ -11,6 +11,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({
@@ -186,7 +187,7 @@ function getComparator(sortColumn: string): Comparator {
     case 'priority':
     case 'issueType':
       return (a, b) => {
-        return a[sortColumn].localeCompare(b[sortColumn]);
+        return compare(a[sortColumn], b[sortColumn]);
       };
     case 'complete':
       return (a, b) => {

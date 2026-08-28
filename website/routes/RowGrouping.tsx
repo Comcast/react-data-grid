@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -139,7 +140,7 @@ function createRows(): readonly Row[] {
     });
   }
 
-  rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
+  rows.sort((r1, r2) => compare(r2.country, r1.country));
 
   return rows;
 }

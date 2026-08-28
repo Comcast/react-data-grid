@@ -93,14 +93,19 @@ function HeaderFilters() {
     enabled: true
   }));
 
-  const developerOptions = useMemo(
-    () =>
-      Array.from(new Set(rows.map((r) => r.developer)), (d) => ({
-        label: d,
-        value: d
-      })),
-    [rows]
-  );
+  const developerOptions = useMemo((): readonly React.ReactElement[] => {
+    const developers = new Set();
+    const options = [];
+
+    for (const { developer } of rows) {
+      if (!developers.has(developer)) {
+        options.push(<option key={developer} value={developer} />);
+        developers.add(developer);
+      }
+    }
+
+    return options;
+  }, [rows]);
 
   const columns = useMemo((): readonly Column<Row>[] => {
     return [
@@ -298,13 +303,7 @@ function HeaderFilters() {
           }}
         />
       </FilterContext>
-      <datalist id="developers">
-        {developerOptions.map(({ label, value }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </datalist>
+      <datalist id="developers">{developerOptions}</datalist>
     </div>
   );
 }

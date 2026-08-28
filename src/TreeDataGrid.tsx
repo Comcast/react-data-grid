@@ -47,8 +47,6 @@ type GroupByDictionary<TRow> = Record<
     readonly childRows: readonly TRow[];
     readonly childGroups: readonly TRow[] | Readonly<GroupByDictionary<TRow>>;
     readonly startRowIndex: number;
-    /** number of sibling groups, including this one */
-    readonly setSize: number;
   }
 >;
 
@@ -124,21 +122,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     ): [Readonly<GroupByDictionary<R>>, number] => {
       let groupRowsCount = 0;
       const groups: GroupByDictionary<R> = {};
-      const groupedRows = rowGrouper(rows, groupByKey);
-      const keys = Object.keys(groupedRows);
-      for (const key of keys) {
-        const childRows = groupedRows[key];
+      for (const [key, childRows] of Object.entries(rowGrouper(rows, groupByKey))) {
         // Recursively group each parent group
         const [childGroups, childRowsCount] =
           remainingGroupByKeys.length === 0
             ? [childRows, childRows.length]
             : groupRows(childRows, remainingGroupByKeys, startRowIndex + groupRowsCount + 1); // 1 for parent row
-        groups[key] = {
-          childRows,
-          childGroups,
-          startRowIndex: startRowIndex + groupRowsCount,
-          setSize: keys.length
-        };
+        groups[key] = { childRows, childGroups, startRowIndex: startRowIndex + groupRowsCount };
         groupRowsCount += childRowsCount + 1; // 1 for parent row
       }
 
@@ -166,11 +156,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         flattenedRows.push(...rows);
         return;
       }
-      let posInSet = 0;
-      for (const groupKey in rows) {
+      const keys = Object.keys(rows);
+      const setSize = keys.length;
+      for (let idx = 0; idx < setSize; idx++) {
+        const groupKey = keys[idx];
         const id = groupIdGetter(groupKey, parentId);
         const isExpanded = expandedGroupIds.has(id);
-        const { childRows, childGroups, startRowIndex, setSize } = rows[groupKey];
+        const { childRows, childGroups, startRowIndex } = rows[groupKey];
 
         const groupRow: GroupRow<R> = {
           id,
@@ -179,7 +171,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           isExpanded,
           childRows,
           level,
-          posInSet,
+          posInSet: idx,
           startRowIndex,
           setSize
         };
@@ -189,8 +181,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         if (isExpanded) {
           expandGroup(childGroups, id, level + 1);
         }
-
-        posInSet++;
       }
     };
 

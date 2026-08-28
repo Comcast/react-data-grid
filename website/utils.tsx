@@ -1,3 +1,5 @@
+export const { compare } = new Intl.Collator('en-US', { numeric: true });
+
 export function exportToCsv(gridEl: HTMLDivElement, fileName: string) {
   // TODO: remove both toArray calls https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/join
   const content = getGridContent(gridEl)
