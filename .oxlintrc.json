@@ -649,7 +649,7 @@ copy(
         "vitest/max-nested-describe": "off",
         "vitest/no-alias-methods": "warn",
         "vitest/no-commented-out-tests": "warn",
-        "vitest/no-conditional-expect": "warn",
+        "vitest/no-conditional-expect": "off",
         "vitest/no-conditional-in-test": "off",
         "vitest/no-conditional-tests": "warn",
         "vitest/no-disabled-tests": "off",
@@ -739,6 +739,7 @@ copy(
       "files": ["**/*.d.ts"],
 
       "rules": {
+        "typescript/consistent-indexed-object-style": "off",
         "unicorn/require-module-specifiers": "off"
       }
     }
