@@ -636,6 +636,9 @@ copy(
       "files": ["test/**/*"],
 
       "rules": {
+        "typescript/no-floating-promises": "warn",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/prefer-ternary": "off",
         "vitest/consistent-each-for": "warn",
         "vitest/consistent-test-filename": "off",
         "vitest/consistent-test-it": "warn",
@@ -720,22 +723,7 @@ copy(
         "vitest/valid-expect": "warn",
         "vitest/valid-expect-in-promise": "warn",
         "vitest/valid-title": "warn",
-        "vitest/warn-todo": "warn",
-        "typescript/no-floating-promises": "warn",
-
-        // shared setup helpers belong inside the `describe`/`test` they serve
-        "unicorn/consistent-function-scoping": "off",
-        // `if`/`else` keeps assertions on their own statement, which the vitest rules need
-        "unicorn/prefer-ternary": "off"
-      }
-    },
-
-    {
-      // `export {}` is required to turn an ambient declaration file into a module
-      "files": ["**/*.d.ts"],
-
-      "rules": {
-        "unicorn/require-module-specifiers": "off"
+        "vitest/warn-todo": "warn"
       }
     },
 
@@ -744,6 +732,14 @@ copy(
 
       "rules": {
         "eslint/no-console": "off"
+      }
+    },
+
+    {
+      "files": ["**/*.d.ts"],
+
+      "rules": {
+        "unicorn/require-module-specifiers": "off"
       }
     }
   ]
