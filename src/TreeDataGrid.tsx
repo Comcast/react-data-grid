@@ -462,7 +462,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 }
 
 function defaultGroupIdGetter(groupKey: string, parentId: string | undefined) {
-  return parentId !== undefined ? `${parentId}__${groupKey}` : groupKey;
+  return parentId === undefined ? groupKey : `${parentId}__${groupKey}`;
 }
 
 function isReadonlyArray(arr: unknown): arr is readonly unknown[] {

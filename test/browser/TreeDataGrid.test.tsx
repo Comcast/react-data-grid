@@ -167,7 +167,7 @@ test('should group by multiple columns', async () => {
 
 test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
-    parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
+    parentId === undefined ? groupKey : `${groupKey}#${parentId}`
   );
   await setup(['country', 'year'], groupIdGetter);
   expect(groupIdGetter).toHaveBeenCalled();

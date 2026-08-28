@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { getColSpan } from '../utils';
+import { getColSpan, min } from '../utils';
 import type {
   CalculatedColumn,
   ColSpanArgs,
@@ -102,7 +102,7 @@ export function useViewportColumns<R, SR>({
   // When end-frozen columns exist, unfrozen band ends just before them.
   const effectiveOverscanEndIdx =
     firstEndFrozenColumnIndex > -1
-      ? Math.min(colOverscanEndIdx, firstEndFrozenColumnIndex - 1)
+      ? min(colOverscanEndIdx, firstEndFrozenColumnIndex - 1)
       : colOverscanEndIdx;
 
   const iterateOverViewportColumns = useCallback<IterateOverViewportColumns<R, SR>>(

@@ -247,12 +247,12 @@ function HeaderFilters() {
     return rows.filter((r) => {
       return (
         (filters.task ? r.task.includes(filters.task) : true) &&
-        (filters.priority !== 'All' ? r.priority === filters.priority : true) &&
-        (filters.issueType !== 'All' ? r.issueType === filters.issueType : true) &&
+        (filters.priority === 'All' || r.priority === filters.priority) &&
+        (filters.issueType === 'All' || r.issueType === filters.issueType) &&
         (filters.developer
           ? r.developer.toLowerCase().startsWith(filters.developer.toLowerCase())
           : true) &&
-        (filters.complete !== undefined ? r.complete >= filters.complete : true)
+        (filters.complete === undefined || r.complete >= filters.complete)
       );
     });
   }, [rows, filters]);

@@ -151,7 +151,7 @@ function renderCheckbox({ onChange, indeterminate, ...props }: RenderCheckboxPro
 function renderSortStatus({ sortDirection, priority }: RenderSortStatusProps) {
   return (
     <>
-      {sortDirection !== undefined ? (sortDirection === 'ASC' ? '\u2B9D' : '\u2B9F') : null}
+      {sortDirection && (sortDirection === 'ASC' ? '\u2B9D' : '\u2B9F')}
       <span className={sortPriorityClassname}>{priority}</span>
     </>
   );
