@@ -59,7 +59,7 @@ test('summaryCellClass returns undefined', async () => {
     {
       key: 'id',
       name: 'ID',
-      summaryCellClass: () => undefined
+      summaryCellClass() {}
     }
   ];
   await setup({ columns, topSummaryRows, bottomSummaryRows, rows: [] });

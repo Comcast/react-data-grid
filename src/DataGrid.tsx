@@ -321,7 +321,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
   const [isColumnResizing, setIsColumnResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
+  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>();
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
 
   const isColumnWidthsControlled =

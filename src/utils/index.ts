@@ -15,7 +15,7 @@ export function assertIsValidKeyGetter<R, K extends React.Key>(
   keyGetter: Maybe<(row: NoInfer<R>) => K>
 ): asserts keyGetter is (row: R) => K {
   if (typeof keyGetter !== 'function') {
-    throw new Error('Please specify the rowKeyGetter prop to use selection');
+    throw new TypeError('Please specify the rowKeyGetter prop to use selection');
   }
 }
 
