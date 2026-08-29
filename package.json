@@ -81,6 +81,9 @@
     "react": "^19.2",
     "react-dom": "^19.2"
   },
+  "overrides": {
+    "vitest": "$vitest"
+  },
   "devEngines": {
     "runtime": {
       "name": "node",
