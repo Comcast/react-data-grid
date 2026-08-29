@@ -198,7 +198,6 @@ function RowGrouping() {
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
-        getRowGroupKey={getRowGroupKey}
         expandedGroupIds={expandedGroupIds}
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
@@ -206,8 +205,4 @@ function RowGrouping() {
       />
     </div>
   );
-}
-
-function getRowGroupKey(row: Row, columnKey: string) {
-  return String(row[columnKey as keyof Row]);
 }

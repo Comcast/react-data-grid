@@ -90,10 +90,12 @@ function rowKeyGetter(row: Row) {
 }
 function TestGrid({
   groupBy,
-  groupIdGetter
+  groupIdGetter,
+  getRowGroupKey
 }: {
   groupBy: string[];
   groupIdGetter: ((groupKey: string, parentId?: string) => string) | undefined;
+  getRowGroupKey: ((row: Row, columnKey: string) => string) | undefined;
 }) {
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
@@ -122,12 +124,15 @@ function TestGrid({
   );
 }
 
-function getRowGroupKey(row: Row, columnKey: string) {
-  return String(row[columnKey as keyof Row]);
+interface SetupOptions {
+  groupIdGetter?: (groupKey: string, parentId?: string) => string;
+  getRowGroupKey?: (row: Row, columnKey: string) => string;
 }
 
-function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
-  return page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
+function setup(groupBy: string[], { groupIdGetter, getRowGroupKey }: SetupOptions = {}) {
+  return page.render(
+    <TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} getRowGroupKey={getRowGroupKey} />
+  );
 }
 
 async function testHeaderCellsContent(expected: readonly string[]) {
@@ -169,7 +174,7 @@ test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
     parentId === undefined ? groupKey : `${groupKey}#${parentId}`
   );
-  await setup(['country', 'year'], groupIdGetter);
+  await setup(['country', 'year'], { groupIdGetter });
   expect(groupIdGetter).toHaveBeenCalled();
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
@@ -182,6 +187,18 @@ test('should use groupIdGetter when provided', async () => {
   await testRowCount(8);
   await userEvent.click(page.getCell({ name: '2020' }));
   await testRowCount(9);
+});
+
+test('should use getRowGroupKey when provided', async () => {
+  const getRowGroupKey = vi.fn((row: Row, columnKey: string) =>
+    columnKey === 'country' ? row.country.slice(0, 1) : String(row[columnKey as keyof Row])
+  );
+  await setup(['country'], { getRowGroupKey });
+  expect(getRowGroupKey).toHaveBeenCalled();
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '9');
+  await testRowCount(4);
+  await expect.element(page.getCell({ name: 'U' })).toBeInTheDocument();
+  await expect.element(page.getCell({ name: 'C' })).toBeInTheDocument();
 });
 
 test('should ignore duplicate groupBy columns', async () => {
@@ -484,7 +501,6 @@ test('adding a top summary row when no rows or cells are active should not focus
           rows={rows}
           topSummaryRows={topSummaryRows}
           groupBy={[]}
-          getRowGroupKey={() => ''}
           expandedGroupIds={new Set()}
           onExpandedGroupIdsChange={() => {}}
         />

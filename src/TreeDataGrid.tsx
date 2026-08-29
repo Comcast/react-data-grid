@@ -32,7 +32,7 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
   columns: readonly Column<NoInfer<R>, NoInfer<SR>>[];
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
   groupBy: readonly string[];
-  getRowGroupKey: (row: NoInfer<R>, columnKey: string) => string;
+  getRowGroupKey?: Maybe<(row: NoInfer<R>, columnKey: string) => string>;
   expandedGroupIds: ReadonlySet<unknown>;
   onExpandedGroupIdsChange: (expandedGroupIds: Set<unknown>) => void;
   groupIdGetter?: Maybe<(groupKey: string, parentId?: string) => string>;
@@ -59,7 +59,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   onSelectedRowsChange: rawOnSelectedRowsChange,
   renderers,
   groupBy: rawGroupBy,
-  getRowGroupKey,
+  getRowGroupKey: rawGetRowGroupKey,
   expandedGroupIds,
   onExpandedGroupIdsChange,
   groupIdGetter: rawGroupIdGetter,
@@ -70,6 +70,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const headerAndTopSummaryRowsCount = 1 + (props.topSummaryRows?.length ?? 0);
   const { leftKey, rightKey } = getLeftRightKey(props.direction);
   const toggleGroupLatest = useLatestFunc(toggleGroup);
+  const getRowGroupKey = rawGetRowGroupKey ?? defaultGetRowGroupKey;
   const groupIdGetter = rawGroupIdGetter ?? defaultGroupIdGetter;
 
   const { columns, groupBy } = useMemo(() => {
@@ -461,6 +462,10 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       }}
     />
   );
+}
+
+function defaultGetRowGroupKey(row: unknown, columnKey: string) {
+  return String((row as Record<string, unknown>)[columnKey]);
 }
 
 function defaultGroupIdGetter(groupKey: string, parentId: string | undefined) {
