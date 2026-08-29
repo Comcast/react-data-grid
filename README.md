@@ -881,7 +881,7 @@ function MyGrid() {
 
 Function to generate unique IDs for group rows. If not provided, a default implementation is used that concatenates parent and group keys with `__`.
 
-###### `rowHeight?: Maybe<number | ((args: RowHeightArgs<R>) => number)>`
+###### `rowHeight?: Maybe<number | string | ((args: RowHeightArgs<R>) => number)>`
 
 **Note:** Unlike `DataGrid`, the `rowHeight` function receives [`RowHeightArgs<R>`](#rowheightargstrow) which includes a `type` property to distinguish between regular rows and group rows:
 
