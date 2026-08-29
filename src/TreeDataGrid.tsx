@@ -47,6 +47,14 @@ interface PartialGroupRow<TRow> {
 
 type GroupsMap<TRow> = Map<string, PartialGroupRow<TRow>>;
 
+// Group rows are only ever created by `TreeDataGrid`, so every instance can share a single
+// set, which keeps `isGroupRow` stable and out of the dependency arrays below
+const allGroupRows = new WeakSet<object>();
+
+function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow> {
+  return typeof row === 'object' && row !== null && allGroupRows.has(row);
+}
+
 export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,
   rows: rawRows,
@@ -158,14 +166,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
   const rowsCount = groupedRows?.rowsCount ?? rawRows.length;
 
-  const [rows, isGroupRow] = useMemo((): [
-    readonly (R | GroupRow<R>)[],
-    (row: R | GroupRow<R>) => row is GroupRow<R>
-  ] => {
-    const allGroupRows = new Set<unknown>();
-
+  const rows = useMemo((): readonly (R | GroupRow<R>)[] => {
     if (groupedRows === undefined) {
-      return [rawRows, isGroupRow];
+      return rawRows;
     }
 
     const flattenedRows: (R | GroupRow<R>)[] = [];
@@ -205,11 +208,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
     expandGroups(groupedRows.groups, undefined, 0);
 
-    return [flattenedRows, isGroupRow];
-
-    function isGroupRow(row: R | GroupRow<R>): row is GroupRow<R> {
-      return allGroupRows.has(row);
-    }
+    return flattenedRows;
   }, [expandedGroupIds, groupIdGetter, groupedRows, rawRows]);
 
   const rowHeight = useMemo(() => {
@@ -223,7 +222,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
 
     return rawRowHeight;
-  }, [isGroupRow, rawRowHeight]);
+  }, [rawRowHeight]);
 
   const getParentRowAndIndex = useCallback(
     (row: R | GroupRow<R>) => {
@@ -237,7 +236,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
       return undefined;
     },
-    [isGroupRow, rows]
+    [rows]
   );
 
   const rowKeyGetter = useCallback(
@@ -259,7 +258,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
       return rows.indexOf(row);
     },
-    [getParentRowAndIndex, isGroupRow, rawRowKeyGetter, rows]
+    [getParentRowAndIndex, rawRowKeyGetter, rows]
   );
 
   const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
@@ -281,7 +280,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
 
     return selectedRows;
-  }, [isGroupRow, rawRowKeyGetter, rawSelectedRows, rows]);
+  }, [rawRowKeyGetter, rawSelectedRows, rows]);
 
   function onSelectedRowsChange(newSelectedRows: Set<Key>) {
     if (!rawOnSelectedRowsChange) return;
