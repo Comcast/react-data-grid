@@ -1144,7 +1144,7 @@ const columns: readonly Column<Row>[] = [
 
 ### Context
 
-#### `DataGridDefaultRenderersContext`
+#### `DataGridRenderersContext`
 
 Context for providing default renderers to DataGrids in your app.
 
@@ -1152,7 +1152,7 @@ Context for providing default renderers to DataGrids in your app.
 
 ```tsx
 import {
-  DataGridDefaultRenderersContext,
+  DataGridRenderersContext,
   renderCheckbox,
   renderSortIcon,
   renderSortPriority,
@@ -1174,9 +1174,7 @@ const defaultGridRenderers: Renderers<unknown, unknown> = {
 
 function AppProvider({ children }) {
   return (
-    <DataGridDefaultRenderersContext value={defaultGridRenderers}>
-      {children}
-    </DataGridDefaultRenderersContext>
+    <DataGridRenderersContext value={defaultGridRenderers}>{children}</DataGridRenderersContext>
   );
 }
 ```
