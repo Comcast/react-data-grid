@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
-import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
+import { canCopyPaste, getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
 
 const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
@@ -97,7 +97,7 @@ function TestGrid({
 }) {
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set([]));
+  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set());
 
   return (
     <TreeDataGrid
@@ -165,7 +165,7 @@ test('should group by multiple columns', async () => {
 
 test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
-    parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
+    parentId === undefined ? groupKey : `${groupKey}#${parentId}`
   );
   await setup(['country', 'year'], groupIdGetter);
   expect(groupIdGetter).toHaveBeenCalled();
@@ -410,7 +410,7 @@ test('cell navigation in a treegrid', async () => {
   await testRowCount(4);
 });
 
-test('copy/paste when grouping is enabled', async () => {
+test('copy/paste when grouping is enabled', { fails: !canCopyPaste }, async () => {
   await setup(['year']);
   await userEvent.click(page.getCell({ name: '2021' }));
   await userEvent.copy();

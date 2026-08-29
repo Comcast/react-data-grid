@@ -30,16 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: node --run typecheck
+      - name: Lint
+        run: |
+          node --run lint
+          node --run lint:md
 
-      - name: ESLint
-        run: node --run eslint
-
-      - name: Oxfmt
+      - name: Format
         run: node --run format:check
 
-      - name: Bundle
+      - name: Build lib
         run: node --run build
 
       - name: Build website
@@ -49,7 +48,13 @@ jobs:
         run: git diff --exit-code website/routeTree.gen.ts
 
       - name: Install Playwright Browsers
-        run: npx playwright install chromium firefox
+        run: |
+          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
+          Acquire::Retries "0";
+          Acquire::http::Timeout "10";
+          Acquire::https::Timeout "10";
+          EOF
+          npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 2
 
       - name: Test

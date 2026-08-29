@@ -56,7 +56,7 @@ function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export const SelectColumn: Column<any, any> = {
   key: SELECT_COLUMN_KEY,
   name: '',

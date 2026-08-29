@@ -84,25 +84,28 @@ function selectStopPropagation(event: React.KeyboardEvent<HTMLSelectElement>) {
 function HeaderFilters() {
   const direction = useDirection();
   const [rows] = useState(createRows);
-  const [filters, setFilters] = useState(
-    (): Filter => ({
-      task: '',
-      priority: 'Critical',
-      issueType: 'All',
-      developer: '',
-      complete: undefined,
-      enabled: true
-    })
-  );
+  const [filters, setFilters] = useState((): Filter => ({
+    task: '',
+    priority: 'Critical',
+    issueType: 'All',
+    developer: '',
+    complete: undefined,
+    enabled: true
+  }));
 
-  const developerOptions = useMemo(
-    () =>
-      Array.from(new Set(rows.map((r) => r.developer)), (d) => ({
-        label: d,
-        value: d
-      })),
-    [rows]
-  );
+  const developerOptions = useMemo((): readonly React.ReactElement[] => {
+    const developers = new Set();
+    const options = [];
+
+    for (const { developer } of rows) {
+      if (!developers.has(developer)) {
+        options.push(<option key={developer} value={developer} />);
+        developers.add(developer);
+      }
+    }
+
+    return options;
+  }, [rows]);
 
   const columns = useMemo((): readonly Column<Row>[] => {
     return [
@@ -249,12 +252,12 @@ function HeaderFilters() {
     return rows.filter((r) => {
       return (
         (filters.task ? r.task.includes(filters.task) : true) &&
-        (filters.priority !== 'All' ? r.priority === filters.priority : true) &&
-        (filters.issueType !== 'All' ? r.issueType === filters.issueType : true) &&
+        (filters.priority === 'All' || r.priority === filters.priority) &&
+        (filters.issueType === 'All' || r.issueType === filters.issueType) &&
         (filters.developer
           ? r.developer.toLowerCase().startsWith(filters.developer.toLowerCase())
           : true) &&
-        (filters.complete !== undefined ? r.complete >= filters.complete : true)
+        (filters.complete === undefined || r.complete >= filters.complete)
       );
     });
   }, [rows, filters]);
@@ -300,13 +303,7 @@ function HeaderFilters() {
           }}
         />
       </FilterContext>
-      <datalist id="developers">
-        {developerOptions.map(({ label, value }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </datalist>
+      <datalist id="developers">{developerOptions}</datalist>
     </div>
   );
 }
