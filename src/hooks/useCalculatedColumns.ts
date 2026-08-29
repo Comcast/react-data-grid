@@ -64,6 +64,7 @@ export function useCalculatedColumns<R, SR>({
     let firstEndFrozenColumnIndex = -1;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
+    const colSpanColumns: CalculatedColumn<R, SR>[] = [];
 
     collectColumns(rawColumns, 1);
 
@@ -131,8 +132,8 @@ export function useCalculatedColumns<R, SR>({
       return ra - rb;
     });
 
-    const colSpanColumns: CalculatedColumn<R, SR>[] = [];
-    columns.forEach((column, idx) => {
+    for (let idx = 0; idx < columns.length; idx++) {
+      const column = columns[idx];
       column.idx = idx;
       updateColumnParent(column, idx, 0);
 
@@ -143,7 +144,7 @@ export function useCalculatedColumns<R, SR>({
       if (column.frozen === 'end' && firstEndFrozenColumnIndex === -1) {
         firstEndFrozenColumnIndex = idx;
       }
-    });
+    }
 
     return {
       columns,

@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -126,7 +127,7 @@ function rowKeyGetter(row: Row) {
 
 function createRows(): readonly Row[] {
   const rows: Row[] = [];
-  for (let i = 1; i < 10000; i++) {
+  for (let i = 1; i < 10_000; i++) {
     rows.push({
       id: i,
       year: 2015 + faker.number.int(3),
@@ -139,7 +140,9 @@ function createRows(): readonly Row[] {
     });
   }
 
-  return rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
+  rows.sort((r1, r2) => compare(r2.country, r1.country));
+
+  return rows;
 }
 
 const options = ['country', 'year', 'sport', 'athlete'] as const;

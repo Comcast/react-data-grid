@@ -223,12 +223,6 @@ export default function HeaderCell<R, SR>({
     setDraggedColumnKey(undefined);
   }
 
-  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
-    // prevent default to allow drop
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }
-
   function onDrop(event: React.DragEvent<HTMLDivElement>) {
     setIsOver(false);
     // prevent the browser from redirecting in some cases
@@ -389,6 +383,12 @@ function ResizeHandle<R, SR>({
       onDoubleClick={onDoubleClick}
     />
   );
+}
+
+function onDragOver(event: React.DragEvent<HTMLDivElement>) {
+  // prevent default to allow drop
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
 }
 
 // only accept pertinent drag events:

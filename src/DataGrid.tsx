@@ -317,7 +317,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
   const [gridWidth, gridHeight, isResizingWidth] = useGridDimensions(gridRef);
   const [isDragging, setIsDragging] = useState(false);
-  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
+  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>();
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
 
   const {
@@ -485,6 +485,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const selectHeaderRowLatest = useLatestFunc(selectHeaderRow);
   const selectRowLatest = useLatestFunc(selectRow);
   const handleFormatterRowChangeLatest = useLatestFunc(updateRow);
+  // oxlint-disable-next-line react/immutability
   const setPositionLatest = useLatestFunc(setPosition);
   const selectHeaderCellLatest = useLatestFunc(selectHeaderCell);
 

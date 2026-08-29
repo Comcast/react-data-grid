@@ -19,8 +19,7 @@ const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
 
 // don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
 const resizeObserver =
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  globalThis.ResizeObserver == null ? null : new ResizeObserver(resizeObserverCallback);
+  typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   for (const entry of entries) {

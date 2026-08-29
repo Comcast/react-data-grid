@@ -201,6 +201,9 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
+// pasting between these columns is not supported as their values are not interchangeable
+const incompatibleColumns = new Set(['email', 'zipCode', 'date']);
+
 function AllFeatures() {
   const direction = useDirection();
   const initialRows = Route.useLoaderData();
@@ -225,12 +228,10 @@ function AllFeatures() {
       const sourceColumnKey = copiedCell.column.key;
       const sourceRow = copiedCell.row;
 
-      const incompatibleColumns = ['email', 'zipCode', 'date'];
       if (
         sourceColumnKey === 'avatar' ||
         ['id', 'avatar'].includes(targetColumnKey) ||
-        ((incompatibleColumns.includes(targetColumnKey) ||
-          incompatibleColumns.includes(sourceColumnKey)) &&
+        ((incompatibleColumns.has(targetColumnKey) || incompatibleColumns.has(sourceColumnKey)) &&
           sourceColumnKey !== targetColumnKey)
       ) {
         return row;
@@ -252,7 +253,7 @@ function AllFeatures() {
     event: React.ClipboardEvent<HTMLDivElement>
   ): void {
     // copy highlighted text only
-    if (window.getSelection()?.isCollapsed === false) {
+    if (globalThis.getSelection()?.isCollapsed === false) {
       setCopiedCell(null);
       return;
     }

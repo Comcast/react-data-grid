@@ -15,7 +15,7 @@ import {
   type SortColumn
 } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
-import { exportToCsv, exportToPdf } from '../utils';
+import { compare, exportToCsv, exportToPdf } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CommonFeatures')({
@@ -270,7 +270,7 @@ function createRows(): readonly Row[] {
       progress: Math.random() * 100,
       startTimestamp: now - Math.round(Math.random() * 1e10),
       endTimestamp: now + Math.round(Math.random() * 1e10),
-      budget: 500 + Math.random() * 10500,
+      budget: 500 + Math.random() * 10_500,
       transaction: faker.finance.transactionType(),
       account: faker.finance.iban(),
       version: faker.system.semver(),
@@ -278,15 +278,18 @@ function createRows(): readonly Row[] {
     });
   }
 
-  countries = [...countrySet].sort(new Intl.Collator().compare);
+  countries = [...countrySet];
+  countries.sort(compare);
 
   return rows;
 }
 
 type Comparator = (a: Row, b: Row) => number;
 
-function getComparator(sortColumn: string): Comparator {
-  switch (sortColumn) {
+function getComparator({ columnKey, direction }: SortColumn): Comparator {
+  let sortFn: Comparator;
+
+  switch (columnKey) {
     case 'assignee':
     case 'task':
     case 'client':
@@ -296,24 +299,33 @@ function getComparator(sortColumn: string): Comparator {
     case 'transaction':
     case 'account':
     case 'version':
-      return (a, b) => {
-        return a[sortColumn].localeCompare(b[sortColumn]);
+      sortFn = (a, b) => {
+        return compare(a[columnKey], b[columnKey]);
       };
+      break;
     case 'available':
-      return (a, b) => {
-        return a[sortColumn] === b[sortColumn] ? 0 : a[sortColumn] ? 1 : -1;
+      sortFn = (a, b) => {
+        return a[columnKey] === b[columnKey] ? 0 : a[columnKey] ? 1 : -1;
       };
+      break;
     case 'id':
     case 'progress':
     case 'startTimestamp':
     case 'endTimestamp':
     case 'budget':
-      return (a, b) => {
-        return a[sortColumn] - b[sortColumn];
+      sortFn = (a, b) => {
+        return a[columnKey] - b[columnKey];
       };
+      break;
     default:
-      throw new Error(`unsupported sortColumn: "${sortColumn}"`);
+      throw new Error(`unsupported columnKey: "${columnKey}"`);
   }
+
+  if (direction === 'DESC') {
+    return (a, b) => sortFn(b, a);
+  }
+
+  return sortFn;
 }
 
 function CommonFeatures() {
@@ -338,12 +350,13 @@ function CommonFeatures() {
   const sortedRows = useMemo((): readonly Row[] => {
     if (sortColumns.length === 0) return rows;
 
+    const comparators = sortColumns.map(getComparator);
+
     return rows.toSorted((a, b) => {
-      for (const sort of sortColumns) {
-        const comparator = getComparator(sort.columnKey);
+      for (const comparator of comparators) {
         const compResult = comparator(a, b);
         if (compResult !== 0) {
-          return sort.direction === 'ASC' ? compResult : -compResult;
+          return compResult;
         }
       }
       return 0;
