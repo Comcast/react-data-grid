@@ -42,6 +42,7 @@ interface PartialGroupRow<TRow> {
   readonly groups: GroupsMap<TRow>;
   // all the descendant rows of the group, not just the direct children
   readonly childRows: TRow[];
+  startRowIndex: number;
 }
 
 type GroupsMap<TRow> = Map<string, PartialGroupRow<TRow>>;
@@ -109,16 +110,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return { columns, groupBy };
   }, [rawColumns, rawGroupBy]);
 
-  const [rows, rowsCount, isGroupRow] = useMemo((): [
-    readonly (R | GroupRow<R>)[],
-    number,
-    (row: R | GroupRow<R>) => row is GroupRow<R>
-  ] => {
-    const allGroupRows = new Set<unknown>();
-
-    if (groupBy.length === 0) {
-      return [rawRows, rawRows.length, isGroupRow];
-    }
+  // Grouping only depends on the rows, it is not affected by the expanded state
+  const groupedRows = useMemo(() => {
+    if (groupBy.length === 0) return undefined;
 
     // Group the rows in a single pass, each row is added to every group it belongs to
     const groups: GroupsMap<R> = new Map();
@@ -130,80 +124,93 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         const groupKey = getRowGroupKey(row, columnKey);
         const group = parentGroups.getOrInsertComputed(groupKey, () => ({
           groups: new Map(),
-          childRows: []
+          childRows: [],
+          startRowIndex: 0
         }));
         group.childRows.push(row);
         parentGroups = group.groups;
       }
     }
 
-    const flattenedRows: (R | GroupRow<R>)[] = [];
-
-    // Flattens the visible rows, and returns the number of rows the groups contain,
-    // as if every group was expanded. Collapsed groups are only traversed to count their rows.
-    function expandGroups(
-      groups: GroupsMap<R>,
-      parentId: string | undefined,
-      level: number,
-      startRowIndex: number,
-      isParentExpanded: boolean
-    ): number {
+    // Number the groups as if they were all expanded, and return the total number of rows.
+    // Neither depend on the expanded state, so collapsed groups never have to be traversed
+    // when the rows are flattened.
+    function setStartRowIndexes(groups: GroupsMap<R>, startRowIndex: number): number {
       let groupRowsCount = 0;
-      let posInSet = 0;
 
-      for (const [groupKey, { groups: childGroups, childRows }] of groups) {
-        let id: string | undefined;
-        let isExpanded = false;
-
-        if (isParentExpanded) {
-          id = groupIdGetter(groupKey, parentId);
-          isExpanded = expandedGroupIds.has(id);
-
-          const groupRow: GroupRow<R> = {
-            id,
-            parentId,
-            groupKey,
-            isExpanded,
-            childRows,
-            level,
-            posInSet: posInSet++,
-            setSize: groups.size,
-            startRowIndex: startRowIndex + groupRowsCount
-          };
-          flattenedRows.push(groupRow);
-          allGroupRows.add(groupRow);
-        }
-
+      for (const group of groups.values()) {
+        group.startRowIndex = startRowIndex + groupRowsCount;
         groupRowsCount++; // 1 for the group row
-
-        if (childGroups.size === 0) {
-          // the group is on the last level, it only contains rows
-          if (isExpanded) {
-            flattenedRows.push(...childRows);
-          }
-          groupRowsCount += childRows.length;
-        } else {
-          groupRowsCount += expandGroups(
-            childGroups,
-            id,
-            level + 1,
-            startRowIndex + groupRowsCount,
-            isExpanded
-          );
-        }
+        groupRowsCount +=
+          group.groups.size === 0
+            ? // the group is on the last level, it only contains rows
+              group.childRows.length
+            : setStartRowIndexes(group.groups, startRowIndex + groupRowsCount);
       }
 
       return groupRowsCount;
     }
 
-    const rowsCount = expandGroups(groups, undefined, 0, 0, true);
+    const rowsCount = setStartRowIndexes(groups, 0);
 
-    return [flattenedRows, rowsCount, isGroupRow];
+    return { groups, rowsCount };
+  }, [getRowGroupKey, groupBy, rawRows]);
+
+  const rowsCount = groupedRows?.rowsCount ?? rawRows.length;
+
+  const [rows, isGroupRow] = useMemo((): [
+    readonly (R | GroupRow<R>)[],
+    (row: R | GroupRow<R>) => row is GroupRow<R>
+  ] => {
+    const allGroupRows = new Set<unknown>();
+
+    if (groupedRows === undefined) {
+      return [rawRows, isGroupRow];
+    }
+
+    const flattenedRows: (R | GroupRow<R>)[] = [];
+
+    // Only the expanded groups are traversed
+    function expandGroups(groups: GroupsMap<R>, parentId: string | undefined, level: number): void {
+      let posInSet = 0;
+
+      for (const [groupKey, { groups: childGroups, childRows, startRowIndex }] of groups) {
+        const id = groupIdGetter(groupKey, parentId);
+        const isExpanded = expandedGroupIds.has(id);
+
+        const groupRow: GroupRow<R> = {
+          id,
+          parentId,
+          groupKey,
+          isExpanded,
+          childRows,
+          level,
+          posInSet: posInSet++,
+          setSize: groups.size,
+          startRowIndex
+        };
+        flattenedRows.push(groupRow);
+        allGroupRows.add(groupRow);
+
+        if (isExpanded) {
+          if (childGroups.size === 0) {
+            // the group is on the last level, it only contains rows
+            flattenedRows.push(...childRows);
+          } else {
+            expandGroups(childGroups, id, level + 1);
+          }
+        }
+      }
+    }
+
+    expandGroups(groupedRows.groups, undefined, 0);
+
+    return [flattenedRows, isGroupRow];
 
     function isGroupRow(row: R | GroupRow<R>): row is GroupRow<R> {
       return allGroupRows.has(row);
     }
-  }, [expandedGroupIds, getRowGroupKey, groupBy, groupIdGetter, rawRows]);
+  }, [expandedGroupIds, groupIdGetter, groupedRows, rawRows]);
 
   const rowHeight = useMemo(() => {
     if (typeof rawRowHeight === 'function') {
