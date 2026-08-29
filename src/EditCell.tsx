@@ -63,12 +63,24 @@ export default function EditCell<R, SR>({
   const frameRequestRef = useRef<number>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
 
+  function onClose(commitChanges = false, shouldFocus = true) {
+    if (commitChanges) {
+      onRowChange(row, true, shouldFocus);
+    } else {
+      closeEditor(shouldFocus);
+    }
+  }
+
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
   // To that end we instead access the latest props via useEffectEvent.
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
+
+  function handleMouseDownCapture() {
+    cancelTask(captureEventRef, abortControllerRef, frameRequestRef);
+  }
 
   useLayoutEffect(() => {
     if (!commitOnOutsideClick) return;
@@ -106,23 +118,9 @@ export default function EditCell<R, SR>({
     return () => {
       globalThis.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
       globalThis.removeEventListener('mousedown', onWindowMouseDown);
-      cancelTask();
+      cancelTask(captureEventRef, abortControllerRef, frameRequestRef);
     };
   }, [commitOnOutsideClick]);
-
-  // TODO: report react compiler bug
-  // oxlint-disable-next-line react/invariant
-  function cancelTask() {
-    captureEventRef.current = undefined;
-    if (abortControllerRef.current !== undefined) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = undefined;
-    }
-    if (frameRequestRef.current !== undefined) {
-      cancelAnimationFrame(frameRequestRef.current);
-      frameRequestRef.current = undefined;
-    }
-  }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (onKeyDown) {
@@ -153,14 +151,6 @@ export default function EditCell<R, SR>({
     }
   }
 
-  function onClose(commitChanges = false, shouldFocus = true) {
-    if (commitChanges) {
-      onRowChange(row, true, shouldFocus);
-    } else {
-      closeEditor(shouldFocus);
-    }
-  }
-
   function onEditorRowChange(row: R, commitChangesAndFocus = false) {
     onRowChange(row, commitChangesAndFocus, commitChangesAndFocus);
   }
@@ -182,7 +172,7 @@ export default function EditCell<R, SR>({
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDown={handleKeyDown}
-      onMouseDownCapture={cancelTask}
+      onMouseDownCapture={handleMouseDownCapture}
     >
       {column.renderEditCell != null && (
         <>
@@ -206,4 +196,20 @@ export default function EditCell<R, SR>({
       )}
     </div>
   );
+}
+
+function cancelTask(
+  captureEventRef: React.RefObject<MouseEvent | undefined>,
+  abortControllerRef: React.RefObject<AbortController | undefined>,
+  frameRequestRef: React.RefObject<number | undefined>
+) {
+  captureEventRef.current = undefined;
+  if (abortControllerRef.current !== undefined) {
+    abortControllerRef.current.abort();
+    abortControllerRef.current = undefined;
+  }
+  if (frameRequestRef.current !== undefined) {
+    cancelAnimationFrame(frameRequestRef.current);
+    frameRequestRef.current = undefined;
+  }
 }

@@ -46,8 +46,10 @@ function GroupedRow<R, SR>({
   ...props
 }: GroupRowRendererProps<R, SR>) {
   const isPositionOnRow = activeCellIdx === -1;
-
-  let idx = row.level;
+  const viewportColumns = iterateOverViewportColumnsForRow(activeCellIdx).toArray();
+  // the select column, when rendered, is always the first column
+  const groupColumnIndex =
+    viewportColumns[0]?.[0].key === SELECT_COLUMN_KEY ? row.level + 1 : row.level;
 
   function handleSelectGroup() {
     setActivePosition({ rowIdx, idx: -1 }, { shouldFocus: true });
@@ -78,31 +80,21 @@ function GroupedRow<R, SR>({
         style={{ gridRowStart }}
         {...props}
       >
-        {iterateOverViewportColumnsForRow(activeCellIdx)
-          .map(([column, isCellActive], index) => {
-            // Select is always the first column
-            if (index === 0 && column.key === SELECT_COLUMN_KEY) {
-              // oxlint-disable-next-line react/immutability
-              idx += 1;
-            }
-
-            return (
-              <GroupCell
-                key={column.key}
-                id={row.id}
-                groupKey={row.groupKey}
-                childRows={row.childRows}
-                isExpanded={row.isExpanded}
-                isCellActive={isCellActive}
-                column={column}
-                row={row}
-                groupColumnIndex={idx}
-                toggleGroup={toggleGroup}
-                isGroupByColumn={groupBy.includes(column.key)}
-              />
-            );
-          })
-          .toArray()}
+        {viewportColumns.map(([column, isCellActive]) => (
+          <GroupCell
+            key={column.key}
+            id={row.id}
+            groupKey={row.groupKey}
+            childRows={row.childRows}
+            isExpanded={row.isExpanded}
+            isCellActive={isCellActive}
+            column={column}
+            row={row}
+            groupColumnIndex={groupColumnIndex}
+            toggleGroup={toggleGroup}
+            isGroupByColumn={groupBy.includes(column.key)}
+          />
+        ))}
       </div>
     </RowSelectionContext>
   );
