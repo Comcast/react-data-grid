@@ -10,7 +10,6 @@ updates:
       typescript:
         patterns:
           - 'typescript'
-          - '@typescript/*'
       build-tooling:
         patterns:
           - 'vite'
@@ -26,11 +25,7 @@ updates:
       quality:
         patterns:
           - 'eslint'
-          - 'eslint-*'
           - '@eslint/*'
-          - '@eslint-react/*'
-          - 'typescript-eslint'
-          - '@vitest/eslint-plugin'
           - 'oxfmt'
           - 'oxlint'
           - 'oxlint-*'

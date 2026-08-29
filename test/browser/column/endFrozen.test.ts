@@ -114,7 +114,7 @@ test('end-frozen columns stay pinned to the inline-end edge when scrolling', asy
 
   function assertPinnedToEndEdge() {
     const gridRect = grid.getBoundingClientRect();
-    const gridBorderWidth = parseFloat(getComputedStyle(grid).borderInlineEndWidth);
+    const gridBorderWidth = Number.parseFloat(getComputedStyle(grid).borderInlineEndWidth);
     // resolve the cells fresh each call — scrolling re-renders the row and
     // detaches any previously cached element references
     const rect2 = headerCells.nth(1).element().getBoundingClientRect();
@@ -297,7 +297,7 @@ test('an end-frozen cell that spans the tail stays pinned to the inline-end edge
   await setup({ columns, rows: [1] });
 
   const grid = page.getGrid().element();
-  const gridBorderWidth = parseFloat(getComputedStyle(grid).borderInlineEndWidth);
+  const gridBorderWidth = Number.parseFloat(getComputedStyle(grid).borderInlineEndWidth);
 
   function assertFlushWithEndEdge() {
     // resolve the spanning cell fresh each call — scrolling re-renders the row

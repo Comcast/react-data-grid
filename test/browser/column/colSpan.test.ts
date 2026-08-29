@@ -175,7 +175,7 @@ describe('colSpan', () => {
   it('should scroll to the merged cell when selected', async () => {
     await setupColSpan(30);
     await userEvent.click(getCellsAtRowIndex(10).nth(23)); // last visible cell (1920/80)
-    const spy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
     const testScrollIntoView = () => {
       expect(spy).toHaveBeenCalled();
       spy.mockClear();
