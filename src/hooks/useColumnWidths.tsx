@@ -26,8 +26,7 @@ const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
 
 // don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
 const resizeObserver =
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  globalThis.ResizeObserver == null ? null : new ResizeObserver(resizeObserverCallback);
+  typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   const updatedGrids = new Set<RefObject<HTMLDivElement | null>>();
@@ -60,6 +59,7 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
     }
 
     const widthsMap = new Map(previousWidthsMap);
+    // oxlint-disable-next-line unicorn/no-immediate-mutation
     widthsMap.set(key, { type, width });
     gridRefToWidthsMap.set(gridRef, widthsMap);
     updatedGrids.add(gridRef);
