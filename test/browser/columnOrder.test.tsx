@@ -41,7 +41,7 @@ test('column order', async () => {
           columns={columns}
           rows={rows}
           groupBy={groupBy}
-          rowGrouper={() => ({})}
+          getRowGroupKey={() => ''}
           expandedGroupIds={new Set()}
           onExpandedGroupIdsChange={() => {}}
         />

@@ -109,7 +109,7 @@ function TestGrid({
       bottomSummaryRows={bottomSummaryRows}
       rowKeyGetter={rowKeyGetter}
       groupBy={groupBy}
-      rowGrouper={rowGrouper}
+      getRowGroupKey={getRowGroupKey}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       expandedGroupIds={expandedGroupIds}
@@ -122,8 +122,8 @@ function TestGrid({
   );
 }
 
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
+function getRowGroupKey(row: Row, columnKey: string) {
+  return String(row[columnKey as keyof Row]);
 }
 
 function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
@@ -484,7 +484,7 @@ test('adding a top summary row when no rows or cells are active should not focus
           rows={rows}
           topSummaryRows={topSummaryRows}
           groupBy={[]}
-          rowGrouper={() => ({})}
+          getRowGroupKey={() => ''}
           expandedGroupIds={new Set()}
           onExpandedGroupIdsChange={() => {}}
         />

@@ -780,7 +780,7 @@ Optional attribute to help with Cypress (or similar) selectors.
 **How it works:**
 
 1. The `groupBy` prop specifies which columns should be used for grouping
-2. The `rowGrouper` function groups rows by the specified column keys
+2. The `getRowGroupKey` function returns the group a row belongs to, for each grouped column
 3. Group rows are rendered with expand/collapse toggles
 4. Child rows are nested under their parent groups
 5. Groups can be expanded/collapsed by clicking the toggle or using keyboard navigation (<kbd>←</kbd>, <kbd>→</kbd>)
@@ -842,13 +842,13 @@ function MyGrid() {
 }
 ```
 
-###### `rowGrouper: (rows: readonly R[], columnKey: string) => Record<string, readonly R[]>`
+###### `getRowGroupKey: (row: R, columnKey: string) => string`
 
-**Required.** A function that groups rows by the specified column key. Returns an object where keys are the group values and values are arrays of rows belonging to that group.
+**Required.** A function that returns the key of the group a row belongs to, for the specified column key. Rows sharing the same group key are grouped together, and groups are ordered by the first row that belongs to them.
 
 ```tsx
-function rowGrouper(rows: readonly Row[], columnKey: string): Record<string, readonly Row[]> {
-  return Object.groupBy(rows, (row) => row[columnKey]);
+function getRowGroupKey(row: Row, columnKey: string): string {
+  return String(row[columnKey]);
 }
 ```
 
