@@ -206,6 +206,17 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
    */
   /** @default true */
   enableVirtualization?: Maybe<boolean>;
+  /**
+   * The number of rows, from the top of the data rows, that keyboard navigation and
+   * selection cannot move above
+   * @default 0
+   */
+  fixTop?: Maybe<number>;
+  /**
+   * The column index that keyboard navigation and selection cannot move to the left of
+   * @default 0
+   */
+  fixLeft?: Maybe<number>;
 
   /**
    * Miscellaneous
@@ -248,6 +259,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     summaryRowHeight: rawSummaryRowHeight,
     columnWidths: columnWidthsRaw,
     onColumnWidthsChange: onColumnWidthsChangeRaw,
+    fixTop: rawFixTop,
+    fixLeft: rawFixLeft,
     // Feature props
     selectedRows,
     isRowSelectionDisabled,
@@ -376,6 +389,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const maxRowIdx = rows.length + bottomSummaryRowsCount - 1;
   const mainHeaderRowIdx = minRowIdx + groupedColumnHeaderRowsCount;
   const maxColIdx = columns.length - 1;
+  // Lower bounds for keyboard navigation/selection within the data rows/columns,
+  // leaving header/summary row navigation and pointer-driven selection unaffected.
+  const fixTop = rawFixTop ?? 0;
+  const fixLeft = rawFixLeft ?? 0;
+  const minNavRowIdx = Math.max(minRowIdx, fixTop);
   const headerRowsHeight = headerRowsCount * headerRowHeight;
   const summaryRowsHeight = summaryRowsCount * summaryRowHeight;
   const clientHeight = gridHeight - headerRowsHeight - summaryRowsHeight;
@@ -845,12 +863,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         };
       }
       case 'ArrowDown':
+      case 'Enter':
         return { idx, rowIdx: rowIdx + 1 };
       case leftKey: {
+        const minIdx = rowIdx >= 0 ? fixLeft : 0;
         const nextIdx = idx - 1;
         return {
           // avoid selecting header rows
-          idx: rowIdx < -topSummaryRowsCount && nextIdx < 0 ? 0 : nextIdx,
+          idx: rowIdx < -topSummaryRowsCount && nextIdx < 0 ? 0 : Math.max(nextIdx, minIdx),
           rowIdx
         };
       }
@@ -861,13 +881,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       case 'Home':
         // If row is selected then move focus to the first header row's cell.
         if (activePositionIsRow || ctrlKey) return { idx: 0, rowIdx: minRowIdx };
-        return { idx: 0, rowIdx };
+        return { idx: rowIdx >= 0 ? fixLeft : 0, rowIdx };
       case 'End':
         // If row is selected then move focus to the last row.
         if (activePositionIsRow) return { idx, rowIdx: maxRowIdx };
         return { idx: maxColIdx, rowIdx: ctrlKey ? maxRowIdx : rowIdx };
       case 'PageUp': {
-        if (rowIdx === minRowIdx) return activePosition;
+        if (rowIdx === minRowIdx || rowIdx === minNavRowIdx) return activePosition;
         const nextRowY = getRowTop(rowIdx) + getRowHeight(rowIdx) - clientHeight;
         return { idx, rowIdx: nextRowY > 0 ? findRowIdx(nextRowY) : 0 };
       }
@@ -889,7 +909,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         canExitGrid({
           shiftKey,
           maxColIdx,
-          minRowIdx,
+          minColIdx: fixLeft,
+          minRowIdx: minNavRowIdx,
           maxRowIdx,
           activePosition
         })
@@ -917,7 +938,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       rows,
       topSummaryRows,
       bottomSummaryRows,
-      minRowIdx,
+      minRowIdx: minNavRowIdx,
+      minColIdx: fixLeft,
       mainHeaderRowIdx,
       maxRowIdx,
       lastStartFrozenColumnIndex,
