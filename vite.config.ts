@@ -97,7 +97,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
             routesDirectory: 'website/routes',
             autoCodeSplitting: true
           }),
-        react()
+        react({ compiler: true })
       ],
   server: {
     open: true
