@@ -105,6 +105,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
   test: {
     dir: 'test',
     globals: true,
+    injectCjsGlobals: false,
     printConsoleTrace: true,
     env: {
       // @ts-expect-error
