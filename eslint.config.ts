@@ -1,25 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import markdown from '@eslint/markdown';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import { defineConfig, includeIgnoreFile } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores([
-    '.cache',
-    '.claude',
-    '.nitro',
-    '.output',
-    '.tanstack',
-    'coverage',
-    'dist',
-    'lib',
-    // linted by oxlint
-    '**/*.{js,ts,tsx}'
-  ]),
-
-  {
-    linterOptions: {
-      reportUnusedInlineConfigs: 'warn'
-    }
-  },
+  includeIgnoreFile(fileURLToPath(import.meta.resolve('./.gitignore')), {
+    gitignoreResolution: true
+  }),
 
   {
     name: 'markdown',
@@ -28,6 +14,9 @@ export default defineConfig([
       markdown
     },
     language: 'markdown/gfm',
+    linterOptions: {
+      reportUnusedInlineConfigs: 'warn'
+    },
     rules: {
       // `@eslint/markdown` rules
       // https://github.com/eslint/markdown/blob/main/README.md#rules

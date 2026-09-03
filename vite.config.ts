@@ -60,7 +60,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
 
 export default defineConfig(({ isPreview }): ViteUserConfig => ({
   base: '/react-data-grid/',
-  cacheDir: '.cache/vite',
+  cacheDir: 'node_modules/.cache/vite',
   clearScreen: false,
   build: {
     // chunkImportMap: true,
@@ -97,7 +97,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
             routesDirectory: 'website/routes',
             autoCodeSplitting: true
           }),
-        react()
+        react({ compiler: true })
       ],
   server: {
     open: true
