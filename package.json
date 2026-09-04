@@ -57,14 +57,15 @@
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.3",
-    "@vitest/browser-playwright": "^4.1.5",
-    "@vitest/coverage-istanbul": "^4.1.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/browser-playwright": "^5.0.0",
+    "@vitest/coverage-istanbul": "^5.0.0",
     "clsx": "^2.1.1",
-    "ecij": "^0.4.1",
+    "ecij": "^0.5.0",
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
+    "oxc-transform-react": "^0.147.0",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
     "oxlint-tsgolint": "^7.0.2001",
@@ -74,12 +75,15 @@
     "tsdown": "^0.22.7",
     "typescript": "^7.0.2",
     "vite": "^8.1.0",
-    "vitest": "^4.1.5",
-    "vitest-browser-react": "^2.2.0"
+    "vitest": "^5.0.0",
+    "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
     "react": "^19.2",
     "react-dom": "^19.2"
+  },
+  "overrides": {
+    "oxc-transform-react": "$oxc-transform-react"
   },
   "devEngines": {
     "runtime": {
