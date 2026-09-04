@@ -60,7 +60,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
 
 export default defineConfig(({ isPreview }): ViteUserConfig => ({
   base: '/react-data-grid/',
-  cacheDir: '.cache/vite',
+  cacheDir: 'node_modules/.cache/vite',
   clearScreen: false,
   build: {
     // chunkImportMap: true,
@@ -97,7 +97,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
             routesDirectory: 'website/routes',
             autoCodeSplitting: true
           }),
-        react()
+        react({ compiler: true })
       ],
   server: {
     open: true
@@ -105,6 +105,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
   test: {
     dir: 'test',
     globals: true,
+    injectCjsGlobals: false,
     printConsoleTrace: true,
     env: {
       // @ts-expect-error
@@ -136,21 +137,8 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
       commands: { resizeColumn, dragFill },
       expect: {
         toMatchScreenshot: {
-          resolveScreenshotPath({
-            root,
-            testFileDirectory,
-            testFileName,
-            arg,
-            browserName,
-            platform,
-            ext
-          }) {
-            return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
-          }
+          screenshotDirectory: 'screenshots'
         }
-      },
-      locators: {
-        exact: true
       },
       instances: [
         {
@@ -187,7 +175,6 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
     },
     projects: [
       {
-        extends: true,
         test: {
           name: 'browser',
           include: ['browser/**/*.test.*'],
@@ -196,7 +183,6 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
         }
       },
       {
-        extends: true,
         test: {
           name: 'visual',
           include: ['visual/*.test.*'],
@@ -205,7 +191,6 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
         }
       },
       {
-        extends: true,
         test: {
           name: 'node',
           include: ['node/**/*.test.*'],
