@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
-import { CellExpanderFormatter, ChildRowDeleteButton } from '../components';
+import { CellExpander, ChildRowDeleteButton } from '../components';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/TreeView')({
@@ -152,7 +152,7 @@ function TreeView() {
               `}
             >
               {hasChildren && (
-                <CellExpanderFormatter
+                <CellExpander
                   tabIndex={tabIndex}
                   expanded={row.isExpanded === true}
                   onCellExpand={() => dispatch({ id: row.id, type: 'toggleSubRow' })}
