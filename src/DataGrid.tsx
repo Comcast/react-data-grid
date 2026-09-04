@@ -507,9 +507,38 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const selectHeaderRowLatest = useLatestFunc(selectHeaderRow);
   const selectRowLatest = useLatestFunc(selectRow);
   const handleFormatterRowChangeLatest = useLatestFunc(updateRow);
-  // oxlint-disable-next-line react/immutability
   const setPositionLatest = useLatestFunc(setPosition);
   const selectHeaderCellLatest = useLatestFunc(selectHeaderCell);
+
+  function setPosition(position: Position, options?: SetActivePositionOptions): void {
+    const { isPositionInActiveBounds } = validatePosition(position);
+    if (!isPositionInActiveBounds) return;
+    commitEditorChanges();
+
+    const samePosition = isSamePosition(activePosition, position);
+
+    if (options?.enableEditor && isCellEditable(position)) {
+      const row = rows[position.rowIdx];
+      setActivePosition({ ...position, mode: 'EDIT', row, originalRow: row });
+    } else if (samePosition) {
+      // Avoid re-renders if the selected cell state is the same
+      scrollIntoView(getCellToScroll(gridRef.current!));
+    } else {
+      const newPosition: ActivePosition = { ...position, mode: 'ACTIVE' };
+      setActivePosition(newPosition);
+      if (options?.shouldFocus) {
+        setPositionToFocus(newPosition);
+      }
+    }
+
+    if (onActivePositionChange && !samePosition) {
+      onActivePositionChange({
+        rowIdx: position.rowIdx,
+        row: rows[position.rowIdx],
+        column: columns[position.idx]
+      });
+    }
+  }
 
   /**
    * Misc hooks
@@ -798,36 +827,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     );
   }
 
-  function setPosition(position: Position, options?: SetActivePositionOptions): void {
-    const { isPositionInActiveBounds } = validatePosition(position);
-    if (!isPositionInActiveBounds) return;
-    commitEditorChanges();
-
-    const samePosition = isSamePosition(activePosition, position);
-
-    if (options?.enableEditor && isCellEditable(position)) {
-      const row = rows[position.rowIdx];
-      setActivePosition({ ...position, mode: 'EDIT', row, originalRow: row });
-    } else if (samePosition) {
-      // Avoid re-renders if the selected cell state is the same
-      scrollIntoView(getCellToScroll(gridRef.current!));
-    } else {
-      const newPosition: ActivePosition = { ...position, mode: 'ACTIVE' };
-      setActivePosition(newPosition);
-      if (options?.shouldFocus) {
-        setPositionToFocus(newPosition);
-      }
-    }
-
-    if (onActivePositionChange && !samePosition) {
-      onActivePositionChange({
-        rowIdx: position.rowIdx,
-        row: rows[position.rowIdx],
-        column: columns[position.idx]
-      });
-    }
-  }
-
   function selectHeaderCell({ idx, rowIdx }: Position): void {
     setPosition({ rowIdx: minRowIdx + rowIdx - 1, idx });
   }
@@ -1087,24 +1086,15 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     );
   }
 
-  function* iterateOverViewportRowIdx() {
-    const activeRowIdx = activePosition.rowIdx;
-
-    if (activePositionIsInViewport && activeRowIdx < rowOverscanStartIdx) {
-      yield activeRowIdx;
-    }
-    for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
-      yield rowIdx;
-    }
-    if (activePositionIsInViewport && activeRowIdx > rowOverscanEndIdx) {
-      yield activeRowIdx;
-    }
-  }
-
   function getViewportRows() {
     const { idx: activeIdx, rowIdx: activeRowIdx } = activePosition;
 
-    return iterateOverViewportRowIdx()
+    return iterateOverViewportRowIdx(
+      activeRowIdx,
+      activePositionIsInViewport,
+      rowOverscanStartIdx,
+      rowOverscanEndIdx
+    )
       .map((rowIdx) => {
         const isActiveRow = rowIdx === activeRowIdx;
 
@@ -1323,4 +1313,21 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
 function isSamePosition(p1: Position, p2: Position) {
   return p1.idx === p2.idx && p1.rowIdx === p2.rowIdx;
+}
+
+function* iterateOverViewportRowIdx(
+  activeRowIdx: number,
+  activePositionIsInViewport: boolean,
+  rowOverscanStartIdx: number,
+  rowOverscanEndIdx: number
+) {
+  if (activePositionIsInViewport && activeRowIdx < rowOverscanStartIdx) {
+    yield activeRowIdx;
+  }
+  for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
+    yield rowIdx;
+  }
+  if (activePositionIsInViewport && activeRowIdx > rowOverscanEndIdx) {
+    yield activeRowIdx;
+  }
 }
