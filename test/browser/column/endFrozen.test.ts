@@ -162,9 +162,9 @@ test('end-frozen cells in top summary rows carry the end-frozen class', async ()
 
   // the summary cell in the end-frozen column must carry the end-frozen class
   const summaryCell = page.getCell({ name: 'total' });
-  await expect.element(summaryCell).toHaveClass(cellClassname, cellFrozenEndClassname, {
-    exact: true
-  });
+  await expect
+    .element(summaryCell)
+    .toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
 
 test('end-frozen cells in bottom summary rows carry the end-frozen class', async () => {
@@ -194,9 +194,9 @@ test('end-frozen cells in bottom summary rows carry the end-frozen class', async
   });
 
   const summaryCell = page.getCell({ name: 'bottom-total' });
-  await expect.element(summaryCell).toHaveClass(cellClassname, cellFrozenEndClassname, {
-    exact: true
-  });
+  await expect
+    .element(summaryCell)
+    .toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
 
 test('reordering input columns past end-frozen preserves band integrity', async () => {
