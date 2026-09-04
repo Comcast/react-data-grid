@@ -76,15 +76,14 @@
     "typescript": "^7.0.2",
     "vite": "^8.1.0",
     "vitest": "^5.0.0",
-    "vitest-browser-react": "^2.2.0"
+    "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
     "react": "^19.2",
     "react-dom": "^19.2"
   },
   "overrides": {
-    "oxc-transform-react": "$oxc-transform-react",
-    "vitest": "$vitest"
+    "oxc-transform-react": "$oxc-transform-react"
   },
   "devEngines": {
     "runtime": {
