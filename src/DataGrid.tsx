@@ -80,7 +80,7 @@ import {
   frozenColumnShadowStartTopClassname,
   viewportDraggingClassname
 } from './style/core';
-import SummaryRow from './SummaryRow';
+import { defaultRenderSummaryRow } from './SummaryRow';
 
 export type DefaultColumnOptions<R, SR> = Pick<
   Column<R, SR>,
@@ -297,6 +297,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const summaryRowHeight = rawSummaryRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const renderRow = renderers?.renderRow ?? defaultRenderers?.renderRow ?? defaultRenderRow;
+  const renderSummaryRow =
+    renderers?.renderSummaryRow ?? defaultRenderers?.renderSummaryRow ?? defaultRenderSummaryRow;
   const renderCell = renderers?.renderCell ?? defaultRenderers?.renderCell ?? defaultRenderCell;
   const renderSortStatus =
     renderers?.renderSortStatus ?? defaultRenderers?.renderSortStatus ?? defaultRenderSortStatus;
@@ -1142,8 +1144,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           draggedOverCellIdx: getDraggedOverCellIdx(rowIdx),
           onRowChange: handleFormatterRowChangeLatest,
           setActivePosition: setPositionLatest,
-          activeCellEditor: getCellEditor(rowIdx),
-          isTreeGrid
+          activeCellEditor: getCellEditor(rowIdx)
         });
       })
       .toArray();
@@ -1243,22 +1244,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
               const top = headerRowsHeight + summaryRowHeight * rowIdx;
 
-              return (
-                <SummaryRow
-                  key={rowIdx}
-                  aria-rowindex={gridRowStart}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={undefined}
-                  iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
+              return renderSummaryRow(rowIdx, {
+                'aria-rowindex': gridRowStart,
+                rowIdx: summaryRowIdx,
+                gridRowStart,
+                row,
+                top,
+                bottom: undefined,
+                iterateOverViewportColumnsForRow,
+                activeCellIdx: isSummaryRowActive ? activePosition.idx : undefined,
+                isTop: true,
+                setActivePosition: setPositionLatest
+              });
             })}
             <RowSelectionChangeContext value={selectRowLatest}>
               {getViewportRows()}
@@ -1276,22 +1273,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
                   : undefined;
 
-              return (
-                <SummaryRow
-                  aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
-                  key={rowIdx}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={bottom}
-                  iterateOverViewportColumnsForRow={iterateOverViewportColumnsForRow}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop={false}
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
+              return renderSummaryRow(rowIdx, {
+                'aria-rowindex': ariaRowCount - bottomSummaryRowsCount + rowIdx + 1,
+                rowIdx: summaryRowIdx,
+                gridRowStart,
+                row,
+                top,
+                bottom,
+                iterateOverViewportColumnsForRow,
+                activeCellIdx: isSummaryRowActive ? activePosition.idx : undefined,
+                isTop: false,
+                setActivePosition: setPositionLatest
+              });
             })}
           </>
         )}

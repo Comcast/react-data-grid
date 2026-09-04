@@ -6,6 +6,7 @@ import {
   DataGrid,
   DataGridDefaultRenderersContext,
   Row as DefaultRow,
+  SummaryRow as DefaultSummaryRow,
   renderSortIcon,
   SelectColumn
 } from '../../src';
@@ -14,6 +15,7 @@ import type {
   Column,
   DataGridProps,
   RenderRowProps,
+  RenderSummaryRowProps,
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
@@ -24,15 +26,17 @@ interface Row {
   col1: string;
   col2: string;
 }
+type SummaryRow = undefined;
 
 const noRows: readonly Row[] = [];
 
-const columns: readonly Column<Row>[] = [
+const columns: readonly Column<Row, SummaryRow>[] = [
   SelectColumn,
   {
     key: 'col1',
     name: 'Column1',
-    sortable: true
+    sortable: true,
+    renderSummaryCell: () => 'summary'
   },
   {
     key: 'col2',
@@ -41,20 +45,28 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
-function renderGlobalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderGlobalCell(key: React.Key, props: CellRendererProps<Row, SummaryRow>) {
   return <Cell key={key} {...props} className="global" style={{ fontStyle: 'italic' }} />;
 }
 
-function renderLocalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderLocalCell(key: React.Key, props: CellRendererProps<Row, SummaryRow>) {
   return <Cell key={key} {...props} className="local" style={{ fontStyle: 'normal' }} />;
 }
 
-function renderGlobalRow(key: React.Key, props: RenderRowProps<Row>) {
+function renderGlobalRow(key: React.Key, props: RenderRowProps<Row, SummaryRow>) {
   return <DefaultRow key={key} {...props} className="global" />;
 }
 
-function renderLocalRow(key: React.Key, props: RenderRowProps<Row>) {
+function renderLocalRow(key: React.Key, props: RenderRowProps<Row, SummaryRow>) {
   return <DefaultRow key={key} {...props} className="local" />;
+}
+
+function renderGlobalSummaryRow(key: React.Key, props: RenderSummaryRowProps<Row, SummaryRow>) {
+  return <DefaultSummaryRow key={key} {...props} className="global" />;
+}
+
+function renderLocalSummaryRow(key: React.Key, props: RenderSummaryRowProps<Row, SummaryRow>) {
+  return <DefaultSummaryRow key={key} {...props} className="local" />;
 }
 
 function NoRowsFallback() {
@@ -97,7 +109,7 @@ function TestGrid<R, SR, K extends React.Key>(props: DataGridProps<R, SR, K>) {
   return <DataGrid {...props} sortColumns={sortColumns} onSortColumnsChange={setSortColumns} />;
 }
 
-function setupContext<R, SR, K extends React.Key>(props: DataGridProps<R, SR, K>) {
+function setupContext<R, SR, K extends React.Key = React.Key>(props: DataGridProps<R, SR, K>) {
   return page.render(
     <DataGridDefaultRenderersContext
       value={{
@@ -105,7 +117,8 @@ function setupContext<R, SR, K extends React.Key>(props: DataGridProps<R, SR, K>
         renderCheckbox: renderGlobalCheckbox,
         renderSortStatus: renderGlobalSortStatus,
         renderCell: renderGlobalCell,
-        renderRow: renderGlobalRow
+        renderRow: renderGlobalRow,
+        renderSummaryRow: renderGlobalSummaryRow
       }}
     >
       <TestGrid {...props} />
@@ -114,28 +127,36 @@ function setupContext<R, SR, K extends React.Key>(props: DataGridProps<R, SR, K>
 }
 
 test('fallback defined using renderers prop with no rows', async () => {
-  await setup({ columns, rows: noRows, renderers: { noRowsFallback: <NoRowsFallback /> } });
+  await setup<Row, SummaryRow>({
+    columns,
+    rows: noRows,
+    renderers: { noRowsFallback: <NoRowsFallback /> }
+  });
 
   await testRowCount(0);
   await expect.element(page.getByText('Local no rows fallback')).toBeInTheDocument();
 });
 
 test('fallback defined using context with no rows', async () => {
-  await setupContext({ columns, rows: noRows });
+  await setupContext<Row, SummaryRow>({ columns, rows: noRows });
 
   await testRowCount(0);
   await expect.element(page.getByText('Global no rows fallback')).toBeInTheDocument();
 });
 
 test('fallback defined using both context and renderers with no rows', async () => {
-  await setupContext({ columns, rows: noRows, renderers: { noRowsFallback: <NoRowsFallback /> } });
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: noRows,
+    renderers: { noRowsFallback: <NoRowsFallback /> }
+  });
 
   await testRowCount(0);
   await expect.element(page.getByText('Local no rows fallback')).toBeInTheDocument();
 });
 
 test('fallback defined using renderers prop with a row', async () => {
-  await setup({
+  await setup<Row, SummaryRow>({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
     renderers: { noRowsFallback: <NoRowsFallback /> }
@@ -146,14 +167,17 @@ test('fallback defined using renderers prop with a row', async () => {
 });
 
 test('fallback defined using context with a row', async () => {
-  await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }]
+  });
 
   await testRowCount(1);
   await expect.element(page.getByText('Global no rows fallback')).not.toBeInTheDocument();
 });
 
 test('fallback defined using both context and renderers with a row', async () => {
-  await setupContext({
+  await setupContext<Row, SummaryRow>({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
     renderers: { noRowsFallback: <NoRowsFallback /> }
@@ -165,21 +189,29 @@ test('fallback defined using both context and renderers with a row', async () =>
 });
 
 test('checkbox defined using renderers prop', async () => {
-  await setup({ columns, rows: noRows, renderers: { renderCheckbox: renderLocalCheckbox } });
+  await setup<Row, SummaryRow>({
+    columns,
+    rows: noRows,
+    renderers: { renderCheckbox: renderLocalCheckbox }
+  });
 
   await testRowCount(0);
   await expect.element(page.getByText('Local checkbox')).toBeInTheDocument();
 });
 
 test('checkbox defined using context', async () => {
-  await setupContext({ columns, rows: noRows });
+  await setupContext<Row, SummaryRow>({ columns, rows: noRows });
 
   await testRowCount(0);
   await expect.element(page.getByText('Global checkbox')).toBeInTheDocument();
 });
 
 test('checkbox defined using both context and renderers', async () => {
-  await setupContext({ columns, rows: noRows, renderers: { renderCheckbox: renderLocalCheckbox } });
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: noRows,
+    renderers: { renderCheckbox: renderLocalCheckbox }
+  });
 
   await testRowCount(0);
   await expect.element(page.getByText('Local checkbox')).toBeInTheDocument();
@@ -187,7 +219,7 @@ test('checkbox defined using both context and renderers', async () => {
 });
 
 test('sortPriority defined using both contexts', async () => {
-  await setupContext({ columns, rows: noRows });
+  await setupContext<Row, SummaryRow>({ columns, rows: noRows });
 
   const column1 = page.getHeaderCell({ name: 'Column1' });
   const column2 = page.getHeaderCell({ name: 'Column2' });
@@ -204,7 +236,7 @@ test('sortPriority defined using both contexts', async () => {
 });
 
 test('sortPriority defined using both contexts and renderers', async () => {
-  await setupContext({
+  await setupContext<Row, SummaryRow>({
     columns,
     rows: noRows,
     renderers: { renderSortStatus: renderLocalSortStatus }
@@ -225,7 +257,10 @@ test('sortPriority defined using both contexts and renderers', async () => {
 });
 
 test('renderCell defined using context', async () => {
-  await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }]
+  });
 
   const cell1 = page.getCell({ name: 'value 1' });
   const cell2 = page.getCell({ name: 'value 2' });
@@ -239,7 +274,7 @@ test('renderCell defined using context', async () => {
 });
 
 test('renderCell defined using both contexts and renderers', async () => {
-  await setupContext({
+  await setupContext<Row, SummaryRow>({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
     renderers: { renderCell: renderLocalCell }
@@ -257,7 +292,10 @@ test('renderCell defined using both contexts and renderers', async () => {
 });
 
 test('renderRow defined using context', async () => {
-  await setupContext({ columns, rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }] });
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }]
+  });
 
   const row = getRowWithCell(page.getCell({ name: 'value 1' }));
   await expect.element(row).toHaveClass('global');
@@ -265,13 +303,38 @@ test('renderRow defined using context', async () => {
 });
 
 test('renderRow defined using both contexts and renderers', async () => {
-  await setupContext({
+  await setupContext<Row, SummaryRow>({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
     renderers: { renderRow: renderLocalRow }
   });
 
   const row = getRowWithCell(page.getCell({ name: 'value 1' }));
+  await expect.element(row).toHaveClass('local');
+  await expect.element(row).not.toHaveClass('global');
+});
+
+test('renderSummaryRow defined using context', async () => {
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: [{ id: 10, col1: 'value 10', col2: 'value 20' }],
+    topSummaryRows: [undefined]
+  });
+
+  const row = getRowWithCell(page.getCell({ name: 'summary' }));
+  await expect.element(row).toHaveClass('global');
+  await expect.element(row).not.toHaveClass('local');
+});
+
+test('renderSummaryRow defined using both contexts and renderers', async () => {
+  await setupContext<Row, SummaryRow>({
+    columns,
+    rows: [{ id: 10, col1: 'value 10', col2: 'value 20' }],
+    bottomSummaryRows: [undefined],
+    renderers: { renderSummaryRow: renderLocalSummaryRow }
+  });
+
+  const row = getRowWithCell(page.getCell({ name: 'summary' }));
   await expect.element(row).toHaveClass('local');
   await expect.element(row).not.toHaveClass('global');
 });
