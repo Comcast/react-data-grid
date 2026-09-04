@@ -11,6 +11,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({
@@ -151,7 +152,7 @@ function renderCheckbox({ onChange, indeterminate, ...props }: RenderCheckboxPro
 function renderSortStatus({ sortDirection, priority }: RenderSortStatusProps) {
   return (
     <>
-      {sortDirection !== undefined ? (sortDirection === 'ASC' ? '\u2B9D' : '\u2B9F') : null}
+      {sortDirection && (sortDirection === 'ASC' ? '\u2B9D' : '\u2B9F')}
       <span className={sortPriorityClassname}>{priority}</span>
     </>
   );
@@ -186,7 +187,7 @@ function getComparator(sortColumn: string): Comparator {
     case 'priority':
     case 'issueType':
       return (a, b) => {
-        return a[sortColumn].localeCompare(b[sortColumn]);
+        return compare(a[sortColumn], b[sortColumn]);
       };
     case 'complete':
       return (a, b) => {

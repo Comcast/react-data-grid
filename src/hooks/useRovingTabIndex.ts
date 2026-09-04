@@ -17,11 +17,11 @@ export function useRovingTabIndex(isActive: boolean) {
       );
 
       // Focus cell content when available instead of the cell itself
-      if (elementToFocus !== null) {
+      if (elementToFocus === null) {
+        setIsChildFocused(false);
+      } else {
         elementToFocus.focus({ preventScroll: true });
         setIsChildFocused(true);
-      } else {
-        setIsChildFocused(false);
       }
     } else {
       setIsChildFocused(true);
