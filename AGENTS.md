@@ -39,7 +39,7 @@ website/              # demo site (Vite + TanStack Router)
 
 - **Public API** — all exports flow through `src/index.ts`. Keep `README.md` in sync with user-facing changes.
 - **Docs** — keep `AGENTS.md` in sync with tooling, conventions, or architectural changes.
-- **Default renderers** — `DataGridDefaultRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
+- **Default renderers** — `DataGridRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
 - **TypeScript strict** with `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Distinguish missing properties from `undefined` values.
 - **`Maybe<T>`** (`T | undefined | null`) — used for all nullable column/render props. Do not use bare `T | undefined`.
 - **`NoInfer<>`** — wrap callback parameters to prevent reverse type inference into component generics.
