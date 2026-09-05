@@ -27,6 +27,7 @@ import type {
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
  */
 
+// TODO: remove when all browsers support the scheduler APIs
 const canUsePostTask = typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
 
 const cellEditing = css`

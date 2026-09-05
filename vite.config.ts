@@ -102,6 +102,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
             target: 'react',
             generatedRouteTree: 'website/routeTree.gen.ts',
             routesDirectory: 'website/routes',
+            tmpDir: 'node_modules/.cache/tanstack',
             autoCodeSplitting: true
           }),
         react({ compiler: true })

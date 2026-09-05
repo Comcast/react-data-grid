@@ -10,38 +10,30 @@ import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
+  // split the loader to avoid importing faker in the site's entry js
+  codeSplitGroupings: [['component', 'loader']],
   component: AllFeatures,
-  loader() {
-    rows ??= createRows();
-    return rows;
-  }
+  loader,
+  staleTime: Number.POSITIVE_INFINITY
 });
 
-let rows: readonly Row[] | undefined;
-
-function createRows(): Row[] {
-  const rows: Row[] = [];
-
-  for (let i = 0; i < 2000; i++) {
-    rows.push({
-      id: `id_${i}`,
-      avatar: faker.image.avatar(),
-      email: faker.internet.email(),
-      title: faker.person.prefix(),
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      street: faker.location.street(),
-      zipCode: faker.location.zipCode(),
-      date: faker.date.past().toLocaleDateString(),
-      bs: faker.company.buzzPhrase(),
-      catchPhrase: faker.company.catchPhrase(),
-      companyName: faker.company.name(),
-      words: faker.lorem.words(),
-      sentence: faker.lorem.sentence()
-    });
-  }
-
-  return rows;
+function loader(): readonly Row[] {
+  return Array.from({ length: 2000 }, (_, i): Row => ({
+    id: `id_${i}`,
+    avatar: faker.image.avatar(),
+    email: faker.internet.email(),
+    title: faker.person.prefix(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    street: faker.location.street(),
+    zipCode: faker.location.zipCode(),
+    date: faker.date.past().toLocaleDateString(),
+    bs: faker.company.buzzPhrase(),
+    catchPhrase: faker.company.catchPhrase(),
+    companyName: faker.company.name(),
+    words: faker.lorem.words(),
+    sentence: faker.lorem.sentence()
+  }));
 }
 
 const highlightClassname = css`
