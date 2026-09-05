@@ -1,2 +1,0 @@
-import{a as e,i as t,o as n,t as r}from"./index-DHJiHjb-.js";import{t as i}from"./src-C-JOYoiF.js";var a=e(),o=n(),s=Array.from({length:1e3},(e,t)=>t),c=[];for(let e=0;e<1e3;e++){let t=String(e);c.push({key:t,name:t,frozen:e<5,width:80,resizable:!0,renderCell:r})}function l(){let e=(0,a.c)(2),n=t(),r;return e[0]===n?r=e[1]:(r=(0,o.jsx)(i,{"aria-label":`Million Cells Example`,columns:c,rows:s,rowHeight:22,className:`fill-grid`,direction:n}),e[0]=n,e[1]=r),r}export{l as component};
-//# sourceMappingURL=MillionCells-Bu5tchfY.js.map
