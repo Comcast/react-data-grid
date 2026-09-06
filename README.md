@@ -272,9 +272,13 @@ Optional ref for imperative APIs like scrolling to or focusing a cell. See [`Dat
 
 Rows pinned at the top of the grid for summary purposes.
 
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
+
 ###### `bottomSummaryRows?: Maybe<readonly SR[]>`
 
 Rows pinned at the bottom of the grid for summary purposes.
+
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
 
 ###### `rowKeyGetter?: Maybe<(row: R) => K>`
 

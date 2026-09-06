@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -210,6 +210,16 @@ function AllFeatures() {
     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
   }
 
+  const rowClass = useCallback(
+    (row: Row, index: number) => {
+      return clsx({
+        [highlightClassname]: row.id.includes('7') || index === 0,
+        [copiedRowClassname]: copiedCell?.row === row
+      });
+    },
+    [copiedCell]
+  );
+
   function handleCellPaste(
     { row, column }: CellCopyArgs<Row>,
     event: React.ClipboardEvent<HTMLDivElement>
@@ -283,12 +293,7 @@ function AllFeatures() {
         isRowSelectionDisabled={(row) => row.id === 'id_2'}
         onSelectedRowsChange={setSelectedRows}
         className="fill-grid"
-        rowClass={(row, index) => {
-          return clsx({
-            [highlightClassname]: row.id.includes('7') || index === 0,
-            [copiedRowClassname]: copiedCell?.row === row
-          });
-        }}
+        rowClass={rowClass}
         direction={direction}
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
