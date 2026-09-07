@@ -1,4 +1,4 @@
-import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
+import type { CalculatedColumnOrColumnGroup, Maybe } from '../types';
 import { isStartFrozen } from './frozenColumnUtils';
 import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
@@ -28,7 +28,7 @@ export function getHeaderCellStyle<R, SR>(
 }
 
 export function getCellStyle<R, SR>(
-  column: CalculatedColumn<R, SR>,
+  column: CalculatedColumnOrColumnGroup<R, SR>,
   colSpan = 1
 ): React.CSSProperties {
   const index = column.idx + 1;
@@ -58,7 +58,7 @@ export function classnames(...args: readonly ClassValue[]) {
 }
 
 export function getCellClassname<R, SR>(
-  column: CalculatedColumn<R, SR>,
+  column: CalculatedColumnOrColumnGroup<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
   return classnames(
