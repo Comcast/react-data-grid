@@ -25,6 +25,7 @@ interface GetNextPositionOpts<R, SR> {
   topSummaryRows: Maybe<readonly SR[]>;
   bottomSummaryRows: Maybe<readonly SR[]>;
   minRowIdx: number;
+  minColIdx?: number;
   mainHeaderRowIdx: number;
   maxRowIdx: number;
   activePosition: Position;
@@ -101,6 +102,7 @@ export function getNextActivePosition<R, SR>({
   topSummaryRows,
   bottomSummaryRows,
   minRowIdx,
+  minColIdx = 0,
   mainHeaderRowIdx,
   maxRowIdx,
   activePosition: { idx: activeIdx, rowIdx: activeRowIdx },
@@ -187,19 +189,23 @@ export function getNextActivePosition<R, SR>({
 
   if (cellNavigationMode === 'CHANGE_ROW') {
     const isAfterLastColumn = nextIdx === columnsCount;
-    const isBeforeFirstColumn = nextIdx === -1;
+    const isBeforeFirstColumn = nextIdx < minColIdx && nextRowIdx >= 0;
 
     if (isAfterLastColumn) {
       const isLastRow = nextRowIdx === maxRowIdx;
       if (!isLastRow) {
-        nextIdx = 0;
+        nextIdx = minColIdx;
         nextRowIdx += 1;
+      } else {
+        nextIdx = minColIdx;
       }
     } else if (isBeforeFirstColumn) {
       const isFirstRow = nextRowIdx === minRowIdx;
       if (!isFirstRow) {
         nextRowIdx -= 1;
         nextIdx = columnsCount - 1;
+      } else {
+        nextIdx = minColIdx;
       }
       setColSpan(false);
     }
@@ -228,6 +234,7 @@ export function getNextActivePosition<R, SR>({
 
 interface CanExitGridOpts {
   maxColIdx: number;
+  minColIdx?: number;
   minRowIdx: number;
   maxRowIdx: number;
   activePosition: Position;
@@ -236,6 +243,7 @@ interface CanExitGridOpts {
 
 export function canExitGrid({
   maxColIdx,
+  minColIdx = 0,
   minRowIdx,
   maxRowIdx,
   activePosition: { rowIdx, idx },
@@ -243,7 +251,7 @@ export function canExitGrid({
 }: CanExitGridOpts): boolean {
   // Exit the grid if we're at the first or last cell of the grid
   const atLastCellInRow = idx === maxColIdx;
-  const atFirstCellInRow = idx === 0;
+  const atFirstCellInRow = idx === minColIdx;
   const atLastRow = rowIdx === maxRowIdx;
   const atFirstRow = rowIdx === minRowIdx;
 

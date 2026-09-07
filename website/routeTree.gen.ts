@@ -26,6 +26,7 @@ import { Route as MillionCellsRouteImport } from './routes/MillionCells'
 import { Route as NoRowsRouteImport } from './routes/NoRows'
 import { Route as ResizableGridRouteImport } from './routes/ResizableGrid'
 import { Route as RowGroupingRouteImport } from './routes/RowGrouping'
+import { Route as RowSpanningRouteImport } from './routes/RowSpanning'
 import { Route as RowsReorderingRouteImport } from './routes/RowsReordering'
 import { Route as ScrollToCellRouteImport } from './routes/ScrollToCell'
 import { Route as TreeViewRouteImport } from './routes/TreeView'
@@ -116,6 +117,11 @@ const RowGroupingRoute = RowGroupingRouteImport.update({
   path: '/RowGrouping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RowSpanningRoute = RowSpanningRouteImport.update({
+  id: '/RowSpanning',
+  path: '/RowSpanning',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RowsReorderingRoute = RowsReorderingRouteImport.update({
   id: '/RowsReordering',
   path: '/RowsReordering',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/NoRows': typeof NoRowsRoute
   '/ResizableGrid': typeof ResizableGridRoute
   '/RowGrouping': typeof RowGroupingRoute
+  '/RowSpanning': typeof RowSpanningRoute
   '/RowsReordering': typeof RowsReorderingRoute
   '/ScrollToCell': typeof ScrollToCellRoute
   '/TreeView': typeof TreeViewRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/NoRows': typeof NoRowsRoute
   '/ResizableGrid': typeof ResizableGridRoute
   '/RowGrouping': typeof RowGroupingRoute
+  '/RowSpanning': typeof RowSpanningRoute
   '/RowsReordering': typeof RowsReorderingRoute
   '/ScrollToCell': typeof ScrollToCellRoute
   '/TreeView': typeof TreeViewRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/NoRows': typeof NoRowsRoute
   '/ResizableGrid': typeof ResizableGridRoute
   '/RowGrouping': typeof RowGroupingRoute
+  '/RowSpanning': typeof RowSpanningRoute
   '/RowsReordering': typeof RowsReorderingRoute
   '/ScrollToCell': typeof ScrollToCellRoute
   '/TreeView': typeof TreeViewRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/NoRows'
     | '/ResizableGrid'
     | '/RowGrouping'
+    | '/RowSpanning'
     | '/RowsReordering'
     | '/ScrollToCell'
     | '/TreeView'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/NoRows'
     | '/ResizableGrid'
     | '/RowGrouping'
+    | '/RowSpanning'
     | '/RowsReordering'
     | '/ScrollToCell'
     | '/TreeView'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/NoRows'
     | '/ResizableGrid'
     | '/RowGrouping'
+    | '/RowSpanning'
     | '/RowsReordering'
     | '/ScrollToCell'
     | '/TreeView'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   NoRowsRoute: typeof NoRowsRoute
   ResizableGridRoute: typeof ResizableGridRoute
   RowGroupingRoute: typeof RowGroupingRoute
+  RowSpanningRoute: typeof RowSpanningRoute
   RowsReorderingRoute: typeof RowsReorderingRoute
   ScrollToCellRoute: typeof ScrollToCellRoute
   TreeViewRoute: typeof TreeViewRoute
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RowGroupingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/RowSpanning': {
+      id: '/RowSpanning'
+      path: '/RowSpanning'
+      fullPath: '/RowSpanning'
+      preLoaderRoute: typeof RowSpanningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/RowsReordering': {
       id: '/RowsReordering'
       path: '/RowsReordering'
@@ -473,6 +493,7 @@ const rootRouteChildren: RootRouteChildren = {
   NoRowsRoute: NoRowsRoute,
   ResizableGridRoute: ResizableGridRoute,
   RowGroupingRoute: RowGroupingRoute,
+  RowSpanningRoute: RowSpanningRoute,
   RowsReorderingRoute: RowsReorderingRoute,
   ScrollToCellRoute: ScrollToCellRoute,
   TreeViewRoute: TreeViewRoute,

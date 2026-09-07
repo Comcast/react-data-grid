@@ -87,6 +87,7 @@ export default function Nav({ direction, onDirectionChange }: Props) {
         <Link to="/AllFeatures">All Features</Link>
         <Link to="/CellNavigation">Cell Navigation</Link>
         <Link to="/ColumnSpanning">Column Spanning</Link>
+        <Link to="/RowSpanning">Row Spanning</Link>
         <Link to="/ColumnGrouping">Column Grouping</Link>
         <Link to="/ColumnsReordering">Columns Reordering</Link>
         <Link to="/ContextMenu">Context Menu</Link>

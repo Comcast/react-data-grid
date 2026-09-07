@@ -27,6 +27,14 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly maxWidth?: Maybe<number>;
   /** Class name(s) for cells */
   readonly cellClass?: Maybe<string | ((row: TRow) => Maybe<string>)>;
+  /** Class name(s) for cells, takes precedence over `cellClass` */
+  readonly styleCellClass?: Maybe<
+    (row: TRow, column: CalculatedColumn<TRow, TSummaryRow>) => Maybe<string>
+  >;
+  /** Inline style for cells, merged over the grid's own cell positioning styles */
+  readonly myCellStyle?: Maybe<
+    React.CSSProperties | ((row: TRow, colIdx: number) => Maybe<React.CSSProperties>)
+  >;
   /** Class name(s) for the header cell */
   readonly headerCellClass?: Maybe<string>;
   /** Class name(s) for summary cells */
@@ -46,6 +54,12 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Enables cell editing. If set and no editor property specified, then a textinput will be used as the cell editor */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
+  /**
+   * Returns `[spanIndex, totalSpan]` for the given row, where `spanIndex` is the
+   * 1-based position of `row` within the span. Only the cell with `spanIndex === 1`
+   * is rendered; it visually covers the following `totalSpan - 1` rows.
+   */
+  readonly rowSpan?: Maybe<(args: RowSpanArgs<TRow>) => Maybe<readonly [number, number]>>;
   /** Determines whether column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backwards compatibility. */
   readonly frozen?: Maybe<ColumnFrozen>;
@@ -179,6 +193,7 @@ export interface CellRendererProps<TRow, TSummaryRow> extends BaseCellRendererPr
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   colSpan: number | undefined;
+  rowSpan: number | undefined;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
@@ -339,6 +354,11 @@ export type ColSpanArgs<TRow, TSummaryRow> =
   | { readonly type: 'HEADER' }
   | { readonly type: 'ROW'; readonly row: TRow }
   | { readonly type: 'SUMMARY'; readonly row: TSummaryRow };
+
+export interface RowSpanArgs<TRow> {
+  readonly type: 'ROW';
+  readonly row: TRow;
+}
 
 export type RowHeightArgs<TRow> =
   | { type: 'ROW'; row: TRow }
