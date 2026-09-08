@@ -3,15 +3,15 @@ coverage:
   status:
     project:
       default:
-        informational: true
-    patch: off
+        informational: false
+    patch: on
 
 # https://docs.codecov.com/docs/pull-request-comments
 comment:
   layout: 'diff, files'
-  require_changes: true
+  require_changes: false
 
 # https://docs.codecov.com/docs/node
 parsers:
   javascript:
-    enable_partials: yes
+    enable_partials: no
