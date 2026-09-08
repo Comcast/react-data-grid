@@ -143,6 +143,11 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     (row: R | GroupRow<R>) => row is GroupRow<R>
   ] => {
     const allGroupRows = new Set<unknown>();
+
+    function isGroupRow(row: R | GroupRow<R>): row is GroupRow<R> {
+      return allGroupRows.has(row);
+    }
+
     if (!groupedRows) return [rawRows, isGroupRow];
 
     const flattenedRows: (R | GroupRow<R>)[] = [];
@@ -186,10 +191,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
     expandGroup(groupedRows, undefined, 0);
     return [flattenedRows, isGroupRow];
-
-    function isGroupRow(row: R | GroupRow<R>): row is GroupRow<R> {
-      return allGroupRows.has(row);
-    }
   }, [expandedGroupIds, groupedRows, rawRows, groupIdGetter]);
 
   const rowHeight = useMemo(() => {
