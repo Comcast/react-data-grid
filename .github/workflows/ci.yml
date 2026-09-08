@@ -3,19 +3,21 @@ on:
   push:
     branches:
       - main
+      - mainented
+      - assigned
   pull_request:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: linux_arm86
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v8
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v8
         with:
           node-version-file: 'package.json'
-          check-latest: true
+          check-latest: false
 
       - name: Install dependencies
         run: npm ci
@@ -41,8 +43,8 @@ jobs:
         run: |
           sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
           Acquire::Retries "0";
-          Acquire::http::Timeout "10";
-          Acquire::https::Timeout "10";
+          Acquire::http::Timeout "30";
+          Acquire::https::Timeout "30";
           EOF
           npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 2
@@ -53,14 +55,14 @@ jobs:
 
       - name: Upload test failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v8
         with:
           name: test-artifacts
           path: .vitest/attachments/**
           if-no-files-found: ignore
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@v8
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
