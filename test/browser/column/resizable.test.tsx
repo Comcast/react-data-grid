@@ -133,17 +133,19 @@ test('should auto resize column when resize handle is double clicked', async () 
     webkit: '100px 327.703125px',
     webkitCI: '100px 400px'
   });
-  expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
-    expect.objectContaining(columns[1]),
-    // Due to differences in text rendering between browsers the measured width can vary
-    expect.toSatisfy(
-      (width) =>
-        // Chrome and Firefox on windows
-        (width >= 327.7 && width <= 327.9) ||
-        // Firefox/WebKit in CI
-        width === 400
-    )
-  );
+  await expect
+    .poll(() => onColumnResize)
+    .toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining(columns[1]),
+      // Due to differences in text rendering between browsers the measured width can vary
+      expect.toSatisfy(
+        (width) =>
+          // Chrome and Firefox on windows
+          (width >= 327.7 && width <= 327.9) ||
+          // Firefox/WebKit in CI
+          width === 400
+      )
+    );
 });
 
 test('should use the maxWidth if specified on auto resize', async () => {
@@ -226,7 +228,7 @@ test('should remeasure flex columns when resizing a column', async () => {
     webkit: '79.140625px 919.421875px 919.421875px',
     webkitCI: '102.796875px 907.59375px 907.59375px'
   });
-  expect(onColumnResize).toHaveBeenCalledOnce();
+  await expect.poll(() => onColumnResize).toHaveBeenCalledOnce();
   // onColumnResize is not called if width is not changed
   await autoResize('col1');
   await testGridTemplateColumns({
@@ -286,12 +288,15 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '101px 201px' });
   await autoResize('col2');
-  expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
-    new Map([
-      ['col1', { width: 101, type: 'measured' }],
-      ['col2', { width: 100, type: 'resized' }]
-    ])
-  );
+  await expect
+    .poll(() => onColumnWidthsChangeSpy)
+    .toHaveBeenCalledExactlyOnceWith(
+      new Map<string, ColumnWidth>([
+        // the outdated `measured` width provided by the consumer is re-evaluated
+        ['col1', { width: 100, type: 'measured' }],
+        ['col2', { width: 100, type: 'resized' }]
+      ])
+    );
   expect(onColumnResizeSpy).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
     100
@@ -301,8 +306,8 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
 
   await resize('col2', [5, 5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
-    new Map([
-      ['col1', { width: 101, type: 'measured' }],
+    new Map<string, ColumnWidth>([
+      ['col1', { width: 100, type: 'measured' }],
       ['col2', { width: 115, type: 'resized' }]
     ])
   );
@@ -317,11 +322,69 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   expect(onColumnWidthsChangeSpy).not.toHaveBeenCalled();
   expect(onColumnResizeSpy).not.toHaveBeenCalled();
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '120px 120px' });
+
   await resize('col2', [5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
-    new Map([
-      ['col1', { width: 120, type: 'measured' }],
-      ['col2', { width: 130, type: 'resized' }]
+    new Map<string, ColumnWidth>([
+      ['col1', { width: 100, type: 'measured' }],
+      ['col2', { width: 150, type: 'resized' }]
+    ])
+  );
+});
+
+test('should clamp the widths provided via the columnWidths prop', async () => {
+  await setup<Row, unknown>({
+    columns,
+    rows: [],
+    columnWidths: new Map<string, ColumnWidth>([
+      ['col1', { width: 100, type: 'resized' }],
+      // out of the column's bounds, e.g. `maxWidth` was lowered since the width was persisted
+      ['col2', { width: 900, type: 'resized' }]
+    ]),
+    onColumnWidthsChange() {}
+  });
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 400px' });
+});
+
+test('should retain the widths of columns that are filtered out', async () => {
+  const onColumnWidthsChange = vi.fn();
+
+  function TestGrid() {
+    const [columnWidths, setColumnWidths] = useState(
+      (): ColumnWidths =>
+        new Map<string, ColumnWidth>([
+          // an intentional width for a rendered column
+          ['col1', { width: 120, type: 'resized' }],
+          // `col3` and `col4` are not rendered, e.g. they were filtered out
+          // before the widths were persisted
+          ['col3', { width: 300, type: 'resized' }],
+          // only a measurement, so it is dropped rather than retained
+          ['col4', { width: 400, type: 'measured' }]
+        ])
+    );
+
+    return (
+      <DataGrid<Row>
+        columns={columns}
+        rows={[]}
+        columnWidths={columnWidths}
+        onColumnWidthsChange={(newColumnWidths) => {
+          setColumnWidths(newColumnWidths);
+          onColumnWidthsChange(newColumnWidths);
+        }}
+      />
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await resize('col2', [5, 5, 5]);
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([
+      ['col1', { width: 120, type: 'resized' }],
+      ['col2', { width: 215, type: 'resized' }],
+      ['col3', { width: 300, type: 'resized' }]
     ])
   );
 });
