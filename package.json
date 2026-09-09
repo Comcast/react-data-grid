@@ -66,7 +66,7 @@
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "oxc-transform-react": "^0.148.0",
-    "oxfmt": "^0.65.0",
+    "oxfmt": "^0.66.0",
     "oxlint": "^1.80.0",
     "oxlint-tsgolint": "^7.0.2001",
     "playwright": "^1.62.1",
