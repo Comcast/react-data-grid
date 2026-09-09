@@ -1,10 +1,7 @@
-import { page, server, userEvent, type Locator } from 'vitest/browser';
+import { page, userEvent, type Locator } from 'vitest/browser';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
-
-// copy/paste do not work in webkit in CI
-export const canCopyPaste = !(import.meta.env.CI && server.browser === 'webkit');
 
 export function setup<R, SR, K extends React.Key = React.Key>(props: DataGridProps<R, SR, K>) {
   return page.render(<DataGrid {...props} />);
