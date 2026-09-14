@@ -126,6 +126,20 @@ export default function EditCell<R, SR>({
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    // Skip the default behavior when the cell renders a :modal.
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal
+    // Ideally we would check if the cell is inert, but there's no good way to do it.
+    if (event.currentTarget.matches(':has(:modal)')) {
+      return;
+    }
+
+    // Also skip the default behavior when the editor is (in) a :modal
+    // and the grid isn't in it, meaning the :modal is rendered in a portal.
+    const modal = (event.target as Element).closest(':modal');
+    if (modal !== null && !modal.contains(event.currentTarget)) {
+      return;
+    }
+
     if (onKeyDown) {
       const cellEvent = createCellEvent(event);
       onKeyDown(

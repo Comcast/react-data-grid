@@ -803,6 +803,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const samePosition = isSamePosition(activePosition, position);
 
     if (options?.enableEditor && isCellEditable(position)) {
+      // avoid selecting text in the editor, for example
+      // after double-clicking and displayCellContent is enabled
+      document.getSelection()?.empty();
+
       const row = rows[position.rowIdx];
       setActivePosition({ ...position, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
