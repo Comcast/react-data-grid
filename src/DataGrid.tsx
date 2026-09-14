@@ -805,7 +805,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (options?.enableEditor && isCellEditable(position)) {
       // avoid selecting text in the editor, for example
       // after double-clicking and displayCellContent is enabled
-      document.getSelection()?.empty();
+      gridRef.current?.ownerDocument.getSelection()?.removeAllRanges();
 
       const row = rows[position.rowIdx];
       setActivePosition({ ...position, mode: 'EDIT', row, originalRow: row });

@@ -572,6 +572,8 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 A function called when keydown event is triggered on a cell. This event can be used to customize cell navigation and editing behavior.
 
+It is not called for keydown events triggered in a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) editor, see [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellpropstrow-tsummaryrow--reactnode).
+
 **Examples**
 
 - Prevent editing on `Enter`
@@ -1351,6 +1353,8 @@ Render function to render the content of group cells when using `TreeDataGrid`.
 ##### `renderEditCell?: Maybe<(props: RenderEditCellProps<TRow, TSummaryRow>) => ReactNode>`
 
 Render function to render the content of edit cells. When set, the column is automatically set to be editable
+
+Editors can render a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) element, like a `<dialog>` opened with `showModal()`, either in the cell or in a portal. Keydown events triggered in the modal are left to the editor: `onCellKeyDown` is not called, and the grid does not close the editor on `Escape`/`Enter` or navigate on `Tab`, so the editor must call `onClose` itself, for example in the dialog's `onClose` handler.
 
 ##### `editable?: Maybe<boolean | ((row: TRow) => boolean)>`
 

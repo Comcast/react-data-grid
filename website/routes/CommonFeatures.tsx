@@ -101,7 +101,11 @@ const columns: readonly Column<Row, SummaryRow>[] = [
         value={p.row.country}
         onChange={(e) => p.onRowChange({ ...p.row, country: e.target.value }, true)}
         onFocus={(event) => {
-          event.target.showPicker();
+          try {
+            event.target.showPicker();
+          } catch {
+            // showPicker() throws without transient user activation
+          }
         }}
       >
         {countries.map((country) => (
@@ -149,7 +153,6 @@ const columns: readonly Column<Row, SummaryRow>[] = [
           onClose={() => onClose()}
         >
           <input
-            autoFocus
             type="range"
             min="0"
             max="100"
