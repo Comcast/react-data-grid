@@ -1,10 +1,15 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
-import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-playwright';
+import {
+  playwright,
+  PlaywrightBrowserProvider,
+  type PlaywrightProviderOptions
+} from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
+import type { Browser } from 'playwright';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
-import type { BrowserCommand } from 'vitest/node';
+import type { BrowserCommand, BrowserProviderOption, TestProject } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
 const isTest = process.env.VITEST === 'true';
@@ -49,6 +54,64 @@ const dragFill: BrowserCommand<[from: string, to: string]> = async (
   }
   await page.mouse.up();
 };
+
+// Firefox pages opened in the same browser share focus and mouse states,
+// so test files running in parallel interfere with each other:
+// a mouse event raises the window of its page, blurring the focused element of other pages,
+// and ends pointer captures in other pages.
+// To isolate test files, every session after the first one gets its own browser.
+class PlaywrightBrowserPerSessionProvider extends PlaywrightBrowserProvider {
+  readonly #project: TestProject;
+  readonly #options: PlaywrightProviderOptions;
+  readonly #browsers = new Set<Browser>();
+  #firstSessionId: string | undefined;
+
+  constructor(project: TestProject, options: PlaywrightProviderOptions) {
+    super(project, options);
+    this.#project = project;
+    this.#options = options;
+  }
+
+  override async openPage(sessionId: string, url: string, options: { parallel: boolean }) {
+    this.#firstSessionId ??= sessionId;
+
+    // the base provider reuses the session's context if it exists,
+    // instead of creating one in its own browser
+    if (sessionId !== this.#firstSessionId && !this.contexts.has(sessionId)) {
+      const { launchOptions, contextOptions, actionTimeout } = this.#options;
+      const playwright = await import('playwright');
+      const browser = await playwright[this.browserName].launch({
+        ...launchOptions,
+        headless: this.#project.config.browser.headless
+      });
+      this.#browsers.add(browser);
+      const context = await browser.newContext({ ...contextOptions, ignoreHTTPSErrors: true });
+      if (actionTimeout !== undefined) {
+        context.setDefaultTimeout(actionTimeout);
+      }
+      this.contexts.set(sessionId, context);
+    }
+
+    await super.openPage(sessionId, url, options);
+  }
+
+  override async close() {
+    await super.close();
+    await Promise.all(Array.from(this.#browsers, (browser) => browser.close()));
+    this.#browsers.clear();
+  }
+}
+
+function playwrightBrowserPerSession(
+  options: PlaywrightProviderOptions
+): BrowserProviderOption<PlaywrightProviderOptions> {
+  return {
+    ...playwright(options),
+    providerFactory(project) {
+      return new PlaywrightBrowserPerSessionProvider(project, options);
+    }
+  };
+}
 
 const actionTimeout = 2000;
 const viewport = { width: 1920, height: 1080 } as const;
@@ -116,6 +179,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
     globals: true,
     injectCjsGlobals: false,
     printConsoleTrace: true,
+    maxWorkers: 8,
     env: {
       // @ts-expect-error
       CI: isCI
@@ -165,16 +229,14 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
         },
         {
           browser: 'firefox',
-          provider: playwright({
+          provider: playwrightBrowserPerSession({
             ...playwrightOptions,
             launchOptions: {
               firefoxUserPrefs: {
                 'accessibility.force_disabled': 1
               }
             }
-          }),
-          // TODO: remove when FF tests are stable
-          fileParallelism: false
+          })
         },
         {
           browser: 'webkit',
