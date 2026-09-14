@@ -179,7 +179,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
     globals: true,
     injectCjsGlobals: false,
     printConsoleTrace: true,
-    maxWorkers: 8,
+    maxWorkers: isCI ? 2 : 8,
     env: {
       // @ts-expect-error
       CI: isCI
