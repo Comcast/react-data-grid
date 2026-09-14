@@ -130,6 +130,8 @@ export default function EditCell<R, SR>({
     // skipping both `onCellKeyDown` and the default behavior.
     // The :modal may be rendered in the cell or in a portal,
     // but the grid itself may also be rendered in a :modal.
+    // Ideally we would check if the cell is inert,
+    // but there's no good way to do it.
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal
     const modal = (event.target as Element).closest(':modal');
     if (modal !== null && !modal.contains(event.currentTarget)) {
