@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { startTransition, useState, ViewTransition } from 'react';
 import { css } from 'ecij';
 import clsx from 'clsx';
 
 import { Row, type RenderRowProps } from '../../src';
 
-const rowDraggingClassname = css`
-  opacity: 0.5;
+const draggableRowClassname = css`
+  :root:active-view-transition &:focus-within {
+    z-index: 1;
+  }
 `;
 
 const rowOverClassname = css`
@@ -22,29 +24,25 @@ export function DraggableRowRenderer<R, SR>({
   onRowReorder,
   ...props
 }: DraggableRowRenderProps<R, SR>) {
-  const [isDragging, setIsDragging] = useState(false);
   const [isOver, setIsOver] = useState(false);
 
-  className = clsx(className, {
-    [rowDraggingClassname]: isDragging,
+  className = clsx(className, draggableRowClassname, {
     [rowOverClassname]: isOver
   });
 
   function onDragStart(event: React.DragEvent<HTMLDivElement>) {
-    setIsDragging(true);
     event.dataTransfer.setData('text/plain', String(rowIdx));
     event.dataTransfer.dropEffect = 'move';
   }
 
-  function onDragEnd() {
-    setIsDragging(false);
-  }
-
   function onDrop(event: React.DragEvent<HTMLDivElement>) {
-    setIsOver(false);
     // prevent the browser from redirecting in some cases
     event.preventDefault();
-    onRowReorder(Number(event.dataTransfer.getData('text/plain')), rowIdx);
+    setIsOver(false);
+
+    startTransition(() => {
+      onRowReorder(Number(event.dataTransfer.getData('text/plain')), rowIdx);
+    });
   }
 
   function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
@@ -60,18 +58,19 @@ export function DraggableRowRenderer<R, SR>({
   }
 
   return (
-    <Row
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragOver={onDragOver}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      rowIdx={rowIdx}
-      className={className}
-      {...props}
-    />
+    <ViewTransition>
+      <Row
+        draggable
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnter={onDragEnter}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        rowIdx={rowIdx}
+        className={className}
+        {...props}
+      />
+    </ViewTransition>
   );
 }
 
