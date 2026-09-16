@@ -5,9 +5,9 @@
 ```shell
 npm ci                       # setup
 node --run build             # library → lib/
-node --run typecheck         # tsc --build
-node --run eslint            # eslint --max-warnings 0
-node --run eslint:fix        # eslint --fix
+node --run lint              # oxlint
+node --run lint:md           # eslint --max-warnings 0 (markdown only)
+node --run lint:fix          # oxlint --fix && eslint --fix
 node --run format            # oxfmt
 node --run test              # vitest (browser + node)
 node --run test -- <path>    # single test, e.g. test/browser/rowHeight.test.ts
@@ -39,7 +39,7 @@ website/              # demo site (Vite + TanStack Router)
 
 - **Public API** — all exports flow through `src/index.ts`. Keep `README.md` in sync with user-facing changes.
 - **Docs** — keep `AGENTS.md` in sync with tooling, conventions, or architectural changes.
-- **Default renderers** — `DataGridDefaultRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
+- **Default renderers** — `DataGridRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
 - **TypeScript strict** with `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Distinguish missing properties from `undefined` values.
 - **`Maybe<T>`** (`T | undefined | null`) — used for all nullable column/render props. Do not use bare `T | undefined`.
 - **`NoInfer<>`** — wrap callback parameters to prevent reverse type inference into component generics.
@@ -59,4 +59,4 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `node --run typecheck`, `node --run eslint`, `node --run format`, `node --run test`.
+Run before submitting changes: `node --run lint`, `node --run format`, `node --run test`.

@@ -241,10 +241,8 @@ test('grouping', async () => {
     await expect.element(cell).toHaveTextContent(item.text);
     await expect.element(cell).toHaveAttribute('aria-colindex', item.colIndex);
     if (item.colSpan == null) {
-      // eslint-disable-next-line vitest/no-conditional-expect
       await expect.element(cell).not.toHaveAttribute('aria-colspan');
     } else {
-      // eslint-disable-next-line vitest/no-conditional-expect
       await expect.element(cell).toHaveAttribute('aria-colspan', item.colSpan);
     }
     await expect.element(cell).toHaveAttribute('aria-rowspan', item.rowSpan);

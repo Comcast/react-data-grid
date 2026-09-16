@@ -62,10 +62,7 @@ import type {
 } from './types';
 import { defaultRenderCell } from './Cell';
 import { renderCheckbox as defaultRenderCheckbox } from './cellRenderers';
-import {
-  DataGridDefaultRenderersContext,
-  useDefaultRenderers
-} from './DataGridDefaultRenderersContext';
+import { DataGridRenderersContext, useRenderers } from './DataGridRenderersContext';
 import EditCell from './EditCell';
 import GroupedColumnHeaderRow from './GroupedColumnHeaderRow';
 import HeaderRow from './HeaderRow';
@@ -291,18 +288,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   /**
    * defaults
    */
-  const defaultRenderers = useDefaultRenderers<R, SR>();
+  const contextRenderers = useRenderers<R, SR>();
   const role = rawRole ?? 'grid';
   const rowHeight = rawRowHeight ?? 35;
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
   const summaryRowHeight = rawSummaryRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
-  const renderRow = renderers?.renderRow ?? defaultRenderers?.renderRow ?? defaultRenderRow;
-  const renderCell = renderers?.renderCell ?? defaultRenderers?.renderCell ?? defaultRenderCell;
+  const renderRow = renderers?.renderRow ?? contextRenderers?.renderRow ?? defaultRenderRow;
+  const renderCell = renderers?.renderCell ?? contextRenderers?.renderCell ?? defaultRenderCell;
   const renderSortStatus =
-    renderers?.renderSortStatus ?? defaultRenderers?.renderSortStatus ?? defaultRenderSortStatus;
+    renderers?.renderSortStatus ?? contextRenderers?.renderSortStatus ?? defaultRenderSortStatus;
   const renderCheckbox =
-    renderers?.renderCheckbox ?? defaultRenderers?.renderCheckbox ?? defaultRenderCheckbox;
-  const noRowsFallback = renderers?.noRowsFallback ?? defaultRenderers?.noRowsFallback;
+    renderers?.renderCheckbox ?? contextRenderers?.renderCheckbox ?? defaultRenderCheckbox;
+  const noRowsFallback = renderers?.noRowsFallback ?? contextRenderers?.noRowsFallback;
   const enableVirtualization = rawEnableVirtualization ?? typeof rawRowHeight !== 'string';
   const direction = rawDirection ?? 'ltr';
 
@@ -325,7 +322,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   );
   const [isColumnResizing, setIsColumnResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>(undefined);
+  const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>();
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
 
   const isColumnWidthsControlled =
@@ -422,7 +419,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   });
 
   const defaultGridComponents = useMemo(
-    () => ({
+    (): Renderers<R, SR> => ({
       renderCheckbox,
       renderSortStatus,
       renderCell
@@ -519,37 +516,35 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   const selectHeaderRowLatest = useLatestFunc(selectHeaderRow);
   const selectRowLatest = useLatestFunc(selectRow);
   const handleFormatterRowChangeLatest = useLatestFunc(updateRow);
+  // oxlint-disable-next-line react/immutability
   const setPositionLatest = useLatestFunc(setPosition);
   const selectHeaderCellLatest = useLatestFunc(selectHeaderCell);
 
   /**
    * Misc hooks
    */
-  useImperativeHandle(
-    ref,
-    (): DataGridHandle => ({
-      element: gridRef.current,
-      scrollToCell({ idx, rowIdx }) {
-        // frozen columns are always visible — scrolling to them is a no-op
-        const scrollToIdx =
-          idx != null &&
-          idx > lastStartFrozenColumnIndex &&
-          (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
-          idx < columns.length
-            ? idx
-            : undefined;
-        const scrollToRowIdx =
-          rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
-            ? rowIdx + headerAndTopSummaryRowsCount
-            : undefined;
+  useImperativeHandle(ref, (): DataGridHandle => ({
+    element: gridRef.current,
+    scrollToCell({ idx, rowIdx }) {
+      // frozen columns are always visible — scrolling to them is a no-op
+      const scrollToIdx =
+        idx != null &&
+        idx > lastStartFrozenColumnIndex &&
+        (firstEndFrozenColumnIndex === -1 || idx < firstEndFrozenColumnIndex) &&
+        idx < columns.length
+          ? idx
+          : undefined;
+      const scrollToRowIdx =
+        rowIdx != null && validatePosition({ idx: 0, rowIdx }).isPositionInViewport
+          ? rowIdx + headerAndTopSummaryRowsCount
+          : undefined;
 
-        if (scrollToIdx != null || scrollToRowIdx != null) {
-          setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
-        }
-      },
-      setActivePosition: setPosition
-    })
-  );
+      if (scrollToIdx != null || scrollToRowIdx != null) {
+        setScrollToPosition({ idx: scrollToIdx, rowIdx: scrollToRowIdx });
+      }
+    },
+    setActivePosition: setPosition
+  }));
 
   /**
    * event handlers
@@ -635,7 +630,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     if (!(target instanceof Element)) return;
 
-    const isCellEvent = target.closest('.rdg-cell') !== null;
+    const cell = target.closest('.rdg-cell');
+    const isCellEvent = cell !== null;
     const isRowEvent = isTreeGrid && target.role === 'row';
 
     if (!isCellEvent && !isRowEvent) return;
@@ -653,7 +649,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         navigate(event);
         break;
       default:
-        handleCellInput(event);
+        handleCellInput(event, cell);
         break;
     }
   }
@@ -693,7 +689,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     updateRow(column, activePosition.rowIdx, updatedRow);
   }
 
-  function handleCellInput(event: KeyboardEvent<HTMLDivElement>) {
+  function handleCellInput(event: KeyboardEvent<HTMLDivElement>, cell: Element | null) {
     if (!activePositionIsCellInViewport) return;
     const row = getActiveRow();
     const { key, shiftKey } = event;
@@ -713,6 +709,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
+      // ensure cell is fully visible
+      scrollIntoView(cell);
+
       setActivePosition(({ idx, rowIdx }) => ({
         idx,
         rowIdx,
@@ -1189,6 +1188,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
   return (
     <div
+      ref={gridRef}
       role={role}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
@@ -1214,7 +1214,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         ...layoutCssVars
       }}
       dir={direction}
-      ref={gridRef}
       onScroll={onScroll}
       onKeyDown={handleKeyDown}
       onCopy={handleCellCopy}
@@ -1222,7 +1221,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-testid={testId}
       data-cy={dataCy}
     >
-      <DataGridDefaultRenderersContext value={defaultGridComponents}>
+      <DataGridRenderersContext value={defaultGridComponents}>
         <HeaderRowSelectionChangeContext value={selectHeaderRowLatest}>
           <HeaderRowSelectionContext value={headerSelectionValue}>
             {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
@@ -1317,7 +1316,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
             })}
           </>
         )}
-      </DataGridDefaultRenderersContext>
+      </DataGridRenderersContext>
 
       {lastStartFrozenColumnIndex > -1 &&
         renderFrozenShadow(

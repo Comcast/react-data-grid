@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { startTransition, useCallback, useMemo, useState, ViewTransition } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column, type ColumnWidths, type SortColumn } from '../../src';
+import { compare } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
@@ -16,7 +17,7 @@ interface Row {
   readonly issueType: string;
 }
 
-function createRows(): Row[] {
+function createRows(): readonly Row[] {
   const rows: Row[] = [];
 
   for (let i = 1; i < 500; i++) {
@@ -30,6 +31,10 @@ function createRows(): Row[] {
   }
 
   return rows;
+}
+
+function rowKeyGetter(row: Row): number {
+  return row.id;
 }
 
 const columns: Column<Row>[] = [
@@ -88,24 +93,31 @@ function ColumnsReordering() {
     if (sortColumns.length === 0) return rows;
     const { columnKey, direction } = sortColumns[0];
 
-    let sortedRows: Row[] = [...rows];
+    let sortFn: (a: Row, b: Row) => number;
 
     switch (columnKey) {
       case 'task':
       case 'priority':
       case 'issueType':
-        sortedRows = sortedRows.sort((a, b) => a[columnKey].localeCompare(b[columnKey]));
+        sortFn = (a, b) => compare(a[columnKey], b[columnKey]);
         break;
       case 'complete':
-        sortedRows = sortedRows.sort((a, b) => a[columnKey] - b[columnKey]);
+        sortFn = (a, b) => a[columnKey] - b[columnKey];
         break;
       default:
+        throw new Error(`unsupported columnKey: "${columnKey}"`);
     }
-    return direction === 'DESC' ? sortedRows.reverse() : sortedRows;
+
+    if (direction === 'DESC') {
+      const sortImpl = sortFn;
+      sortFn = (a, b) => sortImpl(b, a);
+    }
+
+    return rows.toSorted(sortFn);
   }, [rows, sortColumns]);
 
   function onColumnsReorder(sourceKey: string, targetKey: string) {
-    function reorderColumns() {
+    startTransition(() => {
       setColumnsOrder((columnsOrder) => {
         const sourceColumnOrderIndex = columnsOrder.findIndex(
           (index) => columns[index].key === sourceKey
@@ -118,14 +130,14 @@ function ColumnsReordering() {
         newColumnsOrder.splice(targetColumnOrderIndex, 0, sourceColumnOrder);
         return newColumnsOrder;
       });
-    }
-
-    document.startViewTransition(reorderColumns);
+    });
   }
 
   function resetOrderAndWidths() {
-    setColumnsOrder(initialColumnsOrder);
-    setColumnWidths(new Map());
+    startTransition(() => {
+      setColumnsOrder(initialColumnsOrder);
+      setColumnWidths(new Map());
+    });
   }
 
   return (
@@ -140,18 +152,21 @@ function ColumnsReordering() {
       >
         Reset Columns
       </button>
-      <DataGrid
-        aria-label="Columns Reordering Example"
-        columns={reorderedColumns}
-        rows={sortedRows}
-        sortColumns={sortColumns}
-        onSortColumnsChange={onSortColumnsChange}
-        direction={direction}
-        defaultColumnOptions={{ width: '1fr' }}
-        onColumnsReorder={onColumnsReorder}
-        columnWidths={columnWidths}
-        onColumnWidthsChange={setColumnWidths}
-      />
+      <ViewTransition>
+        <DataGrid
+          aria-label="Columns Reordering Example"
+          columns={reorderedColumns}
+          rows={sortedRows}
+          rowKeyGetter={rowKeyGetter}
+          sortColumns={sortColumns}
+          onSortColumnsChange={onSortColumnsChange}
+          direction={direction}
+          defaultColumnOptions={{ width: '1fr' }}
+          onColumnsReorder={onColumnsReorder}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={setColumnWidths}
+        />
+      </ViewTransition>
     </>
   );
 }

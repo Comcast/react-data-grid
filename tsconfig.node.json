@@ -2,7 +2,8 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ESNext"],
-    "module": "NodeNext"
+    "module": "NodeNext",
+    "types": ["node"]
   },
   "include": ["eslint.config.ts"]
 }

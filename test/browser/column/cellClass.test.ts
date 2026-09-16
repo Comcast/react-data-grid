@@ -59,7 +59,7 @@ test('cellClass returns undefined', async () => {
     {
       key: 'id',
       name: 'ID',
-      cellClass: () => undefined
+      cellClass() {}
     }
   ];
   await setup({ columns, rows });

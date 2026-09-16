@@ -45,7 +45,7 @@ test('rowClass returns undefined', async () => {
   await setup({
     columns,
     rows: initialRows,
-    rowClass: () => undefined
+    rowClass() {}
   });
   await expect.element(rows.nth(0)).toHaveClass(rowClassname, 'rdg-row-even', { exact: true });
   await expect.element(rows.nth(1)).toHaveClass(rowClassname, 'rdg-row-odd', { exact: true });

@@ -7,10 +7,13 @@
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "js/ts.experimental.useTsgo": true,
-  "eslint.options": {
-    "flags": ["unstable_native_nodejs_ts_config"]
-  },
+  // ESLint is only used for markdown; JS/TS is linted by the oxc extension
+  "eslint.validate": ["markdown"],
   "eslint.problems.shortenToSingleLine": true,
+  "oxc.path.tsgolint": "node_modules/.bin/tsgolint.cmd",
+  "terminal.integrated.env.windows": {
+    "OXLINT_TSGOLINT_PATH": "node_modules/.bin/tsgolint.cmd"
+  },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },

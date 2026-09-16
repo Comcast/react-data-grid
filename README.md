@@ -79,7 +79,7 @@ import 'react-data-grid/lib/styles.css';
 
 `react-data-grid` is published as ECMAScript modules for evergreen browsers, bundlers, and server-side rendering.
 
-> **Important** <br />
+> **Important**  
 > Vite 8+ by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
 
 ```ts
@@ -272,9 +272,13 @@ Optional ref for imperative APIs like scrolling to or focusing a cell. See [`Dat
 
 Rows pinned at the top of the grid for summary purposes.
 
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
+
 ###### `bottomSummaryRows?: Maybe<readonly SR[]>`
 
 Rows pinned at the bottom of the grid for summary purposes.
+
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
 
 ###### `rowKeyGetter?: Maybe<(row: R) => K>`
 
@@ -1144,7 +1148,7 @@ const columns: readonly Column<Row>[] = [
 
 ### Context
 
-#### `DataGridDefaultRenderersContext`
+#### `DataGridRenderersContext`
 
 Context for providing default renderers to DataGrids in your app.
 
@@ -1152,7 +1156,7 @@ Context for providing default renderers to DataGrids in your app.
 
 ```tsx
 import {
-  DataGridDefaultRenderersContext,
+  DataGridRenderersContext,
   renderCheckbox,
   renderSortIcon,
   renderSortPriority,
@@ -1174,9 +1178,7 @@ const defaultGridRenderers: Renderers<unknown, unknown> = {
 
 function AppProvider({ children }) {
   return (
-    <DataGridDefaultRenderersContext value={defaultGridRenderers}>
-      {children}
-    </DataGridDefaultRenderersContext>
+    <DataGridRenderersContext value={defaultGridRenderers}>{children}</DataGridRenderersContext>
   );
 }
 ```

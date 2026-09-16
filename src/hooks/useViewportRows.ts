@@ -23,6 +23,11 @@ interface ViewportRowsArgsRegularHeight<R> {
 type ViewportRowsArgs<R> = ViewportRowsBaseArgs<R> &
   (ViewportRowsArgsStringHeight | ViewportRowsArgsRegularHeight<R>);
 
+function getRowElementFirstCell(element: Element, rowIdx: number): Element | null {
+  const nth = element.querySelector('.rdg-header-row') ? rowIdx + 2 : rowIdx + 1;
+  return element.querySelector(`[role="row"][aria-rowindex="${nth}"] > [role="gridcell"]`);
+}
+
 export function useViewportRows<R>({
   rows,
   rowHeight,
@@ -49,11 +54,6 @@ export function useViewportRows<R>({
           'props.gridHeight is required when rowHeight is a string. This is needed to calculate the total height of the rows.'
         );
       }
-
-      const getRowElementFirstCell = (element: Element, rowIdx: number): Element | null => {
-        const nth = element.querySelector('.rdg-header-row') ? rowIdx + 2 : rowIdx + 1;
-        return element.querySelector(`[role="row"][aria-rowindex="${nth}"] > [role="gridcell"]`);
-      };
 
       const getRowYTop = (element: Element, rowIdx: number) => {
         const cell = getRowElementFirstCell(element, rowIdx);
@@ -189,10 +189,10 @@ export function useViewportRows<R>({
     // `findRowIdx` only reads `gridRef.current` in the string-rowHeight branch,
     // which is unreachable here because `enableVirtualization` is forced off when
     // `rowHeight` is a string (see DataGrid.tsx).
-    /* eslint-disable react-hooks/refs */
+    /* oxlint-disable react/refs */
     const rowVisibleStartIdx = findRowIdx(scrollTop);
     const rowVisibleEndIdx = findRowIdx(scrollTop + clientHeight);
-    /* eslint-enable react-hooks/refs */
+    /* oxlint-enable react/refs */
 
     rowOverscanStartIdx = max(0, rowVisibleStartIdx - overscanThreshold);
     rowOverscanEndIdx = min(rows.length - 1, rowVisibleEndIdx + overscanThreshold);

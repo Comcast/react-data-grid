@@ -5,6 +5,13 @@ import 'vitest-browser-react';
 import { configure } from 'vitest-browser-react/pure';
 import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
 
+// avoid priting huge stack traces
+// chromium defaults to 10
+// firefox defaults to 128
+// webkit defaults to 100
+// @ts-expect-error
+Error.stackTraceLimit = 10;
+
 configure({
   reactStrictMode: true
 });

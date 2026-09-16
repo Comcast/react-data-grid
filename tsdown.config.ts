@@ -1,3 +1,4 @@
+import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig } from 'tsdown';
@@ -35,6 +36,10 @@ export default defineConfig({
       // We add the package version as prefix to avoid style conflicts
       // between multiple versions of RDG on the same page
       classPrefix: `rdg-${pkg.version.replaceAll('.', '-')}-`
+    }),
+    react({
+      compiler: true,
+      exclude: [/node_modules/, /\.d\.ts$/]
     })
   ]
 });

@@ -176,7 +176,12 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
 
     return (
       <>
-        <button type="button" onClick={onClick}>
+        <button
+          type="button"
+          // tabIndex needed otherwise webkit will set focus on the <body> after clicking the button
+          tabIndex={0}
+          onClick={onClick}
+        >
           Test
         </button>
         <DataGrid
@@ -198,6 +203,7 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
   const button = page.getByRole('button', { name: 'Test' });
   await expect.element(button).not.toHaveFocus();
   await userEvent.click(button);
+  await expect.element(button).toHaveFocus();
   await expect.element(cell).not.toHaveFocus();
   await expect.element(button).toHaveFocus();
 });

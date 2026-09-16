@@ -363,11 +363,11 @@ export interface RenderCheckboxProps extends Pick<
 }
 
 export interface Renderers<TRow, TSummaryRow> {
-  renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
-  renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
-  renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
-  renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;
-  noRowsFallback?: Maybe<ReactNode>;
+  readonly renderCell?: Maybe<(key: Key, props: CellRendererProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderCheckbox?: Maybe<(props: RenderCheckboxProps) => ReactNode>;
+  readonly renderRow?: Maybe<(key: Key, props: RenderRowProps<TRow, TSummaryRow>) => ReactNode>;
+  readonly renderSortStatus?: Maybe<(props: RenderSortStatusProps) => ReactNode>;
+  readonly noRowsFallback?: Maybe<ReactNode>;
 }
 
 export interface SetActivePositionOptions {

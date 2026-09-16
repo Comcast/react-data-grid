@@ -27,6 +27,7 @@ import type {
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
  */
 
+// TODO: remove when all browsers support the scheduler APIs
 const canUsePostTask = typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
 
 const cellEditing = css`
@@ -100,16 +101,18 @@ export default function EditCell<R, SR>({
       }
     }
 
-    window.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-    window.addEventListener('mousedown', onWindowMouseDown);
+    globalThis.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+    globalThis.addEventListener('mousedown', onWindowMouseDown);
 
     return () => {
-      window.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-      window.removeEventListener('mousedown', onWindowMouseDown);
+      globalThis.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+      globalThis.removeEventListener('mousedown', onWindowMouseDown);
       cancelTask();
     };
   }, [commitOnOutsideClick]);
 
+  // TODO: report react compiler bug
+  // oxlint-disable-next-line react/invariant
   function cancelTask() {
     captureEventRef.current = undefined;
     if (abortControllerRef.current !== undefined) {
