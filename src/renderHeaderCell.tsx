@@ -1,7 +1,7 @@
 import { css } from 'ecij';
 
 import type { RenderHeaderCellProps } from './types';
-import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
+import { useRenderers } from './DataGridRenderersContext';
 
 const headerSortCellClassname = css`
   @layer rdg.SortableHeaderCell {
@@ -47,7 +47,7 @@ function SortableHeaderCell<R, SR>({
   priority,
   children
 }: SortableHeaderCellProps<R, SR>) {
-  const renderSortStatus = useDefaultRenderers<R, SR>()!.renderSortStatus!;
+  const renderSortStatus = useRenderers<R, SR>()!.renderSortStatus!;
 
   return (
     <span className={headerSortCellClassname}>

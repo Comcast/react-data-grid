@@ -8,6 +8,7 @@ import type { BrowserCommand } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
 const isTest = process.env.VITEST === 'true';
+const isAgent = process.env.AI_AGENT !== undefined;
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
@@ -63,10 +64,17 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
   cacheDir: 'node_modules/.cache/vite',
   clearScreen: false,
   build: {
-    // chunkImportMap: true,
+    chunkImportMap: true,
     modulePreload: { polyfill: false },
     sourcemap: true,
     rolldownOptions: {
+      // TODO: remove
+      // https://github.com/vitejs/vite/issues/23350
+      experimental: {
+        chunkImportMap: {
+          baseUrl: '/react-data-grid/'
+        }
+      },
       output: {
         codeSplitting: {
           groups: [
@@ -95,12 +103,13 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
             target: 'react',
             generatedRouteTree: 'website/routeTree.gen.ts',
             routesDirectory: 'website/routes',
+            tmpDir: 'node_modules/.cache/tanstack',
             autoCodeSplitting: true
           }),
         react({ compiler: true })
       ],
   server: {
-    open: true
+    open: !isAgent
   },
   test: {
     dir: 'test',
