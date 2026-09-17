@@ -30,3 +30,11 @@ body {
 .fill-grid {
   block-size: 100%;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
