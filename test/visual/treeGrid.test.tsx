@@ -70,7 +70,6 @@ test('tree grid', async () => {
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
       groupBy={['country', 'year']}
-      rowGrouper={rowGrouper}
       expandedGroupIds={new Set(['USA', 'USA__2020'])}
       onExpandedGroupIdsChange={() => {}}
     />
@@ -81,8 +80,4 @@ test('tree grid', async () => {
 
 function rowKeyGetter(row: Row) {
   return row.id;
-}
-
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }

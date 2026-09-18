@@ -198,7 +198,6 @@ function RowGrouping() {
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
-        rowGrouper={rowGrouper}
         expandedGroupIds={expandedGroupIds}
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
@@ -206,8 +205,4 @@ function RowGrouping() {
       />
     </div>
   );
-}
-
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }
