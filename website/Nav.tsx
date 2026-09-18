@@ -91,6 +91,7 @@ export default function Nav({ direction, onDirectionChange }: Props) {
         <Link to="/ColumnsReordering">Columns Reordering</Link>
         <Link to="/ContextMenu">Context Menu</Link>
         <Link to="/CustomizableRenderers">Customizable Renderers</Link>
+        <Link to="/DynamicHeightCells">Dynamic Height Cells</Link>
         <Link to="/RowGrouping">Row Grouping</Link>
         <Link to="/HeaderFilters">Header Filters</Link>
         <Link to="/InfiniteScrolling">Infinite Scrolling</Link>
