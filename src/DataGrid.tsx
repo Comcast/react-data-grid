@@ -33,6 +33,7 @@ import {
   isCellEditableUtil,
   isCtrlKeyHeldDown,
   isDefaultCellInput,
+  isElement,
   renderMeasuringCells,
   scrollIntoView
 } from './utils';
@@ -616,7 +617,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { target } = event;
 
-    if (!(target instanceof Element)) return;
+    if (!isElement(target)) return;
 
     const cell = target.closest('.rdg-cell');
     const isCellEvent = cell !== null;
