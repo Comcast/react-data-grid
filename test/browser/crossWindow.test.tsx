@@ -108,7 +108,7 @@ test('should observe grid resizes with the ResizeObserver of the window the grid
   await expect.poll(getLastHeaderCellColIndex).toBe('9');
 });
 
-test.fails('should navigate between cells with the keyboard', async () => {
+test('should navigate between cells with the keyboard', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));
 
@@ -118,7 +118,7 @@ test.fails('should navigate between cells with the keyboard', async () => {
   await expect.element(frame.getActiveCell()).toHaveTextContent('b1');
 });
 
-test.fails('should commit changes and navigate out of the editor on Tab', async () => {
+test('should commit changes and navigate out of the editor on Tab', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));
   const editor = frame.getByRole('textbox', { name: 'editor' });
@@ -131,7 +131,7 @@ test.fails('should commit changes and navigate out of the editor on Tab', async 
   await expect.element(frame.getCell({ name: 'a1new' })).toBeInTheDocument();
 });
 
-test.fails('should commit changes and close the editor when clicked outside', async () => {
+test('should commit changes and close the editor when clicked outside', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));
   const editor = frame.getByRole('textbox', { name: 'editor' });
