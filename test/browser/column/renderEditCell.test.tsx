@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { createRef, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { page, server, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
-import type { Column, DataGridProps } from '../../../src';
+import type { Column, DataGridHandle, DataGridProps } from '../../../src';
 import { getCellsAtRowIndex, getRowWithCell, safeTab, scrollGrid, testCount } from '../utils';
 
 const grid = page.getGrid();
@@ -105,6 +105,33 @@ describe('Editor', () => {
     await testCount(activeRowCells, 2);
     await expect.element(col1Editor).toHaveValue(123);
     await expect.element(grid).toHaveProperty('scrollTop', 0);
+  });
+
+  it('should clear the document selection when opening the editor', async () => {
+    const ref = createRef<DataGridHandle>();
+    const columns: readonly Column<NonNullable<unknown>>[] = [
+      {
+        key: 'col1',
+        name: 'Column1',
+        renderEditCell() {
+          return <input type="checkbox" aria-label="col1-input" autoFocus />;
+        }
+      }
+    ];
+
+    await page.render(
+      <>
+        <p>text</p>
+        <DataGrid ref={ref} columns={columns} rows={[{}]} />
+      </>
+    );
+
+    const selection = document.getSelection()!;
+    selection.selectAllChildren(document.body);
+    expect(selection.type).toBe('Range');
+    ref.current!.setActivePosition({ idx: 0, rowIdx: 0 }, { enableEditor: true });
+    await expect.element(page.getByRole('checkbox', { name: 'col1-input' })).toHaveFocus();
+    expect(selection.type).not.toBe('Range');
   });
 
   describe('editable', () => {
@@ -329,7 +356,73 @@ describe('Editor', () => {
       await expect.element(col2Input).not.toBeInTheDocument();
     });
   });
+
+  describe('modal editors', () => {
+    it('should not handle keydown events triggered in a modal editor rendered in the cell', async () => {
+      await testModalEditor(false);
+    });
+
+    it('should not handle keydown events triggered in a modal editor rendered in a portal', async () => {
+      await testModalEditor(true);
+    });
+
+    it('should handle keydown events triggered in an editor when the grid is rendered in a modal', async () => {
+      const onCellKeyDown = vi.fn();
+      await page.render(
+        <dialog ref={showModalRef}>
+          <EditorTest onCellKeyDown={onCellKeyDown} />
+        </dialog>
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+      await expect.element(col2Editor).toHaveFocus();
+      await userEvent.keyboard('bc{enter}');
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1bc');
+      expect(onCellKeyDown).toHaveBeenCalledTimes(3);
+    });
+  });
 });
+
+async function testModalEditor(createEditorPortal: boolean) {
+  const onCellKeyDown = vi.fn();
+  await page.render(
+    <EditorTest
+      modalEditor
+      createEditorPortal={createEditorPortal}
+      editorOptions={{ displayCellContent: true }}
+      onCellKeyDown={onCellKeyDown}
+    />
+  );
+  const cell = getCellsAtRowIndex(0).nth(1);
+  const commitButton = page.getByRole('button', { name: 'commit' });
+
+  await userEvent.dblClick(cell);
+  await expect.element(col2Editor).toHaveFocus();
+  // the grid does not commit on Enter nor navigate on Tab
+  await userEvent.keyboard('{end}bc{enter}');
+  await expect.element(col2Editor).toHaveFocus();
+  await expect.element(col2Editor).toHaveValue('a1bc');
+  await userEvent.tab();
+  await expect.element(commitButton).toHaveFocus();
+
+  // the dialog closes on Escape, which closes the editor and discards changes
+  await userEvent.keyboard('{escape}');
+  await expect.element(col2Editor).not.toBeInTheDocument();
+  await expect.element(cell).toHaveTextContent('a1');
+  await expect.element(cell).toHaveFocus();
+
+  await userEvent.dblClick(cell);
+  await userEvent.keyboard('{end}d');
+  await userEvent.click(commitButton);
+  await expect.element(col2Editor).not.toBeInTheDocument();
+  await expect.element(cell).toHaveTextContent('a1d');
+
+  expect(onCellKeyDown).not.toHaveBeenCalled();
+}
+
+function showModalRef(dialog: HTMLDialogElement | null) {
+  dialog?.showModal();
+}
 
 interface EditorTestProps
   extends
@@ -338,6 +431,7 @@ interface EditorTestProps
   onSave?: (rows: readonly Row[]) => void;
   gridRows?: readonly Row[];
   createEditorPortal?: boolean;
+  modalEditor?: boolean;
 }
 
 const initialRows: readonly Row[] = [
@@ -357,7 +451,8 @@ function EditorTest({
   onCellKeyDown,
   onSave,
   gridRows = initialRows,
-  createEditorPortal
+  createEditorPortal,
+  modalEditor
 }: EditorTestProps) {
   const [rows, setRows] = useState(gridRows);
 
@@ -382,8 +477,8 @@ function EditorTest({
         key: 'col2',
         name: 'Col2',
         editable,
-        renderEditCell({ row, onRowChange }) {
-          const editor = (
+        renderEditCell({ row, onRowChange, onClose }) {
+          let editor = (
             <input
               autoFocus
               aria-label="col2-editor"
@@ -392,12 +487,23 @@ function EditorTest({
             />
           );
 
+          if (modalEditor) {
+            editor = (
+              <dialog ref={showModalRef} onClose={() => onClose()}>
+                {editor}
+                <button type="button" onClick={() => onClose(true)}>
+                  commit
+                </button>
+              </dialog>
+            );
+          }
+
           return createEditorPortal ? createPortal(editor, document.body) : editor;
         },
         editorOptions
       }
     ];
-  }, [editable, editorOptions, createEditorPortal]);
+  }, [editable, editorOptions, createEditorPortal, modalEditor]);
 
   return (
     <>
