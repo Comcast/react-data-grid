@@ -50,7 +50,7 @@ export function useViewportRows<R>({
         repeatCount = 1;
       } else if (currentHeight === currentRowHeight) {
         // If the current row height is the same as the previous one, increment the repeat count
-        repeatCount++;
+        repeatCount += 1;
       } else {
         if (repeatCount > 1) {
           gridTemplateRows += `repeat(${repeatCount}, ${currentHeight}px) `;
