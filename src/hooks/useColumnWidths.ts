@@ -65,7 +65,9 @@ export function useColumnWidths<R, SR>(
 
     for (const key of columnsToMeasure) {
       const measuredWidth = measureColumnWidth(gridRef, key);
-      hasChanges ||= measuredWidth !== columnWidths.get(key)?.width;
+      if (measuredWidth !== columnWidths.get(key)?.width) {
+        hasChanges = true;
+      }
       if (measuredWidth === undefined) {
         newColumnWidths.delete(key);
       } else {
