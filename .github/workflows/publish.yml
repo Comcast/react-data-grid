@@ -8,10 +8,13 @@ on:
         required: true
         type: string
 
+cache-mode: none
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     permissions:
       contents: write
       id-token: write
@@ -21,28 +24,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@v1.21.1
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: vp install --frozen-lockfile
 
-      - name: Lint
-        run: |
-          node --run lint
-          node --run lint:md
+      - run: vp run typecheck
 
-      - name: Format
-        run: node --run format:check
+      - run: vp check
 
-      - name: Build lib
-        run: node --run build
+      - run: vp run lint:md
 
-      - name: Build website
-        run: node --run build:website
+      - run: vp pack
+
+      - run: vp build
 
       - name: Check routeTree.gen.ts
         run: git diff --exit-code website/routeTree.gen.ts
@@ -54,11 +51,10 @@ jobs:
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
+          vp exec playwright install --with-deps --no-shell
         timeout-minutes: 2
 
-      - name: Test
-        run: node --run test:ci
+      - run: vp test
         timeout-minutes: 4
 
       - name: Update version

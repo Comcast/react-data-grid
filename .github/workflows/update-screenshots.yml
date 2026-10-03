@@ -5,6 +5,8 @@ on:
     types: [labeled]
   workflow_dispatch:
 
+cache-mode: none
+
 jobs:
   update-screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
@@ -25,10 +27,9 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@v1.21.1
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
 
       - name: Remove label
         if: github.event_name == 'pull_request'
@@ -36,8 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Install dependencies
-        run: npm ci
+      - run: vp install --frozen-lockfile
 
       - name: Install Playwright Browsers
         run: |
@@ -46,13 +46,12 @@ jobs:
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
+          vp exec playwright install --with-deps --no-shell
         timeout-minutes: 2
 
-      - name: Update screenshots
-        run: |
-          rm -r test/**/screenshots/**
-          node --run test:ci:update
+      - run: rm -r test/**/screenshots/**
+
+      - run: vp test --project visual --update
         timeout-minutes: 4
 
       - name: Push new screenshots

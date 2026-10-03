@@ -74,12 +74,12 @@
     "packageManager": {
       "name": "npm",
       "version": "^12.2.0",
-      "onFail": "warn"
+      "onFail": "download"
     },
     "runtime": {
       "name": "node",
       "version": "^26.10.0",
-      "onFail": "warn"
+      "onFail": "download"
     }
   },
   "allowScripts": {
