@@ -68,7 +68,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
 
   run: {
     tasks: {
-      'lint:md': {
+      eslint: {
         command: 'eslint --max-warnings 0'
       },
       typecheck: {

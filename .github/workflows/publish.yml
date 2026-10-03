@@ -35,7 +35,7 @@ jobs:
 
       - run: vp check
 
-      - run: vp run lint:md
+      - run: vp run eslint
 
       - run: vp pack
 
