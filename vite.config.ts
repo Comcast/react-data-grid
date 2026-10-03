@@ -1,8 +1,7 @@
-import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
-import { defineConfig, type ViteUserConfig } from 'vite-plus';
+import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
 import type { BrowserCommandContext } from 'vite-plus/test/node';
 
@@ -61,7 +60,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
   }
 };
 
-export default defineConfig(({ isPreview }): ViteUserConfig => ({
+export default defineConfig({
   staged: {
     '*': 'vp fmt --no-error-on-unmatched-pattern'
   },
@@ -115,20 +114,22 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
     }
   },
 
-  plugins: isPreview
-    ? []
-    : [
-        ecij(),
-        !isTest &&
-          tanstackRouter({
-            target: 'react',
-            generatedRouteTree: 'website/routeTree.gen.ts',
-            routesDirectory: 'website/routes',
-            tmpDir: 'node_modules/.cache/tanstack',
-            autoCodeSplitting: true
-          }),
-        react({ compiler: true })
-      ],
+  plugins: lazyPlugins(async () => {
+    const { tanstackRouter } = await import('@tanstack/router-plugin/vite');
+
+    return [
+      ecij(),
+      !isTest &&
+        tanstackRouter({
+          target: 'react',
+          generatedRouteTree: 'website/routeTree.gen.ts',
+          routesDirectory: 'website/routes',
+          tmpDir: 'node_modules/.cache/tanstack',
+          autoCodeSplitting: true
+        }),
+      react({ compiler: true })
+    ];
+  }),
 
   server: {
     open: !isAgent
@@ -1081,4 +1082,4 @@ copy(
       newlinesBetween: false
     }
   }
-}));
+});
