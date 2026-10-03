@@ -1,18 +1,5 @@
 # AGENTS.md
 
-## Commands
-
-```shell
-npm ci                       # setup
-node --run build             # library → lib/
-node --run lint              # oxlint
-node --run lint:md           # eslint --max-warnings 0 (markdown only)
-node --run lint:fix          # oxlint --fix && eslint --fix
-node --run format            # oxfmt
-node --run test              # vitest (browser + node)
-node --run test -- <path>    # single test, e.g. test/browser/rowHeight.test.ts
-```
-
 ## Architecture
 
 react-data-grid is a data grid with **zero `dependencies`** (peer dependency: React 19.2+). It uses CSS Grid for layout and implements row/column virtualization in JS.
@@ -29,7 +16,7 @@ src/
   cellRenderers/      # default cell renderers (e.g. checkbox, toggleGroup, value)
   editors/            # default editors (renderTextEditor)
 test/
-  browser/            # vitest browser-mode tests (Playwright, Chromium + Firefox)
+  browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
   visual/             # vitest visual regression tests (CI-only — never run locally)
 website/              # demo site (Vite + TanStack Router)
@@ -47,8 +34,7 @@ website/              # demo site (Vite + TanStack Router)
 - **Dual classnames** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
 - **Accessibility first** — ARIA attributes (e.g. `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
-- **Formatting** — oxfmt (not Prettier). **Linting** — ESLint (must pass with zero warnings).
-- **Build** — tsdown bundles library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
+- **Build** — `vp pack` bundles the library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
 
 ## Testing
 
@@ -59,7 +45,7 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `node --run lint`, `node --run format`, `node --run test`.
+Run before submitting changes: `vp run typecheck`, `vp check`, `vp run eslint`, `vp test`.
 
 <!--VITE PLUS START-->
 
