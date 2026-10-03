@@ -21,7 +21,7 @@ configure({
   reactStrictMode: true
 });
 
-declare module 'vitest/browser' {
+declare module 'vite-plus/test/browser' {
   interface LocatorSelectors {
     getGrid: () => Locator;
     getTreeGrid: () => Locator;
