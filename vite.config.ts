@@ -62,7 +62,8 @@ const playwrightOptions: PlaywrightProviderOptions = {
 
 export default defineConfig({
   staged: {
-    '*': 'vp fmt --no-error-on-unmatched-pattern'
+    '*': 'vp fmt --no-error-on-unmatched-pattern',
+    '*.md': 'vpr eslint'
   },
 
   run: {
