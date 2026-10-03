@@ -57,18 +57,19 @@ jobs:
           npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 2
 
-      - run: vp test
+      - name: Test
+        run: node --run test:ci
         timeout-minutes: 4
 
       - name: Update version
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          vp env exec npm version ${{ inputs.version }}
+          npm version ${{ inputs.version }}
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm
-        run: vp env exec npm publish --tag latest
+        run: npm publish --tag latest
 
       - name: Push tag
         run: git push origin v${{ inputs.version }}

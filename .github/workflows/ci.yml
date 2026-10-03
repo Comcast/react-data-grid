@@ -47,7 +47,8 @@ jobs:
           npx playwright install chromium firefox webkit --with-deps --no-shell
         timeout-minutes: 2
 
-      - run: vp test
+      - name: Test
+        run: node --run test:ci
         timeout-minutes: 4
 
       - name: Upload test failure artifacts

@@ -1,4 +1,4 @@
-import { page } from 'vite-plus/test/browser';
+import { page } from 'vitest/browser';
 
 import type { Column } from '../../../src';
 import { cellClassname, cellFrozenStartClassname } from '../../../src/style/cell';

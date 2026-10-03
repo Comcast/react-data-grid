@@ -1,5 +1,6 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
+import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-playwright';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
@@ -11,7 +12,6 @@ const isAgent = process.env.AI_AGENT !== undefined;
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
-  // @ts-expect-error
   { page, iframe },
   name,
   resizeBy
@@ -19,7 +19,7 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
   const resizeHandle = iframe
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
-  const { x, y } = (await resizeHandle.boundingBox())! as { x: number; y: number };
+  const { x, y } = (await resizeHandle.boundingBox())!;
   await page.mouse.move(x + 5, y + 5);
   await page.mouse.down();
   resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
@@ -74,59 +74,6 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
         chunkImportMap: {
           baseUrl: '/react-data-grid/'
         }
-      ],
-      groups: [
-        'side_effect_style',
-        'side_effect',
-        { newlinesBetween: true },
-        'builtin',
-        'react',
-        'external',
-        'ecij',
-        'clsx',
-        { newlinesBetween: true },
-        './src',
-        './renderers',
-        './components',
-        './hooks',
-        './utils',
-        './types',
-        'index',
-        'sibling',
-        'parent',
-        'unknown'
-      ],
-      newlinesBetween: false
-    }
-  },
-
-  pack: {
-    outDir: 'lib',
-    platform: 'neutral',
-    sourcemap: true,
-    deps: {
-      skipNodeModulesBundle: true
-    },
-    css: {
-      fileName: 'styles.css'
-    },
-    dts: {
-      build: true,
-      tsconfig: './tsconfig.src.json'
-    },
-    plugins: [
-      ecij({
-        // We add the package version as prefix to avoid style conflicts
-        // between multiple versions of RDG on the same page
-        classPrefix: `rdg-${pkg.version.replaceAll('.', '-')}-`
-      })
-    ]
-  },
-
-  run: {
-    tasks: {
-      eslint: {
-        command: 'eslint --max-warnings 0'
       },
       output: {
         codeSplitting: {

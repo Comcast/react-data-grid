@@ -1,7 +1,3 @@
 {
-  "recommendations": [
-    "VoidZero.vite-plus-extension-pack",
-    "dbaeumer.vscode-eslint",
-    "typescriptteam.native-preview"
-  ]
+  "recommendations": ["dbaeumer.vscode-eslint", "oxc.oxc-vscode", "typescriptteam.native-preview"]
 }
