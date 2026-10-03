@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-declare module 'vite-plus/test/browser' {
+declare module 'vitest/browser' {
   interface BrowserCommands {
     dragFill: (from: string, to: string) => Promise<void>;
     resizeColumn: (name: string, resizeBy: number | readonly number[]) => Promise<void>;
