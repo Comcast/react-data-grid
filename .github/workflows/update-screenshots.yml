@@ -5,6 +5,8 @@ on:
     types: [labeled]
   workflow_dispatch:
 
+permissions: {}
+
 cache-mode: none
 
 jobs:
@@ -14,20 +16,21 @@ jobs:
     timeout-minutes: 10
 
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # push the new screenshots
+      pull-requests: write # remove the label
 
     # one at a time per branch
     concurrency:
-      group: update-screenshots@${{ github.head_ref }}
+      group: update-screenshots@${{ github.head_ref || github.ref }}
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v7
+      # credentials are persisted to push the new screenshots
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
 
-      - uses: voidzero-dev/setup-vp@v1.21.1
+      - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
           run-install: false
 
@@ -56,8 +59,8 @@ jobs:
 
       - name: Push new screenshots
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
           git add "test/**/screenshots/**"
           git diff-index --quiet HEAD || git commit -m "Update screenshots"
           git push

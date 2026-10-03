@@ -6,8 +6,7 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: read
+permissions: {}
 
 cache-mode: none
 
@@ -16,12 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    permissions:
+      contents: read # check out the repository
+
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: voidzero-dev/setup-vp@v1.21.1
+      - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
           run-install: false
 
@@ -55,28 +57,44 @@ jobs:
 
       - name: Upload test failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-artifacts
           path: .vitest/attachments/**
+          # `.vitest` is a hidden directory
+          include-hidden-files: true
           if-no-files-found: ignore
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Deploy gh-pages
+      - name: Upload website
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config --global user.email 'action@github.com'
-          git config --global user.name 'GitHub Action'
-          git fetch origin gh-pages
-          git worktree add gh-pages gh-pages
-          cd gh-pages
-          git rm -r .
-          mv ../dist/* .
-          touch .nojekyll
-          git add .
-          git commit -m "gh-pages deployment" || echo "Nothing to commit"
-          git push -f https://comcast:${{secrets.GITHUB_TOKEN}}@github.com/Comcast/react-data-grid.git
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      pages: write # deploy to GitHub Pages
+      id-token: write # verify the deployment originates from this workflow
+
+    # one deployment at a time, never cancel one midway
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

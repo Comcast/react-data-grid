@@ -8,23 +8,35 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 cache-mode: none
+
+# never run two publishes at once, and never cancel one midway
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     permissions:
-      contents: write
-      id-token: write
+      contents: write # push the version tag and create the GitHub release
+      id-token: write # npm trusted publishing
+
+    env:
+      VERSION: ${{ inputs.version }}
 
     steps:
-      - uses: actions/checkout@v7
+      # credentials are persisted to push the version tag
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: voidzero-dev/setup-vp@v1.21.1
+      - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
           run-install: false
           registry-url: 'https://registry.npmjs.org'
@@ -59,18 +71,18 @@ jobs:
 
       - name: Update version
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          npm version ${{ inputs.version }}
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
+          npm version "$VERSION"
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm
         run: npm publish --tag latest
 
       - name: Push tag
-        run: git push origin v${{ inputs.version }}
+        run: git push origin "v$VERSION"
 
       - name: Create GitHub Release
-        run: gh release create v${{ inputs.version }} --title "v${{ inputs.version }}" --generate-notes
+        run: gh release create "v$VERSION" --title "v$VERSION" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
