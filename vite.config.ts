@@ -66,7 +66,17 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
     '*': 'vp fmt --no-error-on-unmatched-pattern'
   },
 
-  run: {},
+  run: {
+    tasks: {
+      'lint:md': {
+        command: 'eslint --max-warnings 0'
+      },
+      typecheck: {
+        command: 'tsc --build',
+        cache: false
+      }
+    }
+  },
 
   base: '/react-data-grid/',
   cacheDir: 'node_modules/.cache/vite',
@@ -246,7 +256,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
       {
         test: {
           name: 'visual',
-          include: ['visual/*.test.*'],
+          include: isCI ? ['visual/*.test.*'] : [],
           browser: { enabled: true },
           setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
         }
