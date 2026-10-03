@@ -86,10 +86,18 @@
     "oxc-transform-react": "$oxc-transform-react"
   },
   "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "^12.2.0",
+      "onFail": "warn"
+    },
     "runtime": {
       "name": "node",
-      "version": "^26.0.0",
+      "version": "^26.10.0",
       "onFail": "warn"
     }
+  },
+  "allowScripts": {
+    "core-js": false
   }
 }
