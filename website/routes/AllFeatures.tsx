@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -10,38 +10,30 @@ import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
+  // split the loader to avoid importing faker in the site's entry js
+  codeSplitGroupings: [['component', 'loader']],
   component: AllFeatures,
-  loader() {
-    rows ??= createRows();
-    return rows;
-  }
+  loader,
+  staleTime: Number.POSITIVE_INFINITY
 });
 
-let rows: readonly Row[] | undefined;
-
-function createRows(): Row[] {
-  const rows: Row[] = [];
-
-  for (let i = 0; i < 2000; i++) {
-    rows.push({
-      id: `id_${i}`,
-      avatar: faker.image.avatar(),
-      email: faker.internet.email(),
-      title: faker.person.prefix(),
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      street: faker.location.street(),
-      zipCode: faker.location.zipCode(),
-      date: faker.date.past().toLocaleDateString(),
-      bs: faker.company.buzzPhrase(),
-      catchPhrase: faker.company.catchPhrase(),
-      companyName: faker.company.name(),
-      words: faker.lorem.words(),
-      sentence: faker.lorem.sentence()
-    });
-  }
-
-  return rows;
+function loader(): readonly Row[] {
+  return Array.from({ length: 2000 }, (_, i): Row => ({
+    id: `id_${i}`,
+    avatar: faker.image.avatar(),
+    email: faker.internet.email(),
+    title: faker.person.prefix(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    street: faker.location.street(),
+    zipCode: faker.location.zipCode(),
+    date: faker.date.past().toLocaleDateString(),
+    bs: faker.company.buzzPhrase(),
+    catchPhrase: faker.company.catchPhrase(),
+    companyName: faker.company.name(),
+    words: faker.lorem.words(),
+    sentence: faker.lorem.sentence()
+  }));
 }
 
 const highlightClassname = css`
@@ -201,6 +193,9 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
+// pasting between these columns is not supported as their values are not interchangeable
+const incompatibleColumns = new Set(['email', 'zipCode', 'date']);
+
 function AllFeatures() {
   const direction = useDirection();
   const initialRows = Route.useLoaderData();
@@ -215,6 +210,16 @@ function AllFeatures() {
     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
   }
 
+  const rowClass = useCallback(
+    (row: Row, index: number) => {
+      return clsx({
+        [highlightClassname]: row.id.includes('7') || index === 0,
+        [copiedRowClassname]: copiedCell?.row === row
+      });
+    },
+    [copiedCell]
+  );
+
   function handleCellPaste(
     { row, column }: CellCopyArgs<Row>,
     event: React.ClipboardEvent<HTMLDivElement>
@@ -225,12 +230,10 @@ function AllFeatures() {
       const sourceColumnKey = copiedCell.column.key;
       const sourceRow = copiedCell.row;
 
-      const incompatibleColumns = ['email', 'zipCode', 'date'];
       if (
         sourceColumnKey === 'avatar' ||
         ['id', 'avatar'].includes(targetColumnKey) ||
-        ((incompatibleColumns.includes(targetColumnKey) ||
-          incompatibleColumns.includes(sourceColumnKey)) &&
+        ((incompatibleColumns.has(targetColumnKey) || incompatibleColumns.has(sourceColumnKey)) &&
           sourceColumnKey !== targetColumnKey)
       ) {
         return row;
@@ -252,7 +255,7 @@ function AllFeatures() {
     event: React.ClipboardEvent<HTMLDivElement>
   ): void {
     // copy highlighted text only
-    if (window.getSelection()?.isCollapsed === false) {
+    if (globalThis.getSelection()?.isCollapsed === false) {
       setCopiedCell(null);
       return;
     }
@@ -290,12 +293,7 @@ function AllFeatures() {
         isRowSelectionDisabled={(row) => row.id === 'id_2'}
         onSelectedRowsChange={setSelectedRows}
         className="fill-grid"
-        rowClass={(row, index) => {
-          return clsx({
-            [highlightClassname]: row.id.includes('7') || index === 0,
-            [copiedRowClassname]: copiedCell?.row === row
-          });
-        }}
+        rowClass={rowClass}
         direction={direction}
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {

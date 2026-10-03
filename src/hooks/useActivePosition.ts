@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
+import { focusCell, focusRow } from '../utils';
 import type { CalculatedColumn, Position, StateSetter } from '../types';
 
-interface ActivePosition extends Position {
+export interface ActivePosition extends Position {
   readonly mode: 'ACTIVE';
 }
 
@@ -20,15 +21,16 @@ const initialActivePosition: ActivePosition = {
 };
 
 export function useActivePosition<R, SR>({
+  gridRef,
   columns,
   rows,
   isTreeGrid,
   maxColIdx,
   minRowIdx,
   maxRowIdx,
-  setDraggedOverRowIdx,
-  setShouldFocusPosition
+  setDraggedOverRowIdx
 }: {
+  gridRef: React.RefObject<HTMLDivElement | null>;
   columns: readonly CalculatedColumn<R, SR>[];
   rows: readonly R[];
   isTreeGrid: boolean;
@@ -36,11 +38,14 @@ export function useActivePosition<R, SR>({
   minRowIdx: number;
   maxRowIdx: number;
   setDraggedOverRowIdx: StateSetter<number | undefined>;
-  setShouldFocusPosition: StateSetter<boolean>;
 }) {
   const [activePosition, setActivePosition] = useState<ActivePosition | EditPosition<R>>(
     initialActivePosition
   );
+  const [positionToFocus, setPositionToFocus] = useState<ActivePosition | EditPosition<R> | null>(
+    null
+  );
+  const positionToFocusRef = useRef<ActivePosition | EditPosition<R>>(null);
 
   /**
    * Returns whether the given position represents a valid cell or row position in the grid.
@@ -123,14 +128,33 @@ export function useActivePosition<R, SR>({
         mode: 'ACTIVE'
       };
       setActivePosition(newPosition);
-      setShouldFocusPosition(false);
+      setPositionToFocus(null);
       ({ resolvedActivePosition, validatedPosition } = getResolvedValues(newPosition));
     }
   }
 
+  useLayoutEffect(() => {
+    // Layout effects clean up when the component is replaced by a suspense fallback,
+    // or when under <Activity mode="hidden">, then re-mounts when the suspense boundary cleans,
+    // or when Activity switches back to `mode="visible"`.
+    // So we use a ref to:
+    // 1. avoid re-focusing after the effect re-mounts
+    // 2. avoid re-rendering by not re-setting the state
+    if (positionToFocus !== null && positionToFocus !== positionToFocusRef.current) {
+      positionToFocusRef.current = positionToFocus;
+
+      if (positionToFocus.idx === -1) {
+        focusRow(gridRef.current!);
+      } else {
+        focusCell(gridRef.current!);
+      }
+    }
+  }, [positionToFocus, gridRef]);
+
   return {
     activePosition: resolvedActivePosition,
     setActivePosition,
+    setPositionToFocus,
     activePositionIsInActiveBounds: validatedPosition.isPositionInActiveBounds,
     activePositionIsInViewport: validatedPosition.isPositionInViewport,
     activePositionIsRow: validatedPosition.isRowInActiveBounds,

@@ -33,6 +33,10 @@ function createRows(): readonly Row[] {
   return rows;
 }
 
+function rowKeyGetter(row: Row): number {
+  return row.id;
+}
+
 const columns: readonly Column<Row>[] = [
   {
     key: 'id',
@@ -64,16 +68,12 @@ function RowsReordering() {
 
   const renderRow = useCallback((key: React.Key, props: RenderRowProps<Row>) => {
     function onRowReorder(fromIndex: number, toIndex: number) {
-      function reorderRows() {
-        setRows((rows) => {
-          const row = rows[fromIndex];
-          const newRows = rows.toSpliced(fromIndex, 1);
-          newRows.splice(toIndex, 0, row);
-          return newRows;
-        });
-      }
-
-      document.startViewTransition(reorderRows);
+      setRows((rows) => {
+        const row = rows[fromIndex];
+        const newRows = rows.toSpliced(fromIndex, 1);
+        newRows.splice(toIndex, 0, row);
+        return newRows;
+      });
     }
 
     return <DraggableRowRenderer<Row, unknown> key={key} {...props} onRowReorder={onRowReorder} />;
@@ -85,6 +85,7 @@ function RowsReordering() {
       columns={columns}
       rows={rows}
       onRowsChange={setRows}
+      rowKeyGetter={rowKeyGetter}
       renderers={{ renderRow }}
       direction={direction}
     />

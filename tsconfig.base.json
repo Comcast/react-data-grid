@@ -8,10 +8,9 @@
     "jsx": "react-jsx",
     "lib": [],
     "moduleDetection": "force",
-    "moduleResolution": "bundler",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "outDir": "./.cache/ts",
+    "outDir": "./node_modules/.cache/ts",
     "target": "esnext",
     "verbatimModuleSyntax": true
   }

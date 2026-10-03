@@ -45,7 +45,7 @@ function Cell<R, SR>({
   );
   const isEditable = isCellEditableUtil(column, row);
 
-  function setActivePositionWrapper(enableEditor?: boolean) {
+  function setActivePositionWrapper(enableEditor = false) {
     setActivePosition({ rowIdx, idx: column.idx }, { enableEditor });
   }
 

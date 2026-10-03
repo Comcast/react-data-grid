@@ -28,7 +28,5 @@ test('headerRowClass is a string', async () => {
     rows,
     headerRowClass: 'my-header-row'
   });
-  await expect
-    .element(headerRow)
-    .toHaveClass(`${headerRowClassname} my-header-row`, { exact: true });
+  await expect.element(headerRow).toHaveClass(headerRowClassname, 'my-header-row', { exact: true });
 });

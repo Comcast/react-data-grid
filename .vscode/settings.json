@@ -1,16 +1,15 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
+    "source.organizeLinkDefinitions": "explicit",
     "source.removeUnusedImports": "explicit",
-    // prevent removal of unreachable code
-    "source.fixAll.ts": "never"
+    "source.format.oxc": "explicit"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file",
-  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
-  "js/ts.tsdk.path": "node_modules/typescript/lib",
   "js/ts.experimental.useTsgo": true,
+  // ESLint is only used for markdown; JS/TS is linted by the oxc extension
+  "eslint.validate": ["markdown"],
+  "eslint.problems.shortenToSingleLine": true,
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { page, userEvent } from 'vite-plus/test/browser';
+import { page, server, userEvent } from 'vitest/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
@@ -25,7 +25,7 @@ describe('Editor', () => {
     await userEvent.keyboard('2');
     await safeTab();
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^12$/);
+    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('12');
   });
 
   it('should open and commit changes on enter', async () => {
@@ -35,7 +35,7 @@ describe('Editor', () => {
     await userEvent.keyboard('{enter}');
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('3{enter}');
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^13$/);
+    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('13');
     await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
     await expect.element(col1Editor).not.toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('Editor', () => {
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
     // TODO: await userEvent.keyboard('123{enter}'); fails in FF
     await userEvent.keyboard('{enter}123{enter}');
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^1123$/);
+    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('1123');
   });
 
   it('should close editor and discard changes on escape', async () => {
@@ -54,7 +54,7 @@ describe('Editor', () => {
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('2222{escape}');
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^1$/);
+    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('1');
     await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
   });
 
@@ -65,7 +65,7 @@ describe('Editor', () => {
     await userEvent.keyboard('2222');
     await userEvent.click(page.getByText('outside'));
     await expect.element(col1Editor).not.toBeInTheDocument();
-    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent(/^12222$/);
+    await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('12222');
   });
 
   it('should commit quickly enough on outside clicks so click event handlers access the latest rows state', async () => {
@@ -96,7 +96,7 @@ describe('Editor', () => {
     await userEvent.click(getCellsAtRowIndex(0).nth(0));
     const activeRowCells = getRowWithCell(page.getActiveCell()).getCell();
     await testCount(activeRowCells, 2);
-    await scrollGrid({ top: 2001 });
+    scrollGrid({ top: 2001 });
     await testCount(activeRowCells, 1);
     await expect.element(col1Editor).not.toBeInTheDocument();
     await expect.element(grid).toHaveProperty('scrollTop', 2001);
@@ -150,7 +150,7 @@ describe('Editor', () => {
       await expect.element(col2Editor).toHaveValue('a1');
       await userEvent.keyboard('23');
       // The cell value should update as the editor value is changed
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a123$/);
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a123');
       // clicking in a portal does not count as an outside click
       await userEvent.click(col2Editor);
       await expect.element(col2Editor).toBeInTheDocument();
@@ -195,7 +195,7 @@ describe('Editor', () => {
       await userEvent.click(getCellsAtRowIndex(0).nth(1));
       // TODO: await userEvent.keyboard('yz{enter}'); fails in FF
       await userEvent.keyboard('{enter}yz{enter}');
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a1yz$/);
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1yz');
       await userEvent.keyboard('x');
       await expect.element(col2Editor).not.toBeInTheDocument();
     });
@@ -213,7 +213,7 @@ describe('Editor', () => {
       );
       await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
       await userEvent.keyboard('a{arrowleft}b{arrowright}c{arrowdown}'); // should commit changes on arrowdown
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent(/^a1bac$/);
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1bac');
     });
 
     it('should close the editor when closeOnExternalRowChange is true or undefined and row is changed from outside', async () => {
@@ -258,11 +258,19 @@ describe('Editor', () => {
 
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
       await userEvent.keyboard('abc');
-
-      await scrollGrid({ top: 1500 });
+      if (server.browser === 'firefox') {
+        // When typing, Firefox scroll to the caret asynchronously,
+        // but does not to cancel the scroll task when calling `.scroll()` on the grid
+        // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/html/TextControlElement.cpp#L330
+        // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/base/Selection.cpp#L3828
+        await new Promise(requestAnimationFrame);
+        // Alternatively, configuring playwright's launchOptions.slowMo to 1 works,
+        // but slows down the tests.
+      }
+      scrollGrid({ top: 1500 });
       await userEvent.click(page.getCell({ name: 'name43' }));
-      await expect.element(page.getActiveCell()).toHaveTextContent(/^name43$/);
-      await scrollGrid({ top: 0 });
+      await expect.element(page.getActiveCell()).toHaveTextContent('name43');
+      scrollGrid({ top: 0 });
       await expect.element(page.getCell({ name: 'name0abc' })).toBeVisible();
     });
 

@@ -9,6 +9,7 @@ jobs:
   update-screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     permissions:
       contents: write
@@ -20,13 +21,14 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: actions/setup-node@v7
         with:
-          node-version: 25
+          node-version-file: 'package.json'
+          check-latest: true
 
       - name: Remove label
         if: github.event_name == 'pull_request'
@@ -34,13 +36,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Install Playwright Browsers
-        run: vpx playwright install chromium firefox
+        run: |
+          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
+          Acquire::Retries "0";
+          Acquire::http::Timeout "10";
+          Acquire::https::Timeout "10";
+          EOF
+          npx playwright install chromium firefox webkit --with-deps --no-shell
+        timeout-minutes: 2
 
       - name: Update screenshots
         run: |
           rm -r test/**/screenshots/**
-          vp test --project visual --update
+          node --run test:ci:update
+        timeout-minutes: 4
 
       - name: Push new screenshots
         run: |

@@ -2,6 +2,7 @@
 name: Bug report
 about: Create a bug report
 title: ''
+type: Bug
 labels: 'Status: Unconfirmed'
 assignees: ''
 ---

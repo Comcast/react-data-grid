@@ -6,16 +6,6 @@
 [![codecov-badge]][codecov-url]
 [![ci-badge]][ci-url]
 
-[npm-badge]: https://img.shields.io/npm/v/react-data-grid
-[npm-url]: https://www.npmjs.com/package/react-data-grid
-[size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid
-[size-url]: https://bundlephobia.com/package/react-data-grid
-[type-badge]: https://img.shields.io/npm/types/react-data-grid
-[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
-[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
-[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
-[ci-url]: https://github.com/Comcast/react-data-grid/actions
-
 The DataGrid component is designed to handle large datasets efficiently while offering a rich set of features for customization and interactivity.
 
 ## Table of contents
@@ -86,7 +76,7 @@ import 'react-data-grid/lib/styles.css';
 
 `react-data-grid` is published as ECMAScript modules for evergreen browsers, bundlers, and server-side rendering.
 
-> **Important** <br />
+> **Important**  
 > Vite 8+ by default uses `lightningcss` to minify css which has a [bug minifying light-dark syntax](https://github.com/parcel-bundler/lightningcss/issues/873). You can tweak the `cssMinify` or `cssTarget` [settings](https://main.vite.dev/config/build-options) as a workaround.
 
 ```ts
@@ -279,9 +269,13 @@ Optional ref for imperative APIs like scrolling to or focusing a cell. See [`Dat
 
 Rows pinned at the top of the grid for summary purposes.
 
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
+
 ###### `bottomSummaryRows?: Maybe<readonly SR[]>`
 
 Rows pinned at the bottom of the grid for summary purposes.
+
+:warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
 
 ###### `rowKeyGetter?: Maybe<(row: R) => K>`
 
@@ -617,9 +611,9 @@ See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type in the 
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
-###### `onScroll?: Maybe<(event: React.UIEvent<HTMLDivElement>) => void>`
+###### `onScroll?: React.UIEventHandler<HTMLDivElement> | undefined`
 
-Callback triggered when the grid is scrolled.
+Native DOM `onScroll` prop.
 
 ###### `onColumnResize?: Maybe<(column: CalculatedColumn<R, SR>, width: number) => void>`
 
@@ -727,7 +721,7 @@ Custom class name for the header row.
 This property sets the text direction of the grid, it defaults to `'ltr'` (left-to-right). Setting `direction` to `'rtl'` has the following effects:
 
 - Columns flow from right to left
-- Frozen columns are pinned on the right
+- Start-frozen columns are pinned on the right, and end-frozen columns are pinned on the left
 - Column resize cursor is shown on the left edge of the column
 - Scrollbar is moved to the left
 
@@ -1151,7 +1145,7 @@ const columns: readonly Column<Row>[] = [
 
 ### Context
 
-#### `DataGridDefaultRenderersContext`
+#### `DataGridRenderersContext`
 
 Context for providing default renderers to DataGrids in your app.
 
@@ -1159,7 +1153,7 @@ Context for providing default renderers to DataGrids in your app.
 
 ```tsx
 import {
-  DataGridDefaultRenderersContext,
+  DataGridRenderersContext,
   renderCheckbox,
   renderSortIcon,
   renderSortPriority,
@@ -1181,9 +1175,7 @@ const defaultGridRenderers: Renderers<unknown, unknown> = {
 
 function AppProvider({ children }) {
   return (
-    <DataGridDefaultRenderersContext value={defaultGridRenderers}>
-      {children}
-    </DataGridDefaultRenderersContext>
+    <DataGridRenderersContext value={defaultGridRenderers}>{children}</DataGridRenderersContext>
   );
 }
 ```
@@ -1384,11 +1376,23 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-##### `frozen?: Maybe<boolean>`
+##### `frozen?: Maybe<boolean | 'start' | 'end'>`
 
 **Default**: `false`
 
-Determines whether column is frozen. Frozen columns are pinned to the start edge (left in LTR, right in RTL). Per-column pinning to the end edge is not supported at the moment.
+Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally.
+
+- `'start'` (or `true` for backwards compatibility) — pins the column to the start edge (left in LTR, right in RTL).
+- `'end'` — pins the column to the end edge (right in LTR, left in RTL).
+- `false` (default) — the column scrolls with the rest of the grid.
+
+```tsx
+const columns: readonly Column<Row>[] = [
+  { key: 'id', name: 'ID', frozen: 'start' },
+  { key: 'name', name: 'Name' },
+  { key: 'actions', name: 'Actions', frozen: 'end' }
+];
+```
 
 ##### `resizable?: Maybe<boolean>`
 
@@ -2101,3 +2105,13 @@ type Maybe<T> = T | undefined | null;
 - `R`, `TRow`: Row type
 - `SR`, `TSummaryRow`: Summary row type
 - `K`: Row key type
+
+[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
+[ci-url]: https://github.com/Comcast/react-data-grid/actions
+[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
+[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
+[npm-badge]: https://img.shields.io/npm/v/react-data-grid
+[npm-url]: https://www.npmjs.com/package/react-data-grid
+[size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid
+[size-url]: https://bundlephobia.com/package/react-data-grid
+[type-badge]: https://img.shields.io/npm/types/react-data-grid

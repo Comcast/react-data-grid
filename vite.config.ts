@@ -1,14 +1,13 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
-import { defineConfig } from 'vite-plus';
-import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
-import type { BrowserCommand } from 'vite-plus/test/node';
-
-import pkg from './package.json' with { type: 'json' };
+import { Features } from 'lightningcss';
+import { defineConfig, type ViteUserConfig } from 'vitest/config';
+import type { BrowserCommand } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
 const isTest = process.env.VITEST === 'true';
+const isAgent = process.env.AI_AGENT !== undefined;
 
 // TODO: remove when `userEvent.pointer` is supported
 const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
@@ -33,13 +32,21 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
 };
 
 // TODO: remove when `userEvent.pointer` is supported
-// @ts-expect-error
-const dragFill: BrowserCommand<[from: string, to: string]> = async ({ page, iframe }, from, to) => {
+const dragFill: BrowserCommand<[from: string, to: string]> = async (
+  { page, iframe, project },
+  from,
+  to
+) => {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  const toCell = iframe.getByRole('gridcell', { name: to, exact: true });
-  await toCell.hover();
+  await iframe.getByRole('gridcell', { name: to, exact: true }).hover();
+  if (project.name.includes('webkit')) {
+    // let React re-render after handleDragHandlePointerMove calls setDraggedOverRowIdx()
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+  }
   await page.mouse.up();
 };
 
@@ -52,77 +59,20 @@ const playwrightOptions: PlaywrightProviderOptions = {
   }
 };
 
-export default defineConfig({
+export default defineConfig(({ isPreview }): ViteUserConfig => ({
   base: '/react-data-grid/',
-  cacheDir: '.cache/vite',
+  cacheDir: 'node_modules/.cache/vite',
   clearScreen: false,
   build: {
+    chunkImportMap: true,
     modulePreload: { polyfill: false },
     sourcemap: true,
-    reportCompressedSize: false,
-    // https://github.com/parcel-bundler/lightningcss/issues/873
-    cssTarget: 'esnext'
-  },
-  plugins: [
-    ecij(),
-    !isTest &&
-      tanstackRouter({
-        target: 'react',
-        generatedRouteTree: 'website/routeTree.gen.ts',
-        routesDirectory: 'website/routes',
-        autoCodeSplitting: true
-      }),
-    react()
-  ],
-  server: {
-    open: true
-  },
-
-  lint: {
-    // TODO
-  },
-
-  fmt: {
-    ignorePatterns: ['/website/routeTree.gen.ts'],
-    singleQuote: true,
-    trailingComma: 'none',
-    sortImports: {
-      customGroups: [
-        {
-          groupName: 'react',
-          elementNamePattern: ['react', 'react/**', 'react-dom', 'react-dom/**']
-        },
-        {
-          groupName: 'ecij',
-          elementNamePattern: ['ecij']
-        },
-        {
-          groupName: 'clsx',
-          elementNamePattern: ['clsx']
-        },
-        {
-          groupName: './src',
-          elementNamePattern: ['**/src', '**/src/**']
-        },
-        {
-          groupName: './renderers',
-          elementNamePattern: ['**/renderers', '**/renderers/**']
-        },
-        {
-          groupName: './components',
-          elementNamePattern: ['**/components', '**/components/**']
-        },
-        {
-          groupName: './hooks',
-          elementNamePattern: ['**/hooks', '**/hooks/**']
-        },
-        {
-          groupName: './utils',
-          elementNamePattern: ['**/utils', '**/utils/**']
-        },
-        {
-          groupName: './types',
-          elementNamePattern: ['**/types', '**/types/**']
+    rolldownOptions: {
+      // TODO: remove
+      // https://github.com/vitejs/vite/issues/23350
+      experimental: {
+        chunkImportMap: {
+          baseUrl: '/react-data-grid/'
         }
       ],
       groups: [
@@ -178,24 +128,46 @@ export default defineConfig({
       eslint: {
         command: 'eslint --max-warnings 0'
       },
-      'eslint:fix': {
-        command: 'eslint --fix',
-        cache: false
-      },
-      typecheck: {
-        command: 'tsgo --build',
-        input: [{ auto: true }, '!./.cache/ts/**/*']
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'faker',
+              test: '@faker-js/faker'
+            }
+          ]
+        }
       }
     }
   },
-
-  staged: {
-    '*': 'vp fmt'
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      // https://github.com/parcel-bundler/lightningcss/issues/873
+      exclude: Features.Nesting | Features.LightDark
+    }
   },
-
+  plugins: isPreview
+    ? []
+    : [
+        ecij(),
+        !isTest &&
+          tanstackRouter({
+            target: 'react',
+            generatedRouteTree: 'website/routeTree.gen.ts',
+            routesDirectory: 'website/routes',
+            tmpDir: 'node_modules/.cache/tanstack',
+            autoCodeSplitting: true
+          }),
+        react({ compiler: true })
+      ],
+  server: {
+    open: !isAgent
+  },
   test: {
     dir: 'test',
     globals: true,
+    injectCjsGlobals: false,
     printConsoleTrace: true,
     env: {
       // @ts-expect-error
@@ -226,26 +198,8 @@ export default defineConfig({
       viewport,
       commands: { resizeColumn, dragFill },
       expect: {
-        // @ts-expect-error
         toMatchScreenshot: {
-          resolveScreenshotPath({
-            // @ts-expect-error
-            root,
-            // @ts-expect-error
-            testFileDirectory,
-            // @ts-expect-error
-            testFileName,
-            // @ts-expect-error
-            arg,
-            // @ts-expect-error
-            browserName,
-            // @ts-expect-error
-            platform,
-            // @ts-expect-error
-            ext
-          }) {
-            return `${root}/${testFileDirectory}/screenshots/${testFileName}/${arg}-${browserName}-${platform}${ext}`;
-          }
+          screenshotDirectory: 'screenshots'
         }
       },
       instances: [
@@ -254,21 +208,35 @@ export default defineConfig({
           provider: playwright({
             ...playwrightOptions,
             launchOptions: {
-              channel: 'chromium'
+              channel: 'chromium',
+              args: [
+                '--disable-renderer-accessibility',
+                '--disable-platform-accessibility-integration'
+              ]
             }
           })
         },
         {
           browser: 'firefox',
-          provider: playwright(playwrightOptions),
+          provider: playwright({
+            ...playwrightOptions,
+            launchOptions: {
+              firefoxUserPrefs: {
+                'accessibility.force_disabled': 1
+              }
+            }
+          }),
           // TODO: remove when FF tests are stable
           fileParallelism: false
+        },
+        {
+          browser: 'webkit',
+          provider: playwright(playwrightOptions)
         }
       ]
     },
     projects: [
       {
-        extends: true,
         test: {
           name: 'browser',
           include: ['browser/**/*.test.*'],
@@ -277,7 +245,6 @@ export default defineConfig({
         }
       },
       {
-        extends: true,
         test: {
           name: 'visual',
           include: ['visual/*.test.*'],
@@ -286,7 +253,6 @@ export default defineConfig({
         }
       },
       {
-        extends: true,
         test: {
           name: 'node',
           include: ['node/**/*.test.*'],
@@ -296,4 +262,4 @@ export default defineConfig({
       }
     ]
   }
-});
+}));

@@ -11,7 +11,7 @@ export const RowSelectionContext = createContext<RowSelectionContextValue | unde
 RowSelectionContext.displayName = 'RowSelectionContext';
 
 export const RowSelectionChangeContext = createContext<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   ((selectRowEvent: SelectRowEvent<any>) => void) | undefined
 >(undefined);
 RowSelectionChangeContext.displayName = 'RowSelectionChangeContext';

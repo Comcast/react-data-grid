@@ -67,6 +67,9 @@ test('multi column sort', async () => {
   const headerCell1 = page.getHeaderCell({ name: 'colA', exact: false });
   const headerCell2 = page.getHeaderCell({ name: 'colB', exact: false });
   const headerCell3 = page.getHeaderCell({ name: 'colC', exact: false });
+  const priority1 = headerCell1.getBySelector('span:has(> .rdg-sort-arrow)');
+  const priority2 = headerCell2.getBySelector('span:has(> .rdg-sort-arrow)');
+  const priority3 = headerCell3.getBySelector('span:has(> .rdg-sort-arrow)');
   await userEvent.click(headerCell1);
   await userEvent.keyboard('{Control>}');
   await userEvent.click(headerCell2);
@@ -74,11 +77,11 @@ test('multi column sort', async () => {
 
   // aria-sort is only added for single sort
   await expect.element(headerCell1).not.toHaveAttribute('aria-sort');
-  await expect.element(headerCell1).toHaveTextContent('1'); // priority
+  await expect.element(priority1).toHaveTextContent('1');
   await expect.element(headerCell2).not.toHaveAttribute('aria-sort');
-  await expect.element(headerCell2).toHaveTextContent('2');
+  await expect.element(priority2).toHaveTextContent('2');
   await expect.element(headerCell3).not.toHaveAttribute('aria-sort');
-  await expect.element(headerCell3).toHaveTextContent('3');
+  await expect.element(priority3).toHaveTextContent('3');
   await testSortColumns([
     { columnKey: 'colA', direction: 'ASC' },
     { columnKey: 'colB', direction: 'DESC' },
@@ -96,14 +99,14 @@ test('multi column sort', async () => {
     { columnKey: 'colA', direction: 'ASC' },
     { columnKey: 'colC', direction: 'ASC' }
   ]);
-  await expect.element(headerCell3).toHaveTextContent('2');
+  await expect.element(priority3).toHaveTextContent('2');
 
   // clicking on a column without ctrlKey should remove multisort
   await userEvent.keyboard('{/Control}');
   await userEvent.click(headerCell2);
   await testSortColumns([{ columnKey: 'colB', direction: 'DESC' }]);
   await expect.element(headerCell2).toHaveAttribute('aria-sort');
-  await expect.element(headerCell2).not.toHaveTextContent('2');
+  await expect.element(priority2).toHaveTextContent('');
 });
 
 test('multi column sort with metakey', async () => {

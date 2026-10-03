@@ -98,7 +98,7 @@ function TestGrid({
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
   const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> => new Set<unknown>([])
+    (): ReadonlySet<unknown> => new Set<unknown>()
   );
 
   return (
@@ -123,8 +123,7 @@ function TestGrid({
 }
 
 function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
+  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }
 
 function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
@@ -168,7 +167,7 @@ test('should group by multiple columns', async () => {
 
 test('should use groupIdGetter when provided', async () => {
   const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
-    parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
+    parentId === undefined ? groupKey : `${groupKey}#${parentId}`
   );
   await setup(['country', 'year'], groupIdGetter);
   expect(groupIdGetter).toHaveBeenCalled();

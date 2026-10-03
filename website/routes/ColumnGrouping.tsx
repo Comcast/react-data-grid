@@ -93,6 +93,8 @@ const columns: readonly ColumnOrColumnGroup<number, number>[] = [
 ];
 
 const rows: readonly number[] = Array.from({ length: 100 }, (_, i) => i);
+const topSummaryRows: readonly number[] = [0];
+const bottomSummaryRows: readonly number[] = [6];
 
 function ColumnGrouping() {
   const direction = useDirection();
@@ -102,8 +104,8 @@ function ColumnGrouping() {
       aria-label="Column Grouping Example"
       columns={columns}
       rows={rows}
-      topSummaryRows={[0]}
-      bottomSummaryRows={[6]}
+      topSummaryRows={topSummaryRows}
+      bottomSummaryRows={bottomSummaryRows}
       className="fill-grid"
       direction={direction}
       defaultColumnOptions={{

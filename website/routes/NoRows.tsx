@@ -13,16 +13,14 @@ const gridClassname = css`
   block-size: 300px;
 `;
 
-function EmptyRowsRenderer() {
-  return (
-    <div style={{ gridColumn: '1/-1', placeSelf: 'center' }}>
-      Nothing to show{' '}
-      <span lang="ja" title="ショボーン">
-        (´・ω・`)
-      </span>
-    </div>
-  );
-}
+const noRowsFallback = (
+  <div style={{ gridColumn: '1/-1', placeSelf: 'center' }}>
+    Nothing to show{' '}
+    <span lang="ja" title="ショボーン">
+      (´・ω・`)
+    </span>
+  </div>
+);
 
 interface Row {
   id: number;
@@ -52,7 +50,7 @@ function NoRows() {
       aria-label="No Rows Example"
       columns={columns}
       rows={rows}
-      renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
+      renderers={{ noRowsFallback }}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       rowKeyGetter={rowKeyGetter}

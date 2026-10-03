@@ -30,7 +30,7 @@ function Test() {
 test('renderTextEditor', async () => {
   await page.render(<Test />);
   const cell = page.getCell();
-  await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);
+  await expect.element(cell).toHaveTextContent('Tacitus Kilgore');
   await userEvent.dblClick(cell);
   const input = page.getByRole('textbox');
   await expect.element(input).toHaveClass('rdg-text-editor');
@@ -44,12 +44,12 @@ test('renderTextEditor', async () => {
   // pressing escape closes the editor without committing
   await userEvent.keyboard('Test{escape}');
   await expect.element(input).not.toBeInTheDocument();
-  await expect.element(cell).toHaveTextContent(/^Tacitus Kilgore$/);
+  await expect.element(cell).toHaveTextContent('Tacitus Kilgore');
 
   // blurring the input closes and commits the editor
   await userEvent.dblClick(cell);
   await userEvent.fill(input, 'Jim Milton');
   await safeTab();
   await expect.element(input).not.toBeInTheDocument();
-  await expect.element(cell).toHaveTextContent(/^Jim Milton$/);
+  await expect.element(cell).toHaveTextContent('Jim Milton');
 });
