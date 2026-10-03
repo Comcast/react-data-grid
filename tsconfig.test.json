@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
-    "types": ["vitest/globals"]
+    "types": ["vite-plus/test/globals"]
   },
   "include": ["src/css.d.ts", "test/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
