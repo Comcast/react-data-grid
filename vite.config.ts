@@ -281,8 +281,7 @@ export default defineConfig(({ isPreview }): ViteUserConfig => ({
       denyWarnings: true,
       reportUnusedDisableDirectives: 'warn',
       respectEslintDisableDirectives: false,
-      typeAware: true,
-      typeCheck: true
+      typeAware: true
     },
 
     env: {
