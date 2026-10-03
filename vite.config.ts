@@ -4,18 +4,18 @@ import { playwright, type PlaywrightProviderOptions } from '@vitest/browser-play
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
-import type { BrowserCommand } from 'vitest/node';
+import type { BrowserCommandContext } from 'vitest/node';
 
 const isCI = process.env.CI === 'true';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
 
 // TODO: remove when `userEvent.pointer` is supported
-const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly number[]]> = async (
-  { page, iframe },
-  name,
-  resizeBy
-) => {
+async function resizeColumn(
+  { page, iframe }: BrowserCommandContext,
+  name: string,
+  resizeBy: number | readonly number[]
+) {
   const resizeHandle = iframe
     .getByRole('columnheader', { name, exact: true })
     .locator('.rdg-resize-handle');
@@ -29,14 +29,14 @@ const resizeColumn: BrowserCommand<[name: string, resizeBy: number | readonly nu
     await page.mouse.move(newX, y + 5);
   }
   await page.mouse.up();
-};
+}
 
 // TODO: remove when `userEvent.pointer` is supported
-const dragFill: BrowserCommand<[from: string, to: string]> = async (
-  { page, iframe, project },
-  from,
-  to
-) => {
+async function dragFill(
+  { page, iframe, project }: BrowserCommandContext,
+  from: string,
+  to: string
+) {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
@@ -48,7 +48,7 @@ const dragFill: BrowserCommand<[from: string, to: string]> = async (
     });
   }
   await page.mouse.up();
-};
+}
 
 const actionTimeout = 2000;
 const viewport = { width: 1920, height: 1080 } as const;
