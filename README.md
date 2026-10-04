@@ -2106,8 +2106,8 @@ type Maybe<T> = T | undefined | null;
 - `SR`, `TSummaryRow`: Summary row type
 - `K`: Row key type
 
-[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
-[ci-url]: https://github.com/Comcast/react-data-grid/actions
+[ci-badge]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml/badge.svg
+[ci-url]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml
 [codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
 [codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
 [npm-badge]: https://img.shields.io/npm/v/react-data-grid
