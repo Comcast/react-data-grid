@@ -77,7 +77,12 @@ export default defineConfig({
         cache: false
       },
       'install-browsers': {
-        command: 'playwright install --no-shell',
+        command: isCI
+          ? [
+              'sudo cp .github/apt.conf /etc/apt/apt.conf.d/99-ci',
+              'playwright install --no-shell --with-deps'
+            ]
+          : 'playwright install --no-shell',
         // browsers are installed outside the workspace, so they cannot be restored from the cache
         cache: false
       },

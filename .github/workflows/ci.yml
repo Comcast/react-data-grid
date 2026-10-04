@@ -37,16 +37,6 @@ jobs:
 
       - run: vp install --frozen-lockfile
 
-      - name: Install Playwright system dependencies
-        run: |
-          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
-          Acquire::Retries "0";
-          Acquire::http::Timeout "10";
-          Acquire::https::Timeout "10";
-          EOF
-          vp exec playwright install-deps
-        timeout-minutes: 2
-
       # https://viteplus.dev/guide/github-actions-cache
       - name: Restore Vite Task cache
         id: vite-task-cache
