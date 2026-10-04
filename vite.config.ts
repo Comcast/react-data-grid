@@ -178,7 +178,7 @@ export default defineConfig({
     },
     deps: {
       // fail the build if it would result in bundling devDependencies like ecij,
-      // unless explicitely listed in the `onlyBundle` array
+      // unless explicitly listed in the `onlyBundle` array
       onlyBundle: []
     },
     css: {
