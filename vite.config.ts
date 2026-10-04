@@ -8,6 +8,7 @@ import type { BrowserCommandContext } from 'vite-plus/test/node';
 import pkg from './package.json' with { type: 'json' };
 
 const isCI = process.env.CI === 'true';
+const isCIWorkflow = process.env.GITHUB_WORKFLOW === 'CI';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
 
@@ -84,8 +85,8 @@ export default defineConfig({
         command: 'vp test',
         dependsOn: ['install-browsers'],
         cache: {
-          // `CI` enables coverage and the visual project
-          env: ['CI'],
+          // `CI` enables the visual project, `GITHUB_WORKFLOW` enables coverage
+          env: ['CI', 'GITHUB_WORKFLOW'],
           input: [{ auto: true }, '!coverage/**', '!node_modules/.cache/vite/**']
         }
       },
@@ -213,7 +214,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'istanbul',
-      enabled: isCI,
+      enabled: isCIWorkflow,
       include: ['src/**/*.{ts,tsx}'],
       reporter: ['json']
     },
