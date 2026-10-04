@@ -45,7 +45,7 @@ website/              # demo site (Vite + TanStack Router)
 
 ## Validation
 
-Run before submitting changes: `vp run typecheck`, `vp check`, `vp run eslint`, `vp test`.
+Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed.
 
 <!--VITE PLUS START-->
 

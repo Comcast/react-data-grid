@@ -63,7 +63,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
 export default defineConfig({
   staged: {
     '*': 'vp fmt --no-error-on-unmatched-pattern',
-    '*.md': 'vpr eslint'
+    '*.md': 'vp run eslint'
   },
 
   run: {
@@ -74,6 +74,35 @@ export default defineConfig({
       typecheck: {
         command: 'tsc --build',
         cache: false
+      },
+      'install-browsers': {
+        command: 'playwright install --no-shell',
+        // browsers are installed outside the workspace, so they cannot be restored from the cache
+        cache: false
+      },
+      test: {
+        command: 'vp test',
+        dependsOn: ['install-browsers'],
+        cache: {
+          // `CI` enables coverage and the visual project
+          env: ['CI'],
+          input: [{ auto: true }, '!node_modules/.cache/vite/**']
+        }
+      },
+      ci: {
+        command: [
+          'vp run typecheck',
+          'vp check',
+          'vp run eslint',
+          'vp pack',
+          'vp build',
+          'git diff --exit-code website/routeTree.gen.ts',
+          'vp run test'
+        ],
+        cache: {
+          // `vp pack` cleans `lib/` before writing to it
+          input: [{ auto: true }, '!lib/**']
+        }
       }
     }
   },

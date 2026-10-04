@@ -18,6 +18,9 @@ jobs:
     permissions:
       contents: read # check out the repository
 
+    # restore and save the Vite Task cache
+    cache-mode: write
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,31 +32,34 @@ jobs:
 
       - run: vp install --frozen-lockfile
 
-      - run: vp run typecheck
-
-      - run: vp check
-
-      - run: vp run eslint
-
-      - run: vp pack
-
-      - run: vp build
-
-      - name: Check routeTree.gen.ts
-        run: git diff --exit-code website/routeTree.gen.ts
-
-      - name: Install Playwright Browsers
+      - name: Install Playwright system dependencies
         run: |
           sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
           Acquire::Retries "0";
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          vp exec playwright install --with-deps --no-shell
+          vp exec playwright install-deps
         timeout-minutes: 2
 
-      - run: vp test
-        timeout-minutes: 4
+      # https://viteplus.dev/guide/github-actions-cache
+      - name: Restore Vite Task cache
+        id: vite-task-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.vite/task-cache
+          key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: vite-task-${{ runner.os }}-${{ runner.arch }}-
+
+      - run: vp run ci
+        timeout-minutes: 6
+
+      - name: Save Vite Task cache
+        if: success()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.vite/task-cache
+          key: ${{ steps.vite-task-cache.outputs.cache-primary-key }}
 
       - name: Upload test failure artifacts
         if: failure()

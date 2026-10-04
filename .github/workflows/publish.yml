@@ -43,37 +43,25 @@ jobs:
 
       - run: vp install --frozen-lockfile
 
-      - run: vp run typecheck
-
-      - run: vp check
-
-      - run: vp run eslint
-
-      - run: vp pack
-
-      - run: vp build
-
-      - name: Check routeTree.gen.ts
-        run: git diff --exit-code website/routeTree.gen.ts
-
-      - name: Install Playwright Browsers
+      - name: Install Playwright system dependencies
         run: |
           sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
           Acquire::Retries "0";
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          vp exec playwright install --with-deps --no-shell
+          vp exec playwright install-deps
         timeout-minutes: 2
 
-      - run: vp test
-        timeout-minutes: 4
-
+      # before `vp run ci`, so `vp pack` prefixes classes with the new version
       - name: Update version
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
           npm version "$VERSION"
+
+      - run: vp run ci
+        timeout-minutes: 6
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm

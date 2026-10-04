@@ -42,19 +42,19 @@ jobs:
 
       - run: vp install --frozen-lockfile
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright system dependencies
         run: |
           sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
           Acquire::Retries "0";
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          vp exec playwright install --with-deps --no-shell
+          vp exec playwright install-deps
         timeout-minutes: 2
 
       - run: rm -r test/**/screenshots/**
 
-      - run: vp test --project visual --update
+      - run: vp run test --project visual --update
         timeout-minutes: 4
 
       - name: Push new screenshots
