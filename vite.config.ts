@@ -92,6 +92,8 @@ export default defineConfig({
       },
       ci: {
         command: [
+          // type check runs first, as type issues are often
+          // the root cause of errors reported by later checks
           'vp run typecheck',
           'vp check',
           'vp run eslint',
