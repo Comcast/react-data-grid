@@ -6,6 +6,14 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    # Vite+ and the packages it keeps aligned are updated with `vp migrate`:
+    # https://viteplus.dev/guide/upgrade-project
+    ignore:
+      - dependency-name: 'vite-plus'
+      - dependency-name: 'vite'
+      - dependency-name: '@voidzero-dev/*'
+      - dependency-name: 'vitest'
+      - dependency-name: '@vitest/*'
     groups:
       typescript:
         patterns:
@@ -24,11 +32,6 @@ updates:
         update-types:
           - 'minor'
           - 'patch'
-        exclude-patterns:
-          - 'vite'
-          - 'vite-plus'
-          - 'vitest'
-          - '@vitest/*'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
