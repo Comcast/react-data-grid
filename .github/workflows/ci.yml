@@ -51,7 +51,12 @@ jobs:
           key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: vite-task-${{ runner.os }}-${{ runner.arch }}-
 
-      - run: vp run ci
+      # Vite Task records the entries of the workspace root after each task,
+      # so `lib` and `coverage` must exist upfront for the cache to hit:
+      # https://github.com/voidzero-dev/vite-task/issues/504
+      - run: mkdir lib coverage
+
+      - run: vp run -v ci
         timeout-minutes: 6
 
       - name: Save Vite Task cache

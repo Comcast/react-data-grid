@@ -86,7 +86,7 @@ export default defineConfig({
         cache: {
           // `CI` enables coverage and the visual project
           env: ['CI'],
-          input: [{ auto: true }, '!node_modules/.cache/vite/**']
+          input: [{ auto: true }, '!coverage/**', '!node_modules/.cache/vite/**']
         }
       },
       ci: {
