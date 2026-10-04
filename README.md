@@ -56,18 +56,15 @@ The DataGrid component is designed to handle large datasets efficiently while of
 Install `react-data-grid` using your favorite package manager:
 
 ```sh
-npm i react-data-grid
-```
-
-```sh
+# npm
+npm install react-data-grid
+# Vite+
+vp add react-data-grid
+# pnpm
 pnpm add react-data-grid
-```
-
-```sh
+# Yarn
 yarn add react-data-grid
-```
-
-```sh
+# Bun
 bun add react-data-grid
 ```
 

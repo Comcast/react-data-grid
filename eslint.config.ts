@@ -32,7 +32,6 @@ copy(
   )
     // map link to rule declaration
     .map((link) => `'markdown/${link.textContent}': 1,`)
-    .toArray()
     .join('\n')
 );
       */
@@ -57,6 +56,15 @@ copy(
       'markdown/no-unused-definitions': 1,
       'markdown/require-alt-text': 1,
       'markdown/table-column-count': 1
+    }
+  },
+
+  {
+    name: 'agentsmd',
+    files: ['AGENTS.md'],
+    rules: {
+      'markdown/no-bare-urls': 0,
+      'markdown/no-multiple-h1': 0
     }
   }
 ]);

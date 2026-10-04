@@ -8,73 +8,69 @@ on:
         required: true
         type: string
 
+permissions: {}
+
+cache-mode: none
+
+# never run two publishes at once, and never cancel one midway
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     permissions:
-      contents: write
-      id-token: write
+      contents: write # push the version tag and create the GitHub release
+      id-token: write # npm trusted publishing
+
+    env:
+      VERSION: ${{ inputs.version }}
 
     steps:
-      - uses: actions/checkout@v7
+      # credentials are persisted to push the version tag
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: vp install --frozen-lockfile
 
-      - name: Lint
-        run: |
-          node --run lint
-          node --run lint:md
-
-      - name: Format
-        run: node --run format:check
-
-      - name: Build lib
-        run: node --run build
-
-      - name: Build website
-        run: node --run build:website
-
-      - name: Check routeTree.gen.ts
-        run: git diff --exit-code website/routeTree.gen.ts
-
-      - name: Install Playwright Browsers
+      - name: Install Playwright system dependencies
         run: |
           sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
           Acquire::Retries "0";
           Acquire::http::Timeout "10";
           Acquire::https::Timeout "10";
           EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
+          vp exec playwright install-deps
         timeout-minutes: 2
 
-      - name: Test
-        run: node --run test:ci
-        timeout-minutes: 4
-
+      # before `vp run ci`, so `vp pack` prefixes classes with the new version
       - name: Update version
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          npm version ${{ inputs.version }}
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
+          npm version "$VERSION"
+
+      - run: vp run ci
+        timeout-minutes: 6
 
       # https://docs.npmjs.com/trusted-publishers
       - name: Publish to npm
         run: npm publish --tag latest
 
       - name: Push tag
-        run: git push origin v${{ inputs.version }}
+        run: git push origin "v$VERSION"
 
       - name: Create GitHub Release
-        run: gh release create v${{ inputs.version }} --title "v${{ inputs.version }}" --generate-notes
+        run: gh release create "v$VERSION" --title "v$VERSION" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}

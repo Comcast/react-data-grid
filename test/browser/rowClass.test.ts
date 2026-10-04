@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { rowClassname } from '../../src/style/row';
