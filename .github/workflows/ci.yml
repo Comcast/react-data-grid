@@ -10,6 +10,9 @@ permissions: {}
 
 cache-mode: none
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   test:
     runs-on: ubuntu-latest

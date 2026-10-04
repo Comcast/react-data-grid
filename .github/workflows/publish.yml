@@ -12,6 +12,9 @@ permissions: {}
 
 cache-mode: none
 
+env:
+  FORCE_COLOR: 1
+
 # never run two publishes at once, and never cancel one midway
 concurrency:
   group: ${{ github.workflow }}

@@ -9,6 +9,9 @@ permissions: {}
 
 cache-mode: none
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   update-screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
