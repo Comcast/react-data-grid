@@ -51,10 +51,10 @@ jobs:
           key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: vite-task-${{ runner.os }}-${{ runner.arch }}-
 
-      # Vite Task records the entries of the workspace root after each task,
-      # so `lib` and `coverage` must exist upfront for the cache to hit:
+      # Vite Task compares directory listings with those recorded after the cached run,
+      # so directories created during the run must exist upfront for the cache to hit:
       # https://github.com/voidzero-dev/vite-task/issues/504
-      - run: mkdir lib coverage
+      - run: mkdir lib coverage node_modules/.vite-temp
 
       - run: vp run -v ci
         timeout-minutes: 6
