@@ -144,22 +144,20 @@ export default defineConfig({
     }
   },
 
-  plugins: lazyPlugins(async () => {
-    const { tanstackRouter } = await import('@tanstack/router-plugin/vite');
-
-    return [
-      ecij(),
-      !isTest &&
+  plugins: lazyPlugins(() => [
+    ecij(),
+    !isTest &&
+      import('@tanstack/router-plugin/vite').then(({ tanstackRouter }) =>
         tanstackRouter({
           target: 'react',
           generatedRouteTree: 'website/routeTree.gen.ts',
           routesDirectory: 'website/routes',
           tmpDir: 'node_modules/.cache/tanstack',
           autoCodeSplitting: true
-        }),
-      react({ compiler: true })
-    ];
-  }),
+        })
+      ),
+    react({ compiler: true })
+  ]),
 
   server: {
     open: !isAgent
