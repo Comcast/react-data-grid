@@ -79,8 +79,10 @@ export default defineConfig({
       'install-browsers': {
         command: isCI
           ? [
+              'echo ::group::Install browsers',
               'sudo cp .github/apt.conf /etc/apt/apt.conf.d/99-ci',
-              'playwright install --no-shell --with-deps'
+              'playwright install --no-shell --with-deps',
+              'echo ::endgroup::'
             ]
           : 'playwright install --no-shell',
         // browsers are installed outside the workspace, so they cannot be restored from the cache
