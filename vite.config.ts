@@ -90,7 +90,7 @@ export default defineConfig({
         command: 'vp test',
         dependsOn: ['install-browsers'],
         cache: {
-          // `CI` enables the visual project, `GITHUB_WORKFLOW` enables coverage
+          // `CI` enables visual tests, `GITHUB_WORKFLOW` enables coverage
           env: ['CI', 'GITHUB_WORKFLOW'],
           input: [{ auto: true }, '!coverage/**', '!node_modules/.cache/vite/**']
         }
@@ -285,17 +285,9 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['browser/**/*.test.*'],
+          include: ['browser/**/*.test.*', isCI ? 'visual/*.test.*' : ''],
           browser: { enabled: true },
           setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
-        }
-      },
-      {
-        test: {
-          name: 'visual',
-          include: isCI ? ['visual/*.test.*'] : [],
-          browser: { enabled: true },
-          setupFiles: ['test/setupBrowser.ts', 'test/failOnConsole.ts']
         }
       },
       {

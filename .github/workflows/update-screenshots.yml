@@ -47,7 +47,7 @@ jobs:
 
       - run: rm -r test/**/screenshots/**
 
-      - run: vp run test --project visual --update
+      - run: vp run test test/visual --update
         timeout-minutes: 4
 
       - name: Push new screenshots
