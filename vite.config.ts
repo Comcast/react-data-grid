@@ -285,7 +285,7 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['browser/**/*.test.*', isCI ? 'visual/*.test.*' : ''],
+          include: ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])],
           browser: { enabled: true },
           setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
         }
