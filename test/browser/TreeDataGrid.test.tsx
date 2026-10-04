@@ -397,6 +397,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowleft}{arrowleft}');
   await expect.element(rows.nth(1)).toHaveClass(rowActiveClassname);
+  await expect.element(rows.nth(1)).toHaveFocus();
 
   await userEvent.keyboard('{end}');
   await expect.element(rows.nth(5)).toHaveClass(rowActiveClassname);
