@@ -6,38 +6,24 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    # Vite+ and the packages it keeps aligned are updated with `vp migrate`:
+    # https://viteplus.dev/guide/upgrade-project
+    ignore:
+      - dependency-name: 'vite-plus'
+      - dependency-name: 'vite'
+      - dependency-name: '@voidzero-dev/*'
+      - dependency-name: 'vitest'
+      - dependency-name: '@vitest/*'
     groups:
       typescript:
         patterns:
           - 'typescript'
-      build-tooling:
-        patterns:
-          - 'vite'
-          - '@vitejs/*'
-          - 'vitest'
-          - 'vitest-*'
-          - '@vitest/*'
-          - 'tsdown'
-          - '@tsdown/*'
-          - 'playwright'
-        exclude-patterns:
-          - '@vitest/eslint-plugin'
-      quality:
-        patterns:
-          - 'eslint'
-          - '@eslint/*'
-          - 'oxfmt'
-          - 'oxlint'
-          - 'oxlint-*'
       react:
         patterns:
           - 'react'
           - 'react-dom'
           - '@types/react'
           - '@types/react-dom'
-      tanstack:
-        patterns:
-          - '@tanstack/*'
       # everything else: single PR for minor/patch bumps,
       # majors still land individually
       dependencies:

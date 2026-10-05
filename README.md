@@ -56,18 +56,15 @@ The DataGrid component is designed to handle large datasets efficiently while of
 Install `react-data-grid` using your favorite package manager:
 
 ```sh
-npm i react-data-grid
-```
-
-```sh
+# npm
+npm install react-data-grid
+# Vite+
+vp add react-data-grid
+# pnpm
 pnpm add react-data-grid
-```
-
-```sh
+# Yarn
 yarn add react-data-grid
-```
-
-```sh
+# Bun
 bun add react-data-grid
 ```
 
@@ -2109,8 +2106,8 @@ type Maybe<T> = T | undefined | null;
 - `SR`, `TSummaryRow`: Summary row type
 - `K`: Row key type
 
-[ci-badge]: https://github.com/Comcast/react-data-grid/workflows/CI/badge.svg
-[ci-url]: https://github.com/Comcast/react-data-grid/actions
+[ci-badge]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml/badge.svg
+[ci-url]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml
 [codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
 [codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
 [npm-badge]: https://img.shields.io/npm/v/react-data-grid

@@ -1,4 +1,4 @@
-import { page, userEvent, type Locator } from 'vitest/browser';
+import { page, userEvent, type Locator } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';

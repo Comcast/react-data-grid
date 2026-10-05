@@ -5,6 +5,13 @@ on:
     types: [labeled]
   workflow_dispatch:
 
+permissions: {}
+
+cache-mode: none
+
+env:
+  FORCE_COLOR: 1
+
 jobs:
   update-screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
@@ -12,23 +19,23 @@ jobs:
     timeout-minutes: 10
 
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # push the new screenshots
+      pull-requests: write # remove the label
 
     # one at a time per branch
     concurrency:
-      group: update-screenshots@${{ github.head_ref }}
+      group: update-screenshots@${{ github.head_ref || github.ref }}
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v7
+      # credentials are persisted to push the new screenshots
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
 
       - name: Remove label
         if: github.event_name == 'pull_request'
@@ -36,29 +43,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Install dependencies
-        run: npm ci
+      - run: vp install --frozen-lockfile
 
-      - name: Install Playwright Browsers
-        run: |
-          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
-          Acquire::Retries "0";
-          Acquire::http::Timeout "10";
-          Acquire::https::Timeout "10";
-          EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
-        timeout-minutes: 2
+      - run: rm -r test/**/screenshots/**
 
-      - name: Update screenshots
-        run: |
-          rm -r test/**/screenshots/**
-          node --run test:ci:update
+      - run: vp run test test/visual --update
         timeout-minutes: 4
 
       - name: Push new screenshots
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
           git add "test/**/screenshots/**"
           git diff-index --quiet HEAD || git commit -m "Update screenshots"
           git push
