@@ -24,6 +24,12 @@ jobs:
     # restore and save the Vite Task cache
     cache-mode: write
 
+    # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
+    # several share a name, so each attempt uploads the website under its own name:
+    # https://github.com/actions/deploy-pages/issues/338
+    outputs:
+      pages-artifact: github-pages-${{ github.run_attempt }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -80,6 +86,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: dist
 
   deploy:
@@ -104,3 +111,6 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          # when only this job is re-run, this still names the earlier attempt's artifact
+          artifact_name: ${{ needs.test.outputs.pages-artifact }}
