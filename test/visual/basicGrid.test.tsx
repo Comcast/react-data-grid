@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
 
@@ -48,6 +48,7 @@ test('basic grid', async () => {
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
+      style={{ height: 350 }}
     />
   );
 
