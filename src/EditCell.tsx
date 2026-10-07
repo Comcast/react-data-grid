@@ -27,7 +27,8 @@ import type {
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
  *
  * The grid may be portaled into another window, like an iframe or a popup window,
- * so we listen to events and schedule tasks on the window the editor is rendered in.
+ * so we listen to events on both the window the editor is rendered in and the current window,
+ * and schedule tasks on the window that received the event.
  */
 
 // TODO: remove when all browsers support the scheduler APIs
@@ -79,19 +80,20 @@ export default function EditCell<R, SR>({
   useLayoutEffect(() => {
     if (!commitOnOutsideClick) return;
 
-    const ownerWindow = editCellRef.current!.ownerDocument.defaultView!;
+    const windows = new Set([editCellRef.current!.ownerDocument.defaultView!, globalThis]);
 
     function onWindowCaptureMouseDown(event: MouseEvent) {
       captureEventRef.current = event;
+      const eventWindow = event.currentTarget as typeof globalThis;
 
-      if (canUsePostTask(ownerWindow)) {
+      if (canUsePostTask(eventWindow)) {
         const abortController = new AbortController();
         cancelScheduledTaskRef.current = () => {
           abortController.abort();
         };
         // Use postTask to ensure that the event is not called in the middle of a React render
         // and that it is called before the next paint.
-        ownerWindow.scheduler
+        eventWindow.scheduler
           .postTask(commitOnOutsideMouseDown, {
             priority: 'user-blocking',
             signal: abortController.signal
@@ -99,9 +101,9 @@ export default function EditCell<R, SR>({
           // ignore abort errors
           .catch(() => {});
       } else {
-        const frameRequest = ownerWindow.requestAnimationFrame(commitOnOutsideMouseDown);
+        const frameRequest = eventWindow.requestAnimationFrame(commitOnOutsideMouseDown);
         cancelScheduledTaskRef.current = () => {
-          ownerWindow.cancelAnimationFrame(frameRequest);
+          eventWindow.cancelAnimationFrame(frameRequest);
         };
       }
     }
@@ -112,12 +114,16 @@ export default function EditCell<R, SR>({
       }
     }
 
-    ownerWindow.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-    ownerWindow.addEventListener('mousedown', onWindowMouseDown);
+    for (const win of windows) {
+      win.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+      win.addEventListener('mousedown', onWindowMouseDown);
+    }
 
     return () => {
-      ownerWindow.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-      ownerWindow.removeEventListener('mousedown', onWindowMouseDown);
+      for (const win of windows) {
+        win.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+        win.removeEventListener('mousedown', onWindowMouseDown);
+      }
       cancelTask();
     };
   }, [commitOnOutsideClick]);

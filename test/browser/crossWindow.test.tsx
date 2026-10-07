@@ -142,7 +142,7 @@ test('should commit changes and close the editor when clicked outside', async ()
   await expect.element(frame.getCell({ name: 'a1new' })).toBeInTheDocument();
 });
 
-test.fails('should commit changes and close the editor when clicked outside the iframe', async () => {
+test('should commit changes and close the editor when clicked outside the iframe', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(
     <>
