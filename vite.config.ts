@@ -178,6 +178,8 @@ export default defineConfig({
     target: ['baseline-widely-available', 'node24.0.0'],
     platform: 'neutral',
     sourcemap: true,
+    failOnWarn: isAgent || 'ci-only',
+    suppressWarnings: 'TypeScript 7.0 does not yet have a stable API and is experimental.',
     treeshake: {
       moduleSideEffects: false,
       propertyReadSideEffects: false,
