@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
@@ -397,6 +397,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowleft}{arrowleft}');
   await expect.element(rows.nth(1)).toHaveClass(rowActiveClassname);
+  await expect.element(rows.nth(1)).toHaveFocus();
 
   await userEvent.keyboard('{end}');
   await expect.element(rows.nth(5)).toHaveClass(rowActiveClassname);

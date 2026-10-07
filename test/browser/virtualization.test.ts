@@ -1,4 +1,4 @@
-import { page, type Locator } from 'vitest/browser';
+import { page, type Locator } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { getCellsAtRowIndex, scrollGrid, setup } from './utils';

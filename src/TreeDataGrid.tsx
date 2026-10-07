@@ -273,7 +273,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const key = rowKeyGetter(row);
       if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
         if (isGroupRow(row)) {
-          // select all children if the parent row is selected
+          // unselect all children if the parent row is unselected
           for (const cr of row.childRows) {
             newRawSelectedRows.delete(rawRowKeyGetter(cr));
           }
@@ -282,7 +282,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         }
       } else if (!selectedRows?.has(key) && newSelectedRows.has(key)) {
         if (isGroupRow(row)) {
-          // unselect all children if the parent row is unselected
+          // select all children if the parent row is selected
           for (const cr of row.childRows) {
             newRawSelectedRows.add(rawRowKeyGetter(cr));
           }
@@ -323,7 +323,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       const parentRowAndIndex = getParentRowAndIndex(row);
       if (parentRowAndIndex !== undefined) {
         event.preventGridDefault();
-        setActivePosition({ idx, rowIdx: parentRowAndIndex[1] });
+        setActivePosition({ idx, rowIdx: parentRowAndIndex[1] }, { shouldFocus: true });
       }
     }
   }

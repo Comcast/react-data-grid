@@ -1,12 +1,15 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
+    "source.fixAll.oxc": "explicit",
     "source.organizeLinkDefinitions": "explicit",
-    "source.removeUnusedImports": "explicit",
-    "source.format.oxc": "explicit"
+    "source.removeUnusedImports": "explicit"
   },
   "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
   "js/ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "./node_modules/typescript",
   // ESLint is only used for markdown; JS/TS is linted by the oxc extension
   "eslint.validate": ["markdown"],
   "eslint.problems.shortenToSingleLine": true,
@@ -19,5 +22,7 @@
   "search.exclude": {
     "**/package-lock.json": true,
     "**/routeTree.gen.ts": true
-  }
+  },
+  "oxc.disableNestedConfig": true,
+  "oxc.fmt.disableNestedConfig": true
 }
