@@ -25,10 +25,16 @@ import type {
  * so `mousedown` is used instead of `click`.
  *
  * We must also rely on React's event capturing/bubbling to handle elements rendered in a portal.
+ *
+ * The grid may be portaled into another window, like an iframe or a popup window,
+ * so we listen to events on both the window the editor is rendered in and the current window,
+ * and schedule tasks on the window that received the event.
  */
 
 // TODO: remove when all browsers support the scheduler APIs
-const canUsePostTask = typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
+function canUsePostTask({ scheduler }: typeof globalThis) {
+  return typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
+}
 
 const cellEditing = css`
   @layer rdg.EditCell {
@@ -59,9 +65,9 @@ export default function EditCell<R, SR>({
   onKeyDown,
   navigate
 }: EditCellProps<R, SR>) {
+  const editCellRef = useRef<HTMLDivElement>(null);
   const captureEventRef = useRef<MouseEvent | undefined>(undefined);
-  const abortControllerRef = useRef<AbortController>(undefined);
-  const frameRequestRef = useRef<number>(undefined);
+  const cancelScheduledTaskRef = useRef<() => void>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
 
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
@@ -74,24 +80,31 @@ export default function EditCell<R, SR>({
   useLayoutEffect(() => {
     if (!commitOnOutsideClick) return;
 
+    const windows = new Set([editCellRef.current!.ownerDocument.defaultView!, globalThis]);
+
     function onWindowCaptureMouseDown(event: MouseEvent) {
       captureEventRef.current = event;
+      const eventWindow = event.currentTarget as typeof globalThis;
 
-      if (canUsePostTask) {
+      if (canUsePostTask(eventWindow)) {
         const abortController = new AbortController();
-        const { signal } = abortController;
-        abortControllerRef.current = abortController;
+        cancelScheduledTaskRef.current = () => {
+          abortController.abort();
+        };
         // Use postTask to ensure that the event is not called in the middle of a React render
         // and that it is called before the next paint.
-        scheduler
+        eventWindow.scheduler
           .postTask(commitOnOutsideMouseDown, {
             priority: 'user-blocking',
-            signal
+            signal: abortController.signal
           })
           // ignore abort errors
           .catch(() => {});
       } else {
-        frameRequestRef.current = requestAnimationFrame(commitOnOutsideMouseDown);
+        const frameRequest = eventWindow.requestAnimationFrame(commitOnOutsideMouseDown);
+        cancelScheduledTaskRef.current = () => {
+          eventWindow.cancelAnimationFrame(frameRequest);
+        };
       }
     }
 
@@ -101,12 +114,16 @@ export default function EditCell<R, SR>({
       }
     }
 
-    globalThis.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-    globalThis.addEventListener('mousedown', onWindowMouseDown);
+    for (const win of windows) {
+      win.addEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+      win.addEventListener('mousedown', onWindowMouseDown);
+    }
 
     return () => {
-      globalThis.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
-      globalThis.removeEventListener('mousedown', onWindowMouseDown);
+      for (const win of windows) {
+        win.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
+        win.removeEventListener('mousedown', onWindowMouseDown);
+      }
       cancelTask();
     };
   }, [commitOnOutsideClick]);
@@ -115,14 +132,8 @@ export default function EditCell<R, SR>({
   // oxlint-disable-next-line react/invariant
   function cancelTask() {
     captureEventRef.current = undefined;
-    if (abortControllerRef.current !== undefined) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = undefined;
-    }
-    if (frameRequestRef.current !== undefined) {
-      cancelAnimationFrame(frameRequestRef.current);
-      frameRequestRef.current = undefined;
-    }
+    cancelScheduledTaskRef.current?.();
+    cancelScheduledTaskRef.current = undefined;
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -176,6 +187,7 @@ export default function EditCell<R, SR>({
 
   return (
     <div
+      ref={editCellRef}
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
       aria-colspan={colSpan}

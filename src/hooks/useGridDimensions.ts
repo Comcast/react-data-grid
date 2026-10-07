@@ -9,11 +9,23 @@ const initialSize: ResizeObserverSize = {
 // the component partially unmounts via Suspense or Activity
 const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
 const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
-const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
+const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
 
-// don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
-const resizeObserver =
-  typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeObserverCallback);
+// one ResizeObserver per window, so that resizes are observed in the window the grid is rendered in,
+// for example when the grid is portaled into an iframe or a popup window
+const resizeObservers = new WeakMap<Window, ResizeObserver>();
+
+function getResizeObserver(target: HTMLDivElement): ResizeObserver | null {
+  const ownerWindow = target.ownerDocument.defaultView;
+
+  // don't break in environments that don't support ResizeObserver
+  if (ownerWindow?.ResizeObserver == null) return null;
+
+  return resizeObservers.getOrInsertComputed(
+    ownerWindow,
+    () => new ownerWindow.ResizeObserver(resizeObserverCallback)
+  );
+}
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   for (const entry of entries) {
@@ -66,6 +78,7 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
 
   useLayoutEffect(() => {
     const target = gridRef.current!;
+    const resizeObserver = getResizeObserver(target);
 
     targetToRefMap.set(target, gridRef);
     resizeObserver?.observe(target);

@@ -1,4 +1,5 @@
 import type { Direction, Maybe } from '../types';
+import { isElement } from './domUtils';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
 const nonInputKeys = new Set([
@@ -74,12 +75,7 @@ export function isDefaultCellInput(
  *   - The editor element must be the only immediate child of the editor container/a label.
  */
 export function onEditorNavigation({ key, target }: React.KeyboardEvent<HTMLDivElement>): boolean {
-  if (
-    key === 'Tab' &&
-    (target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement ||
-      target instanceof HTMLSelectElement)
-  ) {
+  if (key === 'Tab' && isElement(target) && target.matches('input, textarea, select')) {
     return (
       target.closest('.rdg-editor-container')?.querySelectorAll('input, textarea, select')
         .length === 1
