@@ -44,8 +44,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/browser-playwright": "5.0.1",
-    "@vitest/coverage-istanbul": "5.0.1",
+    "@vitest/browser-playwright": "5.0.3",
+    "@vitest/coverage-istanbul": "5.0.3",
     "clsx": "^2.1.1",
     "ecij": "^0.5.0",
     "eslint": "^10.2.1",
@@ -56,9 +56,9 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "^7.0.2",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.0.0",
-    "vite-plus": "1.0.0",
-    "vitest": "5.0.1",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+    "vite-plus": "1.1.0",
+    "vitest": "5.0.3",
     "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
@@ -67,8 +67,8 @@
   },
   "overrides": {
     "oxc-transform-react": "$oxc-transform-react",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.0.0",
-    "vitest": "5.0.1"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+    "vitest": "5.0.3"
   },
   "devEngines": {
     "packageManager": {
