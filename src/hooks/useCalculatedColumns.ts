@@ -270,7 +270,7 @@ export function useCalculatedColumns<R, SR>({
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
       const { left, width } = columnMetrics.get(columns[colVisibleStartIdx])!;
-      // if the right side of the columnn is beyond the left side of the available viewport,
+      // if the right side of the column is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
         break;

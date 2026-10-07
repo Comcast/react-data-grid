@@ -9,7 +9,7 @@ const initialSize: ResizeObserverSize = {
 // the component partially unmounts via Suspense or Activity
 const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
 const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
-const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
+const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
 
 // one ResizeObserver per window, so that resizes are observed in the window the grid is rendered in,
 // for example when the grid is portaled into an iframe or a popup window
@@ -18,16 +18,13 @@ const resizeObservers = new WeakMap<Window, ResizeObserver>();
 function getResizeObserver(target: HTMLDivElement): ResizeObserver | null {
   const ownerWindow = target.ownerDocument.defaultView;
 
-  // don't break in jsdom, and environments that don't support ResizeObserver
-  if (ownerWindow?.ResizeObserver === undefined) return null;
+  // don't break in environments that don't support ResizeObserver
+  if (ownerWindow?.ResizeObserver == null) return null;
 
-  let resizeObserver = resizeObservers.get(ownerWindow);
-  if (resizeObserver === undefined) {
-    resizeObserver = new ownerWindow.ResizeObserver(resizeObserverCallback);
-    resizeObservers.set(ownerWindow, resizeObserver);
-  }
-
-  return resizeObserver;
+  return resizeObservers.getOrInsertComputed(
+    ownerWindow,
+    () => new ownerWindow.ResizeObserver(resizeObserverCallback)
+  );
 }
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {

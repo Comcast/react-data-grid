@@ -31,7 +31,7 @@ import type {
  */
 
 // TODO: remove when all browsers support the scheduler APIs
-function canUsePostTask({ scheduler }: Window & typeof globalThis) {
+function canUsePostTask({ scheduler }: typeof globalThis) {
   return typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
 }
 
