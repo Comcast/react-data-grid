@@ -141,3 +141,21 @@ test('should commit changes and close the editor when clicked outside', async ()
   await expect.element(editor).not.toBeInTheDocument();
   await expect.element(frame.getCell({ name: 'a1new' })).toBeInTheDocument();
 });
+
+test.fails('should commit changes and close the editor when clicked outside the iframe', async () => {
+  const { iframeDocument, frame } = await createIframe();
+  await page.render(
+    <>
+      <div>outer</div>
+      {createPortal(<EditableGrid />, iframeDocument.body)}
+    </>
+  );
+  const editor = frame.getByRole('textbox', { name: 'editor' });
+
+  await userEvent.dblClick(frame.getCell({ name: 'a1' }));
+  await expect.element(editor).toHaveValue('a1');
+  await userEvent.keyboard('new');
+  await userEvent.click(page.getByText('outer'));
+  await expect.element(editor).not.toBeInTheDocument();
+  await expect.element(frame.getCell({ name: 'a1new' })).toBeInTheDocument();
+});
