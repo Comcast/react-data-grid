@@ -56,9 +56,9 @@ function EditableGrid() {
   );
 }
 
-async function createIframe(width = 400) {
+async function createIframe() {
   const iframe = document.createElement('iframe');
-  iframe.style.width = `${width}px`;
+  iframe.style.width = '400px';
   iframe.srcdoc = '<!doctype html><body style="margin: 0"></body>';
 
   await new Promise((resolve) => {
@@ -86,26 +86,24 @@ async function createIframe(width = 400) {
 }
 
 test('should observe grid resizes with the ResizeObserver of the window the grid is rendered in', async () => {
-  const { iframe, iframeDocument, iframeWindow } = await createIframe();
+  const { iframe, iframeDocument, iframeWindow, frame } = await createIframe();
   const observeSpy = vi.spyOn(iframeWindow.ResizeObserver.prototype, 'observe');
 
   await page.render(
     createPortal(<DataGrid columns={columns} rows={noRows} />, iframeDocument.body)
   );
 
-  const grid = iframeDocument.querySelector('[role="grid"]');
-  expect(grid).not.toBeNull();
-  expect(observeSpy).toHaveBeenCalledWith(grid);
+  const grid = frame.getGrid();
+  await expect.element(grid).toBeInTheDocument();
+  expect(observeSpy).toHaveBeenCalledWith(grid.element());
 
-  function getLastHeaderCellColIndex() {
-    return iframeDocument.querySelector('[role="columnheader"]:last-child')?.ariaColIndex;
-  }
+  const headerCells = grid.getHeaderCell();
 
-  await expect.poll(getLastHeaderCellColIndex).toBe('5');
+  await expect.element(headerCells).toHaveLength(5);
 
   iframe.style.width = '800px';
 
-  await expect.poll(getLastHeaderCellColIndex).toBe('9');
+  await expect.element(headerCells).toHaveLength(9);
 });
 
 test('should navigate between cells with the keyboard', async () => {
