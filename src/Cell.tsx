@@ -16,6 +16,7 @@ const cellDraggedOverClassname = `rdg-cell-dragged-over ${cellDraggedOver}`;
 function Cell<R, SR>({
   column,
   colSpan,
+  rowSpan,
   isCellActive,
   isDraggedOver,
   row,
@@ -36,14 +37,17 @@ function Cell<R, SR>({
 }: CellRendererProps<R, SR>) {
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
-  const { cellClass } = column;
+  const { cellClass, styleCellClass, myCellStyle } = column;
+  const styleClassOverride = styleCellClass?.(row, column);
   className = getCellClassname(
     column,
     isDraggedOver && cellDraggedOverClassname,
-    typeof cellClass === 'function' ? cellClass(row) : cellClass,
+    styleClassOverride ?? (typeof cellClass === 'function' ? cellClass(row) : cellClass),
     className
   );
   const isEditable = isCellEditableUtil(column, row);
+  const cellStyleOverride =
+    typeof myCellStyle === 'function' ? myCellStyle(row, column.idx) : myCellStyle;
 
   function setActivePositionWrapper(enableEditor = false) {
     setActivePosition({ rowIdx, idx: column.idx }, { enableEditor });
@@ -97,12 +101,14 @@ function Cell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
       aria-colspan={colSpan}
+      aria-rowspan={rowSpan}
       aria-selected={isCellActive}
       aria-readonly={!isEditable || undefined}
       tabIndex={tabIndex}
       className={className}
       style={{
-        ...getCellStyle(column, colSpan),
+        ...getCellStyle(column, colSpan, rowSpan),
+        ...cellStyleOverride,
         ...style
       }}
       onClick={handleClick}

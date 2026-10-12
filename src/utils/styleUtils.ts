@@ -29,12 +29,19 @@ export function getHeaderCellStyle<R, SR>(
 
 export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
-  colSpan = 1
+  colSpan = 1,
+  rowSpan?: number
 ): React.CSSProperties {
   const index = column.idx + 1;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
+    ...(rowSpan !== undefined && {
+      gridRowEnd: `span ${rowSpan}`,
+      // rowSpan cells must render above the background of the rows they span over,
+      // otherwise those rows' opaque background paints over the spanning cell's borders
+      zIndex: 1
+    }),
     insetInlineStart: isStartFrozen(column.frozen)
       ? `var(--rdg-frozen-start-${column.idx})`
       : undefined,
