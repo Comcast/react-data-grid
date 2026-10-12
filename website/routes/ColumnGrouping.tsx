@@ -9,13 +9,16 @@ export const Route = createFileRoute('/ColumnGrouping')({
 });
 
 const columns: readonly ColumnOrColumnGroup<number, number>[] = [
-  { key: '1', name: 'Column 1' },
+  {
+    name: 'Frozen Start Group',
+    children: [
+      { key: '1', name: 'Column 1', frozen: 'start' },
+      { key: '2', name: 'Column 2', frozen: 'start' }
+    ]
+  },
   {
     name: 'Group 1',
-    children: [
-      { key: '2', name: 'Column 2' },
-      { key: '3', name: 'Column 3' }
-    ]
+    children: [{ key: '3', name: 'Column 3' }]
   },
   { key: '4', name: 'Column 4' },
   { name: 'empty group', children: [] },
@@ -88,6 +91,13 @@ const columns: readonly ColumnOrColumnGroup<number, number>[] = [
         ]
       },
       { key: '12', name: 'Column 12' }
+    ]
+  },
+  {
+    name: 'Frozen End Group',
+    children: [
+      { key: '13', name: 'Column 13', frozen: 'end' },
+      { key: '14', name: 'Column 14', frozen: 'end' }
     ]
   }
 ];
