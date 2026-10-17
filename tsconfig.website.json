@@ -4,6 +4,6 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true
   },
-  "include": ["src/css.d.ts", "website/**/*"],
+  "include": ["src/css.d.ts", "src/globals.d.ts", "website/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
 }
