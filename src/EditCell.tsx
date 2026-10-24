@@ -29,6 +29,17 @@ function canUsePostTask({ scheduler }: typeof globalThis) {
   return typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
 }
 
+// Declared outside of the component, so the `useLayoutEffect` cleanup
+// doesn't depend on a function that is recreated on every render
+function cancelTask(
+  captureEventRef: React.RefObject<MouseEvent | undefined>,
+  cancelScheduledTaskRef: React.RefObject<(() => void) | undefined>
+) {
+  captureEventRef.current = undefined;
+  cancelScheduledTaskRef.current?.();
+  cancelScheduledTaskRef.current = undefined;
+}
+
 const cellEditing = css`
   @layer rdg.EditCell {
     padding: 0;
@@ -49,6 +60,14 @@ export default function EditCell<R, SR>({
   const captureEventRef = useRef<MouseEvent | undefined>(undefined);
   const cancelScheduledTaskRef = useRef<() => void>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
+
+  function onClose(commitChanges = false, shouldFocus = true) {
+    if (commitChanges) {
+      onRowChange(row, true, shouldFocus);
+    } else {
+      closeEditor(shouldFocus);
+    }
+  }
 
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
@@ -104,16 +123,12 @@ export default function EditCell<R, SR>({
         win.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
         win.removeEventListener('mousedown', onWindowMouseDown);
       }
-      cancelTask();
+      cancelTask(captureEventRef, cancelScheduledTaskRef);
     };
   }, [commitOnOutsideClick]);
 
-  // TODO: report React Compiler bug
-  // oxlint-disable-next-line react/invariant
-  function cancelTask() {
-    captureEventRef.current = undefined;
-    cancelScheduledTaskRef.current?.();
-    cancelScheduledTaskRef.current = undefined;
+  function handleMouseDownCapture() {
+    cancelTask(captureEventRef, cancelScheduledTaskRef);
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -145,14 +160,6 @@ export default function EditCell<R, SR>({
     }
   }
 
-  function onClose(commitChanges = false, shouldFocus = true) {
-    if (commitChanges) {
-      onRowChange(row, true, shouldFocus);
-    } else {
-      closeEditor(shouldFocus);
-    }
-  }
-
   function onEditorRowChange(row: R, commitChangesAndFocus = false) {
     onRowChange(row, commitChangesAndFocus, commitChangesAndFocus);
   }
@@ -175,7 +182,7 @@ export default function EditCell<R, SR>({
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDown={handleKeyDown}
-      onMouseDownCapture={cancelTask}
+      onMouseDownCapture={handleMouseDownCapture}
     >
       {column.renderEditCell != null && (
         <>

@@ -658,7 +658,7 @@ copy(
       'react/static-components': 'warn',
       'react/style-prop-object': 'warn',
       'react/syntax': 'warn',
-      'react/todo': 'off',
+      'react/todo': 'warn',
       'react/unsupported-syntax': 'warn',
       'react/use-memo': 'warn',
       'react/void-dom-elements-no-children': 'warn',
