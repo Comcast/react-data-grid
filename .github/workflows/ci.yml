@@ -89,9 +89,9 @@ jobs:
           name: github-pages-${{ github.run_attempt }}
           path: dist
 
-  # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
-  # and the check must happen before `deploy` queues in the `pages` concurrency group,
-  # as queuing there cancels the pending deployment, even when that one is for a newer commit
+  # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website;
+  # checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit
+  # or queues in the `pages` concurrency group, where it would cancel a newer commit's pending deployment
   check-head:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
