@@ -98,19 +98,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    permissions:
-      contents: read # read the head of main
-
     outputs:
       is-head: ${{ steps.check.outputs.is-head }}
 
     steps:
+      # the repository is public, so `git ls-remote` reads the head of main without a token,
+      # and unlike the default shell, `shell: bash` sets `pipefail`, so the step fails if `git ls-remote` does
       - name: Check that the commit is still the head of main
         id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          head=$(git ls-remote "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" refs/heads/main | cut -f1)
           if [ "$head" = "$GITHUB_SHA" ]; then
             echo 'is-head=true' >> "$GITHUB_OUTPUT"
           else
