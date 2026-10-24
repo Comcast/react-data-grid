@@ -58,6 +58,15 @@ async function getTscPath(): Promise<string> {
   return getExePath();
 }
 
+// shared by Vite and `vp pack`
+const reactPlugin = react({
+  // warn about the code React Compiler can't compile, which fails `vp pack` with `failOnWarn`
+  compiler: { reportDiagnostics: true },
+  // `vp pack` passes the declaration files it generates through the plugin,
+  // and the compiler's TypeScript transform would strip all of their declarations
+  exclude: [/\/node_modules\//, /\.d\.ts$/]
+});
+
 const actionTimeout = 2000;
 const viewport = { width: 1920, height: 1080 } as const;
 const playwrightOptions: PlaywrightProviderOptions = {
@@ -178,7 +187,7 @@ export default defineConfig({
           autoCodeSplitting: true
         })
       ),
-    react({ compiler: true })
+    reactPlugin
   ]),
 
   server: {
@@ -227,10 +236,7 @@ export default defineConfig({
         // between multiple versions of RDG on the same page
         classPrefix: `rdg-${pkg.version.replaceAll('.', '-')}-`
       }),
-      react({
-        compiler: true,
-        exclude: [/node_modules/, /\.d\.ts$/]
-      })
+      reactPlugin
     ]
   },
 
