@@ -60,6 +60,10 @@ async function getTscPath(): Promise<string> {
 
 const actionTimeout = 2000;
 const viewport = { width: 1920, height: 1080 } as const;
+// Firefox and WebKit tests are flakier than Chromium tests, so they retry failed tests once.
+// Chromium doesn't retry, so flakes caused by the grid itself still fail there.
+// On GitHub Actions, the job summary lists tests that passed on retry.
+const retry = 1;
 const playwrightOptions: PlaywrightProviderOptions = {
   actionTimeout,
   contextOptions: {
@@ -299,11 +303,13 @@ export default defineConfig({
             }
           }),
           // TODO: remove when FF tests are stable
-          fileParallelism: false
+          fileParallelism: false,
+          retry
         },
         {
           browser: 'webkit',
-          provider: playwright(playwrightOptions)
+          provider: playwright(playwrightOptions),
+          retry
         }
       ]
     },
