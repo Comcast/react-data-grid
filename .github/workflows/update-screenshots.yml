@@ -5,60 +5,122 @@ on:
     types: [labeled]
   workflow_dispatch:
 
+permissions: {}
+
+cache-mode: none
+
+env:
+  FORCE_COLOR: 1
+  # as a git pathspec and an upload-artifact glob, it matches screenshots at any depth,
+  # and only images, so the job that pushes can only commit images
+  SCREENSHOTS: 'test/**/screenshots/**/*.png'
+
+# dependencies only run in the read-only `screenshots` job,
+# the jobs with write permissions only run gh and git
 jobs:
-  update-screenshots:
+  remove-label:
+    if: github.event.label.name == 'Update Screenshots'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      pull-requests: write # remove the label
+
+    steps:
+      - name: Remove label
+        run: gh pr edit "$PR_URL" --remove-label 'Update Screenshots'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+
+  screenshots:
     if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read # check out the repository
 
     # one at a time per branch
     concurrency:
-      group: update-screenshots@${{ github.head_ref }}
+      group: update-screenshots@${{ github.head_ref || github.ref }}
       cancel-in-progress: true
 
+    outputs:
+      commit: ${{ steps.checkout.outputs.commit }}
+      changed: ${{ steps.changes.outputs.changed }}
+
     steps:
-      - uses: actions/checkout@v7
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
+          persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
 
-      - name: Remove label
-        if: github.event_name == 'pull_request'
-        run: gh pr edit --remove-label 'Update Screenshots'
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - run: vp install --frozen-lockfile
 
-      - name: Install dependencies
-        run: npm ci
+      # so that removed screenshots are detected
+      - name: Delete screenshots
+        run: git ls-files -z -- "$SCREENSHOTS" | xargs -0 --no-run-if-empty rm
 
-      - name: Install Playwright Browsers
-        run: |
-          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
-          Acquire::Retries "0";
-          Acquire::http::Timeout "10";
-          Acquire::https::Timeout "10";
-          EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
-        timeout-minutes: 2
-
-      - name: Update screenshots
-        run: |
-          rm -r test/**/screenshots/**
-          node --run test:ci:update
+      - run: vp run test test/visual --update
         timeout-minutes: 4
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain -- "$SCREENSHOTS")" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload screenshots
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screenshots
+          path: ${{ env.SCREENSHOTS }}
+          if-no-files-found: error
+          retention-days: 1
+
+  push:
+    needs: screenshots
+    if: needs.screenshots.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: write # push the new screenshots
+
+    steps:
+      # the commit the screenshots were taken on, so the push fails if the branch has moved since
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.screenshots.outputs.commit }}
+          persist-credentials: false
+
+      # so that removed screenshots are deleted too
+      - name: Delete screenshots
+        run: git ls-files -z -- "$SCREENSHOTS" | xargs -0 --no-run-if-empty rm
+
+      # the artifact keeps the paths after `test/`, where the upload's wildcard starts
+      - name: Download screenshots
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: screenshots
+          path: test
 
       - name: Push new screenshots
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          git add "test/**/screenshots/**"
-          git diff-index --quiet HEAD || git commit -m "Update screenshots"
-          git push
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
+          git add -- "$SCREENSHOTS"
+          git commit -m "Update screenshots"
+          gh auth setup-git
+          git push origin "HEAD:refs/heads/$BRANCH"
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}

@@ -3,7 +3,7 @@ import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';
-import type { CellMouseEventHandler, CellRendererProps } from './types';
+import type { CellMouseEventHandler, RenderCellProps } from './types';
 
 const cellDraggedOver = css`
   @layer rdg.Cell {
@@ -33,7 +33,7 @@ function Cell<R, SR>({
   setActivePosition,
   style,
   ...props
-}: CellRendererProps<R, SR>) {
+}: RenderCellProps<R, SR>) {
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
   const { cellClass } = column;
@@ -46,12 +46,12 @@ function Cell<R, SR>({
   const isEditable = isCellEditableUtil(column, row);
 
   function setActivePositionWrapper(enableEditor = false) {
-    setActivePosition({ rowIdx, idx: column.idx }, { enableEditor });
+    setActivePosition({ idx: column.idx, rowIdx }, { enableEditor });
   }
 
   function handleMouseEvent(
     event: React.MouseEvent<HTMLDivElement>,
-    eventHandler?: CellMouseEventHandler<R, SR>
+    eventHandler: CellMouseEventHandler<R, SR>
   ) {
     let eventHandled = false;
     if (eventHandler) {
@@ -65,7 +65,7 @@ function Cell<R, SR>({
   function handleMouseDown(event: MouseEvent<HTMLDivElement>) {
     onMouseDown?.(event);
     if (!handleMouseEvent(event, onCellMouseDown)) {
-      // select cell if the event is not prevented
+      // activate the cell if the event is not prevented
       setActivePositionWrapper();
     }
   }
@@ -124,10 +124,10 @@ function Cell<R, SR>({
   );
 }
 
-const CellComponent = memo(Cell) as <R, SR>(props: CellRendererProps<R, SR>) => React.JSX.Element;
+const MemoCell = memo(Cell) as <R, SR>(props: RenderCellProps<R, SR>) => React.JSX.Element;
 
-export default CellComponent;
+export { MemoCell as Cell };
 
-export function defaultRenderCell<R, SR>(key: React.Key, props: CellRendererProps<R, SR>) {
-  return <CellComponent key={key} {...props} />;
+export function defaultRenderCell<R, SR>(key: React.Key, props: RenderCellProps<R, SR>) {
+  return <MemoCell key={key} {...props} />;
 }

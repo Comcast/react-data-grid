@@ -1,7 +1,7 @@
 import { css } from 'ecij';
 
-import type { RenderHeaderCellProps } from './types';
-import { useDefaultRenderers } from './DataGridDefaultRenderersContext';
+import type { RenderHeaderCellContentProps } from './types';
+import { useRenderers } from './DataGridRenderersContext';
 
 const headerSortCellClassname = css`
   @layer rdg.SortableHeaderCell {
@@ -19,39 +19,31 @@ const headerSortName = css`
 
 const headerSortNameClassname = `rdg-header-sort-name ${headerSortName}`;
 
-export default function renderHeaderCell<R, SR>({
+export function renderHeaderCell<R, SR>({
   column,
   sortDirection,
   priority
-}: RenderHeaderCellProps<R, SR>) {
+}: RenderHeaderCellContentProps<R, SR>) {
   if (!column.sortable) return column.name;
 
-  return (
-    <SortableHeaderCell sortDirection={sortDirection} priority={priority}>
-      {column.name}
-    </SortableHeaderCell>
-  );
+  return <SortableHeaderCell column={column} sortDirection={sortDirection} priority={priority} />;
 }
 
-type SharedHeaderCellProps<R, SR> = Pick<
-  RenderHeaderCellProps<R, SR>,
-  'sortDirection' | 'priority'
+type SortableHeaderCellProps<R, SR> = Pick<
+  RenderHeaderCellContentProps<R, SR>,
+  'column' | 'sortDirection' | 'priority'
 >;
 
-interface SortableHeaderCellProps<R, SR> extends SharedHeaderCellProps<R, SR> {
-  children: React.ReactNode;
-}
-
 function SortableHeaderCell<R, SR>({
+  column,
   sortDirection,
-  priority,
-  children
+  priority
 }: SortableHeaderCellProps<R, SR>) {
-  const renderSortStatus = useDefaultRenderers<R, SR>()!.renderSortStatus!;
+  const renderSortStatus = useRenderers<R, SR>()!.renderSortStatus!;
 
   return (
     <span className={headerSortCellClassname}>
-      <span className={headerSortNameClassname}>{children}</span>
+      <span className={headerSortNameClassname}>{column.name}</span>
       <span>{renderSortStatus({ sortDirection, priority })}</span>
     </span>
   );

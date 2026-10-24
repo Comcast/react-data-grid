@@ -51,7 +51,7 @@ export function useActivePosition<R, SR>({
    * Returns whether the given position represents a valid cell or row position in the grid.
    * Active bounds: any valid position in the grid
    * Viewport: any valid position in the grid outside of header rows and summary rows
-   * Row selection is only allowed in TreeDataGrid
+   * Only TreeDataGrid allows the active position to be on a row (`idx: -1`)
    */
   function validatePosition({ idx, rowIdx }: Position) {
     // check column position
@@ -135,7 +135,7 @@ export function useActivePosition<R, SR>({
 
   useLayoutEffect(() => {
     // Layout effects clean up when the component is replaced by a suspense fallback,
-    // or when under <Activity mode="hidden">, then re-mounts when the suspense boundary cleans,
+    // or when under <Activity mode="hidden">, then re-mount when the suspense boundary resolves,
     // or when Activity switches back to `mode="visible"`.
     // So we use a ref to:
     // 1. avoid re-focusing after the effect re-mounts

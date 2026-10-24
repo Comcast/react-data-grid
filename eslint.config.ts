@@ -32,7 +32,6 @@ copy(
   )
     // map link to rule declaration
     .map((link) => `'markdown/${link.textContent}': 1,`)
-    .toArray()
     .join('\n')
 );
       */

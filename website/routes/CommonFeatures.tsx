@@ -7,7 +7,7 @@ import { css } from 'ecij';
 import {
   DataGrid,
   renderTextEditor,
-  SelectCellFormatter,
+  SelectCheckbox,
   SelectColumn,
   type Column,
   type DataGridHandle,
@@ -48,11 +48,11 @@ const dialogContainerClassname = css`
   }
 `;
 
-const dateFormatter = new Intl.DateTimeFormat(navigator.language);
-const currencyFormatter = new Intl.NumberFormat(navigator.language, {
+const formatDate = new Intl.DateTimeFormat(navigator.language).format;
+const formatCurrency = new Intl.NumberFormat(navigator.language, {
   style: 'currency',
   currency: 'eur'
-});
+}).format;
 
 interface SummaryRow {
   id: string;
@@ -190,28 +190,28 @@ function getColumns(
     },
     {
       key: 'startTimestamp',
-      name: 'Start date',
+      name: 'Start Date',
       renderCell(props) {
-        return dateFormatter.format(props.row.startTimestamp);
+        return formatDate(props.row.startTimestamp);
       }
     },
     {
       key: 'endTimestamp',
       name: 'Deadline',
       renderCell(props) {
-        return dateFormatter.format(props.row.endTimestamp);
+        return formatDate(props.row.endTimestamp);
       }
     },
     {
       key: 'budget',
       name: 'Budget',
       renderCell(props) {
-        return currencyFormatter.format(props.row.budget);
+        return formatCurrency(props.row.budget);
       }
     },
     {
       key: 'transaction',
-      name: 'Transaction type'
+      name: 'Transaction Type'
     },
     {
       key: 'account',
@@ -228,7 +228,7 @@ function getColumns(
       frozen: 'end',
       renderCell({ row, onRowChange, tabIndex }) {
         return (
-          <SelectCellFormatter
+          <SelectCheckbox
             value={row.available}
             onChange={() => {
               onRowChange({ ...row, available: !row.available });

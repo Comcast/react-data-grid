@@ -8,6 +8,7 @@ export * from './frozenColumnUtils';
 export * from './keyboardUtils';
 export * from './renderMeasuringCells';
 export * from './styleUtils';
+export * from './viewportUtils';
 
 export const { min, max, floor, abs } = Math;
 
@@ -25,7 +26,7 @@ export function clampColumnWidth<R, SR>(
 ): number {
   width = max(width, minWidth);
 
-  // ignore maxWidth if it less than minWidth
+  // ignore maxWidth if it is less than minWidth
   if (typeof maxWidth === 'number' && maxWidth >= minWidth) {
     return min(width, maxWidth);
   }

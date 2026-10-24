@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { page, server, userEvent } from 'vitest/browser';
+import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridProps } from '../../../src';
@@ -259,12 +259,12 @@ describe('Editor', () => {
       await userEvent.dblClick(page.getCell({ name: 'name0' }));
       await userEvent.keyboard('abc');
       if (server.browser === 'firefox') {
-        // When typing, Firefox scroll to the caret asynchronously,
-        // but does not to cancel the scroll task when calling `.scroll()` on the grid
+        // When typing, Firefox scrolls to the caret asynchronously,
+        // but does not cancel the scroll task when calling `.scroll()` on the grid
         // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/html/TextControlElement.cpp#L330
         // https://github.com/mozilla-firefox/firefox/blob/287c6cf323492ae0cc031e468c1d87f623413f50/dom/base/Selection.cpp#L3828
         await new Promise(requestAnimationFrame);
-        // Alternatively, configuring playwright's launchOptions.slowMo to 1 works,
+        // Alternatively, configuring Playwright's launchOptions.slowMo to 1 works,
         // but slows down the tests.
       }
       scrollGrid({ top: 1500 });

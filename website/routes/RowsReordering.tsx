@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, renderTextEditor, type Column, type RenderRowProps } from '../../src';
-import { DraggableRowRenderer } from '../components';
+import { DraggableRow } from '../components';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowsReordering')({
@@ -31,6 +31,10 @@ function createRows(): readonly Row[] {
   }
 
   return rows;
+}
+
+function rowKeyGetter(row: Row): number {
+  return row.id;
 }
 
 const columns: readonly Column<Row>[] = [
@@ -64,19 +68,15 @@ function RowsReordering() {
 
   const renderRow = useCallback((key: React.Key, props: RenderRowProps<Row>) => {
     function onRowReorder(fromIndex: number, toIndex: number) {
-      function reorderRows() {
-        setRows((rows) => {
-          const row = rows[fromIndex];
-          const newRows = rows.toSpliced(fromIndex, 1);
-          newRows.splice(toIndex, 0, row);
-          return newRows;
-        });
-      }
-
-      document.startViewTransition(reorderRows);
+      setRows((rows) => {
+        const row = rows[fromIndex];
+        const newRows = rows.toSpliced(fromIndex, 1);
+        newRows.splice(toIndex, 0, row);
+        return newRows;
+      });
     }
 
-    return <DraggableRowRenderer<Row, unknown> key={key} {...props} onRowReorder={onRowReorder} />;
+    return <DraggableRow<Row, unknown> key={key} {...props} onRowReorder={onRowReorder} />;
   }, []);
 
   return (
@@ -85,6 +85,7 @@ function RowsReordering() {
       columns={columns}
       rows={rows}
       onRowsChange={setRows}
+      rowKeyGetter={rowKeyGetter}
       renderers={{ renderRow }}
       direction={direction}
     />

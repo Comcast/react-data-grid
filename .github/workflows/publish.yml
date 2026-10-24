@@ -1,80 +1,119 @@
+# To publish a new version, run these commands:
+#   vp run version <prerelease|patch|minor|major|x.y.z>
+#   git push --atomic --no-follow-tags origin main "v$(npm pkg get version)"
+#
+# The `version` task in `vite.config.ts` switches to main and matches it and the local tags to GitHub's,
+# then runs `npm version` with the arguments, which commits the new version and tags it.
+# Naming the tag makes the push fail if the tag is missing, and `--no-follow-tags` leaves other
+# local tags out, even with `push.followTags` set. `--atomic` pushes main and the tag together, or neither.
+#
+# Until it's pushed, any fetch that prunes tags, like an editor's auto-fetch, deletes the new tag.
+# If the push can't find it, recreate it and push again:
+#   git tag --annotate "v$(npm pkg get version)" --message "$(npm pkg get version)"
+#
+# The new tag runs this workflow, which checks the tagged commit,
+# publishes it to npm, and creates the GitHub release.
+
 name: Publish
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g., 0.1.1, 0.2.0, 1.0.0)'
-        required: true
-        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions: {}
+
+cache-mode: none
+
+env:
+  FORCE_COLOR: 1
+
+# One release at a time, never canceled midway
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  # Dependencies only run in this read-only job, so they cannot mint an npm publishing token
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     permissions:
-      contents: write
-      id-token: write
+      contents: read # check out the repository
 
     steps:
-      - uses: actions/checkout@v7
+      # the full history includes `main`, to check that the tag is on it
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version-file: 'package.json'
-          check-latest: true
+          run-install: false
+
+      - name: Check that the tag is on main
+        run: git merge-base --is-ancestor HEAD origin/main
+
+      - name: Check that the tag matches the package version
+        run: test "$GITHUB_REF_NAME" = "v$(npm pkg get version)"
+
+      - run: vp install --frozen-lockfile
+
+      - run: vp run ci
+        timeout-minutes: 6
+
+      - name: Upload build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lib
+          path: lib/
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: read # check out the repository
+      id-token: write # npm trusted publishing
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          run-install: false
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: |
-          node --run lint
-          node --run lint:md
-
-      - name: Format
-        run: node --run format:check
-
-      - name: Build lib
-        run: node --run build
-
-      - name: Build website
-        run: node --run build:website
-
-      - name: Check routeTree.gen.ts
-        run: git diff --exit-code website/routeTree.gen.ts
-
-      - name: Install Playwright Browsers
-        run: |
-          sudo tee /etc/apt/apt.conf.d/99-ci >/dev/null <<'EOF'
-          Acquire::Retries "0";
-          Acquire::http::Timeout "10";
-          Acquire::https::Timeout "10";
-          EOF
-          npx playwright install chromium firefox webkit --with-deps --no-shell
-        timeout-minutes: 2
-
-      - name: Test
-        run: node --run test:ci
-        timeout-minutes: 4
-
-      - name: Update version
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          npm version ${{ inputs.version }}
+      - name: Download build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: lib
+          path: lib
 
       # https://docs.npmjs.com/trusted-publishers
+      # `--ignore-scripts` skips the `prepare` script, so no project code runs either
       - name: Publish to npm
-        run: npm publish --tag latest
+        run: npm publish --tag latest --ignore-scripts
 
-      - name: Push tag
-        run: git push origin v${{ inputs.version }}
+  # A separate job, so the job that can publish to npm has no write token,
+  # and a failed release can be re-run once the version is already on npm
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
+    permissions:
+      contents: write # create the GitHub release
+
+    steps:
       - name: Create GitHub Release
-        run: gh release create v${{ inputs.version }} --title "v${{ inputs.version }}" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
         env:
           GH_TOKEN: ${{ github.token }}

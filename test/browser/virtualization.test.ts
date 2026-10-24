@@ -1,4 +1,4 @@
-import { page, type Locator } from 'vitest/browser';
+import { page, type Locator } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { getCellsAtRowIndex, scrollGrid, setup } from './utils';
@@ -292,11 +292,16 @@ test('virtualization is disabled with no frozen columns', async () => {
   await expect.element(cells).toHaveLength(40 * 100);
 });
 
-// failing test
-// cannot use `test.fails` as console logs lead to timeout in parallel tests
-// https://github.com/vitest-dev/vitest/issues/9941
-test.skip('virtualization is disabled with some frozen columns', async () => {
+test('virtualization is disabled with some frozen columns', async () => {
   await setupGrid(false, 40, 100, 3);
+
+  await assertHeaderCells(40, 0, 39);
+  await assertRows(100, 0, 99);
+  await expect.element(cells).toHaveLength(40 * 100);
+});
+
+test('virtualization is disabled with start and end frozen columns', async () => {
+  await setupGrid(false, 40, 100, 3, 0, 2);
 
   await assertHeaderCells(40, 0, 39);
   await assertRows(100, 0, 99);

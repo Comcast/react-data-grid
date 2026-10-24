@@ -1,18 +1,13 @@
 {
   "name": "react-data-grid",
-  "version": "7.0.0-beta.60",
+  "version": "7.0.0-beta.62",
   "description": "Feature-rich and customizable data grid React component",
   "keywords": [
     "data grid",
     "react"
   ],
-  "homepage": "https://github.com/Comcast/react-data-grid#readme",
-  "bugs": "https://github.com/Comcast/react-data-grid/issues",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Comcast/react-data-grid.git"
-  },
+  "repository": "github:Comcast/react-data-grid",
   "files": [
     "lib"
   ],
@@ -21,10 +16,6 @@
     "src/index.ts",
     "**/*.css"
   ],
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
-  "browser": "./lib/index.js",
-  "types": "./lib/index.d.ts",
   "exports": {
     "./lib/styles.css": "./lib/styles.css",
     ".": {
@@ -32,50 +23,37 @@
       "default": "./lib/index.js"
     }
   },
+  "publishConfig": {
+    "provenance": true
+  },
   "scripts": {
-    "start": "vite serve --clearScreen false",
-    "preview": "vite preview",
-    "build:website": "vite build",
-    "build": "tsdown",
-    "test": "vitest run --project browser --project node",
-    "test:watch": "vitest watch --project browser --project node",
-    "test:ci": "vitest run",
-    "test:ci:update": "vitest run --project visual --update",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
-    "lint": "oxlint",
-    "lint:md": "eslint --max-warnings 0",
-    "lint:fix": "oxlint --fix && eslint --fix",
-    "typecheck": "tsc --build"
+    "prepare": "vp config"
   },
   "devDependencies": {
     "@eslint/markdown": "^8.0.1",
     "@faker-js/faker": "^10.3.0",
     "@tanstack/react-router": "^1.166.7",
     "@tanstack/router-plugin": "^1.166.7",
-    "@tsdown/css": "^0.22.7",
     "@types/node": "^26.0.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/browser-playwright": "^5.0.0",
-    "@vitest/coverage-istanbul": "^5.0.0",
+    "@vitest/browser-playwright": "5.0.5",
+    "@vitest/coverage-istanbul": "5.0.5",
     "clsx": "^2.1.1",
-    "ecij": "^0.5.0",
+    "ecij": "^0.6.0",
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
-    "oxc-transform-react": "^0.147.0",
-    "oxfmt": "^0.65.0",
-    "oxlint": "^1.80.0",
-    "oxlint-tsgolint": "^7.0.2001",
+    "oxc-transform-react": "^0.155.0",
     "playwright": "^1.62.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "tsdown": "^0.22.7",
-    "typescript": "^7.0.2",
-    "vite": "^8.1.0",
-    "vitest": "^5.0.0",
+    "publint": "^0.3.25",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "beta",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
+    "vite-plus": "1.4.0",
+    "vitest": "5.0.5",
     "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
@@ -83,13 +61,24 @@
     "react-dom": "^19.2"
   },
   "overrides": {
-    "oxc-transform-react": "$oxc-transform-react"
+    "oxc-transform-react": "$oxc-transform-react",
+    "typescript": "$typescript",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
+    "vitest": "5.0.5"
   },
   "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "^12.2.1",
+      "onFail": "download"
+    },
     "runtime": {
       "name": "node",
-      "version": "^26.0.0",
-      "onFail": "warn"
+      "version": "^26.12.1",
+      "onFail": "download"
     }
+  },
+  "allowScripts": {
+    "core-js": false
   }
 }

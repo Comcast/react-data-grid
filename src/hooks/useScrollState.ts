@@ -56,9 +56,9 @@ export function useScrollState(gridRef: React.RefObject<HTMLDivElement | null>):
   );
 
   const getSnapshot = useCallback((): ScrollState => {
-    // gridRef.current is null during initial render, suspending, or <Activity mode="hidden">
-    // to avoid returning a different state in those cases,
-    // we key the ref object instead of the element itself
+    // gridRef.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
+    // To avoid returning a different state in those cases,
+    // we key the ref object instead of the element itself.
     return scrollStateMap.get(gridRef) ?? initialScrollState;
   }, [gridRef]);
 

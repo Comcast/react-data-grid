@@ -81,7 +81,7 @@ function getCellColSpan<R, SR>({
     });
   }
 
-  if (bottomSummaryRows) {
+  if (bottomSummaryRows && rowIdx >= rows.length) {
     return getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
       type: 'SUMMARY',
       row: bottomSummaryRows[rowIdx - rows.length]

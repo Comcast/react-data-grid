@@ -126,7 +126,7 @@ function ScrollToCell() {
       </div>
       <DataGrid
         ref={gridRef}
-        aria-label="Scroll To Cell Example"
+        aria-label="Scroll to Cell Example"
         columns={columns}
         rows={rows}
         className={clsx('fill-grid', { [smoothClassname]: scrollBehavior === 'smooth' })}

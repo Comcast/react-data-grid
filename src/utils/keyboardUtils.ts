@@ -1,6 +1,7 @@
 import type { Direction, Maybe } from '../types';
+import { isElement } from './domUtils';
 
-// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+// https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
 const nonInputKeys = new Set([
   // Special keys
   'Unidentified',
@@ -54,8 +55,8 @@ export function isCtrlKeyHeldDown(e: React.KeyboardEvent): boolean {
   return (e.ctrlKey || e.metaKey) && e.key !== 'Control';
 }
 
-// event.key may differ by keyboard input language, so we use event.keyCode instead
-// event.nativeEvent.code cannot be used either as it would break copy/paste for the DVORAK layout
+// event.key may differ by keyboard input language, so we use event.keyCode instead.
+// event.nativeEvent.code cannot be used either, as it would break copy/paste for the Dvorak layout.
 const vKey = 86;
 
 export function isDefaultCellInput(
@@ -71,15 +72,10 @@ export function isDefaultCellInput(
  * By default, the following navigation keys are enabled while an editor is open, under specific conditions:
  * - Tab:
  *   - The editor must be an <input>, a <textarea>, or a <select> element.
- *   - The editor element must be the only immediate child of the editor container/a label.
+ *   - The editor element must be the only <input>, <textarea>, or <select> element in the editor container.
  */
 export function onEditorNavigation({ key, target }: React.KeyboardEvent<HTMLDivElement>): boolean {
-  if (
-    key === 'Tab' &&
-    (target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement ||
-      target instanceof HTMLSelectElement)
-  ) {
+  if (key === 'Tab' && isElement(target) && target.matches('input, textarea, select')) {
     return (
       target.closest('.rdg-editor-container')?.querySelectorAll('input, textarea, select')
         .length === 1

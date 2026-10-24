@@ -28,6 +28,7 @@ const root = css`
     --rdg-row-selected-background-color: light-dark(hsl(207deg 76% 92%), hsl(207deg 76% 42%));
     --rdg-row-selected-hover-background-color: light-dark(hsl(207deg 76% 88%), hsl(207deg 76% 38%));
     --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
+    --rdg-frozen-column-shadow-color: light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%));
 
     &.rdg-dark {
       color-scheme: dark;
@@ -41,7 +42,7 @@ const root = css`
 
     accent-color: light-dark(hsl(207deg 100% 29%), hsl(207deg 100% 79%));
 
-    /* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context */
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Positioned_layout/Stacking_context */
     /* We set a stacking context so internal elements don't render on top of external elements. */
     /* size containment is not used as it could break "width: min-content" for example, and the grid would infinitely resize on Chromium browsers */
     contain: content;
@@ -94,54 +95,54 @@ export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDraggi
 
 // Common properties shared by both start- and end-edge frozen-column shadows.
 // Variants below add only the direction-dependent properties (gradient + scroll-state predicate).
-export const frozenColumnShadowClassname = css`
-  position: sticky;
-  width: 10px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 1;
-  transition: opacity 0.1s;
+const frozenColumnShadowClassname = css`
+  @layer rdg.FrozenColumnShadow {
+    position: sticky;
+    width: 10px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 1;
+    transition: opacity 0.1s;
 
-  &:dir(rtl) {
-    transform: scaleX(-1);
+    &:dir(rtl) {
+      transform: scaleX(-1);
+    }
   }
 `;
 
 const frozenColumnShadowStartOverrides = css`
-  background-image: linear-gradient(
-    to right,
-    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
-    transparent
-  );
+  @layer rdg.FrozenColumnShadow {
+    background-image: linear-gradient(to right, var(--rdg-frozen-column-shadow-color), transparent);
 
-  /* TODO: reverse 'opacity' and remove 'not' */
-  @container rdg-root not scroll-state(scrollable: inline-start) {
-    opacity: 0;
+    /* TODO: reverse 'opacity' and remove 'not' */
+    @container rdg-root not scroll-state(scrollable: inline-start) {
+      opacity: 0;
+    }
   }
 `;
 
 const frozenColumnShadowEndOverrides = css`
-  background-image: linear-gradient(
-    to left,
-    light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%)),
-    transparent
-  );
+  @layer rdg.FrozenColumnShadow {
+    background-image: linear-gradient(to left, var(--rdg-frozen-column-shadow-color), transparent);
 
-  /* TODO: reverse 'opacity' and remove 'not' */
-  @container rdg-root not scroll-state(scrollable: inline-end) {
-    opacity: 0;
+    /* TODO: reverse 'opacity' and remove 'not' */
+    @container rdg-root not scroll-state(scrollable: inline-end) {
+      opacity: 0;
+    }
   }
 `;
 
 // Add shadow after the last start-frozen cell
-export const frozenColumnShadowStartClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowStartOverrides}`;
+export const frozenColumnShadowStartClassname = `rdg-frozen-column-shadow rdg-frozen-column-shadow-start ${frozenColumnShadowClassname} ${frozenColumnShadowStartOverrides}`;
 
 // Add shadow before the first end-frozen cell (mirror of the start shadow)
-export const frozenColumnShadowEndClassname = `${frozenColumnShadowClassname} ${frozenColumnShadowEndOverrides}`;
+export const frozenColumnShadowEndClassname = `rdg-frozen-column-shadow rdg-frozen-column-shadow-end ${frozenColumnShadowClassname} ${frozenColumnShadowEndOverrides}`;
 
 const topShadowClassname = css`
-  /* render above header and summary rows */
-  z-index: 2;
+  @layer rdg.FrozenColumnShadow {
+    /* render above header and summary rows */
+    z-index: 2;
+  }
 `;
 
 export const frozenColumnShadowStartTopClassname = `${frozenColumnShadowStartClassname} ${topShadowClassname}`;
