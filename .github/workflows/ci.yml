@@ -29,11 +29,12 @@ jobs:
     # restore and save the Vite Task cache
     cache-mode: write
 
-    # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
-    # several share a name, so each attempt uploads the website under its own name:
-    # https://github.com/actions/deploy-pages/issues/338
     outputs:
+      # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
+      # several share a name, so each attempt uploads the website under its own name:
+      # https://github.com/actions/deploy-pages/issues/338
       pages-artifact: github-pages-${{ github.run_attempt }}
+      is-head: ${{ steps.check-head.outputs.is-head }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -94,22 +95,12 @@ jobs:
           name: github-pages-${{ github.run_attempt }}
           path: dist
 
-  # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website;
-  # checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit
-  # or queues in the `pages` concurrency group, where it would cancel a newer commit's pending deployment
-  check-head:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    outputs:
-      is-head: ${{ steps.check.outputs.is-head }}
-
-    steps:
-      # the repository is public, so `git ls-remote` reads the head of main without a token
+      # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
+      # and checking in this job's last step, rather than in `deploy`, skips that job before it records a deployment
+      # of the outdated commit; the repository is public, so `git ls-remote` reads the head of main without a token
       - name: Check that the commit is still the head of main
-        id: check
+        id: check-head
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           head=$(git ls-remote "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" refs/heads/main | cut -f1)
           if [ "$head" = "$GITHUB_SHA" ]; then
@@ -119,8 +110,8 @@ jobs:
           fi
 
   deploy:
-    if: needs.check-head.outputs.is-head == 'true'
-    needs: [test, check-head]
+    if: needs.test.outputs.is-head == 'true'
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -128,10 +119,12 @@ jobs:
       pages: write # deploy to GitHub Pages
       id-token: write # verify the deployment originates from this workflow
 
-    # one deployment at a time, never cancel one midway
+    # one deployment at a time, never cancel one midway,
+    # and queue the others instead of canceling the pending one
     concurrency:
       group: pages
       cancel-in-progress: false
+      queue: max
 
     environment:
       name: github-pages
