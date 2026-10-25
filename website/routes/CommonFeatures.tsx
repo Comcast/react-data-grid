@@ -143,11 +143,14 @@ const columns: readonly Column<Row, SummaryRow>[] = [
           ref={showModalRef}
           id={dialogId}
           className={css`
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-            gap: 16px;
-            padding: 16px;
+            /* don't show the closed dialog until the editor unmounts */
+            &:modal {
+              display: flex;
+              flex-direction: column;
+              width: 300px;
+              gap: 16px;
+              padding: 16px;
+            }
           `}
           closedby="any"
           onClose={() => onClose()}

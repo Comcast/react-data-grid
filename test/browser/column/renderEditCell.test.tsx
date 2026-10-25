@@ -366,6 +366,27 @@ describe('Editor', () => {
       await testModalEditor(true);
     });
 
+    it('should not handle keydown events when the modal editor closes while handling them', async () => {
+      const onCellKeyDown = vi.fn();
+      await page.render(
+        <EditorTest
+          modalEditor
+          onModalKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.currentTarget.close();
+            }
+          }}
+          onCellKeyDown={onCellKeyDown}
+        />
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+      await expect.element(col2Editor).toHaveFocus();
+      await userEvent.keyboard('{end}bc{enter}');
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1bc');
+      expect(onCellKeyDown).not.toHaveBeenCalled();
+    });
+
     it('should handle keydown events triggered in an editor when the grid is rendered in a modal', async () => {
       const onCellKeyDown = vi.fn();
       await page.render(
@@ -373,12 +394,23 @@ describe('Editor', () => {
           <EditorTest onCellKeyDown={onCellKeyDown} />
         </dialog>
       );
-      await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
-      await expect.element(col2Editor).toHaveFocus();
-      await userEvent.keyboard('bc{enter}');
-      await expect.element(col2Editor).not.toBeInTheDocument();
-      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1bc');
-      expect(onCellKeyDown).toHaveBeenCalledTimes(3);
+      await testEditorInModalGrid(onCellKeyDown);
+    });
+
+    it('should handle keydown events triggered in an editor rendered in a portal in the modal the grid is rendered in', async () => {
+      const onCellKeyDown = vi.fn();
+      const dialogRef = createRef<HTMLDialogElement>();
+      await page.render(
+        <dialog ref={dialogRef}>
+          <EditorTest
+            createEditorPortal
+            editorPortalContainerRef={dialogRef}
+            onCellKeyDown={onCellKeyDown}
+          />
+        </dialog>
+      );
+      dialogRef.current!.showModal();
+      await testEditorInModalGrid(onCellKeyDown);
     });
   });
 });
@@ -394,7 +426,7 @@ async function testModalEditor(createEditorPortal: boolean) {
     />
   );
   const cell = getCellsAtRowIndex(0).nth(1);
-  const commitButton = page.getByRole('button', { name: 'commit' });
+  const cancelButton = page.getByRole('button', { name: 'cancel' });
 
   await userEvent.dblClick(cell);
   await expect.element(col2Editor).toHaveFocus();
@@ -403,21 +435,31 @@ async function testModalEditor(createEditorPortal: boolean) {
   await expect.element(col2Editor).toHaveFocus();
   await expect.element(col2Editor).toHaveValue('a1bc');
   await userEvent.tab();
-  await expect.element(commitButton).toHaveFocus();
+  await expect.element(cancelButton).toHaveFocus();
 
-  // the dialog closes on Escape, which closes the editor and discards changes
+  // the dialog closes on Escape, which commits changes, instead of the grid discarding them
   await userEvent.keyboard('{escape}');
   await expect.element(col2Editor).not.toBeInTheDocument();
-  await expect.element(cell).toHaveTextContent('a1');
+  await expect.element(cell).toHaveTextContent('a1bc');
   await expect.element(cell).toHaveFocus();
 
+  // clicking in the dialog is not an outside click, even if the dialog is rendered in a portal
   await userEvent.dblClick(cell);
   await userEvent.keyboard('{end}d');
-  await userEvent.click(commitButton);
+  await userEvent.click(cancelButton);
   await expect.element(col2Editor).not.toBeInTheDocument();
-  await expect.element(cell).toHaveTextContent('a1d');
+  await expect.element(cell).toHaveTextContent('a1bc');
 
   expect(onCellKeyDown).not.toHaveBeenCalled();
+}
+
+async function testEditorInModalGrid(onCellKeyDown: ReturnType<typeof vi.fn>) {
+  await userEvent.dblClick(getCellsAtRowIndex(0).nth(1));
+  await expect.element(col2Editor).toHaveFocus();
+  await userEvent.keyboard('bc{enter}');
+  await expect.element(col2Editor).not.toBeInTheDocument();
+  await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('a1bc');
+  expect(onCellKeyDown).toHaveBeenCalledTimes(3);
 }
 
 function showModalRef(dialog: HTMLDialogElement | null) {
@@ -431,7 +473,9 @@ interface EditorTestProps
   onSave?: (rows: readonly Row[]) => void;
   gridRows?: readonly Row[];
   createEditorPortal?: boolean;
+  editorPortalContainerRef?: React.RefObject<Element | null>;
   modalEditor?: boolean;
+  onModalKeyDown?: React.KeyboardEventHandler<HTMLDialogElement>;
 }
 
 const initialRows: readonly Row[] = [
@@ -452,7 +496,9 @@ function EditorTest({
   onSave,
   gridRows = initialRows,
   createEditorPortal,
-  modalEditor
+  editorPortalContainerRef,
+  modalEditor,
+  onModalKeyDown
 }: EditorTestProps) {
   const [rows, setRows] = useState(gridRows);
 
@@ -488,22 +534,33 @@ function EditorTest({
           );
 
           if (modalEditor) {
+            // commit changes when the dialog closes, and discard them with the button,
+            // the opposite of what the grid does on Escape and on outside clicks
             editor = (
-              <dialog ref={showModalRef} onClose={() => onClose()}>
+              <dialog ref={showModalRef} onClose={() => onClose(true)} onKeyDown={onModalKeyDown}>
                 {editor}
-                <button type="button" onClick={() => onClose(true)}>
-                  commit
+                <button type="button" onClick={() => onClose()}>
+                  cancel
                 </button>
               </dialog>
             );
           }
 
-          return createEditorPortal ? createPortal(editor, document.body) : editor;
+          return createEditorPortal
+            ? createPortal(editor, editorPortalContainerRef?.current ?? document.body)
+            : editor;
         },
         editorOptions
       }
     ];
-  }, [editable, editorOptions, createEditorPortal, modalEditor]);
+  }, [
+    editable,
+    editorOptions,
+    createEditorPortal,
+    editorPortalContainerRef,
+    modalEditor,
+    onModalKeyDown
+  ]);
 
   return (
     <>
