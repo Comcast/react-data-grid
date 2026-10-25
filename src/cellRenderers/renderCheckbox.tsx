@@ -11,7 +11,7 @@ const checkbox = css`
 
     &:focus-visible {
       outline: 2px solid var(--rdg-checkbox-focus-color);
-      outline-offset: 2px;
+      outline-offset: -3px;
     }
 
     &:enabled {
