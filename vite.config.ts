@@ -1,9 +1,10 @@
+import { basename } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
-import type { BrowserCommandContext } from 'vite-plus/test/node';
+import type { BrowserCommandContext, BrowserInstanceOption } from 'vite-plus/test/node';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -11,6 +12,7 @@ const isCI = process.env.CI === 'true';
 const isCIWorkflow = process.env.GITHUB_WORKFLOW === 'CI';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
+const isWindows = process.platform === 'win32';
 
 // TODO: remove when `userEvent.pointer` is supported
 async function resizeColumn(
@@ -34,21 +36,14 @@ async function resizeColumn(
 }
 
 // TODO: remove when `userEvent.pointer` is supported
-async function dragFill(
-  { page, iframe, project }: BrowserCommandContext,
-  from: string,
-  to: string
-) {
+async function dragFill({ page, iframe }: BrowserCommandContext, from: string, to: string) {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  await iframe.getByRole('gridcell', { name: to, exact: true }).hover();
-  if (project.name.includes('webkit')) {
-    // let React re-render after handleDragHandlePointerMove calls setDraggedOverRowIdx()
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20);
-    });
-  }
+  const target = iframe.getByRole('gridcell', { name: to, exact: true });
+  await target.hover();
+  // the grid fills the cells it rendered as dragged over, so wait for it to render the drag
+  await target.and(iframe.locator('.rdg-cell-dragged-over')).waitFor();
   await page.mouse.up();
 }
 
@@ -75,6 +70,23 @@ const playwrightOptions: PlaywrightProviderOptions = {
     viewport
   }
 };
+const firefoxProvider = playwright({
+  ...playwrightOptions,
+  launchOptions: {
+    firefoxUserPrefs: {
+      'accessibility.force_disabled': 1
+    }
+  }
+});
+// Firefox sends the mouse events of all its pages with the same pointer ID,
+// so a page that captures the pointer also receives the other pages' mouse events.
+// These tests drag a resize or drag-fill handle, which captures the pointer,
+// so each of them runs in a browser of its own.
+// https://github.com/microsoft/playwright/issues/43631
+const firefoxPointerCaptureTests = [
+  'browser/dragFill.test.tsx',
+  'browser/column/resizable.test.tsx'
+];
 
 export default defineConfig({
   staged: {
@@ -270,6 +282,13 @@ export default defineConfig({
       }
     },
     slowTestThreshold: 1000,
+    // On Windows, WebKit slows down the mouse events of Playwright's Firefox,
+    // which dispatches those of all its pages one after the other,
+    // so with all cores but one as workers, Firefox's clicks time out.
+    // In a terminal, the browser instances get half the cores anyway, as in watch mode,
+    // since they don't inherit the `watch: false` of `vitest run`.
+    // https://github.com/vitest-dev/vitest/issues/11721
+    ...(isWindows && { maxWorkers: '50%' }),
     browser: {
       headless: true,
       ui: false,
@@ -296,17 +315,17 @@ export default defineConfig({
         },
         {
           browser: 'firefox',
-          provider: playwright({
-            ...playwrightOptions,
-            launchOptions: {
-              firefoxUserPrefs: {
-                'accessibility.force_disabled': 1
-              }
-            }
-          }),
-          // TODO: remove when FF tests are stable
-          fileParallelism: false
+          exclude: firefoxPointerCaptureTests,
+          provider: firefoxProvider
         },
+        // the names sort after `browser (webkit)`, so with few workers, as in CI,
+        // WebKit's tests start before these
+        ...firefoxPointerCaptureTests.map((test): BrowserInstanceOption => ({
+          name: `firefox (${basename(test).split('.')[0]})`,
+          browser: 'firefox',
+          include: [test],
+          provider: firefoxProvider
+        })),
         {
           browser: 'webkit',
           provider: playwright(playwrightOptions)

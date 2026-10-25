@@ -13,6 +13,11 @@ cache-mode: none
 env:
   FORCE_COLOR: 1
 
+# unlike the default `bash -e`, `shell: bash` also sets `pipefail`, so a failing command in a pipe fails the step
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,11 +29,12 @@ jobs:
     # restore and save the Vite Task cache
     cache-mode: write
 
-    # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
-    # several share a name, so each attempt uploads the website under its own name:
-    # https://github.com/actions/deploy-pages/issues/338
     outputs:
+      # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
+      # several share a name, so each attempt uploads the website under its own name:
+      # https://github.com/actions/deploy-pages/issues/338
       pages-artifact: github-pages-${{ github.run_attempt }}
+      is-head: ${{ steps.check-head.outputs.is-head }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -82,15 +88,29 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Upload website
+      # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
+      # and checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit;
+      # the repository is public, so `git ls-remote` reads the head of main without a token
+      - name: Check that the commit is still the head of main
+        id: check-head
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo 'is-head=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipping the deployment, main is now at $head"
+          fi
+
+      - name: Upload website
+        if: steps.check-head.outputs.is-head == 'true'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           name: github-pages-${{ github.run_attempt }}
           path: dist
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: needs.test.outputs.is-head == 'true'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -99,10 +119,12 @@ jobs:
       pages: write # deploy to GitHub Pages
       id-token: write # verify the deployment originates from this workflow
 
-    # one deployment at a time, never cancel one midway
+    # one deployment at a time, never cancel one midway,
+    # and queue the others instead of canceling the pending one
     concurrency:
       group: pages
       cancel-in-progress: false
+      queue: max
 
     environment:
       name: github-pages
