@@ -1,10 +1,11 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
 import {
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,
+  HeaderRowSelectionOverrideContext,
   RowSelectionChangeContext,
   useActivePosition,
   useCalculatedColumns,
@@ -291,6 +292,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * defaults
    */
   const contextRenderers = useRenderers<R, SR>();
+  const headerRowSelectionOverride = use(HeaderRowSelectionOverrideContext);
   const role = rawRole ?? 'grid';
   const rowHeight = rawRowHeight ?? 35;
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
@@ -428,7 +430,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   let hasUnselectedRow = false;
 
   // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
-  if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
+  if (
+    headerRowSelectionOverride === undefined &&
+    rowKeyGetter != null &&
+    selectedRows != null &&
+    selectedRows.size > 0
+  ) {
     for (const row of rows) {
       if (selectedRows.has(rowKeyGetter(row))) {
         hasSelectedRow = true;
@@ -440,13 +447,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
   }
 
-  const headerSelectionValue = useMemo(
-    (): HeaderRowSelectionContextValue => ({
+  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
+    if (headerRowSelectionOverride !== undefined) return headerRowSelectionOverride.value;
+    return {
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
-    }),
-    [hasSelectedRow, hasUnselectedRow]
-  );
+    };
+  }, [headerRowSelectionOverride, hasSelectedRow, hasUnselectedRow]);
 
   const {
     rowOverscanStartIdx,
@@ -1204,7 +1211,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-cy={dataCy}
     >
       <DataGridRenderersContext value={defaultGridComponents}>
-        <HeaderRowSelectionChangeContext value={selectHeaderRowLatest}>
+        <HeaderRowSelectionChangeContext
+          value={headerRowSelectionOverride?.onChange ?? selectHeaderRowLatest}
+        >
           <HeaderRowSelectionContext value={headerSelectionValue}>
             {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
               <GroupedColumnHeaderRow

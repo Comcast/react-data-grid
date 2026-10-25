@@ -1,9 +1,13 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type Key } from 'react';
 import { css } from 'ecij';
 
-import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
+import {
+  RowSelectionChangeContext,
+  RowSelectionContext,
+  type RowSelectionContextValue
+} from './hooks';
 import { classnames } from './utils';
-import type { BaseRenderRowProps, GroupRow, Omit } from './types';
+import type { BaseRenderRowProps, GroupRow, Maybe, Omit, SelectRowEvent } from './types';
 import GroupCell from './GroupCell';
 import { cell, cellFrozenBase } from './style/cell';
 import { rowClassname, rowActiveClassname } from './style/row';
@@ -22,10 +26,17 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
+interface GroupedRowProps<R, SR> extends Omit<
+  BaseRenderRowProps<R, SR>,
+  'isRowSelected' | 'isRowSelectionDisabled'
+> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
+  selectedRows: Maybe<ReadonlySet<Key>>;
+  rowKeyGetter: Maybe<(row: R) => Key>;
+  // selects or unselects all the rows of the group
+  onRowSelectionChange: (selectRowEvent: SelectRowEvent<GroupRow<R>>) => void;
 }
 
 function GroupedRow<R, SR>({
@@ -34,16 +45,30 @@ function GroupedRow<R, SR>({
   rowIdx,
   mapViewportColumns,
   activeCellIdx,
-  isRowSelected,
   setActivePosition,
   gridRowStart,
   groupBy,
   toggleGroup,
+  selectedRows,
+  rowKeyGetter,
+  onRowSelectionChange,
+  'aria-selected': ariaSelected,
   ...props
 }: GroupedRowProps<R, SR>) {
   const isPositionOnRow = activeCellIdx === -1;
   // the group-by columns follow the `groupBy` order, so each level has its own column
   const levelColumnKey = groupBy[row.level];
+  const { childRows } = row;
+
+  // A group row is selected when all its rows are.
+  // Unlike `row`, `childRows` doesn't change when groups are expanded or collapsed.
+  const isRowSelected = useMemo(
+    () =>
+      selectedRows != null &&
+      rowKeyGetter != null &&
+      childRows.every((childRow) => selectedRows.has(rowKeyGetter(childRow))),
+    [childRows, selectedRows, rowKeyGetter]
+  );
 
   function handleSelectGroup() {
     setActivePosition({ idx: -1, rowIdx }, { shouldFocus: true });
@@ -56,40 +81,45 @@ function GroupedRow<R, SR>({
 
   return (
     <RowSelectionContext value={selectionValue}>
-      <div
-        role="row"
-        aria-level={row.level + 1} // aria-level is 1-based
-        aria-setsize={row.setSize}
-        aria-posinset={row.posInSet + 1} // aria-posinset is 1-based
-        aria-expanded={row.isExpanded}
-        tabIndex={isPositionOnRow ? 0 : -1}
-        className={classnames(
-          rowClassname,
-          groupRowClassname,
-          `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
-          isPositionOnRow && rowActiveClassname,
-          className
-        )}
-        onMouseDown={handleSelectGroup}
-        style={{ gridRowStart }}
-        {...props}
-      >
-        {mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => (
-          <GroupCell
-            key={column.key}
-            id={row.id}
-            groupKey={row.groupKey}
-            childRows={row.childRows}
-            isExpanded={row.isExpanded}
-            isCellActive={isCellActive}
-            column={column}
-            row={row}
-            toggleGroup={toggleGroup}
-            isGroupByColumn={groupBy.includes(column.key)}
-            isLevelMatching={column.key === levelColumnKey}
-          />
-        ))}
-      </div>
+      <RowSelectionChangeContext value={onRowSelectionChange}>
+        <div
+          role="row"
+          aria-level={row.level + 1} // aria-level is 1-based
+          aria-setsize={row.setSize}
+          aria-posinset={row.posInSet + 1} // aria-posinset is 1-based
+          aria-expanded={row.isExpanded}
+          // `DataGrid` sets `aria-selected` when rows can be selected,
+          // but it can't tell whether a group row is selected
+          aria-selected={ariaSelected === undefined ? undefined : isRowSelected}
+          tabIndex={isPositionOnRow ? 0 : -1}
+          className={classnames(
+            rowClassname,
+            groupRowClassname,
+            `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
+            isPositionOnRow && rowActiveClassname,
+            className
+          )}
+          onMouseDown={handleSelectGroup}
+          style={{ gridRowStart }}
+          {...props}
+        >
+          {mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => (
+            <GroupCell
+              key={column.key}
+              id={row.id}
+              groupKey={row.groupKey}
+              childRows={childRows}
+              isExpanded={row.isExpanded}
+              isCellActive={isCellActive}
+              column={column}
+              row={row}
+              toggleGroup={toggleGroup}
+              isGroupByColumn={groupBy.includes(column.key)}
+              isLevelMatching={column.key === levelColumnKey}
+            />
+          ))}
+        </div>
+      </RowSelectionChangeContext>
     </RowSelectionContext>
   );
 }

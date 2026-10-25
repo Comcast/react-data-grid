@@ -397,6 +397,49 @@ test('should select rows in a group', async () => {
   await testCount(selectedRows, 0);
 });
 
+test('should select the rows of a group with Shift+Space', async () => {
+  await setup(['year', 'country']);
+  const selectedRows = page.getRow({ selected: true });
+
+  // expand the group, and activate the empty country cell of its row
+  const groupCell = page.getCell({ name: '2021' });
+  await userEvent.click(groupCell);
+  await userEvent.keyboard('{arrowright}{arrowright}{arrowright}');
+  await expect.element(getRowWithCell(groupCell).getCell().nth(2)).toHaveFocus();
+
+  // the group row and its 2 collapsed groups
+  await userEvent.keyboard('{Shift>} {/Shift}');
+  await testCount(selectedRows, 3);
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  await userEvent.keyboard('{Shift>} {/Shift}');
+  await testCount(selectedRows, 0);
+  await expect.element(headerCheckbox).not.toBeChecked();
+});
+
+test('should include the rows of collapsed groups in the select-all checkbox', async () => {
+  await setup(['year', 'country']);
+
+  const groupCell = page.getCell({ name: '2021' });
+  await userEvent.click(groupCell);
+  await userEvent.click(
+    getRowWithCell(page.getCell({ name: 'USA' })).getByRole('checkbox', { name: 'Select Group' })
+  );
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  // no visible row is selected
+  await userEvent.click(groupCell);
+  await testCount(page.getRow({ selected: true }), 0);
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).not.toBeChecked();
+
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).toBeChecked();
+  await testCount(page.getRow({ selected: true }), 3);
+});
+
 test('cell navigation in a treegrid', async () => {
   await setup(['country', 'year']);
   await testRowCount(4);

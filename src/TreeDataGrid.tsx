@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import type { Key } from 'react';
 
-import { useLatestFunc } from './hooks';
+import {
+  HeaderRowSelectionOverrideContext,
+  useLatestFunc,
+  type HeaderRowSelectionOverride
+} from './hooks';
 import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
 import type {
   CellClipboardEvent,
@@ -15,7 +19,9 @@ import type {
   Omit,
   RenderRowProps,
   RowHeightArgs,
-  RowsChangeData
+  RowsChangeData,
+  SelectHeaderRowEvent,
+  SelectRowEvent
 } from './types';
 import { renderToggleGroup } from './cellRenderers';
 import { SELECT_COLUMN_KEY } from './Columns';
@@ -99,7 +105,10 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const rawRenderRow = renderers?.renderRow ?? contextRenderers?.renderRow ?? defaultRenderRow;
   const headerAndTopSummaryRowsCount = 1 + (props.topSummaryRows?.length ?? 0);
   const { leftKey, rightKey } = getLeftRightKey(props.direction);
+  const isSelectable = rawSelectedRows != null && rawOnSelectedRowsChange != null;
   const toggleGroupLatest = useLatestFunc(toggleGroup);
+  const selectAllRowsLatest = useLatestFunc(selectAllRows);
+  const selectGroupRowsLatest = useLatestFunc(selectGroupRows);
   const getRowGroupKey = rawGetRowGroupKey ?? defaultGetRowGroupKey;
   const getGroupId = rawGetGroupId ?? defaultGetGroupId;
 
@@ -266,57 +275,59 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawRowKeyGetter(row));
   }, [rawRowKeyGetter]);
 
-  const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
-    if (rawSelectedRows == null) return null;
+  // The select-all checkbox also applies to the rows of collapsed groups, which `DataGrid` doesn't have.
+  // The group rows compute their own selection from their rows, see `GroupedRow`.
+  let hasSelectedRow = false;
+  let hasUnselectedRow = false;
 
-    assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
-
-    const selectedRows = new Set<Key>(rawSelectedRows);
-    for (const row of rows) {
-      if (isGroupRow(row)) {
-        // select parent row if all the children are selected
-        const isGroupRowSelected = row.childRows.every((cr) =>
-          rawSelectedRows.has(rawRowKeyGetter(cr))
-        );
-        if (isGroupRowSelected) {
-          selectedRows.add(row.id);
-        }
+  if (rawRowKeyGetter != null && rawSelectedRows != null && rawSelectedRows.size > 0) {
+    for (const row of rawRows) {
+      if (rawSelectedRows.has(rawRowKeyGetter(row))) {
+        hasSelectedRow = true;
+      } else {
+        hasUnselectedRow = true;
       }
+
+      if (hasSelectedRow && hasUnselectedRow) break;
     }
+  }
 
-    return selectedRows;
-  }, [rawRowKeyGetter, rawSelectedRows, rows]);
+  const headerRowSelection = useMemo(
+    (): HeaderRowSelectionOverride => ({
+      value: {
+        isRowSelected: hasSelectedRow && !hasUnselectedRow,
+        isIndeterminate: hasSelectedRow && hasUnselectedRow
+      },
+      onChange: selectAllRowsLatest
+    }),
+    [hasSelectedRow, hasUnselectedRow, selectAllRowsLatest]
+  );
 
-  function onSelectedRowsChange(newSelectedRows: Set<Key>) {
+  // selects or unselects the given rows, and keeps the selection of the other rows
+  function setRowsSelection(changedRows: readonly R[], checked: boolean) {
     if (!rawOnSelectedRowsChange) return;
 
     assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
 
-    const newRawSelectedRows = new Set(rawSelectedRows);
-    for (const row of rows) {
-      const key = isGroupRow(row) ? row.id : rawRowKeyGetter(row);
-      if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
-          // unselect all children if the parent row is unselected
-          for (const cr of row.childRows) {
-            newRawSelectedRows.delete(rawRowKeyGetter(cr));
-          }
-        } else {
-          newRawSelectedRows.delete(key as K);
-        }
-      } else if (!selectedRows?.has(key) && newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
-          // select all children if the parent row is selected
-          for (const cr of row.childRows) {
-            newRawSelectedRows.add(rawRowKeyGetter(cr));
-          }
-        } else {
-          newRawSelectedRows.add(key as K);
-        }
+    const newSelectedRows = new Set(rawSelectedRows);
+    for (const row of changedRows) {
+      const rowKey = rawRowKeyGetter(row);
+      if (checked) {
+        newSelectedRows.add(rowKey);
+      } else {
+        newSelectedRows.delete(rowKey);
       }
     }
 
-    rawOnSelectedRowsChange(newRawSelectedRows);
+    rawOnSelectedRowsChange(newSelectedRows);
+  }
+
+  function selectAllRows({ checked }: SelectHeaderRowEvent) {
+    setRowsSelection(rawRows, checked);
+  }
+
+  function selectGroupRows({ row, checked }: SelectRowEvent<GroupRow<R>>) {
+    setRowsSelection(row.childRows, checked);
   }
 
   function getParentRowAndIndex(rowIdx: number) {
@@ -359,6 +370,20 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const row = rows[rowIdx];
 
     if (!isGroupRow(row)) return;
+
+    // Select or unselect the rows of the group on Shift + Space when one of its cells is active,
+    // `DataGrid` only handles it for the other rows
+    if (idx !== -1 && isSelectable && event.shiftKey && event.key === ' ') {
+      assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
+      const isGroupRowSelected = row.childRows.every((childRow) =>
+        rawSelectedRows.has(rawRowKeyGetter(childRow))
+      );
+      // prevent scrolling
+      event.preventDefault();
+      event.preventGridDefault();
+      setRowsSelection(row.childRows, !isGroupRowSelected);
+    }
+
     if (
       idx === -1 &&
       // Collapse the current group row if it is focused and expanded
@@ -437,6 +462,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       draggedOverCellIdx,
       activeCellEditor,
       isRowSelectionDisabled,
+      isRowSelected,
       isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
@@ -451,6 +477,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           row={row}
           groupBy={groupBy}
           toggleGroup={toggleGroupLatest}
+          selectedRows={rawSelectedRows}
+          rowKeyGetter={rawRowKeyGetter}
+          onRowSelectionChange={selectGroupRowsLatest}
         />
       );
     }
@@ -482,32 +511,42 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       draggedOverCellIdx,
       activeCellEditor,
       isRowSelectionDisabled,
+      isRowSelected,
       isTreeGrid
     });
   }
 
   return (
-    <DataGrid<R, SR>
-      {...props}
-      role="treegrid"
-      aria-rowcount={
-        rowsCount + 1 + (props.topSummaryRows?.length ?? 0) + (props.bottomSummaryRows?.length ?? 0)
-      }
-      columns={columns}
-      rows={rows as R[]} // TODO: check types
-      rowHeight={rowHeight}
-      rowKeyGetter={rowKeyGetter}
-      onRowsChange={handleRowsChange}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={onSelectedRowsChange}
-      onCellKeyDown={handleKeyDown}
-      onCellCopy={handleCellCopy}
-      onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
-      renderers={{
-        ...renderers,
-        renderRow
-      }}
-    />
+    <HeaderRowSelectionOverrideContext value={headerRowSelection}>
+      <DataGrid<R, SR>
+        {...props}
+        role="treegrid"
+        aria-rowcount={
+          rowsCount +
+          1 +
+          (props.topSummaryRows?.length ?? 0) +
+          (props.bottomSummaryRows?.length ?? 0)
+        }
+        columns={columns}
+        rows={rows as R[]} // TODO: check types
+        rowHeight={rowHeight}
+        rowKeyGetter={rowKeyGetter}
+        onRowsChange={handleRowsChange}
+        selectedRows={rawSelectedRows}
+        // `DataGrid` doesn't select group rows, so it only adds keys of `rawRowKeyGetter`
+        onSelectedRowsChange={
+          rawOnSelectedRowsChange as DataGridProps<R, SR>['onSelectedRowsChange']
+        }
+        isRowSelectionDisabled={isGroupRow}
+        onCellKeyDown={handleKeyDown}
+        onCellCopy={handleCellCopy}
+        onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
+        renderers={{
+          ...renderers,
+          renderRow
+        }}
+      />
+    </HeaderRowSelectionOverrideContext>
   );
 }
 
