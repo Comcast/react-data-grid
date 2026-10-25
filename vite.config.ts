@@ -77,12 +77,6 @@ const firefoxPointerCaptureTests = [
   'browser/dragFill.test.tsx',
   'browser/column/resizable.test.tsx'
 ];
-const browserTests = ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])];
-const browserSetupFiles = [
-  'test/browser/styles.css',
-  'test/setupBrowser.ts',
-  'test/failOnConsole.ts'
-];
 
 export default defineConfig({
   staged: {
@@ -290,65 +284,47 @@ export default defineConfig({
         toMatchScreenshot: {
           screenshotDirectory: 'screenshots'
         }
-      }
+      },
+      instances: [
+        {
+          browser: 'chromium',
+          provider: playwright({
+            ...playwrightOptions,
+            launchOptions: {
+              channel: 'chromium',
+              args: [
+                '--disable-renderer-accessibility',
+                '--disable-platform-accessibility-integration'
+              ]
+            }
+          })
+        },
+        {
+          browser: 'firefox',
+          exclude: firefoxPointerCaptureTests,
+          provider: firefoxProvider
+        },
+        // the names sort after `browser (webkit)`, so with few workers, as in CI,
+        // WebKit's tests start before these
+        ...firefoxPointerCaptureTests.map((test): BrowserInstanceOption => ({
+          name: `firefox (${basename(test).split('.')[0]})`,
+          browser: 'firefox',
+          include: [test],
+          provider: firefoxProvider
+        })),
+        {
+          browser: 'webkit',
+          provider: playwright(playwrightOptions)
+        }
+      ]
     },
     projects: [
       {
         test: {
           name: 'browser',
-          include: browserTests,
-          browser: {
-            enabled: true,
-            instances: [
-              {
-                browser: 'chromium',
-                provider: playwright({
-                  ...playwrightOptions,
-                  launchOptions: {
-                    channel: 'chromium',
-                    args: [
-                      '--disable-renderer-accessibility',
-                      '--disable-platform-accessibility-integration'
-                    ]
-                  }
-                })
-              },
-              {
-                browser: 'webkit',
-                provider: playwright(playwrightOptions)
-              },
-              // the names sort after `browser (webkit)`, so with few workers, as in CI,
-              // WebKit's tests start before these
-              ...firefoxPointerCaptureTests.map((test): BrowserInstanceOption => ({
-                name: `firefox (${basename(test).split('.')[0]})`,
-                browser: 'firefox',
-                include: [test],
-                provider: firefoxProvider
-              }))
-            ]
-          },
-          setupFiles: browserSetupFiles
-        }
-      },
-      {
-        test: {
-          name: 'firefox',
-          include: browserTests,
-          exclude: firefoxPointerCaptureTests,
-          browser: {
-            enabled: true,
-            instances: [
-              {
-                browser: 'firefox',
-                name: 'browser (firefox)',
-                provider: firefoxProvider
-              }
-            ]
-          },
-          setupFiles: browserSetupFiles,
-          // Firefox's pages wait for each other's mouse events, which time out when they compete
-          // with the other browsers for the CPU, so Firefox runs once they're done
-          sequence: { groupOrder: 1 }
+          include: ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])],
+          browser: { enabled: true },
+          setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
         }
       },
       {
