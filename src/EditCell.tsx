@@ -29,17 +29,6 @@ function canUsePostTask({ scheduler }: typeof globalThis) {
   return typeof scheduler === 'object' && typeof scheduler.postTask === 'function';
 }
 
-// Declared outside of the component, so the `useLayoutEffect` cleanup
-// doesn't depend on a function that is recreated on every render
-function cancelTask(
-  captureEventRef: React.RefObject<MouseEvent | undefined>,
-  cancelScheduledTaskRef: React.RefObject<(() => void) | undefined>
-) {
-  captureEventRef.current = undefined;
-  cancelScheduledTaskRef.current?.();
-  cancelScheduledTaskRef.current = undefined;
-}
-
 const cellEditing = css`
   @layer rdg.EditCell {
     padding: 0;
@@ -75,6 +64,14 @@ export default function EditCell<R, SR>({
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
+
+  function cancelTask() {
+    captureEventRef.current = undefined;
+    cancelScheduledTaskRef.current?.();
+    cancelScheduledTaskRef.current = undefined;
+  }
+
+  const cancelTaskEffect = useEffectEvent(cancelTask);
 
   useLayoutEffect(() => {
     if (!commitOnOutsideClick) return;
@@ -123,13 +120,9 @@ export default function EditCell<R, SR>({
         win.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
         win.removeEventListener('mousedown', onWindowMouseDown);
       }
-      cancelTask(captureEventRef, cancelScheduledTaskRef);
+      cancelTaskEffect();
     };
   }, [commitOnOutsideClick]);
-
-  function handleMouseDownCapture() {
-    cancelTask(captureEventRef, cancelScheduledTaskRef);
-  }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (onKeyDown) {
@@ -182,7 +175,7 @@ export default function EditCell<R, SR>({
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDown={handleKeyDown}
-      onMouseDownCapture={handleMouseDownCapture}
+      onMouseDownCapture={cancelTask}
     >
       {column.renderEditCell != null && (
         <>
