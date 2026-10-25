@@ -249,7 +249,7 @@ interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
-export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
