@@ -281,6 +281,7 @@ export default defineConfig({
     // so with all cores but one as workers, Firefox's clicks time out.
     // In a terminal, the browser instances get half the cores anyway, as in watch mode,
     // since they don't inherit the `watch: false` of `vitest run`.
+    // https://github.com/vitest-dev/vitest/issues/11721
     ...(isWindows && { maxWorkers: '50%' }),
     browser: {
       headless: true,
