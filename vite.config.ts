@@ -311,9 +311,20 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])],
+          include: [
+            'browser/**/*.test.*',
+            ...(isCI ? ['visual/*.test.*'] : []),
+            // TEMPORARY: WebKit stall experiment
+            ...(process.env.WEBKIT_STALL_IDLE === '1' ? ['browser/zzStall.experiment.tsx'] : [])
+          ],
           browser: { enabled: true },
-          setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
+          setupFiles: [
+            // TEMPORARY: WebKit stall experiment
+            ...(process.env.WEBKIT_STALL_SAMPLER === '1' ? ['test/zzStallSampler.ts'] : []),
+            'test/browser/styles.css',
+            'test/setupBrowser.ts',
+            'test/failOnConsole.ts'
+          ]
         }
       },
       {

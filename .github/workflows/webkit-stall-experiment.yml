@@ -1,0 +1,67 @@
+# TEMPORARY: experiment for a draft PR, never to be merged.
+# Does a WebKit page on Linux stall after rendering a million rows, or under the suite's load,
+# and do the stalls line up with drops in the memory of WebKit's web processes?
+name: WebKit stall experiment
+
+on: pull_request
+
+permissions: {}
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read # check out the repository
+
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [1, 2, 3]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          cache: true
+          cache-save: false
+          run-install: false
+
+      - run: vp install --frozen-lockfile
+
+      - run: vp run install-browsers
+        timeout-minutes: 8
+
+      - name: Idle after rendering a million rows, then 100k rows
+        env:
+          WEBKIT_STALL_SAMPLER: 1
+          WEBKIT_STALL_IDLE: 1
+          DEBUG: pw:browser*
+        run: |
+          (while sleep 0.2; do echo "$(date +%s%3N) $(ps -eo pid=,rss=,comm= | grep -E 'WebProces' | tr -s ' ' | tr '\n' ';')"; done) > memory-idle.log &
+          poller=$!
+          vp test test/browser/zzStall.experiment.tsx --project "browser (webkit)" --sequence.shuffle.tests=false > idle.log 2>&1 || true
+          kill "$poller"
+          grep -E 'STALLS|Tests |Duration' idle.log | cut -c1-2000
+
+      - name: WebKit suite with the stall sampler
+        env:
+          WEBKIT_STALL_SAMPLER: 1
+          DEBUG: pw:browser*
+        run: |
+          (while sleep 0.2; do echo "$(date +%s%3N) $(ps -eo pid=,rss=,comm= | grep -E 'WebProces' | tr -s ' ' | tr '\n' ';')"; done) > memory-suite.log &
+          poller=$!
+          vp test --project "browser (webkit)" > suite.log 2>&1 || true
+          kill "$poller"
+          grep -E 'FAIL|Tests |Duration' suite.log | head -50
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: webkit-stall-${{ matrix.run }}
+          path: '*.log'
