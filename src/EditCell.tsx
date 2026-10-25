@@ -50,12 +50,28 @@ export default function EditCell<R, SR>({
   const cancelScheduledTaskRef = useRef<() => void>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
 
+  function onClose(commitChanges = false, shouldFocus = true) {
+    if (commitChanges) {
+      onRowChange(row, true, shouldFocus);
+    } else {
+      closeEditor(shouldFocus);
+    }
+  }
+
   // We need to prevent the `useLayoutEffect` from cleaning up between re-renders,
   // as `onWindowCaptureMouseDown` might otherwise miss valid mousedown events.
   // To that end, we instead access the latest props via useEffectEvent.
   const commitOnOutsideMouseDown = useEffectEvent(() => {
     onClose(true, false);
   });
+
+  function cancelTask() {
+    captureEventRef.current = undefined;
+    cancelScheduledTaskRef.current?.();
+    cancelScheduledTaskRef.current = undefined;
+  }
+
+  const cancelTaskEffect = useEffectEvent(cancelTask);
 
   useLayoutEffect(() => {
     if (!commitOnOutsideClick) return;
@@ -104,17 +120,9 @@ export default function EditCell<R, SR>({
         win.removeEventListener('mousedown', onWindowCaptureMouseDown, { capture: true });
         win.removeEventListener('mousedown', onWindowMouseDown);
       }
-      cancelTask();
+      cancelTaskEffect();
     };
   }, [commitOnOutsideClick]);
-
-  // TODO: report React Compiler bug
-  // oxlint-disable-next-line react/invariant
-  function cancelTask() {
-    captureEventRef.current = undefined;
-    cancelScheduledTaskRef.current?.();
-    cancelScheduledTaskRef.current = undefined;
-  }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (onKeyDown) {
@@ -142,14 +150,6 @@ export default function EditCell<R, SR>({
       onClose(true);
     } else if (onEditorNavigation(event)) {
       navigate(event);
-    }
-  }
-
-  function onClose(commitChanges = false, shouldFocus = true) {
-    if (commitChanges) {
-      onRowChange(row, true, shouldFocus);
-    } else {
-      closeEditor(shouldFocus);
     }
   }
 

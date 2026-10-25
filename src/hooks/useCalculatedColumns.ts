@@ -136,7 +136,7 @@ export function useCalculatedColumns<R, SR>({
         columns.push(column);
 
         if (isStartFrozen(frozen)) {
-          lastStartFrozenColumnIndex++;
+          lastStartFrozenColumnIndex += 1;
         }
 
         if (level > headerRowsCount) {
