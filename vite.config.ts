@@ -1,9 +1,10 @@
+import { basename } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
-import type { BrowserCommandContext } from 'vite-plus/test/node';
+import type { BrowserCommandContext, BrowserInstanceOption } from 'vite-plus/test/node';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -34,21 +35,14 @@ async function resizeColumn(
 }
 
 // TODO: remove when `userEvent.pointer` is supported
-async function dragFill(
-  { page, iframe, project }: BrowserCommandContext,
-  from: string,
-  to: string
-) {
+async function dragFill({ page, iframe }: BrowserCommandContext, from: string, to: string) {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
   await page.mouse.down();
-  await iframe.getByRole('gridcell', { name: to, exact: true }).hover();
-  if (project.name.includes('webkit')) {
-    // let React re-render after handleDragHandlePointerMove calls setDraggedOverRowIdx()
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20);
-    });
-  }
+  const target = iframe.getByRole('gridcell', { name: to, exact: true });
+  await target.hover();
+  // the grid fills the cells it rendered as dragged over, so wait for it to render the drag
+  await target.and(iframe.locator('.rdg-cell-dragged-over')).waitFor();
   await page.mouse.up();
 }
 
@@ -77,7 +71,7 @@ const firefoxProvider = playwright({
 // Firefox sends the mouse events of all its pages with the same pointer ID,
 // so a page that captures the pointer also receives the other pages' mouse events.
 // These tests drag a resize or drag-fill handle, which captures the pointer,
-// so they run one at a time, in a browser of their own.
+// so each of them runs in a browser of its own.
 // https://github.com/microsoft/playwright/issues/43631
 const firefoxPointerCaptureTests = [
   'browser/dragFill.test.tsx',
@@ -323,13 +317,14 @@ export default defineConfig({
                 browser: 'webkit',
                 provider: playwright(playwrightOptions)
               },
-              {
+              // the names sort after `browser (webkit)`, so with few workers, as in CI,
+              // WebKit's tests start before these
+              ...firefoxPointerCaptureTests.map((test): BrowserInstanceOption => ({
+                name: `firefox (${basename(test).split('.')[0]})`,
                 browser: 'firefox',
-                name: 'browser (firefox, pointer capture)',
-                provider: firefoxProvider,
-                include: firefoxPointerCaptureTests,
-                fileParallelism: false
-              }
+                include: [test],
+                provider: firefoxProvider
+              }))
             ]
           },
           setupFiles: browserSetupFiles
