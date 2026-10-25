@@ -66,6 +66,28 @@ const playwrightOptions: PlaywrightProviderOptions = {
     viewport
   }
 };
+const firefoxProvider = playwright({
+  ...playwrightOptions,
+  launchOptions: {
+    firefoxUserPrefs: {
+      'accessibility.force_disabled': 1
+    }
+  }
+});
+// Firefox sends the mouse events of all its pages with the same pointer ID,
+// so a page that captures the pointer also receives the other pages' mouse events.
+// These tests drag a resize or drag-fill handle, which captures the pointer,
+// so they run one at a time, in a browser of their own.
+const firefoxPointerCaptureTests = [
+  'browser/dragFill.test.tsx',
+  'browser/column/resizable.test.tsx'
+];
+const browserTests = ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])];
+const browserSetupFiles = [
+  'test/browser/styles.css',
+  'test/setupBrowser.ts',
+  'test/failOnConsole.ts'
+];
 
 export default defineConfig({
   staged: {
@@ -273,47 +295,64 @@ export default defineConfig({
         toMatchScreenshot: {
           screenshotDirectory: 'screenshots'
         }
-      },
-      instances: [
-        {
-          browser: 'chromium',
-          provider: playwright({
-            ...playwrightOptions,
-            launchOptions: {
-              channel: 'chromium',
-              args: [
-                '--disable-renderer-accessibility',
-                '--disable-platform-accessibility-integration'
-              ]
-            }
-          })
-        },
-        {
-          browser: 'firefox',
-          provider: playwright({
-            ...playwrightOptions,
-            launchOptions: {
-              firefoxUserPrefs: {
-                'accessibility.force_disabled': 1
-              }
-            }
-          }),
-          // TODO: remove when FF tests are stable
-          fileParallelism: false
-        },
-        {
-          browser: 'webkit',
-          provider: playwright(playwrightOptions)
-        }
-      ]
+      }
     },
     projects: [
       {
         test: {
           name: 'browser',
-          include: ['browser/**/*.test.*', ...(isCI ? ['visual/*.test.*'] : [])],
-          browser: { enabled: true },
-          setupFiles: ['test/browser/styles.css', 'test/setupBrowser.ts', 'test/failOnConsole.ts']
+          include: browserTests,
+          browser: {
+            enabled: true,
+            instances: [
+              {
+                browser: 'chromium',
+                provider: playwright({
+                  ...playwrightOptions,
+                  launchOptions: {
+                    channel: 'chromium',
+                    args: [
+                      '--disable-renderer-accessibility',
+                      '--disable-platform-accessibility-integration'
+                    ]
+                  }
+                })
+              },
+              {
+                browser: 'webkit',
+                provider: playwright(playwrightOptions)
+              },
+              {
+                browser: 'firefox',
+                name: 'browser (firefox, pointer capture)',
+                provider: firefoxProvider,
+                include: firefoxPointerCaptureTests,
+                fileParallelism: false
+              }
+            ]
+          },
+          setupFiles: browserSetupFiles
+        }
+      },
+      {
+        test: {
+          name: 'firefox',
+          include: browserTests,
+          exclude: firefoxPointerCaptureTests,
+          browser: {
+            enabled: true,
+            instances: [
+              {
+                browser: 'firefox',
+                name: 'browser (firefox)',
+                provider: firefoxProvider
+              }
+            ]
+          },
+          setupFiles: browserSetupFiles,
+          // Firefox's pages wait for each other's mouse events, which time out when they compete
+          // with the other browsers for the CPU, so Firefox runs once they're done
+          sequence: { groupOrder: 1 }
         }
       },
       {
