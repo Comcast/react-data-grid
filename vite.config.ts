@@ -78,6 +78,7 @@ const firefoxProvider = playwright({
 // so a page that captures the pointer also receives the other pages' mouse events.
 // These tests drag a resize or drag-fill handle, which captures the pointer,
 // so they run one at a time, in a browser of their own.
+// https://github.com/microsoft/playwright/issues/43631
 const firefoxPointerCaptureTests = [
   'browser/dragFill.test.tsx',
   'browser/column/resizable.test.tsx'
