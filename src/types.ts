@@ -115,7 +115,11 @@ export interface Column<R, SR = unknown> {
   readonly renderSummaryCell?: Maybe<(props: RenderSummaryCellContentProps<SR, R>) => ReactNode>;
   /** Render function to render the content of group cells when using `TreeDataGrid`. */
   readonly renderGroupCell?: Maybe<(props: RenderGroupCellContentProps<R, SR>) => ReactNode>;
-  /** Render function to render the content of edit cells. When set, the column is automatically set to be editable. */
+  /**
+   * Render function to render the content of edit cells. When set, the column is automatically set to be editable.
+   *
+   * Editors can render a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) element, like a `<dialog>` opened with `showModal()`, either in the cell or in a portal. Keydown events triggered in the modal are left to the editor: `onCellKeyDown` is not called, and the grid does not close the editor on `Escape`/`Enter` or navigate on `Tab`, so the editor must call `onClose` itself, for example in the dialog's `onClose` handler.
+   */
   readonly renderEditCell?: Maybe<(props: RenderEditCellContentProps<R, SR>) => ReactNode>;
   /** Control whether cells can be edited with `renderEditCell`. */
   readonly editable?: Maybe<boolean | ((row: R) => boolean)>;
@@ -522,7 +526,7 @@ interface ActiveCellKeyDownArgs<R, SR = unknown> {
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
-export interface EditCellKeyDownArgs<R, SR = unknown> {
+interface EditCellKeyDownArgs<R, SR = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<R, SR>;
   row: R;

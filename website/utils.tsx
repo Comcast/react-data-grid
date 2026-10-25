@@ -1,4 +1,15 @@
-export const { compare } = new Intl.Collator('en-US', { numeric: true });
+const { language } = navigator;
+
+export const { compare } = new Intl.Collator(language, { numeric: true });
+export const formatDate = new Intl.DateTimeFormat(language).format;
+export const formatCurrency = new Intl.NumberFormat(language, {
+  style: 'currency',
+  currency: 'eur'
+}).format;
+
+export function showModalRef(dialog: HTMLDialogElement | null) {
+  dialog?.showModal();
+}
 
 export function exportToCsv(gridEl: HTMLDivElement, fileName: string) {
   // TODO: remove both toArray calls https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/join

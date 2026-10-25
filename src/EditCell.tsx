@@ -48,6 +48,7 @@ export default function EditCell<R, SR>({
   const editCellRef = useRef<HTMLDivElement>(null);
   const captureEventRef = useRef<MouseEvent | undefined>(undefined);
   const cancelScheduledTaskRef = useRef<() => void>(undefined);
+  const modalKeyDownEventRef = useRef<KeyboardEvent | undefined>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
 
   function onClose(commitChanges = false, shouldFocus = true) {
@@ -124,7 +125,24 @@ export default function EditCell<R, SR>({
     };
   }, [commitOnOutsideClick]);
 
+  function handleKeyDownCapture(event: React.KeyboardEvent<HTMLDivElement>) {
+    // Let :modal editors handle their own keyboard events,
+    // skipping both `onCellKeyDown` and the default behavior.
+    // The check happens in the capture phase, as the editor may close the :modal while handling the event.
+    // The :modal may be rendered in the cell or in a portal,
+    // but the grid itself may also be rendered in a :modal.
+    // Ideally we would check if the cell is inert,
+    // but there's no good way to do it.
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal
+    const modal = (event.target as Element).closest(':modal');
+    if (modal !== null && !modal.contains(event.currentTarget)) {
+      modalKeyDownEventRef.current = event.nativeEvent;
+    }
+  }
+
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (modalKeyDownEventRef.current === event.nativeEvent) return;
+
     if (onKeyDown) {
       const cellEvent = createCellEvent(event);
       onKeyDown(
@@ -174,6 +192,7 @@ export default function EditCell<R, SR>({
       aria-selected
       className={className}
       style={getCellStyle(column, colSpan)}
+      onKeyDownCapture={handleKeyDownCapture}
       onKeyDown={handleKeyDown}
       onMouseDownCapture={cancelTask}
     >

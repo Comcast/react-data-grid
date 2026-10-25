@@ -469,6 +469,8 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
   /**
    * Callback triggered when a key is pressed in a cell. This event can be used to customize cell navigation and editing behavior. See the {@linkcode CellKeyDownArgs} and {@linkcode CellKeyboardEvent} types.
    *
+   * It is not called for keydown events triggered in a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) editor, see {@linkcode Column.renderEditCell | renderEditCell}.
+   *
    * **Examples**
    *
    * - Prevent editing on `Enter`
@@ -1292,6 +1294,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const samePosition = isSamePosition(activePosition, position);
 
     if (options?.enableEditor && isCellEditable(position)) {
+      // avoid selecting text in the editor, for example
+      // after double-clicking and displayCellContent is enabled
+      gridRef.current?.ownerDocument.getSelection()?.removeAllRanges();
+
       const row = rows[rowIdx];
       setActivePosition({ idx, rowIdx, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
