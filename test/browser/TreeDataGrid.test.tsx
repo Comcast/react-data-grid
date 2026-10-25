@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vite-plus/test/browser';
+import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
@@ -222,32 +222,39 @@ test('should use groupBy order while grouping', async () => {
   await testRowCount(5);
 });
 
-test('should expand a group with more rows than a function call can take as arguments', async () => {
-  // browsers limit the number of arguments, e.g., in `push(...childRows)`, and a million is above all of their limits
-  const rows = Array.from({ length: 1_000_000 }, (_, id): Row => ({
-    id,
-    country: 'USA',
-    year: 2020
-  }));
+// WebKit lays out each row track of the grid, so a million rows take ~250ms per layout
+// and ~1 GB of memory, and the page keeps over half of it after the test.
+// The tested code doesn't depend on the browser, and Chromium and Firefox have lower limits.
+test(
+  'should expand a group with more rows than a function call can take as arguments',
+  { skip: server.browser === 'webkit' },
+  async () => {
+    // browsers limit the number of arguments, e.g., in `push(...childRows)`, and a million is above all of their limits
+    const rows = Array.from({ length: 1_000_000 }, (_, id): Row => ({
+      id,
+      country: 'USA',
+      year: 2020
+    }));
 
-  await page.render(
-    <TreeDataGrid
-      columns={[
-        { key: 'country', name: 'Country' },
-        { key: 'id', name: 'Id' }
-      ]}
-      rows={rows}
-      groupBy={['country']}
-      expandedGroupIds={new Set(['USA'])}
-      onExpandedGroupIdsChange={() => {}}
-    />
-  );
+    await page.render(
+      <TreeDataGrid
+        columns={[
+          { key: 'country', name: 'Country' },
+          { key: 'id', name: 'Id' }
+        ]}
+        rows={rows}
+        groupBy={['country']}
+        expandedGroupIds={new Set(['USA'])}
+        onExpandedGroupIdsChange={() => {}}
+      />
+    );
 
-  // the header row, the group row, and the rows of the group
-  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '1000002');
-  // the row count doesn't depend on the expanded state, so also check that the rows were added
-  await expect.element(page.getCell({ name: '0', exact: true })).toBeVisible();
-});
+    // the header row, the group row, and the rows of the group
+    await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '1000002');
+    // the row count doesn't depend on the expanded state, so also check that the rows were added
+    await expect.element(page.getCell({ name: '0', exact: true })).toBeVisible();
+  }
+);
 
 test('should keep the row keys when an earlier group is expanded, without rowKeyGetter', async () => {
   function Test() {
