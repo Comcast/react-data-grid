@@ -401,7 +401,12 @@ describe('Editor', () => {
       const onCellKeyDown = vi.fn();
       const dialogRef = createRef<HTMLDialogElement>();
       await page.render(
-        <dialog ref={dialogRef}>
+        <dialog
+          ref={(dialog) => {
+            dialogRef.current = dialog;
+            showModalRef(dialog);
+          }}
+        >
           <EditorTest
             createEditorPortal
             editorPortalContainerRef={dialogRef}
@@ -409,7 +414,6 @@ describe('Editor', () => {
           />
         </dialog>
       );
-      dialogRef.current!.showModal();
       await testEditorInModalGrid(onCellKeyDown);
     });
   });
