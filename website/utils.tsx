@@ -1,11 +1,11 @@
 const { language } = navigator;
 
 export const { compare } = new Intl.Collator(language, { numeric: true });
-export const dateFormatter = new Intl.DateTimeFormat(language);
-export const currencyFormatter = new Intl.NumberFormat(language, {
+export const formatDate = new Intl.DateTimeFormat(language).format;
+export const formatCurrency = new Intl.NumberFormat(language, {
   style: 'currency',
   currency: 'eur'
-});
+}).format;
 
 export function showModalRef(dialog: HTMLDialogElement | null) {
   dialog?.showModal();

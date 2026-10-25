@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
@@ -107,6 +107,42 @@ test('keyboard navigation', async () => {
   await validateCellPosition(6, 0);
 });
 
+test('page up on a top summary row does nothing', async () => {
+  await setup({ columns, rows, topSummaryRows, bottomSummaryRows });
+
+  await safeTab();
+  await validateCellPosition(0, 0);
+  await userEvent.keyboard('{arrowdown}');
+  await validateCellPosition(0, 1);
+  await userEvent.keyboard('{PageUp}');
+  await validateCellPosition(0, 1);
+});
+
+test('page up and page down without rows when rowHeight is a function', async () => {
+  await setup<Row, Row>({
+    columns,
+    rows: [],
+    topSummaryRows,
+    bottomSummaryRows,
+    rowHeight: () => 35
+  });
+
+  await safeTab();
+  await validateCellPosition(0, 0);
+
+  // page down from the header row moves to the last top summary row
+  await userEvent.keyboard('{PageDown}');
+  await validateCellPosition(0, 1);
+  await userEvent.keyboard('{PageDown}');
+  await validateCellPosition(0, 1);
+
+  // page up from the first bottom summary row does nothing
+  await userEvent.keyboard('{arrowdown}');
+  await validateCellPosition(0, 2);
+  await userEvent.keyboard('{PageUp}');
+  await validateCellPosition(0, 2);
+});
+
 test('arrow and tab navigation', async () => {
   await setup({ columns, rows, bottomSummaryRows });
 
@@ -190,20 +226,20 @@ test('grid enter/exit', async () => {
   await expect.element(afterButton).toHaveFocus();
 });
 
-test('navigation with focusable cell renderer', async () => {
+test('navigation with focusable cell content', async () => {
   await setup({ columns, rows: Array.from<Row>({ length: 1 }), bottomSummaryRows });
   await safeTab();
   await userEvent.keyboard('{arrowdown}');
   await validateCellPosition(0, 1);
 
-  // cell should not set tabIndex to 0 if it contains a focusable cell renderer
+  // cell should not set tabIndex to 0 if it contains focusable content
   await expect.element(activeCell).toHaveAttribute('tabIndex', '-1');
   await expect.element(activeSelectCheckbox).toHaveFocus();
   await expect.element(activeSelectCheckbox).toHaveAttribute('tabIndex', '0');
 
   await safeTab();
   await validateCellPosition(1, 1);
-  // cell should set tabIndex to 0 if it does not have focusable cell renderer
+  // cell should set tabIndex to 0 if it does not contain focusable content
   await expect.element(activeCell).toHaveAttribute('tabIndex', '0');
 });
 
@@ -266,7 +302,7 @@ test('navigation when header and summary rows have focusable elements', async ()
   await expect.element(activeCell).toHaveFocus();
 });
 
-test('navigation when active cell not in the viewport', async () => {
+test('navigation when the active cell is not in the viewport', async () => {
   const columns: Column<Row, Row>[] = [SelectColumn];
   const activeRowCells = getRowWithCell(activeCell).getCell();
   for (let i = 0; i < 99; i++) {
@@ -342,7 +378,7 @@ test('reset active cell when row is removed', async () => {
   await expect.element(activeCell).not.toBeInTheDocument();
 });
 
-test('should not change the left and right arrow behavior for right to left languages', async () => {
+test('should not change the left and right arrow behavior for right-to-left languages', async () => {
   await setup<Row, Row>({ columns, rows, direction: 'rtl' });
   await safeTab();
   await validateCellPosition(0, 0);

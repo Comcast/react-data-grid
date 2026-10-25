@@ -1,13 +1,13 @@
 import { memo } from 'react';
 
-import type { CalculatedColumnParent, IterateOverViewportColumnsForRow, Position } from './types';
+import type { CalculatedColumnParent, MapViewportColumns, Position } from './types';
 import GroupedColumnHeaderCell from './GroupedColumnHeaderCell';
 import { headerRowClassname } from './HeaderRow';
 
 export interface GroupedColumnHeaderRowProps<R, SR> {
   rowIdx: number;
   level: number;
-  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
+  mapViewportColumns: MapViewportColumns<R, SR>;
   activeCellIdx: number | undefined;
   setPosition: (position: Position) => void;
 }
@@ -15,15 +15,14 @@ export interface GroupedColumnHeaderRowProps<R, SR> {
 function GroupedColumnHeaderRow<R, SR>({
   rowIdx,
   level,
-  iterateOverViewportColumnsForRow,
+  mapViewportColumns,
   activeCellIdx,
   setPosition
 }: GroupedColumnHeaderRowProps<R, SR>) {
-  const cells = [];
   const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
 
-  for (const [column, isCellActive] of iterateOverViewportColumnsForRow(activeCellIdx)) {
-    if (column.parent === undefined) continue;
+  const cells = mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => {
+    if (column.parent === undefined) return null;
 
     let { parent } = column;
 
@@ -32,24 +31,24 @@ function GroupedColumnHeaderRow<R, SR>({
       ({ parent } = parent);
     }
 
-    if (parent.level === level && !renderedParents.has(parent)) {
-      renderedParents.add(parent);
-      cells.push(
-        <GroupedColumnHeaderCell<R, SR>
-          key={parent.idx}
-          column={parent}
-          rowIdx={rowIdx}
-          isCellActive={isCellActive}
-          setPosition={setPosition}
-        />
-      );
-    }
-  }
+    if (parent.level !== level || renderedParents.has(parent)) return null;
+
+    renderedParents.add(parent);
+    return (
+      <GroupedColumnHeaderCell<R, SR>
+        key={parent.idx}
+        column={parent}
+        rowIdx={rowIdx}
+        isCellActive={isCellActive}
+        setPosition={setPosition}
+      />
+    );
+  });
 
   return (
     <div
       role="row"
-      aria-rowindex={rowIdx} // aria-rowindex is 1 based
+      aria-rowindex={rowIdx} // aria-rowindex is 1-based
       className={headerRowClassname}
     >
       {cells}

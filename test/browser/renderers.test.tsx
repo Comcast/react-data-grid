@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import {
   Cell,
@@ -10,9 +10,9 @@ import {
   SelectColumn
 } from '../../src';
 import type {
-  CellRendererProps,
   Column,
   DataGridProps,
+  RenderCellProps,
   RenderRowProps,
   RenderSortStatusProps,
   SortColumn
@@ -41,11 +41,11 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
-function renderGlobalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderGlobalCell(key: React.Key, props: RenderCellProps<Row, unknown>) {
   return <Cell key={key} {...props} className="global" style={{ fontStyle: 'italic' }} />;
 }
 
-function renderLocalCell(key: React.Key, props: CellRendererProps<Row, unknown>) {
+function renderLocalCell(key: React.Key, props: RenderCellProps<Row, unknown>) {
   return <Cell key={key} {...props} className="local" style={{ fontStyle: 'normal' }} />;
 }
 
@@ -186,7 +186,7 @@ test('checkbox defined using both context and renderers', async () => {
   await expect.element(page.getByText('Global checkbox')).not.toBeInTheDocument();
 });
 
-test('sortPriority defined using both contexts', async () => {
+test('sortPriority defined using context', async () => {
   await setupContext({ columns, rows: noRows });
 
   const column1 = page.getHeaderCell({ name: 'Column1' });
@@ -203,7 +203,7 @@ test('sortPriority defined using both contexts', async () => {
   await expect.element(page.getByTestId('local-sort-priority')).not.toBeInTheDocument();
 });
 
-test('sortPriority defined using both contexts and renderers', async () => {
+test('sortPriority defined using both context and renderers', async () => {
   await setupContext({
     columns,
     rows: noRows,
@@ -238,7 +238,7 @@ test('renderCell defined using context', async () => {
   await expect.element(cell2).toHaveStyle({ fontStyle: 'italic' });
 });
 
-test('renderCell defined using both contexts and renderers', async () => {
+test('renderCell defined using both context and renderers', async () => {
   await setupContext({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
@@ -264,7 +264,52 @@ test('renderRow defined using context', async () => {
   await expect.element(row).not.toHaveClass('local');
 });
 
-test('renderRow defined using both contexts and renderers', async () => {
+test('renderRow can render its cells with mapViewportColumns', async () => {
+  const columns: readonly Column<Row>[] = [
+    {
+      key: 'col1',
+      name: 'Column1',
+      colSpan(args) {
+        return args.type === 'ROW' ? 2 : undefined;
+      }
+    },
+    { key: 'col2', name: 'Column2' },
+    { key: 'id', name: 'ID' }
+  ];
+
+  function renderRow(
+    key: React.Key,
+    { row, activeCellIdx, mapViewportColumns, gridRowStart }: RenderRowProps<Row>
+  ) {
+    return (
+      <div key={key} role="row" style={{ display: 'contents', gridRowStart }}>
+        {mapViewportColumns(
+          activeCellIdx,
+          { type: 'ROW', row },
+          (column, isCellActive, colSpan, index) => (
+            <div key={column.key} role="gridcell">
+              {`${index}: ${column.key}, colSpan ${colSpan}, active ${isCellActive}`}
+            </div>
+          )
+        )}
+      </div>
+    );
+  }
+
+  await setup({
+    columns,
+    rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],
+    renderers: { renderRow }
+  });
+
+  // the custom row has the only cells of the grid
+  const cells = page.getCell();
+  await testCount(cells, 2);
+  await expect.element(cells.nth(0)).toHaveTextContent('0: col1, colSpan 2, active false');
+  await expect.element(cells.nth(1)).toHaveTextContent('1: id, colSpan undefined, active false');
+});
+
+test('renderRow defined using both context and renderers', async () => {
   await setupContext({
     columns,
     rows: [{ id: 1, col1: 'value 1', col2: 'value 2' }],

@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
 import { safeTab, setup, testCount, validateCellPosition } from '../utils';
@@ -256,6 +256,10 @@ test('keyboard navigation', async () => {
   await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
   await safeTab();
+  await validateCellPosition(0, 3);
+
+  // page up on the main header row does nothing
+  await userEvent.keyboard('{PageUp}');
   await validateCellPosition(0, 3);
 
   // arrow navigation

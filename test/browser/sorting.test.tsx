@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
-import { DataGrid } from '../../src';
-import type { Column, SortColumn } from '../../src/types';
+import { DataGrid, type Column, type SortColumn } from '../../src';
 
 const columns: readonly Column<never>[] = [
   { key: 'colA', name: 'colA' },
@@ -62,7 +61,7 @@ test('single column sort', async () => {
   await testSortColumns([]);
 });
 
-test('multi column sort', async () => {
+test('multi-column sort', async () => {
   await setup();
   const headerCell1 = page.getHeaderCell({ name: 'colA', exact: false });
   const headerCell2 = page.getHeaderCell({ name: 'colB', exact: false });
@@ -109,7 +108,7 @@ test('multi column sort', async () => {
   await expect.element(priority2).toHaveTextContent('');
 });
 
-test('multi column sort with metakey', async () => {
+test('multi-column sort with metakey', async () => {
   await setup();
   await userEvent.click(page.getHeaderCell({ name: 'colA' }));
   await userEvent.keyboard('{Meta>}');
@@ -120,7 +119,7 @@ test('multi column sort with metakey', async () => {
   ]);
 });
 
-test('multi column sort with keyboard', async () => {
+test('multi-column sort with keyboard', async () => {
   await setup();
   const headerCell1 = page.getHeaderCell({ name: 'colA' });
   await userEvent.click(headerCell1);

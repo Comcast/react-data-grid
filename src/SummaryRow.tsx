@@ -13,7 +13,7 @@ import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
   RenderRowProps<R, SR>,
-  | 'iterateOverViewportColumnsForRow'
+  | 'mapViewportColumns'
   | 'rowIdx'
   | 'gridRowStart'
   | 'setActivePosition'
@@ -42,7 +42,7 @@ function SummaryRow<R, SR>({
   rowIdx,
   gridRowStart,
   row,
-  iterateOverViewportColumnsForRow,
+  mapViewportColumns,
   activeCellIdx,
   setActivePosition,
   top,
@@ -53,8 +53,10 @@ function SummaryRow<R, SR>({
 }: SummaryRowProps<R, SR>) {
   const isPositionOnRow = activeCellIdx === -1;
 
-  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'SUMMARY', row })
-    .map(([column, isCellActive, colSpan]) => (
+  const cells = mapViewportColumns(
+    activeCellIdx,
+    { type: 'SUMMARY', row },
+    (column, isCellActive, colSpan) => (
       <SummaryCell<R, SR>
         key={column.key}
         column={column}
@@ -64,8 +66,8 @@ function SummaryRow<R, SR>({
         isCellActive={isCellActive}
         setActivePosition={setActivePosition}
       />
-    ))
-    .toArray();
+    )
+  );
 
   return (
     <div

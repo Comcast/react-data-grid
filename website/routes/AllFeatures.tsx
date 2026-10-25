@@ -151,7 +151,7 @@ const columns: readonly Column<Row>[] = [
   },
   {
     key: 'zipCode',
-    name: 'ZipCode',
+    name: 'ZIP Code',
     width: 200,
     resizable: true,
     renderEditCell: renderTextEditor
@@ -165,7 +165,7 @@ const columns: readonly Column<Row>[] = [
   },
   {
     key: 'bs',
-    name: 'bs',
+    name: 'Buzz Phrase',
     width: 200,
     resizable: true,
     renderEditCell: renderTextEditor
@@ -221,7 +221,7 @@ function AllFeatures() {
   );
 
   function handleCellPaste(
-    { row, column }: CellCopyArgs<Row>,
+    { row, column }: CellPasteArgs<Row>,
     event: React.ClipboardEvent<HTMLDivElement>
   ): Row {
     const targetColumnKey = column.key;
@@ -251,7 +251,7 @@ function AllFeatures() {
   }
 
   function handleCellCopy(
-    { row, column }: CellPasteArgs<Row>,
+    { row, column }: CellCopyArgs<Row>,
     event: React.ClipboardEvent<HTMLDivElement>
   ): void {
     // copy highlighted text only

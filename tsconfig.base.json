@@ -8,6 +8,7 @@
     "jsx": "react-jsx",
     "lib": [],
     "moduleDetection": "force",
+    "noEmit": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "./node_modules/.cache/ts",

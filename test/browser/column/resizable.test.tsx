@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, server, userEvent } from 'vitest/browser';
+import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, type Column, type ColumnWidth, type ColumnWidths } from '../../../src';
 import { setup } from '../utils';
@@ -18,7 +18,7 @@ function getResizeHandle(name: string) {
 async function resize(columnName: string, resizeBy: number | readonly number[]) {
   await expect.element(getResizeHandle(columnName)).toBeInTheDocument();
 
-  await commands.resizeColumn('col2', resizeBy);
+  await commands.resizeColumn(columnName, resizeBy);
 }
 
 async function autoResize(columnName: string) {
@@ -72,7 +72,7 @@ test('should use the minWidth if specified when dragging the handle', async () =
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 100px' });
 });
 
-test('should resize column using keboard', async () => {
+test('should resize column using keyboard', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   expect(onColumnResize).not.toHaveBeenCalled();
@@ -101,7 +101,7 @@ test('should use the maxWidth if specified when resizing using keyboard', async 
   expect(onColumnResize).toHaveBeenCalledTimes(20);
 });
 
-test('should use the minWidth if specified resizing using keyboard', async () => {
+test('should use the minWidth if specified when resizing using keyboard', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
@@ -112,7 +112,7 @@ test('should use the minWidth if specified resizing using keyboard', async () =>
   expect(onColumnResize).toHaveBeenCalledTimes(10);
 });
 
-test('should auto resize column when resize handle is double clicked', async () => {
+test('should auto resize column when resize handle is double-clicked', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({
     columns,
@@ -135,10 +135,10 @@ test('should auto resize column when resize handle is double clicked', async () 
   });
   expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
-    // Due to differences in text rendering between browsers the measured width can vary
+    // Due to differences in text rendering between browsers, the measured width can vary
     expect.toSatisfy(
       (width) =>
-        // Chrome and Firefox on windows
+        // Chrome and Firefox on Windows
         (width >= 327.7 && width <= 327.9) ||
         // Firefox/WebKit in CI
         width === 400

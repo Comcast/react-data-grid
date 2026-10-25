@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import type { Column } from '../../../src';
 import { cellClassname, cellFrozenStartClassname } from '../../../src/style/cell';
@@ -6,7 +6,7 @@ import { setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
 
-test('frozen column have a specific class, and are stable-sorted before non-frozen columns', async () => {
+test('frozen columns have a specific class and are stable-sorted before non-frozen columns', async () => {
   const columns: readonly Column<never>[] = [
     {
       key: 'col1',

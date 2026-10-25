@@ -7,7 +7,7 @@ import { css } from 'ecij';
 import {
   DataGrid,
   renderTextEditor,
-  SelectCellFormatter,
+  SelectCheckbox,
   SelectColumn,
   type Column,
   type DataGridHandle,
@@ -16,10 +16,10 @@ import {
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import {
   compare,
-  currencyFormatter,
-  dateFormatter,
   exportToCsv,
   exportToPdf,
+  formatCurrency,
+  formatDate,
   showModalRef
 } from '../utils';
 import { useDirection } from '../directionContext';
@@ -189,28 +189,28 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   },
   {
     key: 'startTimestamp',
-    name: 'Start date',
+    name: 'Start Date',
     renderCell(props) {
-      return dateFormatter.format(props.row.startTimestamp);
+      return formatDate(props.row.startTimestamp);
     }
   },
   {
     key: 'endTimestamp',
     name: 'Deadline',
     renderCell(props) {
-      return dateFormatter.format(props.row.endTimestamp);
+      return formatDate(props.row.endTimestamp);
     }
   },
   {
     key: 'budget',
     name: 'Budget',
     renderCell(props) {
-      return currencyFormatter.format(props.row.budget);
+      return formatCurrency(props.row.budget);
     }
   },
   {
     key: 'transaction',
-    name: 'Transaction type'
+    name: 'Transaction Type'
   },
   {
     key: 'account',
@@ -227,7 +227,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     frozen: 'end',
     renderCell({ row, onRowChange, tabIndex }) {
       return (
-        <SelectCellFormatter
+        <SelectCheckbox
           value={row.available}
           onChange={() => {
             onRowChange({ ...row, available: !row.available });
