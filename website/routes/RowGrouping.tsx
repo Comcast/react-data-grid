@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -138,27 +138,44 @@ function createRows(): readonly Row[] {
     });
   }
 
-  rows.sort((r1, r2) => compare(r2.country, r1.country));
-
   return rows;
 }
 
 const options = ['country', 'year', 'sport', 'athlete'] as const;
 
+type Option = (typeof options)[number];
+
+// Groups are ordered by the first row that belongs to them,
+// so the rows are sorted by the grouped columns, in order, to sort the groups at every level
+function sortRows(rows: readonly Row[], groupBy: readonly Option[]): readonly Row[] {
+  return rows.toSorted((r1, r2) => {
+    for (const option of groupBy) {
+      // countries are sorted in descending order, so the expanded United States group is near the top
+      const result =
+        option === 'country'
+          ? compare(r2.country, r1.country)
+          : compare(String(r1[option]), String(r2[option]));
+      if (result !== 0) return result;
+    }
+    return 0;
+  });
+}
+
 function RowGrouping() {
   const direction = useDirection();
-  const [rows] = useState(createRows);
+  const [rawRows] = useState(createRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [selectedOptions, setSelectedOptions] = useState<readonly string[]>([
+  const [selectedOptions, setSelectedOptions] = useState<readonly Option[]>([
     options[0],
     options[1]
   ]);
+  const rows = useMemo(() => sortRows(rawRows, selectedOptions), [rawRows, selectedOptions]);
   const [expandedGroupIds, setExpandedGroupIds] = useState(
     (): ReadonlySet<unknown> =>
       new Set(['United States of America', 'United States of America__2015'])
   );
 
-  function toggleOption(option: string, enabled: boolean) {
+  function toggleOption(option: Option, enabled: boolean) {
     const index = selectedOptions.indexOf(option);
     if (enabled) {
       if (index === -1) {
@@ -196,7 +213,6 @@ function RowGrouping() {
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
-        rowGrouper={rowGrouper}
         expandedGroupIds={expandedGroupIds}
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
@@ -204,8 +220,4 @@ function RowGrouping() {
       />
     </div>
   );
-}
-
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  return Object.groupBy(rows, (r) => r[columnKey as keyof Row]) as Record<string, readonly Row[]>;
 }

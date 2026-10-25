@@ -15,6 +15,11 @@ env:
   # and only images, so the job that pushes can only commit images
   SCREENSHOTS: 'test/**/screenshots/**/*.png'
 
+# unlike the default `bash -e`, `shell: bash` also sets `pipefail`, so a failing command in a pipe fails the step
+defaults:
+  run:
+    shell: bash
+
 # dependencies only run in the read-only `screenshots` job,
 # the jobs with write permissions only run gh and git
 jobs:

@@ -39,7 +39,7 @@ website/              # demo site (Vite + TanStack Router)
 - **Dual class names** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
 - **Accessibility first** — ARIA attributes (e.g., `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
-- **Build** — `vp pack` bundles the library to `lib/`, then lints the packed package with publint; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
+- **Build** — `vp pack` bundles the library to `lib/`, then lints the packed package with publint; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts. React Compiler compiles every component and hook, and `vp pack` fails in CI and agent sessions when it can't compile one.
 - **Workflows** — pin every action to a full commit SHA with its version in a comment (Dependabot updates both), pass expressions to `run` steps through `env` instead of inlining `${{ }}`, grant each job only the `permissions` it uses, and check out with `persist-credentials: false`. Jobs that install dependencies only get read permissions: publishing, pushing, and editing PRs happen in separate jobs that receive build output as artifacts and never install the project's dependencies.
 - **Releases** — the header of `.github/workflows/publish.yml` explains how to publish. Its read-only `build` job hands `lib/` to the `publish` job, so the project's dependencies never run with the `id-token: write` permission that npm's trusted publishing relies on, and a separate `release` job creates the GitHub release.
 
@@ -48,6 +48,7 @@ website/              # demo site (Vite + TanStack Router)
 - Browser tests use `vite-plus/test/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getActiveCell()`, etc. over raw `page.getByRole()`.
 - Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `safeTab()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
+- Firefox runs test files in parallel. Firefox sends the mouse events of all its pages with the same pointer ID, so each test file that drags a resize or drag-fill handle, which captures the pointer, runs in a separate Firefox instance with a browser of its own: add such test files to `firefoxPointerCaptureTests` in `vite.config.ts`. Use `--project "*firefox*"` to run all the Firefox instances.
 - **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.
 
 ## Tooling

@@ -28,6 +28,11 @@ cache-mode: none
 env:
   FORCE_COLOR: 1
 
+# Unlike the default `bash -e`, `shell: bash` also sets `pipefail`, so a failing command in a pipe fails the step
+defaults:
+  run:
+    shell: bash
+
 # One release at a time, never canceled midway
 concurrency:
   group: ${{ github.workflow }}
