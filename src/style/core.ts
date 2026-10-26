@@ -34,8 +34,8 @@ const root = css`
     @media (forced-colors: active) {
       --rdg-selection-color: CanvasText;
       --rdg-checkbox-focus-color: CanvasText;
-      --rdg-row-selected-background-color: SelectedItem;
-      --rdg-row-selected-hover-background-color: SelectedItem;
+      --rdg-row-selected-background-color: Highlight;
+      --rdg-row-selected-hover-background-color: Highlight;
     }
 
     &.rdg-dark {
