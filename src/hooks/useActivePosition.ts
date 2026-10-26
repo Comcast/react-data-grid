@@ -98,8 +98,12 @@ export function useActivePosition<R, SR>({
         const closeOnExternalRowChange =
           columns[position.idx].editorOptions?.closeOnExternalRowChange ?? true;
 
-        // Discard changes if the row is updated from outside
-        if (closeOnExternalRowChange && rows[position.rowIdx] !== position.originalRow) {
+        // Discard changes if the row is updated from outside,
+        // or if removing rows moved the position to a summary row
+        if (
+          !validatedPosition.isCellInViewport ||
+          (closeOnExternalRowChange && rows[position.rowIdx] !== position.originalRow)
+        ) {
           const newPosition: ActivePosition = {
             idx: position.idx,
             rowIdx: position.rowIdx,

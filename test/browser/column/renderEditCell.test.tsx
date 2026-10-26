@@ -297,7 +297,7 @@ describe('Editor', () => {
       await validateCellPosition(1, 2);
     });
 
-    it.fails('should close the editor when closeOnExternalRowChange is false and a summary row takes its position', async () => {
+    it('should close the editor when closeOnExternalRowChange is false and a summary row takes its position', async () => {
       await page.render(
         <EditorTest
           editorOptions={{
