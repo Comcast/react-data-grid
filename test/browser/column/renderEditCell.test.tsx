@@ -296,6 +296,28 @@ describe('Editor', () => {
       // the summary cell is active
       await validateCellPosition(1, 2);
     });
+
+    it.fails('should close the editor when closeOnExternalRowChange is false and a summary row takes its position', async () => {
+      await page.render(
+        <EditorTest
+          editorOptions={{
+            commitOnOutsideClick: false,
+            closeOnExternalRowChange: false
+          }}
+          bottomSummaryRows={[{}]}
+        />
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(1).nth(1));
+      await expect.element(col2Editor).toBeInTheDocument();
+      await userEvent.click(page.getByRole('button', { name: 'remove last row' }));
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      await validateCellPosition(1, 2);
+      await safeTab();
+      await expect.element(page.getActiveCell()).toHaveFocus();
+      // the grid ignores navigation keys in edit mode
+      await userEvent.keyboard('{arrowup}');
+      await validateCellPosition(1, 1);
+    });
   });
 
   describe('editor focus', () => {
