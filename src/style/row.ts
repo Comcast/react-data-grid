@@ -47,6 +47,10 @@ export const row = css`
     &[aria-selected='true'] {
       background-color: var(--rdg-row-selected-background-color);
 
+      @media (forced-colors: active) {
+        color: SelectedItemText;
+      }
+
       &:hover {
         background-color: var(--rdg-row-selected-hover-background-color);
       }
