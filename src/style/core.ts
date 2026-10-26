@@ -34,7 +34,7 @@ const root = css`
     @media (forced-colors: active) {
       --rdg-selection-color: CanvasText;
       --rdg-checkbox-focus-color: CanvasText;
-      /* no need for a text color: the browser draws a backplate behind text to keep it readable */
+      /* no text color, so text keeps its forced color, and Chromium draws a backplate behind it */
       --rdg-row-selected-background-color: SelectedItem;
       --rdg-row-selected-hover-background-color: SelectedItem;
     }
