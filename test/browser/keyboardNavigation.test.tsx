@@ -1,3 +1,4 @@
+import { Profiler } from 'react';
 import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
@@ -105,6 +106,25 @@ test('keyboard navigation', async () => {
   // shift tab should focus the last cell of the previous row
   await safeTab(true);
   await validateCellPosition(6, 0);
+});
+
+test('should render the grid once when the active cell moves', async () => {
+  const onRender = vi.fn();
+  await page.render(
+    <Profiler id="grid" onRender={onRender}>
+      <DataGrid<Row, Row> columns={columns} rows={rows} />
+    </Profiler>
+  );
+
+  // the cells of col2 have no focusable content, which would render the cell again
+  await safeTab();
+  await userEvent.keyboard('{arrowright}');
+  await validateCellPosition(1, 0);
+
+  onRender.mockClear();
+  await userEvent.keyboard('{arrowdown}');
+  await validateCellPosition(1, 1);
+  expect(onRender).toHaveBeenCalledOnce();
 });
 
 test('page up on a top summary row does nothing', async () => {
