@@ -11,7 +11,7 @@ import type {
 import { renderValue } from '../cellRenderers';
 import { SELECT_COLUMN_KEY } from '../Columns';
 import type { DataGridProps } from '../DataGrid';
-import renderHeaderCell from '../renderHeaderCell';
+import { renderHeaderCell } from '../renderHeaderCell';
 
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P] extends readonly (infer V)[] ? Mutable<V>[] : T[P];
@@ -90,26 +90,40 @@ export function useCalculatedColumns<R, SR>({
 
         const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
+        // Set every property in a fixed order instead of spreading `rawColumn`,
+        // so that all calculated columns share a single hidden class (shape) in JS engines,
+        // and the column property reads that run for every rendered cell stay monomorphic.
         const column: MutableCalculatedColumn<R, SR> = {
-          ...rawColumn,
+          name: rawColumn.name,
+          key: rawColumn.key,
           parent,
           idx: 0,
           level: 0,
-          frozen,
           width: rawColumn.width ?? defaultWidth,
           minWidth: rawColumn.minWidth ?? defaultMinWidth,
           maxWidth: rawColumn.maxWidth ?? defaultMaxWidth,
-          sortable: rawColumn.sortable ?? defaultSortable,
-          resizable: rawColumn.resizable ?? defaultResizable,
-          draggable: rawColumn.draggable ?? defaultDraggable,
+          cellClass: rawColumn.cellClass,
+          headerCellClass: rawColumn.headerCellClass,
+          summaryCellClass: rawColumn.summaryCellClass,
           renderCell: rawColumn.renderCell ?? defaultRenderCell,
-          renderHeaderCell: rawColumn.renderHeaderCell ?? defaultRenderHeaderCell
+          renderHeaderCell: rawColumn.renderHeaderCell ?? defaultRenderHeaderCell,
+          renderSummaryCell: rawColumn.renderSummaryCell,
+          renderGroupCell: rawColumn.renderGroupCell,
+          renderEditCell: rawColumn.renderEditCell,
+          editable: rawColumn.editable,
+          colSpan: rawColumn.colSpan,
+          frozen,
+          resizable: rawColumn.resizable ?? defaultResizable,
+          sortable: rawColumn.sortable ?? defaultSortable,
+          draggable: rawColumn.draggable ?? defaultDraggable,
+          sortDescendingFirst: rawColumn.sortDescendingFirst,
+          editorOptions: rawColumn.editorOptions
         };
 
         columns.push(column);
 
         if (isStartFrozen(frozen)) {
-          lastStartFrozenColumnIndex++;
+          lastStartFrozenColumnIndex += 1;
         }
 
         if (level > headerRowsCount) {

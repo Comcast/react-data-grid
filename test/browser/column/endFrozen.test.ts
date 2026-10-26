@@ -1,4 +1,4 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../../src';
 import {
@@ -56,7 +56,7 @@ test('end-frozen columns have a specific class and are stable-sorted at the tail
   await expect.element(cell5).toHaveClass(cellClassname, cellFrozenEndClassname, { exact: true });
 });
 
-test('frozen: true is normalized to start-frozen (backwards compat)', async () => {
+test('frozen: true is normalized to start-frozen (backward compat)', async () => {
   const columns: readonly Column<never>[] = [
     {
       key: 'col1',
@@ -200,7 +200,7 @@ test('end-frozen cells in bottom summary rows carry the end-frozen class', async
 });
 
 test('reordering input columns past end-frozen preserves band integrity', async () => {
-  // User provides columns in an arbitrary order (e.g. end-frozen in the middle);
+  // User provides columns in an arbitrary order (e.g., end-frozen in the middle);
   // the grid must still sort end-frozen columns to the tail.
   const columns: readonly Column<never>[] = [
     { key: 'end1', name: 'end1', frozen: 'end' },

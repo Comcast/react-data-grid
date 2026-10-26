@@ -5,7 +5,7 @@ import { classnames } from './utils';
 import type {
   CalculatedColumn,
   Direction,
-  IterateOverViewportColumnsForRow,
+  MapViewportColumns,
   Maybe,
   Position,
   ResizedWidth
@@ -22,7 +22,7 @@ type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
 
 export interface HeaderRowProps<R, SR, K extends React.Key> extends SharedDataGridProps<R, SR, K> {
   rowIdx: number;
-  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
+  mapViewportColumns: MapViewportColumns<R, SR>;
   onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
   onColumnResizeEnd: () => void;
   activeCellIdx: number | undefined;
@@ -55,7 +55,7 @@ export const headerRowClassname = `rdg-header-row ${headerRow}`;
 function HeaderRow<R, SR, K extends React.Key>({
   headerRowClass,
   rowIdx,
-  iterateOverViewportColumnsForRow,
+  mapViewportColumns,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
@@ -69,8 +69,10 @@ function HeaderRow<R, SR, K extends React.Key>({
   const [draggedColumnKey, setDraggedColumnKey] = useState<string>();
   const isPositionOnRow = activeCellIdx === -1;
 
-  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'HEADER' })
-    .map(([column, isCellActive, colSpan], index) => (
+  const cells = mapViewportColumns(
+    activeCellIdx,
+    { type: 'HEADER' },
+    (column, isCellActive, colSpan, index) => (
       <HeaderCell<R, SR>
         key={column.key}
         column={column}
@@ -88,13 +90,13 @@ function HeaderRow<R, SR, K extends React.Key>({
         draggedColumnKey={draggedColumnKey}
         setDraggedColumnKey={setDraggedColumnKey}
       />
-    ))
-    .toArray();
+    )
+  );
 
   return (
     <div
       role="row"
-      aria-rowindex={rowIdx} // aria-rowindex is 1 based
+      aria-rowindex={rowIdx} // aria-rowindex is 1-based
       className={classnames(
         headerRowClassname,
         isPositionOnRow && rowActiveClassname,

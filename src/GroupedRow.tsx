@@ -4,7 +4,6 @@ import { css } from 'ecij';
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames } from './utils';
 import type { BaseRenderRowProps, GroupRow, Omit } from './types';
-import { SELECT_COLUMN_KEY } from './Columns';
 import GroupCell from './GroupCell';
 import { cell, cellFrozenBase } from './style/cell';
 import { rowClassname, rowActiveClassname } from './style/row';
@@ -23,10 +22,7 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupRowRendererProps<R, SR> extends Omit<
-  BaseRenderRowProps<R, SR>,
-  'isRowSelectionDisabled'
-> {
+interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
@@ -36,7 +32,7 @@ function GroupedRow<R, SR>({
   className,
   row,
   rowIdx,
-  iterateOverViewportColumnsForRow,
+  mapViewportColumns,
   activeCellIdx,
   isRowSelected,
   setActivePosition,
@@ -44,13 +40,13 @@ function GroupedRow<R, SR>({
   groupBy,
   toggleGroup,
   ...props
-}: GroupRowRendererProps<R, SR>) {
+}: GroupedRowProps<R, SR>) {
   const isPositionOnRow = activeCellIdx === -1;
-
-  let idx = row.level;
+  // the group-by columns follow the `groupBy` order, so each level has its own column
+  const levelColumnKey = groupBy[row.level];
 
   function handleSelectGroup() {
-    setActivePosition({ rowIdx, idx: -1 }, { shouldFocus: true });
+    setActivePosition({ idx: -1, rowIdx }, { shouldFocus: true });
   }
 
   const selectionValue = useMemo(
@@ -78,36 +74,24 @@ function GroupedRow<R, SR>({
         style={{ gridRowStart }}
         {...props}
       >
-        {iterateOverViewportColumnsForRow(activeCellIdx)
-          .map(([column, isCellActive], index) => {
-            // Select is always the first column
-            if (index === 0 && column.key === SELECT_COLUMN_KEY) {
-              // oxlint-disable-next-line react/immutability
-              idx += 1;
-            }
-
-            return (
-              <GroupCell
-                key={column.key}
-                id={row.id}
-                groupKey={row.groupKey}
-                childRows={row.childRows}
-                isExpanded={row.isExpanded}
-                isCellActive={isCellActive}
-                column={column}
-                row={row}
-                groupColumnIndex={idx}
-                toggleGroup={toggleGroup}
-                isGroupByColumn={groupBy.includes(column.key)}
-              />
-            );
-          })
-          .toArray()}
+        {mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => (
+          <GroupCell
+            key={column.key}
+            id={row.id}
+            groupKey={row.groupKey}
+            childRows={row.childRows}
+            isExpanded={row.isExpanded}
+            isCellActive={isCellActive}
+            column={column}
+            row={row}
+            toggleGroup={toggleGroup}
+            isGroupByColumn={groupBy.includes(column.key)}
+            isLevelMatching={column.key === levelColumnKey}
+          />
+        ))}
       </div>
     </RowSelectionContext>
   );
 }
 
-export default memo(GroupedRow) as <R, SR>(
-  props: GroupRowRendererProps<R, SR>
-) => React.JSX.Element;
+export default memo(GroupedRow) as <R, SR>(props: GroupedRowProps<R, SR>) => React.JSX.Element;

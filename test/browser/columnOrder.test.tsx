@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn, TreeDataGrid } from '../../src';
 import type { Column } from '../../src';
@@ -41,7 +41,6 @@ test('column order', async () => {
           columns={columns}
           rows={rows}
           groupBy={groupBy}
-          rowGrouper={() => ({})}
           expandedGroupIds={new Set()}
           onExpandedGroupIdsChange={() => {}}
         />

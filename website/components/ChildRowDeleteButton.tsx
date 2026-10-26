@@ -6,7 +6,7 @@ const childRowActionCrossClassname = css`
   &::after {
     content: '';
     position: absolute;
-    background: grey;
+    background: gray;
   }
 
   &::before {

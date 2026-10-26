@@ -8,6 +8,7 @@ export * from './frozenColumnUtils';
 export * from './keyboardUtils';
 export * from './renderMeasuringCells';
 export * from './styleUtils';
+export * from './viewportUtils';
 
 export const { min, max, floor, abs } = Math;
 

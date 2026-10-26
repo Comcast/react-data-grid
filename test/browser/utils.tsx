@@ -1,10 +1,7 @@
-import { page, server, userEvent, type Locator } from 'vitest/browser';
+import { page, userEvent, type Locator } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { DataGridProps } from '../../src';
-
-// copy/paste do not work in webkit in CI
-export const canCopyPaste = !(import.meta.env.CI && server.browser === 'webkit');
 
 export function setup<R, SR, K extends React.Key = React.Key>(props: DataGridProps<R, SR, K>) {
   return page.render(<DataGrid {...props} />);
@@ -56,12 +53,12 @@ export function testRowCount(expectedCount: number) {
  * }
  * ```
  *
- * When focus has moved to a browser UI element, and we call `userEvent.tab()`,
- * under the hood `page.keyboard.press()` is called,
- * the browser then handles tabbing as usual in the context of a browser,
+ * When focus has moved to a browser UI element and we call `userEvent.tab()`,
+ * `page.keyboard.press()` is called under the hood.
+ * The browser then handles tabbing as usual in the context of a browser,
  * but it also handles tabbing within the `page` context, as if the page had focus.
  *
- * This leads to double-focus bugs where the focus is set on both a browser UI element,
+ * This leads to double-focus bugs where the focus is set on both a browser UI element
  * and an element on the page, in both Chrome and Firefox.
  * In Chrome,
  *   programmatically tabbing will eventually return focus to the page,
@@ -77,11 +74,11 @@ export function testRowCount(expectedCount: number) {
  * And so the solution is to programmatically click on the page to force focus
  * back onto the page, and then tab to the next element.
  *
- * If there is only one element to focus in the page,
+ * If there is only one element to focus on the page
  * and you need to blur it, call blur() on the element.
  *
  * @see https://github.com/microsoft/playwright/issues/39268
- * @param shift Whether to tab backwards.
+ * @param shift Whether to tab backward.
  */
 export async function safeTab(shift = false) {
   await userEvent.tab({ shift });
