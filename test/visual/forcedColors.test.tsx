@@ -1,4 +1,4 @@
-import { commands, page, userEvent } from 'vite-plus/test/browser';
+import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor, SelectColumn, type Column } from '../../src';
 import { safeTab } from '../browser/utils';
@@ -31,27 +31,7 @@ function rowKeyGetter(row: Row) {
   return row.id;
 }
 
-function getComputedColor(property: 'color' | 'backgroundColor', value: string) {
-  const element = document.createElement('div');
-  element.style[property] = value;
-  document.body.append(element);
-  const computedValue = getComputedStyle(element)[property];
-  element.remove();
-  return computedValue;
-}
-
-// WebKit matches `(forced-colors: active)` when emulated, but may not force any colors
-function areColorsForced() {
-  return getComputedColor('backgroundColor', 'rgb(1, 2, 3)') !== 'rgb(1, 2, 3)';
-}
-
-// Firefox ignores the emulated color scheme in forced colors mode
-function isCanvasDark() {
-  const [red, green, blue] = getComputedColor('color', 'Canvas').match(/\d+/g)!.map(Number);
-  return red + green + blue < 384;
-}
-
-// Windows contrast themes are light or dark, so test both palettes where the browser supports them
+// Windows contrast themes are light or dark, so test both palettes
 const palettes = [
   { colorScheme: 'light', prefix: 'forced-colors' },
   { colorScheme: 'dark', prefix: 'forced-colors-dark' }
@@ -59,12 +39,14 @@ const palettes = [
 
 describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
   beforeEach(async ({ skip, onTestFinished }) => {
+    // WebKit matches `(forced-colors: active)` when emulated, but does not force any colors,
+    // and Firefox ignores the emulated color scheme in forced colors mode
+    skip(server.browser === 'webkit' || (server.browser === 'firefox' && colorScheme === 'dark'));
+
     await commands.emulateMedia({ forcedColors: 'active', colorScheme });
     onTestFinished(async () => {
       await commands.emulateMedia({ forcedColors: null, colorScheme: null });
     });
-
-    skip(!areColorsForced() || isCanvasDark() !== (colorScheme === 'dark'));
 
     await page.render(
       <DataGrid
