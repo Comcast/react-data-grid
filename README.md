@@ -144,7 +144,7 @@ Alternatively, you can add the `rdg-light` or `rdg-dark` class to individual gri
 
 ### Forced Colors Mode
 
-In [forced colors mode](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors), such as Windows contrast themes, the DataGrid uses system colors for the active cell, row selection, and the drag handle, so they follow the user's palette. Overriding the selection or selected row CSS variables in your own styles also overrides their forced colors values.
+In [forced colors mode](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors), such as Windows contrast themes, the DataGrid uses system colors for the active cell, row selection, and the drag handle, so they follow the user's palette. Overriding `--rdg-selection-color` or `--rdg-checkbox-focus-color` in your own styles also overrides their forced colors values outside selected rows, so wrap such overrides in `@media not (forced-colors: active)`.
 
 ### CSS Variables
 

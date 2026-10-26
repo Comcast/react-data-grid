@@ -45,7 +45,8 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
 
     await commands.emulateMedia({ forcedColors: 'active', colorScheme });
     onTestFinished(async () => {
-      await commands.emulateMedia({ forcedColors: null, colorScheme: null });
+      // restore the context defaults, as `null` would make the page follow the OS instead
+      await commands.emulateMedia({ forcedColors: 'none', colorScheme: 'light' });
     });
 
     await page.render(
@@ -74,6 +75,12 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
   it('active cell on an unselected row', async () => {
     await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}');
     await expect.element(grid).toMatchScreenshot(`${prefix}-active-cell-unselected-row`);
+  });
+
+  it('editor on a selected row', async () => {
+    await userEvent.keyboard('{ArrowDown}{ArrowRight}{Enter}');
+    await expect.element(page.getByRole('textbox')).toHaveFocus();
+    await expect.element(grid).toMatchScreenshot(`${prefix}-editor-selected-row`);
   });
 
   it('focused checkbox on a selected row', async () => {
