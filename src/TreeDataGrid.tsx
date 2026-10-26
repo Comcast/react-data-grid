@@ -310,6 +310,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   let hasSelectedRow = false;
   let hasUnselectedRow = false;
 
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
   if (rawRowKeyGetter != null && rawSelectedRows != null && rawSelectedRows.size > 0) {
     for (const row of rawRows) {
       if (rawSelectedRows.has(rawRowKeyGetter(row))) {
