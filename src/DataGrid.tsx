@@ -1166,6 +1166,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     templateRows += ` repeat(${bottomSummaryRowsCount}, ${summaryRowHeight}px)`;
   }
 
+  // Frozen cells, header rows, and summary rows are sticky, so they are already visible on their sticky axis.
+  // A sticky cell inside the scroll padding would be scrolled out of it when it's focused or scrolled into view,
+  // so the padding only applies when the active cell is a non-sticky cell on that axis, or when scrolling to a position.
+  const isScrollingToPosition = scrollToPositionElement !== null;
+  const isActiveColumnScrollable =
+    activePosition.idx >= 0 &&
+    activePosition.idx < columns.length &&
+    columns[activePosition.idx].frozen === false;
+  const isActiveRowScrollable = activePosition.rowIdx >= 0 && activePosition.rowIdx < rows.length;
+  const hasInlineScrollPadding = isScrollingToPosition || isActiveColumnScrollable;
+  const hasBlockScrollPadding = isScrollingToPosition || isActiveRowScrollable;
+
   return (
     <div
       ref={gridRef}
@@ -1184,10 +1196,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       style={{
         ...style,
         // set scrollPadding to correctly scroll to non-sticky cells/rows
-        scrollPaddingInlineStart: totalStartFrozenColumnWidth,
-        scrollPaddingInlineEnd: totalEndFrozenColumnWidth,
-        scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
-        scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
+        scrollPaddingInlineStart: hasInlineScrollPadding ? totalStartFrozenColumnWidth : undefined,
+        scrollPaddingInlineEnd: hasInlineScrollPadding ? totalEndFrozenColumnWidth : undefined,
+        scrollPaddingBlockStart: hasBlockScrollPadding
+          ? headerRowsHeight + topSummaryRowsCount * summaryRowHeight
+          : undefined,
+        scrollPaddingBlockEnd: hasBlockScrollPadding
+          ? bottomSummaryRowsCount * summaryRowHeight
+          : undefined,
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
