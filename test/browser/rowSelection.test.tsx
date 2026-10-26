@@ -63,6 +63,37 @@ async function toggleSelection(rowIdx: number, shift = false, force = false) {
   if (shift) await userEvent.keyboard('{/Shift}');
 }
 
+test('should not check the selection of every row when the rows and the selection do not change', async () => {
+  const manyRows: readonly Row[] = Array.from({ length: 1000 }, (_, id) => ({ id }));
+  const rowKeyGetterSpy = vi.fn(rowKeyGetter);
+
+  function Test() {
+    const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+
+    return (
+      <DataGrid
+        rowKeyGetter={rowKeyGetterSpy}
+        columns={columns}
+        rows={manyRows}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+      />
+    );
+  }
+
+  await page.render(<Test />);
+  // with all the rows selected, the state of the select-all checkbox depends on every row
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).toBeChecked();
+  await userEvent.click(page.getCell({ name: '1', exact: true }));
+
+  rowKeyGetterSpy.mockClear();
+  await userEvent.keyboard('{arrowdown}');
+  await expect.element(page.getActiveCell()).toHaveTextContent('2');
+  // only the rendered rows
+  expect(rowKeyGetterSpy.mock.calls.length).toBeLessThan(manyRows.length);
+});
+
 test('toggle selection when checkbox is clicked', async () => {
   await setup();
   await toggleSelection(0);
