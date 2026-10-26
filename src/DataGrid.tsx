@@ -423,28 +423,30 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [renderCheckbox, renderSortStatus, renderCell]
   );
 
-  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitly unchecked
-    let hasSelectedRow = false;
-    let hasUnselectedRow = false;
+  // no rows to select = explicitly unchecked
+  let hasSelectedRow = false;
+  let hasUnselectedRow = false;
 
-    if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
-      for (const row of rows) {
-        if (selectedRows.has(rowKeyGetter(row))) {
-          hasSelectedRow = true;
-        } else {
-          hasUnselectedRow = true;
-        }
-
-        if (hasSelectedRow && hasUnselectedRow) break;
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
+  if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
+    for (const row of rows) {
+      if (selectedRows.has(rowKeyGetter(row))) {
+        hasSelectedRow = true;
+      } else {
+        hasUnselectedRow = true;
       }
-    }
 
-    return {
+      if (hasSelectedRow && hasUnselectedRow) break;
+    }
+  }
+
+  const headerSelectionValue = useMemo(
+    (): HeaderRowSelectionContextValue => ({
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
-    };
-  }, [rows, selectedRows, rowKeyGetter]);
+    }),
+    [hasSelectedRow, hasUnselectedRow]
+  );
 
   const {
     rowOverscanStartIdx,
