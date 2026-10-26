@@ -4,7 +4,14 @@ import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridHandle, DataGridProps } from '../../../src';
-import { getCellsAtRowIndex, getRowWithCell, safeTab, scrollGrid, testCount } from '../utils';
+import {
+  getCellsAtRowIndex,
+  getRowWithCell,
+  safeTab,
+  scrollGrid,
+  testCount,
+  validateCellPosition
+} from '../utils';
 
 const grid = page.getGrid();
 const col1Editor = page.getByRole('spinbutton', { name: 'col1-editor' });
@@ -272,6 +279,23 @@ describe('Editor', () => {
       await userEvent.click(page.getByRole('button', { name: 'update' }));
       await expect.element(col2Editor).toBeInTheDocument();
     });
+
+    it('should close the editor when its row is removed and a summary row takes its position', async () => {
+      await page.render(
+        <EditorTest
+          editorOptions={{
+            commitOnOutsideClick: false
+          }}
+          bottomSummaryRows={[{}]}
+        />
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(1).nth(1));
+      await expect.element(col2Editor).toBeInTheDocument();
+      await userEvent.click(page.getByRole('button', { name: 'remove last row' }));
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      // the summary cell is active
+      await validateCellPosition(1, 2);
+    });
   });
 
   describe('editor focus', () => {
@@ -473,7 +497,7 @@ function showModalRef(dialog: HTMLDialogElement | null) {
 interface EditorTestProps
   extends
     Pick<Column<Row>, 'editorOptions' | 'editable'>,
-    Pick<DataGridProps<Row>, 'onCellKeyDown'> {
+    Pick<DataGridProps<Row>, 'onCellKeyDown' | 'bottomSummaryRows'> {
   onSave?: (rows: readonly Row[]) => void;
   gridRows?: readonly Row[];
   createEditorPortal?: boolean;
@@ -497,6 +521,7 @@ function EditorTest({
   editable,
   editorOptions,
   onCellKeyDown,
+  bottomSummaryRows,
   onSave,
   gridRows = initialRows,
   createEditorPortal,
@@ -587,11 +612,20 @@ function EditorTest({
       >
         update
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          setRows((rows) => rows.slice(0, -1));
+        }}
+      >
+        remove last row
+      </button>
       <DataGrid
         columns={columns}
         rows={rows}
         onRowsChange={setRows}
         onCellKeyDown={onCellKeyDown}
+        bottomSummaryRows={bottomSummaryRows}
       />
     </>
   );
