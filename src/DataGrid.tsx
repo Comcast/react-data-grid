@@ -28,6 +28,7 @@ import {
   getCellStyle,
   getCellToScroll,
   getColSpan,
+  getHeaderRowSelection,
   getLeftRightKey,
   getNextActivePosition,
   isCellEditableUtil,
@@ -423,28 +424,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [renderCheckbox, renderSortStatus, renderCell]
   );
 
-  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitly unchecked
-    let hasSelectedRow = false;
-    let hasUnselectedRow = false;
-
-    if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
-      for (const row of rows) {
-        if (selectedRows.has(rowKeyGetter(row))) {
-          hasSelectedRow = true;
-        } else {
-          hasUnselectedRow = true;
-        }
-
-        if (hasSelectedRow && hasUnselectedRow) break;
-      }
-    }
-
-    return {
-      isRowSelected: hasSelectedRow && !hasUnselectedRow,
-      isIndeterminate: hasSelectedRow && hasUnselectedRow
-    };
-  }, [rows, selectedRows, rowKeyGetter]);
+  // React Compiler doesn't memoize a loop that only computes primitives, even in `useMemo`,
+  // so the rows are checked in a function that returns the object
+  const headerSelectionValue = useMemo(
+    (): HeaderRowSelectionContextValue => getHeaderRowSelection(rows, selectedRows, rowKeyGetter),
+    [rows, selectedRows, rowKeyGetter]
+  );
 
   const {
     rowOverscanStartIdx,
