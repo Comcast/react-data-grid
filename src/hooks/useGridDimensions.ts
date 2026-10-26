@@ -68,8 +68,8 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.
   const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const deferredInlineSize = useDeferredValue(inlineSize, -1);
-  const isResizingWidth = inlineSize !== deferredInlineSize;
+  // the width the grid had before it was resized, until it is rendered again with its new width
+  const previousInlineSize = useDeferredValue(inlineSize, -1);
 
   useLayoutEffect(() => {
     const target = gridRef.current!;
@@ -90,5 +90,5 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
     };
   }, [gridRef]);
 
-  return [inlineSize, blockSize, isResizingWidth] as const;
+  return [inlineSize, blockSize, previousInlineSize] as const;
 }

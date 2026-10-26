@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-import { createResizeObserverGetter, isStartFrozen, max, min } from '../utils';
+import { createResizeObserverGetter, floor, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   ColumnWidth,
@@ -154,7 +154,7 @@ export function useColumnWidths<R, SR>(
   firstEndFrozenColumnIndex: number,
   gridWidth: number,
   scrollLeft: number,
-  isResizingWidth: boolean,
+  previousGridWidth: number,
   enableVirtualization: boolean,
   columnWidthsRaw: DataGridProps<R, SR>['columnWidths'],
   onColumnResize: DataGridProps<R, SR>['onColumnResize'],
@@ -186,6 +186,8 @@ export function useColumnWidths<R, SR>(
   // the store is rebased when the measuring cells are attached, after rendering a new `columnWidths`
   const store = useMemo(() => rebaseStore(snapshot, columnWidths), [snapshot, columnWidths]);
 
+  // let the columns flex while the grid is resized, until it is rendered again with its new width
+  const isResizingWidth = gridWidth !== previousGridWidth;
   const isRevalidatingWidths =
     isResizingWidth ||
     store.revalidation !== 'none' ||
@@ -201,7 +203,6 @@ export function useColumnWidths<R, SR>(
     flexibleColumns,
     columnMetrics,
     totalColumnWidth,
-    totalMinColumnWidth,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
     layoutCssVars
@@ -210,7 +211,6 @@ export function useColumnWidths<R, SR>(
     flexibleColumns: ReadonlySet<CalculatedColumn<R, SR>>;
     columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
     totalColumnWidth: number;
-    totalMinColumnWidth: number;
     totalStartFrozenColumnWidth: number;
     totalEndFrozenColumnWidth: number;
     layoutCssVars: Readonly<Record<string, string>>;
@@ -221,8 +221,6 @@ export function useColumnWidths<R, SR>(
     const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
     let left = 0;
     let totalColumnWidth = 0;
-    // the total width of the columns if the flexible columns shrank to their `minWidth`
-    let totalMinColumnWidth = 0;
     let totalStartFrozenColumnWidth = 0;
     let totalEndFrozenColumnWidth = 0;
     const layoutCssVars: Record<string, string> = {};
@@ -256,12 +254,9 @@ export function useColumnWidths<R, SR>(
       if (typeof width === 'number') {
         // the width can come from the `columnWidths` prop or the column definition,
         // it is not necessarily within the column's bounds
-        const clampedWidth = clampColumnWidth(width, column);
-        templateColumns.push(`${clampedWidth}px`);
-        totalMinColumnWidth += clampedWidth;
+        templateColumns.push(`${clampColumnWidth(width, column)}px`);
       } else {
         flexibleColumns.add(column);
-        totalMinColumnWidth += minWidth;
         // `maxWidth` is ignored if `minWidth` is greater, as when clamping widths
         const hasMaxWidth = maxWidth !== undefined && maxWidth >= minWidth;
 
@@ -305,20 +300,19 @@ export function useColumnWidths<R, SR>(
       flexibleColumns,
       columnMetrics,
       totalColumnWidth,
-      totalMinColumnWidth,
       totalStartFrozenColumnWidth,
       totalEndFrozenColumnWidth,
       layoutCssVars
     };
   }, [store, isRevalidatingWidths, columns, firstEndFrozenColumnIndex]);
 
-  // While the widths are revalidated, the flexible columns can shrink down to their `minWidth`,
-  // so all the columns are rendered if they fit at that width. Otherwise, the columns that don't fit
-  // with the widths measured before would be virtualized away until the columns are measured again,
+  // While the grid is resized, the columns keep the widths measured with its previous width,
+  // so all the columns are still rendered if they fit in it. Otherwise, the columns that don't fit
+  // in the grid's new width would be virtualized away until the columns are measured again,
   // and then rendered again, which would resize the other columns while the ResizeObserver delivers measurements.
+  // The measured widths are fractional, and their sum can exceed the width of the grid they fill.
   const renderAllColumns =
-    !enableVirtualization ||
-    (isRevalidatingWidths ? totalMinColumnWidth : totalColumnWidth) <= gridWidth;
+    !enableVirtualization || floor(totalColumnWidth) <= max(gridWidth, previousGridWidth);
 
   const [colOverscanStartIdx, colOverscanEndIdx] = useMemo((): [number, number] => {
     // the non-frozen band ends right before the first end frozen column
@@ -338,8 +332,11 @@ export function useColumnWidths<R, SR>(
       return [firstUnfrozenColumnIdx, lastUnfrozenColumnIdx];
     }
 
-    // render frozen columns only when they cover the entire viewport
-    if (totalStartFrozenColumnWidth + totalEndFrozenColumnWidth >= gridWidth) {
+    // Render frozen columns only when they cover the entire viewport.
+    // A grid without width isn't laid out yet, for example in a dialog that isn't open yet,
+    // so it keeps rendering columns, as removing them would change the width of a grid sized by its content
+    // when the ResizeObserver measures it, causing a ResizeObserver loop error.
+    if (gridWidth > 0 && totalStartFrozenColumnWidth + totalEndFrozenColumnWidth >= gridWidth) {
       return [0, -1];
     }
 
