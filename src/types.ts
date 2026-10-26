@@ -427,7 +427,13 @@ export interface SetActivePositionOptions {
 }
 
 export interface ColumnWidth {
-  /** `'measured'` if the grid measured the column, or `'resized'` if the user resized it */
+  /**
+   * `'measured'` if the grid measured the column, or `'resized'` if the user resized it.
+   * Measured widths are only a cache that the grid re-evaluates, for example when the grid or a column is resized,
+   * and they are ignored for columns whose `width` is a number.
+   * Resized widths are preserved, including for columns that are not rendered,
+   * and clamped between the column's `minWidth` and `maxWidth`.
+   */
   readonly type: 'measured' | 'resized';
   /** The width in pixels */
   readonly width: number;

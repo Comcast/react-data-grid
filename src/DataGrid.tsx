@@ -147,9 +147,13 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
    * @default `rowHeight` when it is a number, otherwise 35
    */
   summaryRowHeight?: Maybe<number>;
-  /** A map of column widths */
+  /**
+   * A map of column widths.
+   * With `onColumnWidthsChange`, a new map replaces the widths that were measured and resized since the previous one,
+   * otherwise it only sets the initial widths.
+   */
   columnWidths?: Maybe<ColumnWidths>;
-  /** Callback triggered when column widths change */
+  /** Callback triggered when the user has resized a column */
   onColumnWidthsChange?: Maybe<(columnWidths: ColumnWidths) => void>;
 
   /**

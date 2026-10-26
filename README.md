@@ -370,6 +370,8 @@ Height of each summary row in pixels.
 
 A map of column widths containing both measured and resized widths. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths) type.
 
+When `onColumnWidthsChange` is provided, passing a new map replaces the widths that the grid measured and that were resized since the previous map, so keep the map in a state instead of creating it on every render. Otherwise, `columnWidths` only sets the initial widths.
+
 ```tsx
 const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
 
@@ -384,7 +386,7 @@ return <DataGrid columnWidths={columnWidths} onColumnWidthsChange={setColumnWidt
 
 ###### `onColumnWidthsChange?: Maybe<(columnWidths: ColumnWidths) => void>`
 
-Callback triggered when column widths change. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths) type.
+Callback triggered when the user has resized a column, by dragging its resize handle or with the keyboard, or auto-sized it by double-clicking its resize handle. It receives the resized widths, and the measured widths of the columns whose `width` is not a number. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths) type.
 
 ###### `selectedRows?: Maybe<ReadonlySet<K>>`
 
@@ -2242,14 +2244,18 @@ Represents a single column's width.
 
 ```tsx
 interface ColumnWidth {
-  /** `'measured'` if the grid measured the column, or `'resized'` if the user resized it */
+  /**
+   * `'measured'` if the grid measured the column, or `'resized'` if the user resized it.
+   * Measured widths are only a cache that the grid re-evaluates, for example when the grid or a column is resized,
+   * and they are ignored for columns whose `width` is a number.
+   * Resized widths are preserved, including for columns that are not rendered,
+   * and clamped between the column's `minWidth` and `maxWidth`.
+   */
   readonly type: 'measured' | 'resized';
   /** The width in pixels */
   readonly width: number;
 }
 ```
-
-`measured` widths are re-evaluated against the current column definitions, so they are only a cache. `resized` widths are intentional, and are preserved and clamped, including for columns that are not currently rendered.
 
 **See also:** [`ColumnWidths`](#columnwidths)
 

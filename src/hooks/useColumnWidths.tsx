@@ -1,11 +1,13 @@
-import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore, type RefObject } from 'react';
 
 import { createResizeObserverGetter, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   ColumnWidth,
   ColumnWidths,
+  InternalColumnWidth,
   InternalColumnWidths,
+  Maybe,
   ResizedWidth
 } from '../types';
 import { useLatestFunc } from './useLatestFunc';
@@ -16,17 +18,34 @@ interface ColumnMetric {
   readonly right: number;
 }
 
-const initialWidthsMap: InternalColumnWidths = new Map();
+interface ColumnWidthsStore {
+  // the `columnWidths` prop that the widths were measured and resized from
+  readonly base: Maybe<ColumnWidths>;
+  // the widths that were measured and resized since, which take precedence over the base widths
+  readonly widths: InternalColumnWidths;
+  // whether the measured widths are re-evaluated until the next measurement, after a column was resized
+  readonly isRevalidating: boolean;
+}
+
+const initialStore: ColumnWidthsStore = {
+  base: undefined,
+  widths: new Map(),
+  isRevalidating: false
+};
 
 // use unmanaged WeakMaps so we preserve the cache even when
 // the component partially unmounts via Suspense or Activity
 const cellToGridRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
-const gridRefToWidthsMap = new WeakMap<RefObject<HTMLDivElement | null>, InternalColumnWidths>();
+const stores = new WeakMap<RefObject<HTMLDivElement | null>, ColumnWidthsStore>();
 const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
 const getResizeObserver = createResizeObserverGetter(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
-  const updatedGrids = new Set<RefObject<HTMLDivElement | null>>();
+  const measuredGrids = new Set<RefObject<HTMLDivElement | null>>();
+  const updatedWidths = new Map<
+    RefObject<HTMLDivElement | null>,
+    Map<string, InternalColumnWidth>
+  >();
 
   for (const entry of entries) {
     const cell = entry.target as HTMLDivElement;
@@ -34,9 +53,11 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
 
     if (gridRef === undefined) continue;
 
+    measuredGrids.add(gridRef);
+
     const key = cell.dataset.measuringCellKey!;
-    const previousWidthsMap = gridRefToWidthsMap.get(gridRef);
-    const widthItem = previousWidthsMap?.get(key);
+    const { base, widths } = stores.get(gridRef) ?? initialStore;
+    const widthItem = widths.get(key) ?? base?.get(key);
     const width = entry.contentBoxSize[0].inlineSize;
 
     // Avoid triggering re-renders if the size hasn't changed.
@@ -55,20 +76,53 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
       widthItem.onMeasure(width);
     }
 
-    const widthsMap = new Map(previousWidthsMap);
-    // oxlint-disable-next-line unicorn/no-immediate-mutation
-    widthsMap.set(key, { type, width });
-    gridRefToWidthsMap.set(gridRef, widthsMap);
-    updatedGrids.add(gridRef);
+    updatedWidths.getOrInsertComputed(gridRef, () => new Map(widths)).set(key, { type, width });
   }
 
-  for (const gridRef of updatedGrids) {
-    subscribers.get(gridRef)?.();
+  for (const gridRef of measuredGrids) {
+    const store = stores.get(gridRef) ?? initialStore;
+    const widths = updatedWidths.get(gridRef);
+
+    // the observations of a grid are delivered together,
+    // so all the columns that changed are now measured with the final width of the resized column
+    if (widths !== undefined || store.isRevalidating) {
+      setStore(gridRef, {
+        base: store.base,
+        widths: widths ?? store.widths,
+        isRevalidating: false
+      });
+    }
   }
 }
 
-function getServerSnapshot(): InternalColumnWidths {
-  return initialWidthsMap;
+function setStore(gridRef: RefObject<HTMLDivElement | null>, store: ColumnWidthsStore) {
+  stores.set(gridRef, store);
+  subscribers.get(gridRef)?.();
+}
+
+// The widths that were measured and resized are discarded when the `columnWidths` prop changes,
+// except the widths of the column that is being resized
+function rebaseStore(store: ColumnWidthsStore, base: Maybe<ColumnWidths>): ColumnWidthsStore {
+  if (store.base === base) return store;
+
+  const widths = new Map<string, InternalColumnWidth>();
+
+  for (const [key, widthItem] of store.widths) {
+    if (!isPublicWidth(widthItem)) {
+      widths.set(key, widthItem);
+    }
+  }
+
+  return { base, widths, isRevalidating: store.isRevalidating };
+}
+
+// `resizing` and `autosizing` widths only exist while a column is being resized
+function isPublicWidth(widthItem: InternalColumnWidth): widthItem is ColumnWidth {
+  return widthItem.type === 'measured' || widthItem.type === 'resized';
+}
+
+function getServerSnapshot(): ColumnWidthsStore {
+  return initialStore;
 }
 
 export function useColumnWidths<R, SR>(
@@ -84,6 +138,10 @@ export function useColumnWidths<R, SR>(
   onColumnResize: DataGridProps<R, SR>['onColumnResize'],
   onColumnWidthsChangeRaw: DataGridProps<R, SR>['onColumnWidthsChange']
 ) {
+  // without `onColumnWidthsChange`, `columnWidths` only sets the initial widths
+  const [initialColumnWidths] = useState(columnWidthsRaw);
+  const columnWidths = onColumnWidthsChangeRaw == null ? initialColumnWidths : columnWidthsRaw;
+
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
       subscribers.set(gridRef, onStoreChange);
@@ -95,13 +153,25 @@ export function useColumnWidths<R, SR>(
     [gridRef]
   );
 
-  const getSnapshot = useCallback((): InternalColumnWidths => {
+  const getSnapshot = useCallback((): ColumnWidthsStore => {
     // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
     // We use ref as key instead to access stable values regardless of rendering state.
-    return gridRefToWidthsMap.get(gridRef) ?? initialWidthsMap;
+    return stores.get(gridRef) ?? initialStore;
   }, [gridRef]);
 
-  const widthsMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // the store is rebased when the measuring cells are attached, after rendering a new `columnWidths`
+  const store = useMemo(() => rebaseStore(snapshot, columnWidths), [snapshot, columnWidths]);
+
+  const isRevalidatingWidths =
+    isResizingWidth ||
+    store.isRevalidating ||
+    // only look at the columns that are currently rendered,
+    // stale entries of removed columns must not keep the widths revalidating forever
+    columns.some((column) => {
+      const type = store.widths.get(column.key)?.type;
+      return type === 'resizing' || type === 'autosizing';
+    });
 
   const {
     templateColumns,
@@ -125,28 +195,21 @@ export function useColumnWidths<R, SR>(
     let totalStartFrozenColumnWidth = 0;
     let totalEndFrozenColumnWidth = 0;
     const layoutCssVars: Record<string, string> = {};
-
-    // only look at the columns that are currently rendered,
-    // stale entries of removed columns must not keep the widths revalidating forever
-    const isRevalidatingWidths =
-      isResizingWidth ||
-      columns.some((column) => {
-        const type = widthsMap.get(column.key)?.type;
-        return type === 'resizing' || type === 'autosizing';
-      });
+    const { base, widths } = store;
 
     for (const column of columns) {
       const { key, idx, minWidth, maxWidth } = column;
-      const internalWidthItem = widthsMap.get(key);
-      const userWidthItem = columnWidthsRaw?.get(key);
-      const widthItem =
-        internalWidthItem?.type === 'resizing' || internalWidthItem?.type === 'autosizing'
-          ? internalWidthItem
-          : (userWidthItem ?? internalWidthItem);
+      let widthItem = widths.get(key) ?? base?.get(key);
+
+      // there is nothing to measure when the width is a number
+      if (widthItem?.type === 'measured' && typeof column.width === 'number') {
+        widthItem = undefined;
+      }
+
       // resize columns when resizing the grid,
       // but preserve manually resized/resizing column widths
       const width =
-        widthItem != null && (!isRevalidatingWidths || widthItem.type !== 'measured')
+        widthItem !== undefined && (!isRevalidatingWidths || widthItem.type !== 'measured')
           ? widthItem.width
           : column.width;
 
@@ -200,7 +263,7 @@ export function useColumnWidths<R, SR>(
       totalEndFrozenColumnWidth,
       layoutCssVars
     };
-  }, [widthsMap, columnWidthsRaw, isResizingWidth, columns, firstEndFrozenColumnIndex]);
+  }, [store, isRevalidatingWidths, columns, firstEndFrozenColumnIndex]);
 
   const renderAllColumns = !enableVirtualization || totalColumnWidth <= gridWidth;
 
@@ -298,30 +361,49 @@ export function useColumnWidths<R, SR>(
     colOverscanEndIdx
   ]);
 
-  function getPublicWidths(widthsMap: InternalColumnWidths): ColumnWidths {
-    const newWidthsMap = new Map<string, ColumnWidth>();
-
-    for (const [key, widthItem] of widthsMap) {
-      // `resizing`/`autosizing` only exist mid-interaction and are not part of the public type
-      if (widthItem.type === 'measured' || widthItem.type === 'resized') {
-        newWidthsMap.set(key, widthItem);
+  function getPublicWidths({ base, widths }: ColumnWidthsStore): ColumnWidths {
+    // Measurements are only a cache for the columns whose width is not a number,
+    // but a `resized` width is intentional and must be preserved,
+    // including for columns that are not rendered, for example because they were filtered out.
+    const measuredKeys = new Set<string>();
+    for (const column of columns) {
+      if (typeof column.width !== 'number') {
+        measuredKeys.add(column.key);
       }
     }
 
-    // Measurements are only ever re-evaluated, but a `resized` width is intentional and must be
-    // preserved: it is not measured internally when it comes from a column that is not rendered,
-    // and it is marked as `measured` when the column is rendered, which would lose the intent.
-    for (const [key, widthItem] of columnWidthsRaw ?? []) {
-      if (widthItem.type === 'resized' && newWidthsMap.get(key)?.type !== 'resized') {
-        newWidthsMap.set(key, widthItem);
+    const publicWidths = new Map<string, ColumnWidth>();
+
+    for (const [key, widthItem] of base ?? []) {
+      if (widthItem.type === 'resized' || measuredKeys.has(key)) {
+        publicWidths.set(key, widthItem);
       }
     }
 
-    return newWidthsMap;
+    for (const [key, widthItem] of widths) {
+      if (!isPublicWidth(widthItem)) continue;
+
+      if (widthItem.type === 'resized' || measuredKeys.has(key)) {
+        publicWidths.set(key, widthItem);
+      } else {
+        publicWidths.delete(key);
+      }
+    }
+
+    return publicWidths;
   }
 
+  // The ref callback changes with `columnWidths`, so React attaches it again to every measuring cell
+  // after rendering a new `columnWidths`: the store discards the widths that were measured and resized
+  // since the previous one, and observing the cells again measures them again, even if their size didn't change.
   const observeMeasuringCellRef = useCallback(
     (cell: HTMLDivElement) => {
+      const store = getSnapshot();
+      const rebasedStore = rebaseStore(store, columnWidths);
+      if (rebasedStore !== store) {
+        setStore(gridRef, rebasedStore);
+      }
+
       const resizeObserver = getResizeObserver(cell);
       cellToGridRefMap.set(cell, gridRef);
       resizeObserver?.observe(cell);
@@ -330,8 +412,21 @@ export function useColumnWidths<R, SR>(
         resizeObserver?.unobserve(cell);
       };
     },
-    [gridRef]
+    [gridRef, getSnapshot, columnWidths]
   );
+
+  // force the observer to measure the cell again, as ResizeObserver only reports size changes
+  function measureColumnAgain(key: string) {
+    const cell = gridRef.current?.querySelector<HTMLDivElement>(
+      `& > [data-measuring-cell-key="${CSS.escape(key)}"]`
+    );
+
+    if (cell == null) return;
+
+    const resizeObserver = getResizeObserver(cell);
+    resizeObserver?.unobserve(cell);
+    resizeObserver?.observe(cell);
+  }
 
   const handleColumnResizeLatest = useLatestFunc(
     (column: CalculatedColumn<R, SR>, nextWidth: ResizedWidth) => {
@@ -346,63 +441,64 @@ export function useColumnWidths<R, SR>(
       }
 
       const { key } = column;
-      const widthsMap = new Map(gridRefToWidthsMap.get(gridRef));
-      const { promise, resolve } = Promise.withResolvers<number>();
+      const { base, widths, isRevalidating } = getSnapshot();
 
-      widthsMap.set(
-        key,
-        typeof nextWidth === 'number'
-          ? { type: 'resizing', width: nextWidth }
-          : { type: 'autosizing', width: nextWidth, onMeasure: resolve }
-      );
-
-      gridRefToWidthsMap.set(gridRef, widthsMap);
-
-      subscribers.get(gridRef)?.();
-
-      if (typeof nextWidth === 'string') {
-        // force the observer to re-measure the cell
-        // this is necessary if the nextWidth is the same as the previous width
-        // ResizeObserver won't trigger if the size doesn't change
-        const cell = gridRef.current!.querySelector(
-          `& > [data-measuring-cell-key="${CSS.escape(key)}"]`
-        )!;
-        const resizeObserver = getResizeObserver(cell);
-        resizeObserver?.unobserve(cell);
-        resizeObserver?.observe(cell);
-        // alternatively, set up a new ResizeObserver just for this measurement
-        // and immediately disconnect it after the first callback
-
-        promise.then((newWidth) => {
-          if (newWidth !== previousWidth) {
-            onColumnResize?.(column, newWidth);
-            onColumnWidthsChangeRaw?.(getPublicWidths(getSnapshot()));
-          }
+      if (typeof nextWidth === 'number') {
+        setStore(gridRef, {
+          base,
+          widths: new Map(widths).set(key, { type: 'resizing', width: nextWidth }),
+          isRevalidating
         });
-      } else {
         onColumnResize?.(column, nextWidth);
+        return;
       }
+
+      const gridWindow = gridRef.current!.ownerDocument.defaultView!;
+
+      function onMeasure(newWidth: number) {
+        if (newWidth === previousWidth) return;
+
+        // Report the new width in a new task, instead of while the ResizeObserver delivers it:
+        // rendering the grid with the new `columnWidths` observes the measuring cells again,
+        // which would lead to a ResizeObserver loop error.
+        gridWindow.setTimeout(() => {
+          onColumnResize?.(column, newWidth);
+          onColumnWidthsChangeRaw?.(getPublicWidths(getSnapshot()));
+        });
+      }
+
+      setStore(gridRef, {
+        base,
+        widths: new Map(widths).set(key, { type: 'autosizing', width: nextWidth, onMeasure }),
+        isRevalidating
+      });
+
+      // this is necessary if the nextWidth is the same as the previous width
+      measureColumnAgain(key);
     }
   );
 
   const handleColumnResizeEndLatest = useLatestFunc(() => {
-    const widthsMap = new Map(gridRefToWidthsMap.get(gridRef));
+    const { base, widths } = getSnapshot();
+    const newWidths = new Map(widths);
     let hasUpdated = false;
 
-    for (const [key, widthItem] of widthsMap) {
+    for (const [key, widthItem] of newWidths) {
       if (widthItem.type === 'resizing') {
-        widthsMap.set(key, { type: 'resized', width: widthItem.width });
+        newWidths.set(key, { type: 'resized', width: widthItem.width });
+        // The ResizeObserver may not have measured the other columns with the final width
+        // of the resized column yet, for example when the pointer is released in the same frame
+        // as it last moved, so the widths are revalidated until the column is measured again.
+        measureColumnAgain(key);
         hasUpdated = true;
       }
     }
 
     if (!hasUpdated) return;
 
-    gridRefToWidthsMap.set(gridRef, widthsMap);
-
-    subscribers.get(gridRef)?.();
-
-    onColumnWidthsChangeRaw?.(getPublicWidths(widthsMap));
+    const newStore: ColumnWidthsStore = { base, widths: newWidths, isRevalidating: true };
+    setStore(gridRef, newStore);
+    onColumnWidthsChangeRaw?.(getPublicWidths(newStore));
   });
 
   return {

@@ -249,8 +249,8 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
     const [columnWidths, setColumnWidths] = useState(
       (): ColumnWidths =>
         new Map<string, ColumnWidth>([
-          ['col1', { width: 101, type: 'measured' }],
-          ['col2', { width: 201, type: 'measured' }]
+          ['col1', { width: 101, type: 'resized' }],
+          ['col2', { width: 201, type: 'resized' }]
         ])
     );
 
@@ -262,8 +262,8 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
     function changedColumnWidths() {
       setColumnWidths(
         new Map<string, ColumnWidth>([
-          ['col1', { width: 120, type: 'measured' }],
-          ['col2', { width: 120, type: 'measured' }]
+          ['col1', { width: 120, type: 'resized' }],
+          ['col2', { width: 120, type: 'resized' }]
         ])
       );
     }
@@ -292,8 +292,7 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
     .poll(() => onColumnWidthsChangeSpy)
     .toHaveBeenCalledExactlyOnceWith(
       new Map<string, ColumnWidth>([
-        // the outdated `measured` width provided by the consumer is re-evaluated
-        ['col1', { width: 100, type: 'measured' }],
+        ['col1', { width: 101, type: 'resized' }],
         ['col2', { width: 100, type: 'resized' }]
       ])
     );
@@ -307,7 +306,7 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   await resize('col2', [5, 5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
     new Map<string, ColumnWidth>([
-      ['col1', { width: 100, type: 'measured' }],
+      ['col1', { width: 101, type: 'resized' }],
       ['col2', { width: 115, type: 'resized' }]
     ])
   );
@@ -326,10 +325,84 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   await resize('col2', [5, 5]);
   expect(onColumnWidthsChangeSpy).toHaveBeenCalledExactlyOnceWith(
     new Map<string, ColumnWidth>([
-      ['col1', { width: 100, type: 'measured' }],
-      ['col2', { width: 150, type: 'resized' }]
+      ['col1', { width: 120, type: 'resized' }],
+      ['col2', { width: 130, type: 'resized' }]
     ])
   );
+});
+
+test('should discard the measured and resized widths when the columnWidths prop changes', async () => {
+  function TestGrid() {
+    const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
+
+    return (
+      <>
+        <button type="button" onClick={() => setColumnWidths(new Map())}>
+          Reset widths
+        </button>
+        <DataGrid<Row>
+          columns={[{ key: 'col1', name: 'col1' }, columns[1]]}
+          rows={[]}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={setColumnWidths}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  // the grid is 1918px wide
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
+  // the grid ends at the edge of the viewport, so the column is resized from its end inward
+  await resize('col2', -50);
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1768px 150px' });
+  await userEvent.click(page.getByRole('button', { name: 'Reset widths' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
+});
+
+test('should keep the resized widths when the grid is resized', async () => {
+  function TestGrid() {
+    const [gridWidth, setGridWidth] = useState(600);
+    const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
+
+    return (
+      <>
+        <button type="button" onClick={() => setGridWidth(800)}>
+          Widen grid
+        </button>
+        <DataGrid<Row>
+          columns={[{ key: 'col1', name: 'col1' }, columns[1]]}
+          rows={[]}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={setColumnWidths}
+          style={{ width: gridWidth }}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  // the grid has a 1px border
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '398px 200px' });
+  await resize('col2', 50);
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '348px 250px' });
+  // the measured width of `col1` is re-evaluated, but not the resized width of `col2`
+  await userEvent.click(page.getByRole('button', { name: 'Widen grid' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '548px 250px' });
+});
+
+test('should only use the columnWidths prop as the initial widths without onColumnWidthsChange', async () => {
+  await setup<Row, unknown>({
+    columns,
+    rows: [],
+    columnWidths: new Map<string, ColumnWidth>([['col2', { width: 300, type: 'resized' }]])
+  });
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 300px' });
+  await resize('col2', 50);
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 350px' });
 });
 
 test('should clamp the widths provided via the columnWidths prop', async () => {

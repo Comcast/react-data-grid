@@ -1,9 +1,37 @@
-import { page } from 'vite-plus/test/browser';
+import { useState } from 'react';
+import { page, userEvent } from 'vite-plus/test/browser';
 
-import type { Column } from '../../../src';
+import { DataGrid, type Column } from '../../../src';
 import { setup } from '../utils';
 
 const grid = page.getGrid();
+
+test('should use the new width when the width of a column changes', async () => {
+  function TestGrid() {
+    const [width, setWidth] = useState(100);
+
+    return (
+      <>
+        <button type="button" onClick={() => setWidth(200)}>
+          Widen column
+        </button>
+        <DataGrid
+          columns={[
+            { key: 'col1', name: 'col1', width },
+            { key: 'col2', name: 'col2', width: 100 }
+          ]}
+          rows={[]}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 100px' });
+  await userEvent.click(page.getByRole('button', { name: 'Widen column' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '200px 100px' });
+});
 
 test('auto columns are at least as wide as their content, within their minWidth and maxWidth', async () => {
   const longName = 'x'.repeat(50);
