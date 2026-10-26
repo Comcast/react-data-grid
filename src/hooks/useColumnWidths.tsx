@@ -104,25 +104,27 @@ export function useColumnWidths<R, SR>(
   const widthsMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const {
+    templateColumns,
     columnMetrics,
     totalColumnWidth,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
     layoutCssVars
   } = useMemo((): {
+    templateColumns: readonly string[];
     columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
     totalColumnWidth: number;
     totalStartFrozenColumnWidth: number;
     totalEndFrozenColumnWidth: number;
-    layoutCssVars: Readonly<React.CSSProperties>;
+    layoutCssVars: Readonly<Record<string, string>>;
   } => {
-    const gridTemplateColumns: string[] = [];
+    const templateColumns: string[] = [];
     const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
     let left = 0;
     let totalColumnWidth = 0;
     let totalStartFrozenColumnWidth = 0;
     let totalEndFrozenColumnWidth = 0;
-    const layoutCssVars: React.CSSProperties = {};
+    const layoutCssVars: Record<string, string> = {};
 
     // only look at the columns that are currently rendered,
     // stale entries of removed columns must not keep the widths revalidating forever
@@ -160,15 +162,15 @@ export function useColumnWidths<R, SR>(
       if (typeof width === 'number') {
         // the width can come from the `columnWidths` prop or the column definition,
         // it is not necessarily within the column's bounds
-        gridTemplateColumns.push(`${clampColumnWidth(width, column)}px`);
+        templateColumns.push(`${clampColumnWidth(width, column)}px`);
       } else if (width === 'auto') {
-        gridTemplateColumns.push(
+        templateColumns.push(
           typeof maxWidth === 'number'
             ? `minmax(auto, ${maxWidth}px)`
             : `minmax(${minWidth}px, auto)`
         );
       } else {
-        gridTemplateColumns.push(width);
+        templateColumns.push(width);
       }
 
       if (isStartFrozen(column.frozen)) {
@@ -190,9 +192,8 @@ export function useColumnWidths<R, SR>(
       }
     }
 
-    layoutCssVars.gridTemplateColumns = gridTemplateColumns.join(' ');
-
     return {
+      templateColumns,
       columnMetrics,
       totalColumnWidth,
       totalStartFrozenColumnWidth,
@@ -233,7 +234,7 @@ export function useColumnWidths<R, SR>(
     let colOverscanStartIdx = firstUnfrozenColumnIdx;
     while (colOverscanStartIdx < lastUnfrozenColumnIdx) {
       const { right } = columnMetrics.get(columns[colOverscanStartIdx])!;
-      // if the right side of the columnn is beyond the left side of the available viewport,
+      // if the right side of the column is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (right > viewportLeft) {
         break;
@@ -246,7 +247,7 @@ export function useColumnWidths<R, SR>(
     while (colOverscanEndIdx < lastUnfrozenColumnIdx) {
       const { right } = columnMetrics.get(columns[colOverscanEndIdx])!;
       // if the right side of the column is beyond or equal to the right side of the available viewport,
-      // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
+      // then it is the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (right >= viewportRight) {
         break;
       }
@@ -267,6 +268,34 @@ export function useColumnWidths<R, SR>(
     scrollLeft,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth
+  ]);
+
+  const gridTemplateColumns = useMemo((): string => {
+    const gridTemplateColumns: string[] = [];
+
+    for (let idx = 0; idx < columns.length; idx++) {
+      const isInViewport =
+        idx <= lastStartFrozenColumnIndex ||
+        (idx >= colOverscanStartIdx && idx <= colOverscanEndIdx) ||
+        (firstEndFrozenColumnIndex !== -1 && idx >= firstEndFrozenColumnIndex);
+
+      // The columns outside of the viewport have no cells that their width could depend on,
+      // so they keep the width they had when they were rendered, or their `minWidth`,
+      // otherwise `auto` or `max-content` columns would collapse, for example.
+      gridTemplateColumns.push(
+        isInViewport ? templateColumns[idx] : `${columnMetrics.get(columns[idx])!.width}px`
+      );
+    }
+
+    return gridTemplateColumns.join(' ');
+  }, [
+    columns,
+    templateColumns,
+    columnMetrics,
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex,
+    colOverscanStartIdx,
+    colOverscanEndIdx
   ]);
 
   function getPublicWidths(widthsMap: InternalColumnWidths): ColumnWidths {
@@ -381,6 +410,7 @@ export function useColumnWidths<R, SR>(
     colOverscanEndIdx,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
+    gridTemplateColumns,
     layoutCssVars,
     columnMetrics,
     observeMeasuringCellRef,

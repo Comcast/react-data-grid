@@ -335,6 +335,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     colOverscanEndIdx,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
+    gridTemplateColumns,
     layoutCssVars,
     columnMetrics,
     observeMeasuringCellRef,
@@ -1128,7 +1129,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     });
   }
 
-  // Keep the state and prop in sync
   let templateRows = `repeat(${headerRowsCount}, ${headerRowHeight}px)`;
   if (topSummaryRowsCount > 0) {
     templateRows += ` repeat(${topSummaryRowsCount}, ${summaryRowHeight}px)`;
@@ -1162,6 +1162,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         scrollPaddingInlineEnd: totalEndFrozenColumnWidth,
         scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
         scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
+        gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
         ...layoutCssVars
