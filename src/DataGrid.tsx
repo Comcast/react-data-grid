@@ -1211,102 +1211,105 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-cy={dataCy}
     >
       <DataGridRenderersContext value={defaultGridComponents}>
-        <HeaderRowSelectionChangeContext
-          value={headerRowSelectionOverride?.onChange ?? selectHeaderRowLatest}
-        >
-          <HeaderRowSelectionContext value={headerSelectionValue}>
-            {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
-              <GroupedColumnHeaderRow
-                key={index}
-                rowIdx={index + 1}
-                level={-groupedColumnHeaderRowsCount + index}
+        {/* a grid rendered in a cell doesn't use the select-all checkbox of this grid's `TreeDataGrid` */}
+        <HeaderRowSelectionOverrideContext value={undefined}>
+          <HeaderRowSelectionChangeContext
+            value={headerRowSelectionOverride?.onChange ?? selectHeaderRowLatest}
+          >
+            <HeaderRowSelectionContext value={headerSelectionValue}>
+              {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
+                <GroupedColumnHeaderRow
+                  key={index}
+                  rowIdx={index + 1}
+                  level={-groupedColumnHeaderRowsCount + index}
+                  mapViewportColumns={mapViewportColumns}
+                  activeCellIdx={
+                    activePosition.rowIdx === minRowIdx + index ? activePosition.idx : undefined
+                  }
+                  setPosition={selectHeaderCellLatest}
+                />
+              ))}
+              <HeaderRow
+                headerRowClass={headerRowClass}
+                rowIdx={headerRowsCount}
                 mapViewportColumns={mapViewportColumns}
+                onColumnResize={handleColumnResizeLatest}
+                onColumnResizeEnd={handleColumnResizeEndLatest}
+                onColumnsReorder={onColumnsReorderLatest}
+                sortColumns={sortColumns}
+                onSortColumnsChange={onSortColumnsChangeLatest}
                 activeCellIdx={
-                  activePosition.rowIdx === minRowIdx + index ? activePosition.idx : undefined
+                  activePosition.rowIdx === mainHeaderRowIdx ? activePosition.idx : undefined
                 }
                 setPosition={selectHeaderCellLatest}
+                shouldFocusGrid={!activePositionIsInActiveBounds}
+                direction={direction}
               />
-            ))}
-            <HeaderRow
-              headerRowClass={headerRowClass}
-              rowIdx={headerRowsCount}
-              mapViewportColumns={mapViewportColumns}
-              onColumnResize={handleColumnResizeLatest}
-              onColumnResizeEnd={handleColumnResizeEndLatest}
-              onColumnsReorder={onColumnsReorderLatest}
-              sortColumns={sortColumns}
-              onSortColumnsChange={onSortColumnsChangeLatest}
-              activeCellIdx={
-                activePosition.rowIdx === mainHeaderRowIdx ? activePosition.idx : undefined
-              }
-              setPosition={selectHeaderCellLatest}
-              shouldFocusGrid={!activePositionIsInActiveBounds}
-              direction={direction}
-            />
-          </HeaderRowSelectionContext>
-        </HeaderRowSelectionChangeContext>
-        {rows.length === 0 && noRowsFallback ? (
-          noRowsFallback
-        ) : (
-          <>
-            {topSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerRowsCount + 1 + rowIdx;
-              const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
-              const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
-              const top = headerRowsHeight + summaryRowHeight * rowIdx;
+            </HeaderRowSelectionContext>
+          </HeaderRowSelectionChangeContext>
+          {rows.length === 0 && noRowsFallback ? (
+            noRowsFallback
+          ) : (
+            <>
+              {topSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerRowsCount + 1 + rowIdx;
+                const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
+                const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
+                const top = headerRowsHeight + summaryRowHeight * rowIdx;
 
-              return (
-                <SummaryRow
-                  key={rowIdx}
-                  aria-rowindex={gridRowStart}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={undefined}
-                  mapViewportColumns={mapViewportColumns}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-            <RowSelectionChangeContext value={selectRowLatest}>
-              {getViewportRows()}
-            </RowSelectionChangeContext>
-            {bottomSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
-              const summaryRowIdx = rows.length + rowIdx;
-              const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
-              const top =
-                clientHeight > totalRowHeight
-                  ? gridHeight - summaryRowHeight * (bottomSummaryRowsCount - rowIdx)
-                  : undefined;
-              const bottom =
-                top === undefined
-                  ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
-                  : undefined;
+                return (
+                  <SummaryRow
+                    key={rowIdx}
+                    aria-rowindex={gridRowStart}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={undefined}
+                    mapViewportColumns={mapViewportColumns}
+                    activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
+                    isTop
+                    setActivePosition={setPositionLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+              <RowSelectionChangeContext value={selectRowLatest}>
+                {getViewportRows()}
+              </RowSelectionChangeContext>
+              {bottomSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
+                const summaryRowIdx = rows.length + rowIdx;
+                const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
+                const top =
+                  clientHeight > totalRowHeight
+                    ? gridHeight - summaryRowHeight * (bottomSummaryRowsCount - rowIdx)
+                    : undefined;
+                const bottom =
+                  top === undefined
+                    ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
+                    : undefined;
 
-              return (
-                <SummaryRow
-                  aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
-                  key={rowIdx}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={bottom}
-                  mapViewportColumns={mapViewportColumns}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop={false}
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-          </>
-        )}
+                return (
+                  <SummaryRow
+                    aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
+                    key={rowIdx}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={bottom}
+                    mapViewportColumns={mapViewportColumns}
+                    activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
+                    isTop={false}
+                    setActivePosition={setPositionLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+            </>
+          )}
+        </HeaderRowSelectionOverrideContext>
       </DataGridRenderersContext>
 
       {lastStartFrozenColumnIndex > -1 &&

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column } from '../../src';
-import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import type { Column, RowHeightArgs } from '../../src';
+import { DataGrid, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
 
@@ -438,6 +438,89 @@ test('should include the rows of collapsed groups in the select-all checkbox', a
   await userEvent.click(headerCheckbox);
   await expect.element(headerCheckbox).toBeChecked();
   await testCount(page.getRow({ selected: true }), 3);
+});
+
+interface DetailRow {
+  id: number;
+}
+
+const detailRows: readonly DetailRow[] = [{ id: 1 }, { id: 2 }];
+// WebKit reports a ResizeObserver loop when the detail grid measures auto-sized columns
+const detailColumns: readonly Column<DetailRow>[] = [
+  SelectColumn,
+  { key: 'id', name: 'Id', width: 100 }
+];
+
+function detailRowKeyGetter(row: DetailRow) {
+  return row.id;
+}
+
+function DetailGrid() {
+  const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+
+  return (
+    <DataGrid
+      columns={detailColumns}
+      rows={detailRows}
+      rowKeyGetter={detailRowKeyGetter}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+      style={{ blockSize: 140 }}
+    />
+  );
+}
+
+const masterColumns: readonly Column<Row>[] = [
+  SelectColumn,
+  { key: 'year', name: 'Year' },
+  { key: 'detail', name: 'Detail', width: 300, renderCell: () => <DetailGrid /> }
+];
+
+function getMasterRowHeight({ type }: RowHeightArgs<Row>) {
+  return type === 'ROW' ? 150 : 35;
+}
+
+function MasterDetailTestGrid() {
+  const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+  const [expandedGroupIds, setExpandedGroupIds] = useState(
+    (): ReadonlySet<unknown> => new Set(['2020'])
+  );
+
+  return (
+    <TreeDataGrid
+      columns={masterColumns}
+      rows={initialRows}
+      rowHeight={getMasterRowHeight}
+      rowKeyGetter={rowKeyGetter}
+      groupBy={['year']}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+      expandedGroupIds={expandedGroupIds}
+      onExpandedGroupIdsChange={setExpandedGroupIds}
+    />
+  );
+}
+
+test('should not share the select-all checkbox with a grid in a cell', async () => {
+  await page.render(<MasterDetailTestGrid />);
+  const detailGrid = page.getGrid();
+  const detailHeaderCheckbox = detailGrid.getSelectAllCheckbox();
+  // the header row of the detail grid is in the tree grid too
+  const treeHeaderCheckbox = headerRow.nth(0).getSelectAllCheckbox();
+
+  await userEvent.click(detailHeaderCheckbox);
+  await expect.element(detailHeaderCheckbox).toBeChecked();
+  await testCount(detailGrid.getRow({ selected: true }), 2);
+  await expect.element(treeHeaderCheckbox).not.toBeChecked();
+  await expect.element(treeHeaderCheckbox).not.toBePartiallyChecked();
+
+  await userEvent.click(treeHeaderCheckbox);
+  await expect.element(treeHeaderCheckbox).toBeChecked();
+  await expect.element(detailHeaderCheckbox).toBeChecked();
+
+  await userEvent.click(detailHeaderCheckbox);
+  await expect.element(detailHeaderCheckbox).not.toBeChecked();
+  await expect.element(treeHeaderCheckbox).toBeChecked();
 });
 
 test('cell navigation in a treegrid', async () => {
