@@ -312,9 +312,10 @@ describe('Editor', () => {
       await userEvent.click(page.getByRole('button', { name: 'remove last row' }));
       await expect.element(col2Editor).not.toBeInTheDocument();
       await validateCellPosition(1, 2);
+      // When the position state is in edit mode on a summary cell, the grid renders no editor,
+      // but it ignores navigation keys, so moving the active cell checks that the editor closed
       await safeTab();
       await expect.element(page.getActiveCell()).toHaveFocus();
-      // the grid ignores navigation keys in edit mode
       await userEvent.keyboard('{arrowup}');
       await validateCellPosition(1, 1);
     });
