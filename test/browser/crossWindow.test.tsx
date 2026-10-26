@@ -106,6 +106,36 @@ test('should observe grid resizes with the ResizeObserver of the window the grid
   await expect.element(headerCells).toHaveLength(9);
 });
 
+test('should measure columns with the ResizeObserver of the window the grid is rendered in', async () => {
+  const { iframeDocument, iframeWindow, frame } = await createIframe();
+  const observeSpy = vi.spyOn(iframeWindow.ResizeObserver.prototype, 'observe');
+  const onColumnResize = vi.fn();
+
+  await page.render(
+    createPortal(
+      <DataGrid
+        columns={[
+          { key: 'a', name: 'A', resizable: true },
+          { key: 'b', name: 'B', width: 100 }
+        ]}
+        rows={initialRows}
+        onColumnResize={onColumnResize}
+      />,
+      iframeDocument.body
+    )
+  );
+
+  const grid = frame.getGrid();
+  await expect.element(grid).toBeInTheDocument();
+  expect(observeSpy).toHaveBeenCalledWith(
+    grid.element().querySelector('[data-measuring-cell-key="a"]')
+  );
+
+  // auto-sizing the column waits for it to be measured
+  await userEvent.dblClick(frame.getHeaderCell({ name: 'A' }).getBySelector('.rdg-resize-handle'));
+  await expect.poll(() => onColumnResize).toHaveBeenCalledOnce();
+});
+
 test('should navigate between cells with the keyboard', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));

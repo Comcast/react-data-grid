@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-import { isStartFrozen, max, min } from '../utils';
+import { createResizeObserverGetter, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   ColumnWidth,
@@ -22,11 +22,8 @@ const initialWidthsMap: InternalColumnWidths = new Map();
 // the component partially unmounts via Suspense or Activity
 const cellToGridRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 const gridRefToWidthsMap = new WeakMap<RefObject<HTMLDivElement | null>, InternalColumnWidths>();
-const subscribers = new Map<RefObject<HTMLDivElement | null>, () => void>();
-
-// don't break in Node.js (SSR), jsdom, and environments that don't support ResizeObserver
-const resizeObserver =
-  typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resizeObserverCallback);
+const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
+const getResizeObserver = createResizeObserverGetter(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   const updatedGrids = new Set<RefObject<HTMLDivElement | null>>();
@@ -296,6 +293,7 @@ export function useColumnWidths<R, SR>(
 
   const observeMeasuringCellRef = useCallback(
     (cell: HTMLDivElement) => {
+      const resizeObserver = getResizeObserver(cell);
       cellToGridRefMap.set(cell, gridRef);
       resizeObserver?.observe(cell);
 
@@ -340,6 +338,7 @@ export function useColumnWidths<R, SR>(
         const cell = gridRef.current!.querySelector(
           `& > [data-measuring-cell-key="${CSS.escape(key)}"]`
         )!;
+        const resizeObserver = getResizeObserver(cell);
         resizeObserver?.unobserve(cell);
         resizeObserver?.observe(cell);
         // alternatively, set up a new ResizeObserver just for this measurement

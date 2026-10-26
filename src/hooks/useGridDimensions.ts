@@ -6,6 +6,8 @@ import {
   type RefObject
 } from 'react';
 
+import { createResizeObserverGetter } from '../utils';
+
 const initialSize: ResizeObserverSize = {
   inlineSize: 1,
   blockSize: 1
@@ -16,22 +18,7 @@ const initialSize: ResizeObserverSize = {
 const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
 const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
-
-// one ResizeObserver per window, so that resizes are observed in the window the grid is rendered in,
-// for example when the grid is portaled into an iframe or a popup window
-const resizeObservers = new WeakMap<Window, ResizeObserver>();
-
-function getResizeObserver(target: HTMLDivElement): ResizeObserver | null {
-  const ownerWindow = target.ownerDocument.defaultView;
-
-  // don't break in environments that don't support ResizeObserver
-  if (ownerWindow?.ResizeObserver == null) return null;
-
-  return resizeObservers.getOrInsertComputed(
-    ownerWindow,
-    () => new ownerWindow.ResizeObserver(resizeObserverCallback)
-  );
-}
+const getResizeObserver = createResizeObserverGetter(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   for (const entry of entries) {
