@@ -29,3 +29,16 @@ test('basic server-side rendering (SSR) support', () => {
   const html = renderToString(<App />);
   expect(html).not.toHaveLength(0);
 });
+
+test('renders all the columns when virtualization is disabled', () => {
+  const html = renderToString(
+    <DataGrid
+      columns={[{ ...columns[0], frozen: true }, columns[1]]}
+      rows={rows}
+      enableVirtualization={false}
+    />
+  );
+
+  // the grid's width is unknown on the server
+  expect(html.match(/role="columnheader"/g)).toHaveLength(2);
+});

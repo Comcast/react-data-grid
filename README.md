@@ -370,7 +370,7 @@ Height of each summary row in pixels.
 
 A map of column widths containing both measured and resized widths. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths) type.
 
-When `onColumnWidthsChange` is provided, passing a new map replaces the widths that the grid measured and that were resized since the previous map, so keep the map in a state instead of creating it on every render. Otherwise, `columnWidths` only sets the initial widths.
+When `onColumnWidthsChange` is provided, passing a new map replaces the widths that the grid measured and that were resized since the previous map, so keep the map in a state instead of creating it on every render. Until then, the grid keeps these widths, even if `onColumnWidthsChange` doesn't update the map: to undo a resize, pass a new map. Otherwise, `columnWidths` only sets the initial widths.
 
 ```tsx
 const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
@@ -2246,8 +2246,8 @@ Represents a single column's width.
 interface ColumnWidth {
   /**
    * `'measured'` if the grid measured the column, or `'resized'` if the user resized it.
-   * Measured widths are only a cache that the grid re-evaluates, for example when the grid or a column is resized,
-   * and they are ignored for columns whose `width` is a number.
+   * Measured widths are only a cache that the grid re-evaluates when it is mounted, when the grid or a column is resized,
+   * and when `columnWidths` changes, and they are ignored for columns whose `width` is a number.
    * Resized widths are preserved, including for columns that are not rendered,
    * and clamped between the column's `minWidth` and `maxWidth`.
    */

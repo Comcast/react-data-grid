@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
 import { createResizeObserverGetter, isStartFrozen, max, min } from '../utils';
 import type {
@@ -23,14 +23,15 @@ interface ColumnWidthsStore {
   readonly base: Maybe<ColumnWidths>;
   // the widths that were measured and resized since, which take precedence over the base widths
   readonly widths: InternalColumnWidths;
-  // whether the measured widths are re-evaluated until the next measurement, after a column was resized
-  readonly isRevalidating: boolean;
+  // The measured widths are re-evaluated until the ResizeObserver measures the columns,
+  // after the grid is mounted or a column is resized, and until the next animation frame after that.
+  readonly revalidation: 'measuring' | 'measured' | 'none';
 }
 
 const initialStore: ColumnWidthsStore = {
   base: undefined,
   widths: new Map(),
-  isRevalidating: false
+  revalidation: 'measuring'
 };
 
 // use unmanaged WeakMaps so we preserve the cache even when
@@ -40,8 +41,13 @@ const stores = new WeakMap<RefObject<HTMLDivElement | null>, ColumnWidthsStore>(
 const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
 const getResizeObserver = createResizeObserverGetter(resizeObserverCallback);
 
+// The grid is rendered again with the measurements while the ResizeObserver delivers them,
+// so that it is laid out with them before it is painted.
+// Observing new measuring cells, or changing the size of the cells, at that point would cause a ResizeObserver loop error,
+// so these changes wait for the next animation frame, which runs before the ResizeObserver delivers measurements.
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
-  const measuredGrids = new Set<RefObject<HTMLDivElement | null>>();
+  const measuredGrids = new Map<RefObject<HTMLDivElement | null>, Window>();
+  const autosizedGrids = new Set<RefObject<HTMLDivElement | null>>();
   const updatedWidths = new Map<
     RefObject<HTMLDivElement | null>,
     Map<string, InternalColumnWidth>
@@ -53,43 +59,56 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
 
     if (gridRef === undefined) continue;
 
-    measuredGrids.add(gridRef);
+    measuredGrids.set(gridRef, cell.ownerDocument.defaultView!);
+
+    // a column with a fixed width is only as wide as the grid sets it,
+    // and measuring it would overwrite the width it was set from, which may be clamped
+    if (!Object.hasOwn(cell.dataset, 'measuringCellFlexible')) continue;
 
     const key = cell.dataset.measuringCellKey!;
     const { base, widths } = stores.get(gridRef) ?? initialStore;
     const widthItem = widths.get(key) ?? base?.get(key);
     const width = entry.contentBoxSize[0].inlineSize;
 
-    // Avoid triggering re-renders if the size hasn't changed.
-    // Per the explanation below, this check is safe:
-    // no width -> state updates
-    // `autosizing` -> width is a string -> type changes, state updates
-    // other types must not change regardless of width change
+    // avoid re-rendering if the width hasn't changed
     if (width === widthItem?.width) continue;
 
-    // `autosizing` -> immediately `resized`
-    // `resizing` -> remains `resizing` until the end of the user action
-    // `resized` -> remains `resized`, may happen after external width changes
-    // `measured` otherwise
-    const type = widthItem?.type === 'autosizing' ? 'resized' : (widthItem?.type ?? 'measured');
+    const newWidths = updatedWidths.getOrInsertComputed(gridRef, () => new Map(widths));
+    let newWidthItem: ColumnWidth | undefined = { type: 'measured', width };
+
     if (widthItem?.type === 'autosizing') {
-      widthItem.onMeasure(width);
+      newWidthItem = widthItem.onMeasure(width);
+      autosizedGrids.add(gridRef);
     }
 
-    updatedWidths.getOrInsertComputed(gridRef, () => new Map(widths)).set(key, { type, width });
+    if (newWidthItem === undefined) {
+      newWidths.delete(key);
+    } else {
+      newWidths.set(key, newWidthItem);
+    }
   }
 
-  for (const gridRef of measuredGrids) {
-    const store = stores.get(gridRef) ?? initialStore;
-    const widths = updatedWidths.get(gridRef);
+  for (const [gridRef, gridWindow] of measuredGrids) {
+    const { base, widths, revalidation } = stores.get(gridRef) ?? initialStore;
+    const newWidths = updatedWidths.get(gridRef);
+    // The observations of a grid are delivered together,
+    // so all the columns that changed size are now measured with the final width of the resized column.
+    const isRevalidationEnding = revalidation === 'measuring' || autosizedGrids.has(gridRef);
 
-    // the observations of a grid are delivered together,
-    // so all the columns that changed are now measured with the final width of the resized column
-    if (widths !== undefined || store.isRevalidating) {
-      setStore(gridRef, {
-        base: store.base,
-        widths: widths ?? store.widths,
-        isRevalidating: false
+    if (newWidths === undefined && !isRevalidationEnding) continue;
+
+    setStore(gridRef, {
+      base,
+      widths: newWidths ?? widths,
+      revalidation: isRevalidationEnding ? 'measured' : revalidation
+    });
+
+    if (isRevalidationEnding) {
+      gridWindow.requestAnimationFrame(() => {
+        const store = stores.get(gridRef);
+        if (store?.revalidation === 'measured') {
+          setStore(gridRef, { base: store.base, widths: store.widths, revalidation: 'none' });
+        }
       });
     }
   }
@@ -101,7 +120,8 @@ function setStore(gridRef: RefObject<HTMLDivElement | null>, store: ColumnWidths
 }
 
 // The widths that were measured and resized are discarded when the `columnWidths` prop changes,
-// except the widths of the column that is being resized
+// except the widths of the column that is being resized,
+// and the measured widths of the new `columnWidths` are re-evaluated
 function rebaseStore(store: ColumnWidthsStore, base: Maybe<ColumnWidths>): ColumnWidthsStore {
   if (store.base === base) return store;
 
@@ -113,7 +133,7 @@ function rebaseStore(store: ColumnWidthsStore, base: Maybe<ColumnWidths>): Colum
     }
   }
 
-  return { base, widths, isRevalidating: store.isRevalidating };
+  return { base, widths, revalidation: 'measuring' };
 }
 
 // `resizing` and `autosizing` widths only exist while a column is being resized
@@ -124,6 +144,8 @@ function isPublicWidth(widthItem: InternalColumnWidth): widthItem is ColumnWidth
 function getServerSnapshot(): ColumnWidthsStore {
   return initialStore;
 }
+
+function noop() {}
 
 export function useColumnWidths<R, SR>(
   gridRef: React.RefObject<HTMLDivElement | null>,
@@ -138,10 +160,6 @@ export function useColumnWidths<R, SR>(
   onColumnResize: DataGridProps<R, SR>['onColumnResize'],
   onColumnWidthsChangeRaw: DataGridProps<R, SR>['onColumnWidthsChange']
 ) {
-  // without `onColumnWidthsChange`, `columnWidths` only sets the initial widths
-  const [initialColumnWidths] = useState(columnWidthsRaw);
-  const columnWidths = onColumnWidthsChangeRaw == null ? initialColumnWidths : columnWidthsRaw;
-
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
       subscribers.set(gridRef, onStoreChange);
@@ -160,12 +178,17 @@ export function useColumnWidths<R, SR>(
   }, [gridRef]);
 
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // Without `onColumnWidthsChange`, `columnWidths` only sets the initial widths,
+  // and the grid keeps the widths it measured and that were resized afterwards,
+  // including when `onColumnWidthsChange` is removed.
+  const columnWidths =
+    onColumnWidthsChangeRaw == null && snapshot !== initialStore ? snapshot.base : columnWidthsRaw;
   // the store is rebased when the measuring cells are attached, after rendering a new `columnWidths`
   const store = useMemo(() => rebaseStore(snapshot, columnWidths), [snapshot, columnWidths]);
 
   const isRevalidatingWidths =
     isResizingWidth ||
-    store.isRevalidating ||
+    store.revalidation !== 'none' ||
     // only look at the columns that are currently rendered,
     // stale entries of removed columns must not keep the widths revalidating forever
     columns.some((column) => {
@@ -175,23 +198,31 @@ export function useColumnWidths<R, SR>(
 
   const {
     templateColumns,
+    flexibleColumns,
     columnMetrics,
     totalColumnWidth,
+    totalMinColumnWidth,
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth,
     layoutCssVars
   } = useMemo((): {
     templateColumns: readonly string[];
+    flexibleColumns: ReadonlySet<CalculatedColumn<R, SR>>;
     columnMetrics: ReadonlyMap<CalculatedColumn<R, SR>, ColumnMetric>;
     totalColumnWidth: number;
+    totalMinColumnWidth: number;
     totalStartFrozenColumnWidth: number;
     totalEndFrozenColumnWidth: number;
     layoutCssVars: Readonly<Record<string, string>>;
   } => {
     const templateColumns: string[] = [];
+    // the columns whose width depends on their content or on the grid's width, so that they are measured
+    const flexibleColumns = new Set<CalculatedColumn<R, SR>>();
     const columnMetrics = new Map<CalculatedColumn<R, SR>, ColumnMetric>();
     let left = 0;
     let totalColumnWidth = 0;
+    // the total width of the columns if the flexible columns shrank to their `minWidth`
+    let totalMinColumnWidth = 0;
     let totalStartFrozenColumnWidth = 0;
     let totalEndFrozenColumnWidth = 0;
     const layoutCssVars: Record<string, string> = {};
@@ -225,15 +256,29 @@ export function useColumnWidths<R, SR>(
       if (typeof width === 'number') {
         // the width can come from the `columnWidths` prop or the column definition,
         // it is not necessarily within the column's bounds
-        templateColumns.push(`${clampColumnWidth(width, column)}px`);
-      } else if (width === 'auto') {
-        // `auto` columns are stretched to fill the grid, so the column sets `maxWidth`,
-        // while the cells and the measuring cell set the minimum width
-        templateColumns.push(
-          maxWidth !== undefined && maxWidth >= minWidth ? `minmax(auto, ${maxWidth}px)` : 'auto'
-        );
+        const clampedWidth = clampColumnWidth(width, column);
+        templateColumns.push(`${clampedWidth}px`);
+        totalMinColumnWidth += clampedWidth;
       } else {
-        templateColumns.push(width);
+        flexibleColumns.add(column);
+        totalMinColumnWidth += minWidth;
+        // `maxWidth` is ignored if `minWidth` is greater, as when clamping widths
+        const hasMaxWidth = maxWidth !== undefined && maxWidth >= minWidth;
+
+        if (width === 'auto') {
+          // `auto` columns are stretched to fill the grid, so the column sets `maxWidth`,
+          // while the cells and the measuring cell set the minimum width
+          templateColumns.push(hasMaxWidth ? `minmax(auto, ${maxWidth}px)` : 'auto');
+        } else if (isLengthPercentage(width)) {
+          // the column is as wide as its width, regardless of the width of its cells
+          templateColumns.push(
+            hasMaxWidth
+              ? `clamp(${minWidth}px, ${width}, ${maxWidth}px)`
+              : `max(${minWidth}px, ${width})`
+          );
+        } else {
+          templateColumns.push(width);
+        }
       }
 
       if (isStartFrozen(column.frozen)) {
@@ -257,27 +302,31 @@ export function useColumnWidths<R, SR>(
 
     return {
       templateColumns,
+      flexibleColumns,
       columnMetrics,
       totalColumnWidth,
+      totalMinColumnWidth,
       totalStartFrozenColumnWidth,
       totalEndFrozenColumnWidth,
       layoutCssVars
     };
   }, [store, isRevalidatingWidths, columns, firstEndFrozenColumnIndex]);
 
-  const renderAllColumns = !enableVirtualization || totalColumnWidth <= gridWidth;
+  // While the widths are revalidated, the flexible columns can shrink down to their `minWidth`,
+  // so all the columns are rendered if they fit at that width. Otherwise, the columns that don't fit
+  // with the widths measured before would be virtualized away until the columns are measured again,
+  // and then rendered again, which would resize the other columns while the ResizeObserver delivers measurements.
+  const renderAllColumns =
+    !enableVirtualization ||
+    (isRevalidatingWidths ? totalMinColumnWidth : totalColumnWidth) <= gridWidth;
 
   const [colOverscanStartIdx, colOverscanEndIdx] = useMemo((): [number, number] => {
     // the non-frozen band ends right before the first end frozen column
     const lastUnfrozenColumnIdx =
       firstEndFrozenColumnIndex === -1 ? columns.length - 1 : firstEndFrozenColumnIndex - 1;
 
-    // render frozen columns only when all columns are frozen,
-    // or when frozen columns cover the entire viewport
-    if (
-      lastUnfrozenColumnIdx === lastStartFrozenColumnIndex ||
-      totalStartFrozenColumnWidth + totalEndFrozenColumnWidth >= gridWidth
-    ) {
+    // render frozen columns only when all columns are frozen
+    if (lastUnfrozenColumnIdx === lastStartFrozenColumnIndex) {
       return [0, -1];
     }
 
@@ -287,6 +336,11 @@ export function useColumnWidths<R, SR>(
     // render all columns
     if (renderAllColumns) {
       return [firstUnfrozenColumnIdx, lastUnfrozenColumnIdx];
+    }
+
+    // render frozen columns only when they cover the entire viewport
+    if (totalStartFrozenColumnWidth + totalEndFrozenColumnWidth >= gridWidth) {
+      return [0, -1];
     }
 
     // get the viewport's left side and right side positions for non-frozen columns
@@ -333,10 +387,15 @@ export function useColumnWidths<R, SR>(
     totalEndFrozenColumnWidth
   ]);
 
-  const gridTemplateColumns = useMemo((): string => {
+  const { gridTemplateColumns, measuredColumns } = useMemo((): {
+    gridTemplateColumns: string;
+    measuredColumns: ReadonlySet<CalculatedColumn<R, SR>>;
+  } => {
     const gridTemplateColumns: string[] = [];
+    const measuredColumns = new Set<CalculatedColumn<R, SR>>();
 
-    for (let idx = 0; idx < columns.length; idx++) {
+    for (const column of columns) {
+      const { idx } = column;
       const isInViewport =
         idx <= lastStartFrozenColumnIndex ||
         (idx >= colOverscanStartIdx && idx <= colOverscanEndIdx) ||
@@ -345,15 +404,22 @@ export function useColumnWidths<R, SR>(
       // The columns outside of the viewport have no cells that their width could depend on,
       // so they keep the width they had when they were rendered, or their `minWidth`,
       // otherwise `auto` or `max-content` columns would collapse, for example.
-      gridTemplateColumns.push(
-        isInViewport ? templateColumns[idx] : `${columnMetrics.get(columns[idx])!.width}px`
-      );
+      if (isInViewport) {
+        gridTemplateColumns.push(templateColumns[idx]);
+
+        if (flexibleColumns.has(column)) {
+          measuredColumns.add(column);
+        }
+      } else {
+        gridTemplateColumns.push(`${columnMetrics.get(column)!.width}px`);
+      }
     }
 
-    return gridTemplateColumns.join(' ');
+    return { gridTemplateColumns: gridTemplateColumns.join(' '), measuredColumns };
   }, [
     columns,
     templateColumns,
+    flexibleColumns,
     columnMetrics,
     lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
@@ -405,11 +471,20 @@ export function useColumnWidths<R, SR>(
       }
 
       const resizeObserver = getResizeObserver(cell);
+      // return a cleanup function regardless, or React would call the ref callback with `null`
+      if (resizeObserver === null) return noop;
+
       cellToGridRefMap.set(cell, gridRef);
-      resizeObserver?.observe(cell);
+      // The cell can be attached while the ResizeObserver delivers measurements,
+      // when they change the columns in the viewport, so it is observed in the next animation frame.
+      const cellWindow = cell.ownerDocument.defaultView!;
+      const frameRequest = cellWindow.requestAnimationFrame(() => {
+        resizeObserver.observe(cell);
+      });
 
       return () => {
-        resizeObserver?.unobserve(cell);
+        cellWindow.cancelAnimationFrame(frameRequest);
+        resizeObserver.unobserve(cell);
       };
     },
     [gridRef, getSnapshot, columnWidths]
@@ -441,22 +516,28 @@ export function useColumnWidths<R, SR>(
       }
 
       const { key } = column;
-      const { base, widths, isRevalidating } = getSnapshot();
+      const { base, widths, revalidation } = getSnapshot();
 
       if (typeof nextWidth === 'number') {
         setStore(gridRef, {
           base,
           widths: new Map(widths).set(key, { type: 'resizing', width: nextWidth }),
-          isRevalidating
+          revalidation
         });
         onColumnResize?.(column, nextWidth);
         return;
       }
 
       const gridWindow = gridRef.current!.ownerDocument.defaultView!;
+      const previousWidthItem = widths.get(key);
 
-      function onMeasure(newWidth: number) {
-        if (newWidth === previousWidth) return;
+      function onMeasure(newWidth: number): ColumnWidth | undefined {
+        // keep the width the column had if auto-sizing doesn't change it
+        if (newWidth === previousWidth) {
+          return previousWidthItem !== undefined && isPublicWidth(previousWidthItem)
+            ? previousWidthItem
+            : undefined;
+        }
 
         // Report the new width in a new task, instead of while the ResizeObserver delivers it:
         // rendering the grid with the new `columnWidths` observes the measuring cells again,
@@ -465,12 +546,14 @@ export function useColumnWidths<R, SR>(
           onColumnResize?.(column, newWidth);
           onColumnWidthsChangeRaw?.(getPublicWidths(getSnapshot()));
         });
+
+        return { type: 'resized', width: newWidth };
       }
 
       setStore(gridRef, {
         base,
         widths: new Map(widths).set(key, { type: 'autosizing', width: nextWidth, onMeasure }),
-        isRevalidating
+        revalidation
       });
 
       // this is necessary if the nextWidth is the same as the previous width
@@ -496,7 +579,7 @@ export function useColumnWidths<R, SR>(
 
     if (!hasUpdated) return;
 
-    const newStore: ColumnWidthsStore = { base, widths: newWidths, isRevalidating: true };
+    const newStore: ColumnWidthsStore = { base, widths: newWidths, revalidation: 'measuring' };
     setStore(gridRef, newStore);
     onColumnWidthsChangeRaw?.(getPublicWidths(newStore));
   });
@@ -509,10 +592,19 @@ export function useColumnWidths<R, SR>(
     gridTemplateColumns,
     layoutCssVars,
     columnMetrics,
+    measuredColumns,
     observeMeasuringCellRef,
     handleColumnResizeLatest,
     handleColumnResizeEndLatest
   } as const;
+}
+
+const lengthPercentageRegex =
+  /^(?:[+-]?(?:\d+\.?\d*|\.\d+)(?:%|[a-z]+)|(?:calc|min|max|clamp)\(.*\))$/i;
+
+// lengths, percentages, and math functions like `calc()`, which can be clamped, unlike `fr` or keywords
+function isLengthPercentage(width: string): boolean {
+  return lengthPercentageRegex.test(width) && !width.endsWith('fr');
 }
 
 function clampColumnWidth<R, SR>(

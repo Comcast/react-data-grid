@@ -320,6 +320,21 @@ test('virtualization is disabled with some frozen columns', async () => {
   await expect.element(cells).toHaveLength(40 * 100);
 });
 
+test('virtualization is disabled with frozen columns wider than the grid', async () => {
+  await setup<unknown, unknown>({
+    columns: [
+      { key: '0', name: '0', width: 150, frozen: true },
+      { key: '1', name: '1', width: 100 },
+      { key: '2', name: '2', width: 100 }
+    ],
+    rows: [],
+    enableVirtualization: false,
+    style: { width: 120 }
+  });
+
+  await assertHeaderCells(3, 0, 2);
+});
+
 test('virtualization is disabled with start and end frozen columns', async () => {
   await setupGrid(false, 40, 100, 3, 0, 2);
 

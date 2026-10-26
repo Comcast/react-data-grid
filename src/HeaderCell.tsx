@@ -203,7 +203,8 @@ export default function HeaderCell<R, SR>({
     }
   }
 
-  function onKeyUp() {
+  // the resize also ends when the header cell loses focus, as the key may then be released elsewhere
+  function endKeyboardResize() {
     if (resizingRef.current) {
       resizingRef.current = false;
       onColumnResizeEnd();
@@ -298,7 +299,8 @@ export default function HeaderCell<R, SR>({
         onFocus={handleFocus}
         onClick={onClick}
         onKeyDown={onKeyDown}
-        onKeyUp={onKeyUp}
+        onKeyUp={endKeyboardResize}
+        onBlur={endKeyboardResize}
         {...dragTargetProps}
         {...dropTargetProps}
       >

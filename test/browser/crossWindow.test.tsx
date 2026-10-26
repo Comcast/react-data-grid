@@ -136,6 +136,20 @@ test('should measure columns with the ResizeObserver of the window the grid is r
   await expect.poll(() => onColumnResize).toHaveBeenCalledOnce();
 });
 
+test('should not break in a window without ResizeObserver', async () => {
+  const { iframeDocument, iframeWindow, frame } = await createIframe();
+  // @ts-expect-error the property is not optional
+  delete iframeWindow.ResizeObserver;
+
+  const { unmount } = await page.render(
+    createPortal(<DataGrid columns={columns} rows={noRows} />, iframeDocument.body)
+  );
+
+  await expect.element(frame.getGrid()).toBeInTheDocument();
+  await unmount();
+  await expect.element(frame.getGrid()).not.toBeInTheDocument();
+});
+
 test('should navigate between cells with the keyboard', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));

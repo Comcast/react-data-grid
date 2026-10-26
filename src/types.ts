@@ -429,8 +429,8 @@ export interface SetActivePositionOptions {
 export interface ColumnWidth {
   /**
    * `'measured'` if the grid measured the column, or `'resized'` if the user resized it.
-   * Measured widths are only a cache that the grid re-evaluates, for example when the grid or a column is resized,
-   * and they are ignored for columns whose `width` is a number.
+   * Measured widths are only a cache that the grid re-evaluates when it is mounted, when the grid or a column is resized,
+   * and when `columnWidths` changes, and they are ignored for columns whose `width` is a number.
    * Resized widths are preserved, including for columns that are not rendered,
    * and clamped between the column's `minWidth` and `maxWidth`.
    */
@@ -454,7 +454,8 @@ export type InternalColumnWidth =
   | {
       readonly type: 'autosizing';
       readonly width: 'max-content';
-      readonly onMeasure: (width: number) => void;
+      /** Returns the width to keep once the column is measured, or `undefined` to remove it */
+      readonly onMeasure: (width: number) => ColumnWidth | undefined;
     };
 
 export type InternalColumnWidths = ReadonlyMap<string, InternalColumnWidth>;

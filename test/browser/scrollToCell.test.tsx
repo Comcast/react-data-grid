@@ -36,57 +36,57 @@ test('scrollToCell', async () => {
   expect(ref.current).toBeDefined();
 
   await validateCellVisibility('0×0', true);
-  await validateCellVisibility('45×30', false);
+  await validateCellVisibility('40×30', false);
   await validateCellVisibility('0×51', true);
 
   // should scroll to a cell when a valid position is specified
-  ref.current!.scrollToCell({ idx: 45, rowIdx: 30 });
+  ref.current!.scrollToCell({ idx: 40, rowIdx: 30 });
   await validateCellVisibility('0×0', false);
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should scroll to a column when a valid idx is specified
   ref.current!.scrollToCell({ idx: 6 });
   await validateCellVisibility('6×30', true);
-  await validateCellVisibility('45×30', false);
-  ref.current!.scrollToCell({ idx: 45 });
+  await validateCellVisibility('40×30', false);
+  ref.current!.scrollToCell({ idx: 40 });
   await validateCellVisibility('6×30', false);
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should scroll to a row when a valid rowIdx is specified
   ref.current!.scrollToCell({ rowIdx: 1 });
-  await validateCellVisibility('45×1', true);
-  await validateCellVisibility('45×30', false);
+  await validateCellVisibility('40×1', true);
+  await validateCellVisibility('40×30', false);
   ref.current!.scrollToCell({ rowIdx: 30 });
-  await validateCellVisibility('45×1', false);
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×1', false);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll if the column to scroll to is frozen
   ref.current!.scrollToCell({ idx: 2 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll if idx is out of bounds
   ref.current!.scrollToCell({ idx: -1 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
   ref.current!.scrollToCell({ idx: 50 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll if rowIdx is the header row
   ref.current!.scrollToCell({ rowIdx: -3 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll if rowIdx is a summary row
   ref.current!.scrollToCell({ rowIdx: -1 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll if position is out of bounds
   ref.current!.scrollToCell({ idx: 60, rowIdx: 60 });
   await nextFrame();
-  await validateCellVisibility('45×30', true);
+  await validateCellVisibility('40×30', true);
 
   // should not scroll vertically when scrolling to a summary row
   ref.current!.scrollToCell({ idx: 49, rowIdx: -1 });

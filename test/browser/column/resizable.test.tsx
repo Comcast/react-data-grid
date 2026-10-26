@@ -462,6 +462,147 @@ test('should retain the widths of columns that are filtered out', async () => {
   );
 });
 
+test('should re-evaluate the measured widths provided via the columnWidths prop', async () => {
+  await setup<Row, unknown>({
+    columns: [{ key: 'col1', name: 'col1' }, columns[1]],
+    rows: [],
+    // for example, measured while the grid was wider
+    columnWidths: new Map<string, ColumnWidth>([['col1', { width: 1500, type: 'measured' }]]),
+    onColumnWidthsChange() {},
+    style: { width: 1000 }
+  });
+
+  // the grid has a 1px border
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '798px 200px' });
+});
+
+test('should keep the resized width when the maxWidth is lowered temporarily', async () => {
+  const columnWidths: ColumnWidths = new Map([['col2', { width: 300, type: 'resized' }]]);
+
+  function TestGrid() {
+    const [maxWidth, setMaxWidth] = useState(400);
+
+    return (
+      <>
+        <button type="button" onClick={() => setMaxWidth(250)}>
+          Lower maxWidth
+        </button>
+        <button type="button" onClick={() => setMaxWidth(400)}>
+          Raise maxWidth
+        </button>
+        <DataGrid<Row>
+          columns={[columns[0], { ...columns[1], maxWidth }]}
+          rows={[]}
+          columnWidths={columnWidths}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 300px' });
+  await userEvent.click(page.getByRole('button', { name: 'Lower maxWidth' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px' });
+  await userEvent.click(page.getByRole('button', { name: 'Raise maxWidth' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 300px' });
+});
+
+test('should keep percentage columns within their maxWidth while another column is resized', async () => {
+  await setup<Row, unknown>({
+    columns: [
+      { key: 'col1', name: 'col1', width: 80, resizable: true },
+      { key: 'col2', name: 'col2', width: '30%', minWidth: 100, maxWidth: 400 },
+      { key: 'col3', name: 'col3' }
+    ],
+    rows: []
+  });
+
+  // 30% of 1918px is 575.4px
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '80px 400px 1438px' });
+  await userEvent.click(page.getHeaderCell({ name: 'col1' }));
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect
+    .poll(() => page.getHeaderCell({ name: 'col3' }).element().getBoundingClientRect().width)
+    .toBe(1428);
+  await userEvent.keyboard('{/ArrowRight}{/Control}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '90px 400px 1428px' });
+});
+
+test('should keep the widths when onColumnWidthsChange is removed', async () => {
+  function TestGrid() {
+    const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
+    const [isReadOnly, setIsReadOnly] = useState(false);
+
+    return (
+      <>
+        <button type="button" onClick={() => setIsReadOnly(true)}>
+          Read only
+        </button>
+        <DataGrid<Row>
+          columns={columns}
+          rows={[]}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={isReadOnly ? undefined : setColumnWidths}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
+  await resize('col2', 50);
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px' });
+  await userEvent.click(page.getByRole('button', { name: 'Read only' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px' });
+});
+
+test('should end the keyboard resize when the header cell loses focus', async () => {
+  const onColumnWidthsChange = vi.fn();
+  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
+  const headerCell = page.getHeaderCell({ name: 'col2' });
+
+  await userEvent.click(headerCell);
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  expect(onColumnWidthsChange).not.toHaveBeenCalled();
+
+  (headerCell.element() as HTMLElement).blur();
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
+  );
+  await userEvent.keyboard('{/ArrowRight}{/Control}');
+  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
+});
+
+test('should not mark a column as resized when auto-sizing does not change its width', async () => {
+  const onColumnWidthsChange = vi.fn();
+  const onColumnResize = vi.fn();
+  await setup<Row, unknown>({
+    columns: [{ key: 'col1', name: 'col1', width: 'max-content', resizable: true }, columns[1]],
+    rows: [],
+    onColumnWidthsChange,
+    onColumnResize
+  });
+
+  // the content of the column is narrower than its minWidth
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '50px 200px' });
+  await autoResize('col1');
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+  await resize('col2', 10);
+  expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(expect.objectContaining(columns[1]), 210);
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([
+      ['col1', { width: 50, type: 'measured' }],
+      ['col2', { width: 210, type: 'resized' }]
+    ])
+  );
+});
+
 async function testGridTemplateColumns(obj: {
   chrome: string;
   firefox: string;
