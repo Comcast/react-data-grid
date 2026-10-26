@@ -1,4 +1,4 @@
-import { memo, useMemo, type Key } from 'react';
+import { memo, useMemo } from 'react';
 import { css } from 'ecij';
 
 import {
@@ -7,7 +7,7 @@ import {
   type RowSelectionContextValue
 } from './hooks';
 import { classnames } from './utils';
-import type { BaseRenderRowProps, GroupRow, Maybe, Omit, SelectRowEvent } from './types';
+import type { BaseRenderRowProps, GroupRow, Omit, SelectRowEvent } from './types';
 import GroupCell from './GroupCell';
 import { cell, cellFrozenBase } from './style/cell';
 import { rowClassname, rowActiveClassname } from './style/row';
@@ -26,15 +26,10 @@ const groupRow = css`
 
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
-interface GroupedRowProps<R, SR> extends Omit<
-  BaseRenderRowProps<R, SR>,
-  'isRowSelected' | 'isRowSelectionDisabled'
-> {
+interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
   row: GroupRow<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: unknown) => void;
-  selectedRows: Maybe<ReadonlySet<Key>>;
-  rowKeyGetter: Maybe<(row: R) => Key>;
   // selects or unselects all the rows of the group
   onRowSelectionChange: (selectRowEvent: SelectRowEvent<GroupRow<R>>) => void;
 }
@@ -45,12 +40,11 @@ function GroupedRow<R, SR>({
   rowIdx,
   mapViewportColumns,
   activeCellIdx,
+  isRowSelected,
   setActivePosition,
   gridRowStart,
   groupBy,
   toggleGroup,
-  selectedRows,
-  rowKeyGetter,
   onRowSelectionChange,
   'aria-selected': ariaSelected,
   ...props
@@ -59,16 +53,6 @@ function GroupedRow<R, SR>({
   // the group-by columns follow the `groupBy` order, so each level has its own column
   const levelColumnKey = groupBy[row.level];
   const { childRows } = row;
-
-  // A group row is selected when all its rows are.
-  // Unlike `row`, `childRows` doesn't change when groups are expanded or collapsed.
-  const isRowSelected = useMemo(
-    () =>
-      selectedRows != null &&
-      rowKeyGetter != null &&
-      childRows.every((childRow) => selectedRows.has(rowKeyGetter(childRow))),
-    [childRows, selectedRows, rowKeyGetter]
-  );
 
   function handleSelectGroup() {
     setActivePosition({ idx: -1, rowIdx }, { shouldFocus: true });

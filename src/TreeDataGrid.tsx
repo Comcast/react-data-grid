@@ -82,6 +82,39 @@ function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow> {
   return typeof row === 'object' && row !== null && allGroupRows.has(row);
 }
 
+interface GroupRowSelectionCache {
+  readonly rowKeyGetter: unknown;
+  // by the `childRows` of the groups, which don't change when groups are expanded or collapsed
+  readonly isSelectedByGroup: WeakMap<readonly unknown[], boolean>;
+}
+
+// Virtualization unmounts the group rows that scroll out of view, so each group checks its rows
+// once per selection instead of every time it scrolls back into view.
+// Old selections are released with their cache, as the selection is the key.
+const groupRowSelectionCaches = new WeakMap<ReadonlySet<unknown>, GroupRowSelectionCache>();
+
+// a group row is selected when all its rows are
+function isGroupRowSelected<TRow, K>(
+  childRows: readonly TRow[],
+  selectedRows: Maybe<ReadonlySet<K>>,
+  rowKeyGetter: Maybe<(row: TRow) => K>
+): boolean {
+  if (selectedRows == null || typeof rowKeyGetter !== 'function') return false;
+
+  let cache = groupRowSelectionCaches.get(selectedRows);
+  if (cache === undefined || cache.rowKeyGetter !== rowKeyGetter) {
+    cache = { rowKeyGetter, isSelectedByGroup: new WeakMap() };
+    groupRowSelectionCaches.set(selectedRows, cache);
+  }
+
+  let isSelected = cache.isSelectedByGroup.get(childRows);
+  if (isSelected === undefined) {
+    isSelected = childRows.every((row) => selectedRows.has(rowKeyGetter(row)));
+    cache.isSelectedByGroup.set(childRows, isSelected);
+  }
+  return isSelected;
+}
+
 export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,
   rows: rawRows,
@@ -276,7 +309,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   }, [rawRowKeyGetter]);
 
   // The select-all checkbox also applies to the rows of collapsed groups, which `DataGrid` doesn't have.
-  // The group rows compute their own selection from their rows, see `GroupedRow`.
   let hasSelectedRow = false;
   let hasUnselectedRow = false;
 
@@ -374,14 +406,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     // Select or unselect the rows of the group on Shift + Space when one of its cells is active,
     // `DataGrid` only handles it for the other rows
     if (idx !== -1 && isSelectable && event.shiftKey && event.key === ' ') {
-      assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
-      const isGroupRowSelected = row.childRows.every((childRow) =>
-        rawSelectedRows.has(rawRowKeyGetter(childRow))
-      );
       // prevent scrolling
       event.preventDefault();
       event.preventGridDefault();
-      setRowsSelection(row.childRows, !isGroupRowSelected);
+      setRowsSelection(
+        row.childRows,
+        !isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter)
+      );
     }
 
     if (
@@ -477,8 +508,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           row={row}
           groupBy={groupBy}
           toggleGroup={toggleGroupLatest}
-          selectedRows={rawSelectedRows}
-          rowKeyGetter={rawRowKeyGetter}
+          isRowSelected={isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter)}
           onRowSelectionChange={selectGroupRowsLatest}
         />
       );
