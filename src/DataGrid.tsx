@@ -400,6 +400,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     activePositionIsRow,
     activePositionIsCellInViewport,
     validatePosition,
+    queryActiveColumn,
     getActiveColumn,
     getActiveRow
   } = useActivePosition<R, SR>({
@@ -423,28 +424,30 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [renderCheckbox, renderSortStatus, renderCell]
   );
 
-  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitly unchecked
-    let hasSelectedRow = false;
-    let hasUnselectedRow = false;
+  // no rows to select = explicitly unchecked
+  let hasSelectedRow = false;
+  let hasUnselectedRow = false;
 
-    if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
-      for (const row of rows) {
-        if (selectedRows.has(rowKeyGetter(row))) {
-          hasSelectedRow = true;
-        } else {
-          hasUnselectedRow = true;
-        }
-
-        if (hasSelectedRow && hasUnselectedRow) break;
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
+  if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
+    for (const row of rows) {
+      if (selectedRows.has(rowKeyGetter(row))) {
+        hasSelectedRow = true;
+      } else {
+        hasUnselectedRow = true;
       }
-    }
 
-    return {
+      if (hasSelectedRow && hasUnselectedRow) break;
+    }
+  }
+
+  const headerSelectionValue = useMemo(
+    (): HeaderRowSelectionContextValue => ({
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
-    };
-  }, [rows, selectedRows, rowKeyGetter]);
+    }),
+    [hasSelectedRow, hasUnselectedRow]
+  );
 
   const {
     rowOverscanStartIdx,
@@ -1166,6 +1169,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     templateRows += ` repeat(${bottomSummaryRowsCount}, ${summaryRowHeight}px)`;
   }
 
+  // Frozen cells, header rows, and summary rows are sticky, so they are already visible on their sticky axis.
+  // A sticky cell inside the scroll padding would be scrolled out of it when it's focused or scrolled into view,
+  // so the padding only applies when the active cell is a non-sticky cell on that axis, or when scrolling to a position.
+  const isScrollingToPosition = scrollToPositionElement !== null;
+  const hasInlineScrollPadding = isScrollingToPosition || queryActiveColumn()?.frozen === false;
+  const hasBlockScrollPadding = isScrollingToPosition || activePositionIsInViewport;
+
   return (
     <div
       ref={gridRef}
@@ -1184,10 +1194,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       style={{
         ...style,
         // set scrollPadding to correctly scroll to non-sticky cells/rows
-        scrollPaddingInlineStart: totalStartFrozenColumnWidth,
-        scrollPaddingInlineEnd: totalEndFrozenColumnWidth,
-        scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
-        scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
+        scrollPaddingInlineStart: hasInlineScrollPadding ? totalStartFrozenColumnWidth : undefined,
+        scrollPaddingInlineEnd: hasInlineScrollPadding ? totalEndFrozenColumnWidth : undefined,
+        scrollPaddingBlockStart: hasBlockScrollPadding
+          ? headerRowsHeight + topSummaryRowsCount * summaryRowHeight
+          : undefined,
+        scrollPaddingBlockEnd: hasBlockScrollPadding
+          ? bottomSummaryRowsCount * summaryRowHeight
+          : undefined,
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
