@@ -47,6 +47,11 @@ export const row = css`
     &[aria-selected='true'] {
       background-color: var(--rdg-row-selected-background-color);
 
+      /* CanvasText is not guaranteed to contrast with SelectedItem */
+      @media (forced-colors: active) {
+        --rdg-selection-color: SelectedItemText;
+      }
+
       &:hover {
         background-color: var(--rdg-row-selected-hover-background-color);
       }
