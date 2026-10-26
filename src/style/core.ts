@@ -30,6 +30,15 @@ const root = css`
     --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
     --rdg-frozen-column-shadow-color: light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%));
 
+    /* forced colors mode replaces non-system colors, which would hide row selection and the drag handle */
+    @media (forced-colors: active) {
+      --rdg-selection-color: CanvasText;
+      --rdg-checkbox-focus-color: CanvasText;
+      /* no need for a text color: the browser draws a backplate behind text to keep it readable */
+      --rdg-row-selected-background-color: SelectedItem;
+      --rdg-row-selected-hover-background-color: SelectedItem;
+    }
+
     &.rdg-dark {
       color-scheme: dark;
     }
