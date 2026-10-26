@@ -48,9 +48,7 @@ export const row = css`
       background-color: var(--rdg-row-selected-background-color);
 
       @media (forced-colors: active) {
-        /* CanvasText is not guaranteed to contrast with Highlight */
-        --rdg-selection-color: HighlightText;
-        color: HighlightText;
+        color: SelectedItemText;
       }
 
       &:hover {
