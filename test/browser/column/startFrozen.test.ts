@@ -1,8 +1,8 @@
-import { page } from 'vite-plus/test/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../../src';
 import { cellClassname, cellFrozenStartClassname } from '../../../src/style/cell';
-import { setup } from '../utils';
+import { getCellsAtRowIndex, scrollGrid, setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
 
@@ -42,4 +42,21 @@ test('frozen columns have a specific class and are stable-sorted before non-froz
   await expect.element(cell2).toHaveClass(cellClassname, cellFrozenStartClassname, { exact: true });
   await expect.element(cell3).toHaveClass(cellClassname, { exact: true });
   await expect.element(cell4).toHaveClass(cellClassname, { exact: true });
+});
+
+test('double-clicking a frozen cell does not scroll the grid', async () => {
+  const columns: Column<number>[] = [];
+  for (let i = 0; i < 50; i++) {
+    columns.push({
+      key: `col${i}`,
+      name: `col${i}`,
+      width: 100,
+      frozen: i === 0
+    });
+  }
+
+  await setup({ columns, rows: [0] });
+  scrollGrid({ left: 1000 });
+  await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+  expect(page.getGrid().element().scrollLeft).toBe(1000);
 });
