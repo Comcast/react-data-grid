@@ -84,14 +84,16 @@ export function useActivePosition<R, SR>({
     };
   }
 
-  function getResolvedValues(position: ActivePosition | EditPosition<R>) {
+  function resolveActivePosition(position: ActivePosition | EditPosition<R>) {
     const validatedPosition = validatePosition(position);
 
     if (position !== initialActivePosition) {
+      // Reinitialize the active position and immediately use the new state if it is no longer valid.
+      // This can happen when a column or row is removed.
       if (!validatedPosition.isPositionInActiveBounds) {
         setActivePosition(initialActivePosition);
         setDraggedOverRowIdx(undefined);
-        return getResolvedValues(initialActivePosition);
+        return resolveActivePosition(initialActivePosition);
       }
 
       if (position.mode === 'EDIT') {
@@ -111,7 +113,7 @@ export function useActivePosition<R, SR>({
           };
           setActivePosition(newPosition);
           setPositionToFocus(null);
-          return getResolvedValues(newPosition);
+          return resolveActivePosition(newPosition);
         }
       }
     }
@@ -122,9 +124,7 @@ export function useActivePosition<R, SR>({
     };
   }
 
-  // Reinitialize the active position and immediately use the new state if it is no longer valid.
-  // This can happen when a column or row is removed.
-  const { resolvedActivePosition, validatedPosition } = getResolvedValues(activePosition);
+  const { resolvedActivePosition, validatedPosition } = resolveActivePosition(activePosition);
 
   function getActiveColumn() {
     if (!validatedPosition.isCellInActiveBounds) {
