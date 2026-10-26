@@ -116,7 +116,8 @@ test('should render the grid once when the active cell moves', async () => {
     </Profiler>
   );
 
-  // the cells of col2 have no focusable content, which would render the cell again
+  // a cell with focusable content, like the checkboxes of SelectColumn, renders again when it
+  // passes the focus to that content, so measure a move between cells that have none
   await safeTab();
   await userEvent.keyboard('{arrowright}');
   await validateCellPosition(1, 0);
