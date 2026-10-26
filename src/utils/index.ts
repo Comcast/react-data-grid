@@ -20,34 +20,6 @@ export function assertIsValidKeyGetter<R, K extends React.Key>(
   }
 }
 
-// the state of the select-all checkbox
-export function getHeaderRowSelection<R, K extends React.Key>(
-  rows: readonly R[],
-  selectedRows: Maybe<ReadonlySet<K>>,
-  rowKeyGetter: Maybe<(row: R) => K>
-) {
-  // no rows to select = explicitly unchecked
-  let hasSelectedRow = false;
-  let hasUnselectedRow = false;
-
-  if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
-    for (const row of rows) {
-      if (selectedRows.has(rowKeyGetter(row))) {
-        hasSelectedRow = true;
-      } else {
-        hasUnselectedRow = true;
-      }
-
-      if (hasSelectedRow && hasUnselectedRow) break;
-    }
-  }
-
-  return {
-    isRowSelected: hasSelectedRow && !hasUnselectedRow,
-    isIndeterminate: hasSelectedRow && hasUnselectedRow
-  };
-}
-
 export function clampColumnWidth<R, SR>(
   width: number,
   { minWidth, maxWidth }: CalculatedColumn<R, SR>
