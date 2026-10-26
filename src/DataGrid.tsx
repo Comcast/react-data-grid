@@ -427,6 +427,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   let hasSelectedRow = false;
   let hasUnselectedRow = false;
 
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
   if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
     for (const row of rows) {
       if (selectedRows.has(rowKeyGetter(row))) {
