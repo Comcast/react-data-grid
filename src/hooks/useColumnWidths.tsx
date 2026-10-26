@@ -164,10 +164,10 @@ export function useColumnWidths<R, SR>(
         // it is not necessarily within the column's bounds
         templateColumns.push(`${clampColumnWidth(width, column)}px`);
       } else if (width === 'auto') {
+        // `auto` columns are stretched to fill the grid, so the column sets `maxWidth`,
+        // while the cells and the measuring cell set the minimum width
         templateColumns.push(
-          typeof maxWidth === 'number'
-            ? `minmax(auto, ${maxWidth}px)`
-            : `minmax(${minWidth}px, auto)`
+          maxWidth !== undefined && maxWidth >= minWidth ? `minmax(auto, ${maxWidth}px)` : 'auto'
         );
       } else {
         templateColumns.push(width);

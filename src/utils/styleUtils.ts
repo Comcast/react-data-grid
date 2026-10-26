@@ -32,6 +32,7 @@ export function getCellStyle<R, SR>(
   colSpan = 1
 ): React.CSSProperties {
   const index = column.idx + 1;
+  const { minWidth, maxWidth } = column;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
@@ -40,11 +41,12 @@ export function getCellStyle<R, SR>(
       : undefined,
     insetInlineEnd:
       column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx + colSpan - 1})` : undefined,
-    // minWidth/maxWidth constraints must be set on all cells for auto/min-content/max-content to work correctly,
-    // otherwise when auto-sizing a column, its width may be greater than `max-width`,
-    // leaving less room for other columns to grow, which in turn will not be adjusted correctly.
-    minWidth: column.minWidth,
-    maxWidth: colSpan === 1 ? column.maxWidth : undefined
+    // Cells size `auto`, `min-content`, and `max-content` columns with their content,
+    // so they must not be wider than `maxWidth`, or the column would exceed it
+    // and leave less room for the other columns.
+    // `maxWidth` is ignored when it is less than `minWidth`, as when clamping widths.
+    // `minWidth` is set on the measuring cells instead, so that cells keep the minimum width of their content.
+    maxWidth: colSpan === 1 && maxWidth !== undefined && maxWidth >= minWidth ? maxWidth : undefined
   };
 }
 
