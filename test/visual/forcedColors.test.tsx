@@ -1,4 +1,4 @@
-import { commands, page, server, userEvent } from 'vite-plus/test/browser';
+import { commands, page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor, SelectColumn, type Column } from '../../src';
 import { safeTab } from '../browser/utils';
@@ -31,49 +31,76 @@ function rowKeyGetter(row: Row) {
   return row.id;
 }
 
-beforeEach(async ({ skip, onTestFinished }) => {
-  // WebKit matches `(forced-colors: active)` when emulated, but does not force any colors
-  skip(server.browser === 'webkit');
+function getComputedColor(property: 'color' | 'backgroundColor', value: string) {
+  const element = document.createElement('div');
+  element.style[property] = value;
+  document.body.append(element);
+  const computedValue = getComputedStyle(element)[property];
+  element.remove();
+  return computedValue;
+}
 
-  await commands.emulateMedia({ forcedColors: 'active' });
-  onTestFinished(async () => {
-    await commands.emulateMedia({ forcedColors: null });
+// WebKit matches `(forced-colors: active)` when emulated, but may not force any colors
+function areColorsForced() {
+  return getComputedColor('backgroundColor', 'rgb(1, 2, 3)') !== 'rgb(1, 2, 3)';
+}
+
+// Firefox ignores the emulated color scheme in forced colors mode
+function isCanvasDark() {
+  const [red, green, blue] = getComputedColor('color', 'Canvas').match(/\d+/g)!.map(Number);
+  return red + green + blue < 384;
+}
+
+// Windows contrast themes are light or dark, so test both palettes where the browser supports them
+const palettes = [
+  { colorScheme: 'light', prefix: 'forced-colors' },
+  { colorScheme: 'dark', prefix: 'forced-colors-dark' }
+] as const;
+
+describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
+  beforeEach(async ({ skip, onTestFinished }) => {
+    await commands.emulateMedia({ forcedColors: 'active', colorScheme });
+    onTestFinished(async () => {
+      await commands.emulateMedia({ forcedColors: null, colorScheme: null });
+    });
+
+    skip(!areColorsForced() || isCanvasDark() !== (colorScheme === 'dark'));
+
+    await page.render(
+      <DataGrid
+        aria-label="Forced colors"
+        rowKeyGetter={rowKeyGetter}
+        columns={columns}
+        rows={rows}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={() => {}}
+        onRowsChange={() => {}}
+        onFill={({ targetRow }) => targetRow}
+        style={{ blockSize: 160, inlineSize: 400 }}
+      />
+    );
+
+    // focus the "Select All" header cell with the keyboard, so `:focus-visible` matches
+    await safeTab();
   });
 
-  await page.render(
-    <DataGrid
-      aria-label="Forced colors"
-      rowKeyGetter={rowKeyGetter}
-      columns={columns}
-      rows={rows}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={() => {}}
-      onRowsChange={() => {}}
-      onFill={({ targetRow }) => targetRow}
-      style={{ blockSize: 160, inlineSize: 400 }}
-    />
-  );
+  it('active cell on a selected row', async () => {
+    await userEvent.keyboard('{ArrowDown}{ArrowRight}');
+    await expect.element(grid).toMatchScreenshot(`${prefix}-active-cell-selected-row`);
+  });
 
-  // focus the "Select All" header cell with the keyboard, so `:focus-visible` matches
-  await safeTab();
-});
+  it('active cell on an unselected row', async () => {
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}');
+    await expect.element(grid).toMatchScreenshot(`${prefix}-active-cell-unselected-row`);
+  });
 
-test('active cell on a selected row', async () => {
-  await userEvent.keyboard('{ArrowDown}{ArrowRight}');
-  await expect.element(grid).toMatchScreenshot('forced-colors-active-cell-selected-row');
-});
+  it('focused checkbox on a selected row', async () => {
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(grid).toMatchScreenshot(`${prefix}-focused-checkbox-selected-row`);
+  });
 
-test('active cell on an unselected row', async () => {
-  await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}');
-  await expect.element(grid).toMatchScreenshot('forced-colors-active-cell-unselected-row');
-});
-
-test('focused checkbox on a selected row', async () => {
-  await userEvent.keyboard('{ArrowDown}');
-  await expect.element(grid).toMatchScreenshot('forced-colors-focused-checkbox-selected-row');
-});
-
-test('focused checkbox on an unselected row', async () => {
-  await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
-  await expect.element(grid).toMatchScreenshot('forced-colors-focused-checkbox-unselected-row');
+  it('focused checkbox on an unselected row', async () => {
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+    await expect.element(grid).toMatchScreenshot(`${prefix}-focused-checkbox-unselected-row`);
+  });
 });
