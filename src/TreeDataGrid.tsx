@@ -1,12 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Key } from 'react';
 
-import {
-  HeaderRowSelectionOverrideContext,
-  useLatestFunc,
-  type HeaderRowSelectionOverride
-} from './hooks';
-import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
+import { SelectionOverrideContext, useLatestFunc, type SelectionOverride } from './hooks';
+import { assertIsValidKeyGetter, getLeftRightKey, max, min } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -139,9 +135,11 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const headerAndTopSummaryRowsCount = 1 + (props.topSummaryRows?.length ?? 0);
   const { leftKey, rightKey } = getLeftRightKey(props.direction);
   const isSelectable = rawSelectedRows != null && rawOnSelectedRowsChange != null;
+  // the index of the last row selected or unselected, where Shift+click ranges start
+  const [previousRowIdx, setPreviousRowIdx] = useState(-1);
   const toggleGroupLatest = useLatestFunc(toggleGroup);
   const selectAllRowsLatest = useLatestFunc(selectAllRows);
-  const selectGroupRowsLatest = useLatestFunc(selectGroupRows);
+  const selectRowLatest = useLatestFunc(selectRow);
   const getRowGroupKey = rawGetRowGroupKey ?? defaultGetRowGroupKey;
   const getGroupId = rawGetGroupId ?? defaultGetGroupId;
 
@@ -308,7 +306,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawRowKeyGetter(row));
   }, [rawRowKeyGetter]);
 
-  // The select-all checkbox also applies to the rows of collapsed groups, which `DataGrid` doesn't have.
+  // the select-all checkbox also applies to the rows of collapsed groups, which `DataGrid` doesn't have
   let hasSelectedRow = false;
   let hasUnselectedRow = false;
 
@@ -324,15 +322,16 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
   }
 
-  const headerRowSelection = useMemo(
-    (): HeaderRowSelectionOverride => ({
-      value: {
+  const selectionOverride = useMemo(
+    (): SelectionOverride => ({
+      headerRowSelection: {
         isRowSelected: hasSelectedRow && !hasUnselectedRow,
         isIndeterminate: hasSelectedRow && hasUnselectedRow
       },
-      onChange: selectAllRowsLatest
+      onHeaderRowSelectionChange: selectAllRowsLatest,
+      onRowSelectionChange: selectRowLatest
     }),
-    [hasSelectedRow, hasUnselectedRow, selectAllRowsLatest]
+    [hasSelectedRow, hasUnselectedRow, selectAllRowsLatest, selectRowLatest]
   );
 
   // selects or unselects the given rows, and keeps the selection of the other rows
@@ -358,8 +357,39 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     setRowsSelection(rawRows, checked);
   }
 
-  function selectGroupRows({ row, checked }: SelectRowEvent<GroupRow<R>>) {
-    setRowsSelection(row.childRows, checked);
+  // Selects or unselects a row, or all the rows of a group row.
+  // A Shift+click range also includes the rows between the previous row and this one,
+  // as well as all the rows of the collapsed groups in between, like the group rows do.
+  function selectRow({ row, checked, isShiftClick }: SelectRowEvent<R | GroupRow<R>>) {
+    const rowIdx = rows.indexOf(row);
+    setPreviousRowIdx(rowIdx);
+    const changedRows: R[] = [];
+
+    if (isGroupRow(row)) {
+      for (const childRow of row.childRows) changedRows.push(childRow);
+    } else {
+      changedRows.push(row);
+    }
+
+    if (
+      isShiftClick &&
+      previousRowIdx !== -1 &&
+      previousRowIdx !== rowIdx &&
+      previousRowIdx < rows.length
+    ) {
+      const endIdx = max(previousRowIdx, rowIdx);
+      for (let idx = min(previousRowIdx, rowIdx) + 1; idx < endIdx; idx++) {
+        const rangeRow = rows[idx];
+        if (!isGroupRow(rangeRow)) {
+          changedRows.push(rangeRow);
+        } else if (!rangeRow.isExpanded) {
+          for (const childRow of rangeRow.childRows) changedRows.push(childRow);
+        }
+        // the rows of an expanded group follow its group row, so the range only includes those it covers
+      }
+    }
+
+    setRowsSelection(changedRows, checked);
   }
 
   function getParentRowAndIndex(rowIdx: number) {
@@ -404,15 +434,16 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (!isGroupRow(row)) return;
 
     // Select or unselect the rows of the group on Shift + Space when one of its cells is active,
-    // `DataGrid` only handles it for the other rows
+    // as `DataGrid` can't tell whether a group row is selected
     if (idx !== -1 && isSelectable && event.shiftKey && event.key === ' ') {
       // prevent scrolling
       event.preventDefault();
       event.preventGridDefault();
-      setRowsSelection(
-        row.childRows,
-        !isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter)
-      );
+      selectRow({
+        row,
+        checked: !isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter),
+        isShiftClick: false
+      });
     }
 
     if (
@@ -500,16 +531,19 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   ) {
     if (isGroupRow(row)) {
       const { startRowIndex } = row;
+      const isGroupSelected = isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter);
       return (
         <GroupedRow
           key={row.id}
           {...rowProps}
           aria-rowindex={headerAndTopSummaryRowsCount + startRowIndex + 1}
+          // `DataGrid` sets `aria-selected` when rows can be selected,
+          // but it can't tell whether a group row is selected
+          aria-selected={rowProps['aria-selected'] === undefined ? undefined : isGroupSelected}
+          isRowSelected={isGroupSelected}
           row={row}
           groupBy={groupBy}
           toggleGroup={toggleGroupLatest}
-          isRowSelected={isGroupRowSelected(row.childRows, rawSelectedRows, rawRowKeyGetter)}
-          onRowSelectionChange={selectGroupRowsLatest}
         />
       );
     }
@@ -547,7 +581,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   }
 
   return (
-    <HeaderRowSelectionOverrideContext value={headerRowSelection}>
+    <SelectionOverrideContext value={selectionOverride}>
       <DataGrid<R, SR>
         {...props}
         role="treegrid"
@@ -563,11 +597,11 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         rowKeyGetter={rowKeyGetter}
         onRowsChange={handleRowsChange}
         selectedRows={rawSelectedRows}
-        // `DataGrid` doesn't select group rows, so it only adds keys of `rawRowKeyGetter`
+        // `selectionOverride` changes the selection,
+        // `DataGrid` only uses it to tell whether rows can be selected
         onSelectedRowsChange={
           rawOnSelectedRowsChange as DataGridProps<R, SR>['onSelectedRowsChange']
         }
-        isRowSelectionDisabled={isGroupRow}
         onCellKeyDown={handleKeyDown}
         onCellCopy={handleCellCopy}
         onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
@@ -576,7 +610,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           renderRow
         }}
       />
-    </HeaderRowSelectionOverrideContext>
+    </SelectionOverrideContext>
   );
 }
 

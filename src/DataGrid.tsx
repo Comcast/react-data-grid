@@ -5,8 +5,8 @@ import { flushSync } from 'react-dom';
 import {
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,
-  HeaderRowSelectionOverrideContext,
   RowSelectionChangeContext,
+  SelectionOverrideContext,
   useActivePosition,
   useCalculatedColumns,
   useColumnWidths,
@@ -292,7 +292,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * defaults
    */
   const contextRenderers = useRenderers<R, SR>();
-  const headerRowSelectionOverride = use(HeaderRowSelectionOverrideContext);
+  // `TreeDataGrid` handles the selection, see `SelectionOverrideContext`
+  const selectionOverride = use(SelectionOverrideContext);
   const role = rawRole ?? 'grid';
   const rowHeight = rawRowHeight ?? 35;
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
@@ -431,7 +432,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
   // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
   if (
-    headerRowSelectionOverride === undefined &&
+    selectionOverride === undefined &&
     rowKeyGetter != null &&
     selectedRows != null &&
     selectedRows.size > 0
@@ -448,12 +449,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   }
 
   const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    if (headerRowSelectionOverride !== undefined) return headerRowSelectionOverride.value;
+    if (selectionOverride !== undefined) return selectionOverride.headerRowSelection;
     return {
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
     };
-  }, [headerRowSelectionOverride, hasSelectedRow, hasUnselectedRow]);
+  }, [selectionOverride, hasSelectedRow, hasUnselectedRow]);
 
   const {
     rowOverscanStartIdx,
@@ -693,7 +694,16 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (isSelectable && shiftKey && key === ' ') {
       assertIsValidKeyGetter<R, K>(rowKeyGetter);
       const rowKey = rowKeyGetter(row);
-      selectRow({ row, checked: !selectedRows.has(rowKey), isShiftClick: false });
+      const selectRowEvent: SelectRowEvent<R> = {
+        row,
+        checked: !selectedRows.has(rowKey),
+        isShiftClick: false
+      };
+      if (selectionOverride === undefined) {
+        selectRow(selectRowEvent);
+      } else {
+        selectionOverride.onRowSelectionChange(selectRowEvent);
+      }
       // prevent scrolling
       event.preventDefault();
       return;
@@ -1211,10 +1221,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-cy={dataCy}
     >
       <DataGridRenderersContext value={defaultGridComponents}>
-        {/* a grid rendered in a cell doesn't use the select-all checkbox of this grid's `TreeDataGrid` */}
-        <HeaderRowSelectionOverrideContext value={undefined}>
+        {/* a grid rendered in a cell handles its own selection, not this grid's `TreeDataGrid` */}
+        <SelectionOverrideContext value={undefined}>
           <HeaderRowSelectionChangeContext
-            value={headerRowSelectionOverride?.onChange ?? selectHeaderRowLatest}
+            value={selectionOverride?.onHeaderRowSelectionChange ?? selectHeaderRowLatest}
           >
             <HeaderRowSelectionContext value={headerSelectionValue}>
               {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
@@ -1274,7 +1284,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
                   />
                 );
               })}
-              <RowSelectionChangeContext value={selectRowLatest}>
+              <RowSelectionChangeContext
+                value={selectionOverride?.onRowSelectionChange ?? selectRowLatest}
+              >
                 {getViewportRows()}
               </RowSelectionChangeContext>
               {bottomSummaryRows?.map((row, rowIdx) => {
@@ -1309,7 +1321,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
               })}
             </>
           )}
-        </HeaderRowSelectionOverrideContext>
+        </SelectionOverrideContext>
       </DataGridRenderersContext>
 
       {lastStartFrozenColumnIndex > -1 &&

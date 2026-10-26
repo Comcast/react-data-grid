@@ -440,6 +440,60 @@ test('should include the rows of collapsed groups in the select-all checkbox', a
   await testCount(page.getRow({ selected: true }), 3);
 });
 
+async function toggleSelection(cellName: string, shift = false) {
+  const row = getRowWithCell(page.getCell({ name: cellName, exact: true }));
+  const checkbox = row.getByRole('checkbox', { name: /^Select( Group)?$/ });
+  if (shift) await userEvent.keyboard('{Shift>}');
+  await userEvent.click(checkbox);
+  if (shift) await userEvent.keyboard('{/Shift}');
+}
+
+test('should select the rows of collapsed groups in a Shift+click range', async () => {
+  await setup(['year']);
+  const selectedRows = page.getRow({ selected: true });
+
+  // only the 2021 group stays collapsed
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await userEvent.click(page.getCell({ name: '2022' }));
+
+  await toggleSelection('value: 1');
+  await toggleSelection('value: 4', true);
+  // the 3 group rows and the rows 1 and 4
+  await testCount(selectedRows, 5);
+  await expect.element(headerCheckbox).toBeChecked();
+
+  // the range can start on a group row
+  await userEvent.click(headerCheckbox);
+  await testCount(selectedRows, 0);
+  await toggleSelection('2020');
+  await toggleSelection('value: 4', true);
+  await testCount(selectedRows, 5);
+
+  // the rows of the 2021 group are selected
+  await userEvent.click(page.getCell({ name: '2021' }));
+  await testCount(selectedRows, 7);
+});
+
+test('should only select the rows of expanded groups that are in a Shift+click range', async () => {
+  await setup(['year']);
+  const selectedRows = page.getRow({ selected: true });
+
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await userEvent.click(page.getCell({ name: '2021' }));
+
+  // the range covers the 2021 group row and its first row, but not its second row
+  await toggleSelection('value: 1');
+  await toggleSelection('value: 2', true);
+  // the 2020 group row and the rows 1 and 2
+  await testCount(selectedRows, 3);
+  await expect
+    .element(getRowWithCell(page.getCell({ name: 'value: 3' })))
+    .toHaveAttribute('aria-selected', 'false');
+  await expect
+    .element(getRowWithCell(page.getCell({ name: '2021' })))
+    .toHaveAttribute('aria-selected', 'false');
+});
+
 interface DetailRow {
   id: number;
 }

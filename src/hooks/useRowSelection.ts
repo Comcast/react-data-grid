@@ -46,17 +46,18 @@ export const HeaderRowSelectionChangeContext = createContext<
 >(undefined);
 HeaderRowSelectionChangeContext.displayName = 'HeaderRowSelectionChangeContext';
 
-export interface HeaderRowSelectionOverride {
-  readonly value: HeaderRowSelectionContextValue;
-  readonly onChange: (selectRowEvent: SelectHeaderRowEvent) => void;
+export interface SelectionOverride {
+  readonly headerRowSelection: HeaderRowSelectionContextValue;
+  readonly onHeaderRowSelectionChange: (selectRowEvent: SelectHeaderRowEvent) => void;
+  // oxlint-disable-next-line typescript/no-explicit-any
+  readonly onRowSelectionChange: (selectRowEvent: SelectRowEvent<any>) => void;
 }
 
-// Not exported from the package: `TreeDataGrid` handles the select-all checkbox itself,
-// as it also applies to the rows of collapsed groups, which aren't in the rows of `DataGrid`
-export const HeaderRowSelectionOverrideContext = createContext<
-  HeaderRowSelectionOverride | undefined
->(undefined);
-HeaderRowSelectionOverrideContext.displayName = 'HeaderRowSelectionOverrideContext';
+// Not exported from the package: `TreeDataGrid` handles the selection itself,
+// as a group row stands for all its rows, including the rows of collapsed groups,
+// which aren't in the rows of `DataGrid`
+export const SelectionOverrideContext = createContext<SelectionOverride | undefined>(undefined);
+SelectionOverrideContext.displayName = 'SelectionOverrideContext';
 
 export function useHeaderRowSelection() {
   const headerRowSelectionContext = use(HeaderRowSelectionContext);
