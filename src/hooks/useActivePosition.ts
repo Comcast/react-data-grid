@@ -85,11 +85,42 @@ export function useActivePosition<R, SR>({
   }
 
   function getResolvedValues(position: ActivePosition | EditPosition<R>) {
+    const validatedPosition = validatePosition(position);
+
+    if (position !== initialActivePosition) {
+      if (!validatedPosition.isPositionInActiveBounds) {
+        setActivePosition(initialActivePosition);
+        setDraggedOverRowIdx(undefined);
+        return getResolvedValues(initialActivePosition);
+      }
+
+      if (position.mode === 'EDIT') {
+        const closeOnExternalRowChange =
+          columns[position.idx].editorOptions?.closeOnExternalRowChange ?? true;
+
+        // Discard changes if the row is updated from outside
+        if (closeOnExternalRowChange && rows[position.rowIdx] !== position.originalRow) {
+          const newPosition: ActivePosition = {
+            idx: position.idx,
+            rowIdx: position.rowIdx,
+            mode: 'ACTIVE'
+          };
+          setActivePosition(newPosition);
+          setPositionToFocus(null);
+          return getResolvedValues(newPosition);
+        }
+      }
+    }
+
     return {
       resolvedActivePosition: position,
-      validatedPosition: validatePosition(position)
+      validatedPosition
     };
   }
+
+  // Reinitialize the active position and immediately use the new state if it is no longer valid.
+  // This can happen when a column or row is removed.
+  const { resolvedActivePosition, validatedPosition } = getResolvedValues(activePosition);
 
   function getActiveColumn() {
     if (!validatedPosition.isCellInActiveBounds) {
@@ -103,34 +134,6 @@ export function useActivePosition<R, SR>({
       throw new Error('No row for active position');
     }
     return rows[resolvedActivePosition.rowIdx];
-  }
-
-  let { resolvedActivePosition, validatedPosition } = getResolvedValues(activePosition);
-
-  // Reinitialize the active position and immediately use the new state if it is no longer valid.
-  // This can happen when a column or row is removed.
-  if (
-    !validatedPosition.isPositionInActiveBounds &&
-    resolvedActivePosition !== initialActivePosition
-  ) {
-    setActivePosition(initialActivePosition);
-    setDraggedOverRowIdx(undefined);
-    ({ resolvedActivePosition, validatedPosition } = getResolvedValues(initialActivePosition));
-  } else if (resolvedActivePosition.mode === 'EDIT') {
-    const closeOnExternalRowChange =
-      getActiveColumn().editorOptions?.closeOnExternalRowChange ?? true;
-
-    // Discard changes if the row is updated from outside
-    if (closeOnExternalRowChange && getActiveRow() !== resolvedActivePosition.originalRow) {
-      const newPosition: ActivePosition = {
-        idx: resolvedActivePosition.idx,
-        rowIdx: resolvedActivePosition.rowIdx,
-        mode: 'ACTIVE'
-      };
-      setActivePosition(newPosition);
-      setPositionToFocus(null);
-      ({ resolvedActivePosition, validatedPosition } = getResolvedValues(newPosition));
-    }
   }
 
   useLayoutEffect(() => {
