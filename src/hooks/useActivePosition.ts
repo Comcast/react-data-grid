@@ -126,11 +126,17 @@ export function useActivePosition<R, SR>({
 
   const { resolvedActivePosition, validatedPosition } = resolveActivePosition(activePosition);
 
+  function queryActiveColumn(): CalculatedColumn<R, SR> | undefined {
+    if (!validatedPosition.isCellInActiveBounds) return;
+    return columns[resolvedActivePosition.idx];
+  }
+
   function getActiveColumn() {
-    if (!validatedPosition.isCellInActiveBounds) {
+    const column = queryActiveColumn();
+    if (column === undefined) {
       throw new Error('No column for active position');
     }
-    return columns[resolvedActivePosition.idx];
+    return column;
   }
 
   function getActiveRow() {
@@ -167,6 +173,7 @@ export function useActivePosition<R, SR>({
     activePositionIsRow: validatedPosition.isRowInActiveBounds,
     activePositionIsCellInViewport: validatedPosition.isCellInViewport,
     validatePosition,
+    queryActiveColumn,
     getActiveColumn,
     getActiveRow
   } as const;

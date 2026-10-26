@@ -400,6 +400,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     activePositionIsRow,
     activePositionIsCellInViewport,
     validatePosition,
+    queryActiveColumn,
     getActiveColumn,
     getActiveRow
   } = useActivePosition<R, SR>({
@@ -1170,10 +1171,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   // A sticky cell inside the scroll padding would be scrolled out of it when it's focused or scrolled into view,
   // so the padding only applies when the active cell is a non-sticky cell on that axis, or when scrolling to a position.
   const isScrollingToPosition = scrollToPositionElement !== null;
-  const isActiveColumnScrollable = getActiveColumn().frozen === false;
-  const isActiveRowScrollable = isRowInViewport || isCellInViewport;
-  const hasInlineScrollPadding = isScrollingToPosition || isActiveColumnScrollable;
-  const hasBlockScrollPadding = isScrollingToPosition || isActiveRowScrollable;
+  const hasInlineScrollPadding = isScrollingToPosition || queryActiveColumn()?.frozen === false;
+  const hasBlockScrollPadding = isScrollingToPosition || activePositionIsInViewport;
 
   return (
     <div

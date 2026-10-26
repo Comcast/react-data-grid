@@ -44,7 +44,7 @@ test('frozen columns have a specific class and are stable-sorted before non-froz
   await expect.element(cell4).toHaveClass(cellClassname, { exact: true });
 });
 
-test('double-clicking a frozen cell does not scroll the grid', async () => {
+test('focusing a frozen cell does not scroll the grid', async () => {
   const columns: Column<number>[] = [];
   for (let i = 0; i < 50; i++) {
     columns.push({
@@ -55,8 +55,11 @@ test('double-clicking a frozen cell does not scroll the grid', async () => {
     });
   }
 
-  await setup({ columns, rows: [0] });
+  await setup({ columns, rows: [0, 1] });
+  // activate the frozen cell before scrolling, as clicking scrolls the cell into view
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
   scrollGrid({ left: 1000 });
-  await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+  await userEvent.keyboard('{arrowdown}');
+  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveFocus();
   expect(page.getGrid().element().scrollLeft).toBe(1000);
 });
