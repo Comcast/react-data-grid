@@ -357,7 +357,7 @@ function ResizeHandle<R, SR>({
   }
 
   function onLostPointerCapture() {
-    // avoid calling onColumnResizeEnd if the pointer has not moved after pointed down,
+    // avoid calling onColumnResizeEnd if the pointer has not moved since it was pressed,
     // also to avoid conflicts with double-clicking
     if (resizingRef.current) {
       resizingRef.current = false;
