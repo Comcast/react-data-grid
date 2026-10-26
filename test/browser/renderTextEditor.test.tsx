@@ -34,6 +34,8 @@ test('renderTextEditor', async () => {
   await userEvent.dblClick(cell);
   const input = page.getByRole('textbox');
   await expect.element(input).toHaveClass('rdg-text-editor');
+  // input is named after the column
+  await expect.element(input).toHaveAccessibleName('Name');
   // input value is row[column.key]
   await expect.element(input).toHaveValue(initialRows[0].name);
   // input is focused

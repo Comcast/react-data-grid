@@ -6,8 +6,10 @@ const arrow = css`
   @layer rdg.SortIcon {
     fill: currentColor;
 
-    > path {
-      transition: d 0.1s;
+    @media (prefers-reduced-motion: no-preference) {
+      > path {
+        transition: d 0.1s;
+      }
     }
   }
 `;
