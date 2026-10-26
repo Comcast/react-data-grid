@@ -959,7 +959,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const isLastRow = rowIdx === maxRowIdx;
     const columnWidth = getColumnWidth(column);
-    const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
+    const colSpan =
+      getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
+        type: 'ROW',
+        row: getActiveRow()
+      }) ?? 1;
     const style = getCellStyle(column, colSpan);
     const { insetInlineStart } = style;
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';

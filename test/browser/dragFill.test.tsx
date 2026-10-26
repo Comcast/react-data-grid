@@ -99,3 +99,35 @@ test('should focus the cell when drag handle is clicked', async () => {
   await userEvent.click(dragHandle);
   await expect.element(cell).toHaveFocus();
 });
+
+test('should place the drag handle at the end of the cell when the cell ignores its colSpan', async () => {
+  const columns: readonly Column<Row>[] = [
+    {
+      key: 'col',
+      name: 'Col',
+      // the span would cross into the end-frozen column, so the cells ignore it
+      colSpan: () => 2,
+      renderEditCell() {
+        return null;
+      }
+    },
+    {
+      key: 'frozen',
+      name: 'Frozen',
+      frozen: 'end'
+    }
+  ];
+
+  await page.render(
+    <DataGrid columns={columns} rows={initialRows} onFill={({ targetRow }) => targetRow} />
+  );
+  const cell = getCellsAtRowIndex(0).nth(0);
+  await userEvent.click(cell);
+  await expect.element(dragHandle).toBeInTheDocument();
+
+  // the drag handle straddles the end of the cell
+  const cellRect = cell.element().getBoundingClientRect();
+  const dragHandleRect = dragHandle.element().getBoundingClientRect();
+  expect(dragHandleRect.left).toBeLessThan(cellRect.right);
+  expect(dragHandleRect.right).toBeGreaterThan(cellRect.right);
+});
