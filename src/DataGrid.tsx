@@ -1293,11 +1293,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {getDragHandle()}
 
       {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
-      {renderMeasuringCells(
-        viewportColumns,
-        // eslint-disable-next-line @eslint-react/refs
-        observeMeasuringCellRef
-      )}
+      {renderMeasuringCells(viewportColumns, observeMeasuringCellRef)}
 
       {scrollToPositionElement}
     </div>
