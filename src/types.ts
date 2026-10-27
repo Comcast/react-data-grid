@@ -106,7 +106,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
-  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow>) => number;
+  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow> | undefined) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
   readonly headerCellClass: Column<TRow, TSummaryRow>['headerCellClass'];
@@ -211,7 +211,7 @@ export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<
 
 export interface EditCellProps<R, SR> extends Pick<
   RenderCellProps<R, SR>,
-  'column' | 'colSpan' | 'row' | 'rowIdx'
+  'column' | 'row' | 'rowIdx'
 > {
   onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
   closeEditor: (shouldFocus: boolean) => void;

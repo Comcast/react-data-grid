@@ -82,7 +82,12 @@ export function useCalculatedColumns<R, SR>({
 
     collectColumns(rawColumns, 1);
 
-    function getColSpan(column: CalculatedColumn<R, SR>, args: ColSpanArgs<R, SR>): number {
+    function getColSpan(
+      column: CalculatedColumn<R, SR>,
+      args: ColSpanArgs<R, SR> | undefined
+    ): number {
+      if (args === undefined) return 1;
+
       const colSpan = column.colSpan!(args) ?? 1;
 
       if (!Number.isInteger(colSpan) || colSpan <= 1) return 1;

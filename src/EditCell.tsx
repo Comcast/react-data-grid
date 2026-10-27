@@ -37,7 +37,6 @@ const cellEditing = css`
 
 export default function EditCell<R, SR>({
   column,
-  colSpan,
   row,
   rowIdx,
   onRowChange,
@@ -175,6 +174,7 @@ export default function EditCell<R, SR>({
     onRowChange(row, commitChangesAndFocus, commitChangesAndFocus);
   }
 
+  const colSpan = column.getColSpan({ type: 'ROW', row });
   const { cellClass } = column;
   const className = getCellClassname(
     column,

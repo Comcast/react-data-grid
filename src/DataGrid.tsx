@@ -1054,10 +1054,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { row } = activePosition;
     const column = getActiveColumn();
-    const colSpan = column.getColSpan({
-      type: 'ROW',
-      row
-    });
 
     function closeEditor(shouldFocus: boolean) {
       const newPosition: ActivePosition = { idx: activePosition.idx, rowIdx, mode: 'ACTIVE' };
@@ -1085,7 +1081,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       <EditCell
         key={column.key}
         column={column}
-        colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
         onRowChange={onRowChange}

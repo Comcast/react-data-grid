@@ -45,12 +45,13 @@ function getCellColSpan<R, SR>({
   rowIdx: number;
   column: CalculatedColumn<R, SR>;
 }) {
-  const topSummaryRowsCount = topSummaryRows?.length ?? 0;
   if (rowIdx === mainHeaderRowIdx) {
     return column.getColSpan({
       type: 'HEADER'
     });
   }
+
+  const topSummaryRowsCount = topSummaryRows?.length ?? 0;
 
   if (
     topSummaryRows &&

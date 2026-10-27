@@ -71,7 +71,7 @@ export function mapColumnsWithColSpan<R, SR, T>(
     // so the skipped columns are counted by index, not by their position in the list
     if (column.idx < nextColumnIdx) continue;
 
-    const colSpan = colSpanArgs == null ? 1 : column.getColSpan(colSpanArgs);
+    const colSpan = column.getColSpan(colSpanArgs);
     results.push(callback(column, column.idx === activeColumnIdx, colSpan, results.length));
     nextColumnIdx = column.idx + colSpan;
   }
