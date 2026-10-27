@@ -117,14 +117,7 @@ export default defineConfig({
         cache: false
       },
       'install-browsers': {
-        command: isCI
-          ? [
-              'echo ::group::Install browsers',
-              'sudo cp .github/apt.conf /etc/apt/apt.conf.d/99-ci',
-              'playwright install --no-shell --with-deps',
-              'echo ::endgroup::'
-            ]
-          : 'playwright install --no-shell',
+        command: isCI ? 'bash .github/install-browsers.sh' : 'playwright install --no-shell',
         // browsers are installed outside the workspace, so they cannot be restored from the cache
         cache: false
       },
@@ -134,7 +127,13 @@ export default defineConfig({
         cache: {
           // `CI` enables visual tests, `GITHUB_WORKFLOW` enables coverage
           env: ['CI', 'GITHUB_WORKFLOW'],
-          input: [{ auto: true }, '!coverage/**', '!node_modules/.cache/vite/**']
+          input: [
+            { auto: true },
+            // failing tests like `test.fails()` output screenshot failures, invalidating the task cache
+            '!.vitest/**',
+            '!coverage/**',
+            '!node_modules/.cache/vite/**'
+          ]
         }
       },
       ci: {
