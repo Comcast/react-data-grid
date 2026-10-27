@@ -696,13 +696,17 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // ensure cell is fully visible
       scrollIntoView(cell);
 
-      setActivePosition(({ idx, rowIdx }) => ({
-        idx,
-        rowIdx,
-        mode: 'EDIT',
-        row,
-        originalRow: row
-      }));
+      // ensure we render the editor quickly enough,
+      // otherwise the user input might be lost in Firefox
+      flushSync(() => {
+        setActivePosition(({ idx, rowIdx }) => ({
+          idx,
+          rowIdx,
+          mode: 'EDIT',
+          row,
+          originalRow: row
+        }));
+      });
     }
   }
 
