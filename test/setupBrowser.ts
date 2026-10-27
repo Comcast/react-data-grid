@@ -90,10 +90,13 @@ beforeEach(async () => {
 afterEach(() => {
   vi.useRealTimers();
 
+  // Tabbing past the first or last focusable element moves focus out of the page,
+  // and depending on the browser, pressing Tab again may not return it to the expected element.
+  // https://github.com/microsoft/playwright/issues/39268
   expect
     .soft(
       document.hasFocus(),
-      'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
+      'Focus is set on a browser UI element at the end of a test. Render a focusable element before or after the grid, so tabbing keeps focus on the page.'
     )
     .toBe(true);
 
