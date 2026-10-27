@@ -15,6 +15,7 @@ import {
 } from './utils';
 import type { CalculatedColumn, SortColumn } from './types';
 import type { HeaderRowProps } from './HeaderRow';
+import { cellActiveClassname } from './style/cell';
 
 const cellSortableClassname = css`
   @layer rdg.HeaderCell {
@@ -125,6 +126,7 @@ export default function HeaderCell<R, SR>({
 
   const className = getCellClassname(
     column,
+    isCellActive && cellActiveClassname,
     column.headerCellClass,
     sortable && cellSortableClassname,
     resizable && cellResizableClassname,
@@ -300,7 +302,6 @@ export default function HeaderCell<R, SR>({
         aria-colindex={column.idx + 1}
         aria-colspan={colSpan > 1 ? colSpan : undefined}
         aria-rowspan={rowSpan}
-        aria-selected={isCellActive}
         aria-sort={ariaSort}
         tabIndex={tabIndex}
         className={className}

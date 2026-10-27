@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vite-plus/test/browser';
+import { page, userEvent, type Locator } from 'vite-plus/test/browser';
 
-import { DataGrid, SelectColumn } from '../../src';
+import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type { Column } from '../../src';
+import { testCount } from './utils';
 
 const rows = page.getRow();
 const headerCheckbox = page.getSelectAllCheckbox();
@@ -120,6 +121,64 @@ test('toggle selection using keyboard', async () => {
   await testSelection(1, true);
   await userEvent.keyboard('{arrowup} ');
   await testSelection(0, false);
+});
+
+test('marks the active cell with a class instead of aria-selected', async () => {
+  const columns: readonly Column<Row, Row>[] = [
+    SelectColumn,
+    {
+      key: 'id',
+      name: 'ID',
+      renderSummaryCell: () => 'Summary',
+      renderEditCell: renderTextEditor
+    }
+  ];
+
+  function Test() {
+    const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+
+    return (
+      <DataGrid
+        rowKeyGetter={rowKeyGetter}
+        columns={columns}
+        rows={defaultRows}
+        bottomSummaryRows={[{ id: 0 }]}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+      />
+    );
+  }
+
+  const activeCell = page.getActiveCell();
+  const cellsWithAriaSelected = page
+    .getCell()
+    .or(page.getHeaderCell())
+    .and(page.getBySelector('[aria-selected]'));
+
+  async function testActiveCell(cell: Locator) {
+    await expect.element(cell).toHaveClass('rdg-cell-active');
+    await testCount(activeCell, 1);
+    await testCount(cellsWithAriaSelected, 0);
+  }
+
+  await page.render(<Test />);
+
+  await userEvent.click(page.getHeaderCell({ name: 'ID' }));
+  await testActiveCell(page.getHeaderCell({ name: 'ID' }));
+
+  await toggleSelection(0);
+  await testSelection(0, true);
+  await testSelection(1, false);
+  await testActiveCell(rows.nth(0).getCell().nth(0));
+
+  await userEvent.click(page.getCell({ name: 'Summary' }));
+  await testActiveCell(page.getCell({ name: 'Summary' }));
+
+  await userEvent.dblClick(page.getCell({ name: '2', exact: true }));
+  const editCell = page.getCell().filter({ has: page.getByRole('textbox') });
+  await expect.element(editCell).toHaveClass('rdg-cell-active');
+  await testCount(activeCell, 1);
+  await testCount(cellsWithAriaSelected, 0);
 });
 
 test('should partially select header checkbox', async () => {

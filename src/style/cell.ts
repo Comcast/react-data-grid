@@ -20,15 +20,20 @@ export const cell = css`
     overflow: clip;
     text-overflow: ellipsis;
     outline: none;
-
-    &[aria-selected='true'] {
-      outline: var(--rdg-selection-width) solid var(--rdg-selection-color);
-      outline-offset: calc(var(--rdg-selection-width) * -1);
-    }
   }
 `;
 
 export const cellClassname = `rdg-cell ${cell}`;
+
+// Declared after `cell` so its outline overrides `outline: none` in the same layer.
+const cellActive = css`
+  @layer rdg.Cell {
+    outline: var(--rdg-selection-width) solid var(--rdg-selection-color);
+    outline-offset: calc(var(--rdg-selection-width) * -1);
+  }
+`;
+
+export const cellActiveClassname = `rdg-cell-active ${cellActive}`;
 
 // Single shared sticky/z-index rule reused by both edge-frozen variants.
 // Selectors that need to distinguish start vs end use the marker classes
