@@ -15,6 +15,7 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Styling and Customization](#styling-and-customization)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
 - [API Reference](#api-reference)
 
 ## Features
@@ -142,6 +143,10 @@ Alternatively, you can add the `rdg-light` or `rdg-dark` class to individual gri
 <DataGrid className="rdg-dark" columns={columns} rows={rows} />
 ```
 
+### Forced Colors Mode
+
+In [forced colors mode](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors), such as Windows contrast themes, the DataGrid uses system colors for the active cell, row selection, and the drag handle, so they follow the user's palette. Overriding `--rdg-selection-color` or `--rdg-checkbox-focus-color` in your own styles also overrides their forced colors values outside selected rows, so wrap such overrides in `@media not (forced-colors: active)`.
+
 ### CSS Variables
 
 The DataGrid supports the following CSS variables for customization:
@@ -230,6 +235,45 @@ Control column widths using the [`width`](#width 'Column.width'), [`minWidth`](#
 ### Custom Renderers
 
 Replace default components with custom implementations using the [`renderers`](#renderers 'DataGridProps.renderers') prop. Columns can also have custom renderers using the [`renderCell`](#rendercell 'Column.renderCell'), [`renderHeaderCell`](#renderheadercell-1 'Column.renderHeaderCell'), [`renderSummaryCell`](#rendersummarycell 'Column.renderSummaryCell'), [`renderGroupCell`](#rendergroupcell 'Column.renderGroupCell'), and [`renderEditCell`](#rendereditcell 'Column.renderEditCell') properties.
+
+## Keyboard Shortcuts
+
+<kbd>Ctrl</kbd> also accepts <kbd>⌘</kbd>, as macOS uses <kbd>Ctrl</kbd>+<kbd>←</kbd>/<kbd>→</kbd> to switch desktops. In right-to-left grids, <kbd>←</kbd> and <kbd>→</kbd> are swapped. See [`onCellKeyDown`](#oncellkeydown-maybeargs-cellkeydownargsr-sr-event-cellkeyboardevent--void) to customize them.
+
+### Navigation
+
+| Keys                                                             | Action                                                                               |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd>              | Move to the adjacent cell                                                            |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>                 | Move to the next or previous cell. Focus leaves the grid from the last or first cell |
+| <kbd>Home</kbd> / <kbd>End</kbd>                                 | Move to the first or last cell of the row                                            |
+| <kbd>Ctrl</kbd>+<kbd>Home</kbd> / <kbd>Ctrl</kbd>+<kbd>End</kbd> | Move to the first header cell or the last cell of the last row                       |
+| <kbd>Page Up</kbd> / <kbd>Page Down</kbd>                        | Move up or down by one page of rows                                                  |
+
+### Editing
+
+| Keys                                                        | Action                                                                                                                                                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typing or <kbd>Enter</kbd>                                  | Open the [editor](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode)                                                                                                 |
+| <kbd>Enter</kbd> / <kbd>Escape</kbd>                        | Commit or discard the changes and close the editor                                                                                                                                                  |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>            | Commit the changes and move to the next or previous cell                                                                                                                                            |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> | Copy or paste, with [`onCellCopy`](#oncellcopy-maybeargs-cellcopyargsr-sr-event-cellclipboardevent--void) and [`onCellPaste`](#oncellpaste-maybeargs-cellpasteargsr-sr-event-cellclipboardevent--r) |
+
+### Selection
+
+| Keys                              | Action                                                                           |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| <kbd>Shift</kbd>+<kbd>Space</kbd> | Select or deselect the [row](#selectedrows-maybereadonlysetk) of the active cell |
+
+### Header Cells
+
+| Keys                                                                | Action                                                       |
+| ------------------------------------------------------------------- | ------------------------------------------------------------ |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>                                 | [Sort](#sortable-maybeboolean) by the column                 |
+| <kbd>Ctrl</kbd>+<kbd>Enter</kbd> / <kbd>Ctrl</kbd>+<kbd>Space</kbd> | Add the column to the sort, keeping the other sorted columns |
+| <kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>Ctrl</kbd>+<kbd>→</kbd>         | [Resize](#resizable-maybeboolean) the column                 |
+
+See [`TreeDataGrid`](#treedatagrid-) for the keys that expand and collapse groups.
 
 ## API Reference
 

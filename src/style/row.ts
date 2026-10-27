@@ -50,6 +50,22 @@ export const row = css`
       &:hover {
         background-color: var(--rdg-row-selected-hover-background-color);
       }
+
+      @media (forced-colors: active) {
+        /* CanvasText is not guaranteed to contrast with SelectedItem */
+        --rdg-selection-color: SelectedItemText;
+        --rdg-checkbox-focus-color: SelectedItemText;
+
+        /*
+         * Set on the property rather than on the selected row tokens,
+         * so the selection stays visible when apps override the tokens.
+         * There is no text color, so text keeps its forced color, and Chromium draws a backplate behind it.
+         */
+        &,
+        &:hover {
+          background-color: SelectedItem;
+        }
+      }
     }
   }
 `;
