@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
+import { clampColumnWidth, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
@@ -74,8 +74,8 @@ export function useCalculatedColumns<R, SR>({
     readonly firstEndFrozenColumnIndex: number;
     readonly headerRowsCount: number;
   } => {
-    let lastStartFrozenColumnIndex = -1;
-    let firstEndFrozenColumnIndex = -1;
+    let startFrozenColumnCount = 0;
+    let endFrozenColumnCount = 0;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
@@ -87,21 +87,18 @@ export function useCalculatedColumns<R, SR>({
 
       if (!Number.isInteger(colSpan) || colSpan <= 1) return 1;
 
-      const spanEnd = column.idx + colSpan - 1;
+      const { idx, frozen } = column;
+      let maxColSpan;
 
-      // start-frozen column: span must stay within the start-frozen band
-      if (isStartFrozen(column.frozen) && spanEnd > lastStartFrozenColumnIndex) return 1;
-      // unfrozen column: span must not enter the end-frozen band
-      if (
-        column.frozen === false &&
-        firstEndFrozenColumnIndex !== -1 &&
-        spanEnd >= firstEndFrozenColumnIndex
-      ) {
-        return 1;
+      if (frozen === 'end') {
+        maxColSpan = columns.length - idx;
+      } else if (frozen === false) {
+        maxColSpan = columns.length - endFrozenColumnCount - idx;
+      } else {
+        maxColSpan = startFrozenColumnCount - idx;
       }
-      // end-frozen columns are the contiguous tail, so spans within the band are self-contained
 
-      return colSpan;
+      return min(colSpan, maxColSpan);
     }
 
     function collectColumns(
@@ -160,8 +157,10 @@ export function useCalculatedColumns<R, SR>({
 
         columns.push(column);
 
-        if (isStartFrozen(frozen)) {
-          lastStartFrozenColumnIndex += 1;
+        if (frozen === 'end') {
+          endFrozenColumnCount += 1;
+        } else if (frozen !== false) {
+          startFrozenColumnCount += 1;
         }
 
         if (level > headerRowsCount) {
@@ -192,17 +191,14 @@ export function useCalculatedColumns<R, SR>({
       if (column.colSpan != null) {
         colSpanColumns.push(column);
       }
-
-      if (column.frozen === 'end' && firstEndFrozenColumnIndex === -1) {
-        firstEndFrozenColumnIndex = idx;
-      }
     }
 
     return {
       columns,
       colSpanColumns,
-      lastStartFrozenColumnIndex,
-      firstEndFrozenColumnIndex,
+      lastStartFrozenColumnIndex: startFrozenColumnCount - 1,
+      firstEndFrozenColumnIndex:
+        endFrozenColumnCount === 0 ? -1 : columns.length - endFrozenColumnCount,
       headerRowsCount
     };
   }, [
