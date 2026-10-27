@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { getColSpan, getViewportColumns, mapColumnsWithColSpan, min } from '../utils';
+import { getViewportColumns, mapColumnsWithColSpan, min } from '../utils';
 import type { CalculatedColumn, ColSpanArgs, MapViewportColumns, Maybe } from '../types';
 
 interface ViewportColumnsArgs<R, SR> {
@@ -66,14 +66,9 @@ export function useViewportColumns<R, SR>({
       const colIdx = column.idx;
 
       for (const args of colSpanArgs) {
-        const colSpan = getColSpan(
-          column,
-          lastStartFrozenColumnIndex,
-          firstEndFrozenColumnIndex,
-          args
-        );
+        const colSpan = column.getColSpan(args);
 
-        if (colSpan !== undefined && colIdx + colSpan > colOverscanStartIdx) {
+        if (colIdx + colSpan > colOverscanStartIdx) {
           return colIdx;
         }
       }
@@ -87,8 +82,6 @@ export function useViewportColumns<R, SR>({
     topSummaryRows,
     bottomSummaryRows,
     colOverscanStartIdx,
-    lastStartFrozenColumnIndex,
-    firstEndFrozenColumnIndex,
     colSpanColumns
   ]);
 
@@ -131,14 +124,7 @@ export function useViewportColumns<R, SR>({
               activeColumnIdx
             );
 
-      return mapColumnsWithColSpan(
-        rowColumns,
-        activeColumnIdx,
-        lastStartFrozenColumnIndex,
-        firstEndFrozenColumnIndex,
-        colSpanArgs,
-        callback
-      );
+      return mapColumnsWithColSpan(rowColumns, activeColumnIdx, colSpanArgs, callback);
     },
     [
       viewportColumns,
@@ -157,13 +143,11 @@ export function useViewportColumns<R, SR>({
       return mapColumnsWithColSpan(
         [columns[activeColumnIdx]],
         activeColumnIdx,
-        lastStartFrozenColumnIndex,
-        firstEndFrozenColumnIndex,
         colSpanArgs,
         callback
       );
     },
-    [columns, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex]
+    [columns]
   );
 
   return {
