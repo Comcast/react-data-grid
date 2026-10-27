@@ -1,0 +1,105 @@
+# Temporary: samples `playwright install-deps` across runners to find why it hangs in CI.
+# Removed before merging.
+name: apt diagnostics
+
+on:
+  pull_request:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  apt:
+    name: apt (${{ matrix.mirrors }} ${{ matrix.sample }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions: {}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mirrors: [default, archive-first]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    steps:
+      - name: Show runner, DNS, and apt configuration
+        run: |
+          echo "::group::runner"
+          curl -sS --max-time 2 -H Metadata:true --noproxy '*' 'http://169.254.169.254/metadata/instance/compute/location?api-version=2021-02-01&format=text' || true
+          echo
+          echo "::endgroup::"
+          echo "::group::DNS"
+          for host in azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
+            dig +noall +answer "$host"
+          done
+          echo "::endgroup::"
+          echo "::group::apt"
+          cat /etc/apt/apt-mirrors.txt
+          cat /etc/apt/sources.list.d/*.sources
+          ls -la /etc/apt/apt.conf.d/ /etc/apt/sources.list.d/
+          grep -r . /etc/apt/apt.conf.d/
+          echo "::endgroup::"
+
+      - name: Prefer archive.ubuntu.com
+        if: matrix.mirrors == 'archive-first'
+        run: |
+          printf '%s\tpriority:%s\n' \
+            https://archive.ubuntu.com/ubuntu/ 1 \
+            https://security.ubuntu.com/ubuntu/ 2 \
+            http://azure.archive.ubuntu.com/ubuntu/ 3 \
+            | sudo tee /etc/apt/apt-mirrors.txt
+
+      # same as .github/apt.conf, but with progress output
+      - name: Configure apt like CI
+        run: |
+          printf '%s\n' \
+            'Acquire::Retries "0";' \
+            'Acquire::http::Timeout "10";' \
+            'Acquire::https::Timeout "10";' \
+            | sudo tee /etc/apt/apt.conf.d/99-ci
+          apt-config dump Acquire::Retries Acquire::http::Timeout Acquire::https::Timeout quiet
+
+      - name: Start TCP monitor
+        run: |
+          sudo setsid bash -c '
+            while :; do
+              echo "@ $(date -u +%T.%N | cut -c1-12)"
+              ss -tinpH state established "( dport = :80 or dport = :443 )"
+              sleep 1
+            done' > /tmp/ss.log 2>&1 < /dev/null &
+
+      - name: playwright install-deps
+        timeout-minutes: 15
+        run: |
+          start=$(date +%s)
+          npx --yes playwright@1.64.1 install-deps 2>&1 | tee /tmp/install.log
+          echo "RESULT mirrors=${MIRRORS} seconds=$(($(date +%s) - start))"
+        env:
+          MIRRORS: ${{ matrix.mirrors }}
+
+      - name: Summarize apt transfers
+        if: always()
+        run: |
+          grep -E '^(Fetched|Need to get|Err|Ign|W:|E:)' /tmp/install.log || true
+          # which mirror served the files
+          grep -oE '^(Get|Hit):[0-9]+ [a-z]+://[^/ ]+' /tmp/install.log | cut -d' ' -f2 | sort | uniq -c || true
+
+      - name: Probe mirror throughput with fresh connections
+        if: always()
+        run: |
+          for mirror in http://azure.archive.ubuntu.com https://archive.ubuntu.com; do
+            for i in 1 2 3; do
+              curl -sS -o /dev/null --max-time 30 \
+                -w "PROBE $mirror %{remote_ip} %{http_code} %{size_download}B %{time_total}s %{speed_download}B/s\n" \
+                "$mirror/ubuntu/dists/noble/universe/binary-amd64/Packages.xz" || true
+            done
+          done
+
+      # each second, the connections of apt's http and https methods, and their TCP info
+      - name: TCP connections of apt's download methods
+        if: always()
+        run: awk '/^@/ { t = $2; next } /"https?",/ { print t, $0; getline; print t, $0 }' /tmp/ss.log
