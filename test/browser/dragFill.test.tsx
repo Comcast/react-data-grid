@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { commands, page, userEvent } from 'vite-plus/test/browser';
+import { commands, page, userEvent, type Locator } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, FillEvent } from '../../src';
-import { getCellsAtRowIndex } from './utils';
+import { getCellsAtRowIndex, scrollGrid } from './utils';
 
 const dragHandle = page.getDragHandle();
 
@@ -100,22 +100,45 @@ test('should focus the cell when drag handle is clicked', async () => {
   await expect.element(cell).toHaveFocus();
 });
 
-test('should place the drag handle at the end of the cell when the cell ignores its colSpan', async () => {
+test('should place the drag handle at the end of the cell when its colSpan is clamped', async () => {
   const columns: readonly Column<Row>[] = [
     {
       key: 'col',
       name: 'Col',
-      // the span would cross into the end-frozen column, so the cells ignore it
-      colSpan: () => 2,
+      // the span is clamped to the unfrozen columns
+      colSpan: () => 3,
       renderEditCell() {
         return null;
       }
     },
+    { key: 'unfrozen', name: 'Unfrozen' },
+    { key: 'frozen', name: 'Frozen', frozen: 'end' }
+  ];
+
+  await page.render(
+    <DataGrid columns={columns} rows={initialRows} onFill={({ targetRow }) => targetRow} />
+  );
+  const cell = getCellsAtRowIndex(0).nth(0);
+  await userEvent.click(cell);
+  await expect.element(cell).toHaveAttribute('aria-colspan', '2');
+  await expect.element(dragHandle).toBeInTheDocument();
+  expectDragHandleAtTheEndOf(cell);
+});
+
+test('should keep the drag handle at the end of a start-frozen cell that spans columns', async () => {
+  const columns: readonly Column<Row>[] = [
     {
-      key: 'frozen',
-      name: 'Frozen',
-      frozen: 'end'
-    }
+      key: 'col',
+      name: 'Col',
+      frozen: true,
+      width: 100,
+      colSpan: (args) => (args.type === 'ROW' ? 2 : undefined),
+      renderEditCell() {
+        return null;
+      }
+    },
+    { key: 'frozen', name: 'Frozen', frozen: true, width: 100 },
+    ...Array.from({ length: 30 }, (_, i) => ({ key: `col${i}`, name: `Col ${i}`, width: 100 }))
   ];
 
   await page.render(
@@ -124,10 +147,17 @@ test('should place the drag handle at the end of the cell when the cell ignores 
   const cell = getCellsAtRowIndex(0).nth(0);
   await userEvent.click(cell);
   await expect.element(dragHandle).toBeInTheDocument();
+  expectDragHandleAtTheEndOf(cell);
 
-  // the drag handle straddles the end of the cell
+  // the cell stays in place when scrolling, and so must the drag handle
+  scrollGrid({ left: 150 });
+  await new Promise(requestAnimationFrame);
+  expectDragHandleAtTheEndOf(cell);
+});
+
+function expectDragHandleAtTheEndOf(cell: Locator) {
   const cellRect = cell.element().getBoundingClientRect();
   const dragHandleRect = dragHandle.element().getBoundingClientRect();
   expect(dragHandleRect.left).toBeLessThan(cellRect.right);
   expect(dragHandleRect.right).toBeGreaterThan(cellRect.right);
-});
+}

@@ -957,15 +957,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     const isLastRow = rowIdx === maxRowIdx;
-    const columnWidth = getColumnWidth(column);
     const colSpan = column.getColSpan({
       type: 'ROW',
       row: getActiveRow()
     });
     const style = getCellStyle(column, colSpan);
-    const { insetInlineStart } = style;
+    // the drag handle is at the end of the last column that the cell spans,
+    // where it sticks when the column is start-frozen
+    const lastColumn = columns[column.idx + colSpan - 1];
+    const columnWidth = getColumnWidth(lastColumn);
+    const { insetInlineStart } = getCellStyle(lastColumn, 1);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
-    const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
+    const isLastColumn = lastColumn.idx === maxColIdx;
     const dragHandleStyle: React.CSSProperties = {
       ...style,
       gridRowStart: headerAndTopSummaryRowsCount + rowIdx + 1,
