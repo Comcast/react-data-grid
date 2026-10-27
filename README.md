@@ -1374,7 +1374,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-##### `frozen?: Maybe<boolean | 'start' | 'end'>`
+##### `frozen?: Maybe<ColumnFrozen | true>`
 
 **Default:** `false`
 
@@ -1566,10 +1566,10 @@ type DefaultColumnOptions<TRow, TSummaryRow> = Pick<
 Whether a column is frozen, and on which edge.
 
 ```tsx
-type ColumnFrozen = boolean | 'start' | 'end';
+type ColumnFrozen = false | 'start' | 'end';
 ```
 
-**See also:** [`column.frozen`](#frozen-maybeboolean--start--end)
+**See also:** [`column.frozen`](#frozen-maybecolumnfrozen--true)
 
 #### `RenderCellContentProps<TRow, TSummaryRow>`
 

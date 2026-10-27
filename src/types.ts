@@ -58,7 +58,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
   /** Determines whether the column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backward compatibility. */
-  readonly frozen?: Maybe<ColumnFrozen>;
+  readonly frozen?: Maybe<ColumnFrozen | true>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */
@@ -378,7 +378,7 @@ export interface SortColumn {
 }
 
 export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
-export type ColumnFrozen = boolean | 'start' | 'end';
+export type ColumnFrozen = false | 'start' | 'end';
 export type SortDirection = 'ASC' | 'DESC';
 
 export type ColSpanArgs<TRow, TSummaryRow> =

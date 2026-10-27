@@ -126,7 +126,9 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
+        // normalize the `frozen` value
+        const frozen: ColumnFrozen =
+          rawColumn.frozen === true ? 'start' : (rawColumn.frozen ?? false);
 
         // Set every property in a fixed order instead of spreading `rawColumn`,
         // so that all calculated columns share a single hidden class (shape) in JS engines,
@@ -162,10 +164,10 @@ export function useCalculatedColumns<R, SR>({
 
         columns.push(column);
 
-        if (frozen === 'end') {
-          endFrozenColumnCount += 1;
-        } else if (frozen !== false) {
+        if (frozen === 'start') {
           startFrozenColumnCount += 1;
+        } else if (frozen === 'end') {
+          endFrozenColumnCount += 1;
         }
 
         if (level > headerRowsCount) {
