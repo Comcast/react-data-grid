@@ -89,22 +89,22 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'gold',
     name: 'Gold',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { gold }) => prev + gold, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { gold }) => prev + gold, 0);
     }
   },
   {
     key: 'silver',
     name: 'Silver',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { silver }) => prev + silver, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { silver }) => prev + silver, 0);
     }
   },
   {
     key: 'bronze',
     name: 'Bronze',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { bronze }) => prev + bronze, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { bronze }) => prev + bronze, 0);
     }
   },
   {
@@ -113,8 +113,11 @@ const columns: readonly Column<Row>[] = [
     renderCell({ row }) {
       return row.gold + row.silver + row.bronze;
     },
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, row) => prev + row.gold + row.silver + row.bronze, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce(
+        (prev, childRow) => prev + childRow.gold + childRow.silver + childRow.bronze,
+        0
+      );
     }
   }
 ];
