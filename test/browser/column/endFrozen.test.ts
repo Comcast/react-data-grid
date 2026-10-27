@@ -232,7 +232,7 @@ test('keyboard navigation reaches end-frozen columns', async () => {
   await expect.element(page.getActiveCell()).toHaveAttribute('aria-colindex', '3');
 });
 
-test('colSpan from an unfrozen column into the end-frozen band is dropped', async () => {
+test('colSpan from an unfrozen column into the end-frozen band is clamped', async () => {
   const columns: readonly Column<number>[] = [
     { key: 'a', name: 'a' },
     {
@@ -249,7 +249,7 @@ test('colSpan from an unfrozen column into the end-frozen band is dropped', asyn
 
   await setup({ columns, rows: [1] });
 
-  // colSpan is ignored (boundary crossed) → all three cells render independently
+  // colSpan is clamped to 1 (boundary crossed) → all three cells render independently
   await expect.element(getCellsAtRowIndex(0)).toHaveLength(3);
 });
 
