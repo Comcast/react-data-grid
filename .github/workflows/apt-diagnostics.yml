@@ -24,12 +24,13 @@ jobs:
       fail-fast: false
       matrix:
         scenario: [ci]
-        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         include:
           - { scenario: stalled-first, sample: 1 }
           - { scenario: stalled-first, sample: 2 }
           - { scenario: slow-archive, sample: 1 }
           - { scenario: slow-archive, sample: 2 }
+          - { scenario: slow-archive, sample: 3 }
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -55,18 +56,15 @@ jobs:
           printf '%s\tpriority:%s\n' https://archive.ubuntu.com/ubuntu/ 1 https://security.ubuntu.com/ubuntu/ 2 \
             | sudo tee /etc/apt/apt-mirrors.txt
 
-      # limits downloads from Canonical's servers to 32 Mbit/s
+      # drops packets from Canonical's servers above 1500 per second, about 2 MB/s
       - name: Slow down archive.ubuntu.com
         if: matrix.scenario == 'slow-archive'
         run: |
-          dev=$(ip route show default | awk '{ print $5; exit }')
-          sudo tc qdisc add dev "$dev" handle ffff: ingress
-          prio=1
           for net in 91.189.88.0/21 185.125.188.0/22; do
-            sudo tc filter add dev "$dev" parent ffff: protocol ip prio "$prio" u32 match ip src "$net" \
-              police rate 32mbit burst 256k drop flowid :1
-            prio=$((prio + 1))
+            sudo iptables -A INPUT -s "$net" -m hashlimit --hashlimit-above 1500/sec --hashlimit-burst 1500 \
+              --hashlimit-mode srcip --hashlimit-name "canonical-${net%%.*}" -j DROP
           done
+          sudo iptables -L INPUT -n -v
 
       - name: vp run install-browsers
         timeout-minutes: 8
