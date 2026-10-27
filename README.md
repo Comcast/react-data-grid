@@ -741,6 +741,8 @@ function MyGrid() {
 }
 ```
 
+A custom renderer that renders its own row element must spread the DOM props it receives, e.g., `tabIndex`, `className`, and `aria-*` attributes, onto that element. This is how row focus reaches it in a `TreeDataGrid`, which passes the active row's `tabIndex` and `rdg-row-active` class as DOM props.
+
 ###### `rowClass?: Maybe<(row: R, rowIdx: number) => Maybe<string>>`
 
 Function to apply custom class names to rows.
@@ -785,10 +787,6 @@ Custom class name for the grid.
 ###### `style?: CSSProperties | undefined`
 
 Custom styles for the grid.
-
-###### `role?: string | undefined`
-
-ARIA role for the grid container. Defaults to `grid`.
 
 ###### `'aria-label'?: string | undefined`
 
@@ -852,7 +850,6 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 
 - `onFill` - Drag-fill is disabled for tree grids
 - `isRowSelectionDisabled` - Row selection disabling is not available
-- `role` - `TreeDataGrid` manages the ARIA role
 - `aria-rowcount` - `TreeDataGrid` manages the ARIA row count
 
 **Caveats:**
@@ -1751,7 +1748,6 @@ interface RenderRowProps<TRow, TSummaryRow = unknown> {
   activeCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
-  isTreeGrid: boolean;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
   // ... and DOM props, cell event handlers (onCellMouseDown, onCellClick, onCellDoubleClick, onCellContextMenu)
 }
