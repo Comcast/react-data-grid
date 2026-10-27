@@ -248,12 +248,12 @@ Replace default components with custom implementations using the [`renderers`](#
 
 ### Editing
 
-| Keys                                                                 | Action                                                                                                                                                                                              |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Typing, <kbd>Enter</kbd>, <kbd>Backspace</kbd>, or <kbd>Delete</kbd> | Open the [editor](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode)                                                                                                 |
-| <kbd>Enter</kbd> / <kbd>Escape</kbd>                                 | Commit or discard the changes and close the editor                                                                                                                                                  |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>                     | Commit the changes and move to the next or previous cell                                                                                                                                            |
-| <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd>          | Copy or paste, with [`onCellCopy`](#oncellcopy-maybeargs-cellcopyargsr-sr-event-cellclipboardevent--void) and [`onCellPaste`](#oncellpaste-maybeargs-cellpasteargsr-sr-event-cellclipboardevent--r) |
+| Keys                                                        | Action                                                                                                                                                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typing or <kbd>Enter</kbd>                                  | Open the [editor](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode)                                                                                                 |
+| <kbd>Enter</kbd> / <kbd>Escape</kbd>                        | Commit or discard the changes and close the editor                                                                                                                                                  |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>            | Commit the changes and move to the next or previous cell                                                                                                                                            |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> | Copy or paste, with [`onCellCopy`](#oncellcopy-maybeargs-cellcopyargsr-sr-event-cellclipboardevent--void) and [`onCellPaste`](#oncellpaste-maybeargs-cellpasteargsr-sr-event-cellclipboardevent--r) |
 
 ### Selection
 
