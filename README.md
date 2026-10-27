@@ -1679,7 +1679,7 @@ Control whether cells can be edited with `renderEditCell`.
 readonly colSpan?: Maybe<(args: ColSpanArgs<R, SR>) => Maybe<number>>;
 ```
 
-Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the [`ColSpanArgs`](#colspanargs) type.
+Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of. See the [`ColSpanArgs`](#colspanargs) type.
 
 **Example:**
 
@@ -1703,7 +1703,7 @@ const columns: readonly Column<Row>[] = [
 ##### `frozen?`
 
 ```tsx
-readonly frozen?: Maybe<ColumnFrozen>;
+readonly frozen?: Maybe<ColumnFrozen | true>;
 ```
 
 Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally. See the [`ColumnFrozen`](#columnfrozen) type.
@@ -1859,6 +1859,8 @@ interface CalculatedColumn<R, SR = unknown> extends Column<R, SR> {
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<R, SR>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<R, SR>) => ReactNode;
+  /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
+  readonly getColSpan: (args: ColSpanArgs<R, SR> | undefined) => number;
   readonly cellClass: Column<R, SR>['cellClass'];
   readonly headerCellClass: Column<R, SR>['headerCellClass'];
   readonly summaryCellClass: Column<R, SR>['summaryCellClass'];
@@ -1926,7 +1928,7 @@ type DefaultColumnOptions<R, SR> = Pick<
 Whether a column is frozen, and on which edge.
 
 ```tsx
-type ColumnFrozen = boolean | 'start' | 'end';
+type ColumnFrozen = false | 'start' | 'end';
 ```
 
 **See also:** [`column.frozen`](#frozen)
@@ -2096,7 +2098,7 @@ interface RenderCellProps<R, SR>
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
   column: CalculatedColumn<R, SR>;
   row: R;
-  colSpan: number | undefined;
+  colSpan: number;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<R, SR>, rowIdx: number, newRow: R) => void;
@@ -2633,7 +2635,7 @@ type MapViewportColumns<R, SR> = <T>(
   callback: (
     column: CalculatedColumn<R, SR>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ) => T[];

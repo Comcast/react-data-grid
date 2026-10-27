@@ -124,7 +124,7 @@ export interface Column<R, SR = unknown> {
   /** Control whether cells can be edited with `renderEditCell`. */
   readonly editable?: Maybe<boolean | ((row: R) => boolean)>;
   /**
-   * Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. See the {@linkcode ColSpanArgs} type.
+   * Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of. See the {@linkcode ColSpanArgs} type.
    *
    * @example
    * ```tsx
@@ -162,7 +162,7 @@ export interface Column<R, SR = unknown> {
    *
    * @defaultValue `false`
    */
-  readonly frozen?: Maybe<ColumnFrozen>;
+  readonly frozen?: Maybe<ColumnFrozen | true>;
   /**
    * Enable resizing of the column.
    *
@@ -232,6 +232,8 @@ export interface CalculatedColumn<R, SR = unknown> extends Column<R, SR> {
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<R, SR>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<R, SR>) => ReactNode;
+  /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
+  readonly getColSpan: (args: ColSpanArgs<R, SR> | undefined) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<R, SR>['cellClass'];
   readonly headerCellClass: Column<R, SR>['headerCellClass'];
@@ -428,7 +430,7 @@ interface BaseRenderCellProps<R, SR = unknown>
 export interface RenderCellProps<R, SR> extends BaseRenderCellProps<R, SR> {
   column: CalculatedColumn<R, SR>;
   row: R;
-  colSpan: number | undefined;
+  colSpan: number;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<R, SR>, rowIdx: number, newRow: R) => void;
@@ -436,7 +438,7 @@ export interface RenderCellProps<R, SR> extends BaseRenderCellProps<R, SR> {
 
 export interface EditCellProps<R, SR> extends Pick<
   RenderCellProps<R, SR>,
-  'column' | 'colSpan' | 'row' | 'rowIdx'
+  'column' | 'row' | 'rowIdx'
 > {
   onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
   closeEditor: (shouldFocus: boolean) => void;
@@ -594,7 +596,7 @@ export type MapViewportColumns<R, SR> = <T>(
   callback: (
     column: CalculatedColumn<R, SR>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ) => T[];
@@ -723,7 +725,7 @@ export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
  *
  * @see {@linkcode Column.frozen | column.frozen}
  */
-export type ColumnFrozen = boolean | 'start' | 'end';
+export type ColumnFrozen = false | 'start' | 'end';
 /**
  * @see {@linkcode SortColumn}
  */
