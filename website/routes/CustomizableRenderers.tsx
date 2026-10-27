@@ -118,7 +118,7 @@ function CustomizableRenderers() {
       className="fill-grid"
       columns={columns}
       rows={sortedRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       onRowsChange={setRows}
       sortColumns={sortColumns}
       onSortColumnsChange={setSortColumns}
@@ -175,7 +175,7 @@ function renderRow(key: React.Key, props: RenderRowProps<Row>) {
   return <BaseRow key={key} {...props} style={style} />;
 }
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 

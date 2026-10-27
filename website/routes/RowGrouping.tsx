@@ -119,7 +119,7 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -209,7 +209,7 @@ function RowGrouping() {
         aria-label="Row Grouping Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}

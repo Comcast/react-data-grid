@@ -135,7 +135,7 @@ function MasterDetail() {
   return (
     <DataGrid
       aria-label="Master Detail Example"
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       onRowsChange={onRowsChange}
@@ -161,13 +161,13 @@ function ProductGrid({ parentId, direction }: { parentId: number; direction: Dir
     <DataGrid
       rows={products}
       columns={productColumns}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       style={{ blockSize: 250 }}
       direction={direction}
     />
   );
 }
 
-function rowKeyGetter(row: DepartmentRow | ProductRow) {
+function getRowKey(row: DepartmentRow | ProductRow) {
   return row.id;
 }

@@ -85,7 +85,7 @@ const initialRows: readonly Row[] = [
 const onCellCopySpy = vi.fn();
 const onCellPasteSpy = vi.fn(({ row }: { row: Row }) => row);
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 function TestGrid({
@@ -107,7 +107,7 @@ function TestGrid({
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       groupBy={groupBy}
       getRowGroupKey={getRowGroupKey}
       selectedRows={selectedRows}
@@ -256,7 +256,7 @@ test(
   }
 );
 
-test('should keep the row keys when an earlier group is expanded, without rowKeyGetter', async () => {
+test('should keep the row keys when an earlier group is expanded, without getRowKey', async () => {
   function Test() {
     const [expandedGroupIds, setExpandedGroupIds] = useState(
       (): ReadonlySet<unknown> => new Set(['Canada'])

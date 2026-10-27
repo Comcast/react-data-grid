@@ -37,7 +37,7 @@ const columns: readonly Column<Row>[] = [
 
 const rows: readonly Row[] = [];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -53,7 +53,7 @@ function NoRows() {
       renderers={{ noRowsFallback }}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       className={gridClassname}
       direction={direction}
     />

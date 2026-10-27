@@ -64,7 +64,7 @@ const rows: readonly Row[] = [
 test('tree grid', async () => {
   await page.render(
     <TreeDataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       topSummaryRows={topSummaryRows}
@@ -79,6 +79,6 @@ test('tree grid', async () => {
   await expect.element(treeGrid).toMatchScreenshot('tree-grid');
 });
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }

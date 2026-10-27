@@ -33,7 +33,7 @@ function createRows(): readonly Row[] {
   return rows;
 }
 
-function rowKeyGetter(row: Row): number {
+function getRowKey(row: Row): number {
   return row.id;
 }
 
@@ -85,7 +85,7 @@ function RowsReordering() {
       columns={columns}
       rows={rows}
       onRowsChange={setRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       renderers={{ renderRow }}
       direction={direction}
     />

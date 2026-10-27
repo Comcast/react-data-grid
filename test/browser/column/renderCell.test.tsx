@@ -350,7 +350,7 @@ test('Cell should not steal focus when the focus is outside the grid and the cel
           columns={columns}
           rows={rows}
           onRowsChange={setRows}
-          rowKeyGetter={(row) => row.id}
+          getRowKey={(row) => row.id}
         />
       </>
     );

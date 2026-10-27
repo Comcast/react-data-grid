@@ -36,14 +36,14 @@ const bottomSummaryRows: readonly Row[] = [
   { id: 7, name: 'Bottom Summary Row 2' }
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
 test('basic grid', async () => {
   await page.render(
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       topSummaryRows={topSummaryRows}

@@ -66,7 +66,7 @@ export interface Row {
   sentence: string;
 }
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -283,7 +283,7 @@ function AllFeatures() {
         aria-label="All Features Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         onRowsChange={setRows}
         onFill={handleFill}
         onCellCopy={handleCellCopy}

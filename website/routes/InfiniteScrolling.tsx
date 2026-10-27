@@ -30,7 +30,7 @@ interface Row {
   lastName: string;
 }
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -116,7 +116,7 @@ function InfiniteScrolling() {
         aria-label="Infinite Scrolling Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         onRowsChange={setRows}
         rowHeight={30}
         onScroll={handleScroll}

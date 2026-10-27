@@ -49,7 +49,7 @@ const columns: readonly Column<Row>[] = [
   { key: 'price', name: 'Price' }
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -97,7 +97,7 @@ function ContextMenuDemo() {
     <>
       <DataGrid
         aria-label="Context Menu Example"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={rows}
         className="fill-grid"

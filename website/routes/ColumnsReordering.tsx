@@ -33,7 +33,7 @@ function createRows(): readonly Row[] {
   return rows;
 }
 
-function rowKeyGetter(row: Row): number {
+function getRowKey(row: Row): number {
   return row.id;
 }
 
@@ -157,7 +157,7 @@ function ColumnsReordering() {
           aria-label="Columns Reordering Example"
           columns={reorderedColumns}
           rows={sortedRows}
-          rowKeyGetter={rowKeyGetter}
+          getRowKey={getRowKey}
           sortColumns={sortColumns}
           onSortColumnsChange={onSortColumnsChange}
           direction={direction}

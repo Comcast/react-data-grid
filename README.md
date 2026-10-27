@@ -324,9 +324,9 @@ Rows pinned at the bottom of the grid for summary purposes.
 
 :warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
 
-###### `rowKeyGetter?: Maybe<(row: R) => K>`
+###### `getRowKey?: Maybe<(row: R) => K>`
 
-Function to return a unique key/identifier for each row. `rowKeyGetter` is required for row selection to work.
+Function to return a unique key/identifier for each row. `getRowKey` is required for row selection to work.
 
 ```tsx
 import { DataGrid } from 'react-data-grid';
@@ -336,12 +336,12 @@ interface Row {
   name: string;
 }
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
 function MyGrid() {
-  return <DataGrid columns={columns} rows={rows} rowKeyGetter={rowKeyGetter} />;
+  return <DataGrid columns={columns} rows={rows} getRowKey={getRowKey} />;
 }
 ```
 
@@ -432,7 +432,7 @@ Callback triggered when column widths change. If not provided, an internal state
 
 ###### `selectedRows?: Maybe<ReadonlySet<K>>`
 
-A set of selected row keys. `rowKeyGetter` is required for row selection to work.
+A set of selected row keys. `getRowKey` is required for row selection to work.
 
 ###### `isRowSelectionDisabled?: Maybe<(row: R) => boolean>`
 
@@ -453,7 +453,7 @@ const columns: readonly Column<Row>[] = [
   // other columns
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -466,7 +466,7 @@ function MyGrid() {
 
   return (
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       selectedRows={selectedRows}
@@ -1232,7 +1232,7 @@ import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -1241,7 +1241,7 @@ function MyGrid() {
     <DataGrid
       columns={columns}
       rows={rows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
     />

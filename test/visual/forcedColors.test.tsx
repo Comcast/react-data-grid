@@ -27,7 +27,7 @@ const rows: readonly Row[] = [
 
 const selectedRows: ReadonlySet<number> = new Set([1, 2]);
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -52,7 +52,7 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
     await page.render(
       <DataGrid
         aria-label="Forced colors"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={rows}
         selectedRows={selectedRows}

@@ -245,7 +245,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   }
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -400,7 +400,7 @@ function CommonFeatures() {
       <DataGrid
         ref={gridRef}
         aria-label="Common Features Example"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={sortedRows}
         defaultColumnOptions={{
