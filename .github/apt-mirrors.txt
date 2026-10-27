@@ -1,5 +1,5 @@
-# The mirrors that install-browsers.sh switches to when the runner image's are slow.
-# The image's start with azure.archive.ubuntu.com, which resolves to a mirror in the runner's Azure region,
+# The mirrors that install-browsers.sh starts with, before the runner image's.
+# Those start with azure.archive.ubuntu.com, which resolves to a mirror in the runner's Azure region,
 # and the westus and westus3 mirrors relay packages from upstream at ~50 kB/s:
 # https://github.com/actions/runner-images/issues/14823
 https://archive.ubuntu.com/ubuntu/	priority:1

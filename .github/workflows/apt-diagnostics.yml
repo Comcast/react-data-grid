@@ -24,14 +24,14 @@ jobs:
       fail-fast: false
       matrix:
         scenario: [ci]
-        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         include:
-          - scenario: slow-mirror
-            sample: 1
-          - scenario: slow-mirror
-            sample: 2
-          - scenario: slow-mirror
-            sample: 3
+          - { scenario: stalled-first, sample: 1 }
+          - { scenario: stalled-first, sample: 2 }
+          - { scenario: stalled-first, sample: 3 }
+          - { scenario: slow-archive, sample: 1 }
+          - { scenario: slow-archive, sample: 2 }
+          - { scenario: slow-archive, sample: 3 }
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,13 +45,28 @@ jobs:
       - run: vp install --frozen-lockfile
 
       - run: shellcheck .github/install-browsers.sh
-        if: matrix.scenario == 'slow-mirror' && matrix.sample == 1
+        if: matrix.scenario == 'ci' && matrix.sample == 1
         continue-on-error: true
 
-      # the first attempt downloads from the degraded westus mirror
-      - name: Simulate a slow first-choice mirror
-        if: matrix.scenario == 'slow-mirror'
-        run: echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
+      # the first list is the runner image's, with the degraded westus mirror
+      - name: Stall the first mirror list
+        if: matrix.scenario == 'stalled-first'
+        run: |
+          echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
+          cp /etc/apt/apt-mirrors.txt .github/apt-mirrors.txt
+          printf '%s\tpriority:%s\n' https://archive.ubuntu.com/ubuntu/ 1 https://security.ubuntu.com/ubuntu/ 2 \
+            | sudo tee /etc/apt/apt-mirrors.txt
+
+      # limits downloads from Canonical's servers to 32 Mbit/s
+      - name: Slow down archive.ubuntu.com
+        if: matrix.scenario == 'slow-archive'
+        run: |
+          dev=$(ip route show default | awk '{ print $5; exit }')
+          sudo tc qdisc add dev "$dev" handle ffff: ingress
+          for net in 91.189.88.0/21 185.125.188.0/22; do
+            sudo tc filter add dev "$dev" parent ffff: protocol ip prio 1 u32 match ip src "$net" \
+              police rate 32mbit burst 256k drop flowid :1
+          done
 
       - name: vp run install-browsers
         timeout-minutes: 8
