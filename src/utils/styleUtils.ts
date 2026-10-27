@@ -1,5 +1,4 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { isStartFrozen } from './frozenColumnUtils';
 import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
@@ -29,18 +28,15 @@ export function getHeaderCellStyle<R, SR>(
 
 export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
-  colSpan = 1
+  colSpan: number
 ): React.CSSProperties {
-  const index = column.idx + 1;
-  const { minWidth, maxWidth } = column;
+  const { idx, frozen, minWidth, maxWidth } = column;
+  const index = idx + 1;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: isStartFrozen(column.frozen)
-      ? `var(--rdg-frozen-start-${column.idx})`
-      : undefined,
-    insetInlineEnd:
-      column.frozen === 'end' ? `var(--rdg-frozen-end-${column.idx + colSpan - 1})` : undefined,
+    insetInlineStart: frozen === 'start' ? `var(--rdg-frozen-start-${idx})` : undefined,
+    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined,
     // Cells size `auto`, `min-content`, and `max-content` columns with their content,
     // so they must not be wider than `maxWidth`, or the column would exceed it
     // and leave less room for the other columns.
@@ -70,7 +66,7 @@ export function getCellClassname<R, SR>(
 ): string {
   return classnames(
     cellClassname,
-    isStartFrozen(column.frozen) && cellFrozenStartClassname,
+    column.frozen === 'start' && cellFrozenStartClassname,
     column.frozen === 'end' && cellFrozenEndClassname,
     ...extraClasses
   );

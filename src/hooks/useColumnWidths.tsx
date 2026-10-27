@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-import { createResizeObserverGetter, floor, isStartFrozen, max, min } from '../utils';
+import { createResizeObserverGetter, floor, max, min } from '../utils';
 import type {
   CalculatedColumn,
   ColumnWidth,
@@ -276,7 +276,7 @@ export function useColumnWidths<R, SR>(
         }
       }
 
-      if (isStartFrozen(column.frozen)) {
+      if (column.frozen === 'start') {
         totalStartFrozenColumnWidth += resolvedWidth;
         layoutCssVars[`--rdg-frozen-start-${idx}`] = `${left}px`;
       }

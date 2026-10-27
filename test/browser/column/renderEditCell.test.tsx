@@ -4,7 +4,14 @@ import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../../src';
 import type { Column, DataGridHandle, DataGridProps } from '../../../src';
-import { getCellsAtRowIndex, getRowWithCell, safeTab, scrollGrid, testCount } from '../utils';
+import {
+  getCellsAtRowIndex,
+  getRowWithCell,
+  safeTab,
+  scrollGrid,
+  testCount,
+  validateCellPosition
+} from '../utils';
 
 const grid = page.getGrid();
 const col1Editor = page.getByRole('spinbutton', { name: 'col1-editor' });
@@ -50,6 +57,7 @@ describe('Editor', () => {
     await expect.element(cell).toHaveTextContent('1123');
   });
 
+  // `userEvent.type()` focuses the cell without clicking it, so the cell doesn't become active
   it.fails('should open editor when test runs userEvent.type() on unfocused cell', async () => {
     await page.render(<EditorTest />);
     const cell = getCellsAtRowIndex(0).nth(0);
@@ -113,8 +121,7 @@ describe('Editor', () => {
     await testCount(activeRowCells, 1);
     await expect.element(col1Editor).not.toBeInTheDocument();
     await expect.element(grid).toHaveProperty('scrollTop', 2001);
-    // TODO: await userEvent.keyboard('123'); fails in FF
-    await userEvent.keyboard('{enter}123');
+    await userEvent.keyboard('123');
     await testCount(activeRowCells, 2);
     await expect.element(col1Editor).toHaveValue(123);
     await expect.element(grid).toHaveProperty('scrollTop', 0);
@@ -235,8 +242,7 @@ describe('Editor', () => {
       );
       const cell = getCellsAtRowIndex(0).nth(1);
       await userEvent.click(cell);
-      // TODO: await userEvent.keyboard('yz{enter}'); fails in FF
-      await userEvent.keyboard('{enter}yz{enter}');
+      await userEvent.keyboard('yz{enter}');
       await expect.element(cell).toHaveTextContent('a1yz');
       await userEvent.keyboard('x');
       await expect.element(col2Editor).not.toBeInTheDocument();
@@ -287,6 +293,46 @@ describe('Editor', () => {
       await expect.element(col2Editor).toBeInTheDocument();
       await userEvent.click(page.getByRole('button', { name: 'update' }));
       await expect.element(col2Editor).toBeInTheDocument();
+    });
+
+    it('should close the editor when its row is removed and a summary row takes its position', async () => {
+      await page.render(
+        <EditorTest
+          editorOptions={{
+            commitOnOutsideClick: false
+          }}
+          bottomSummaryRows={[{}]}
+        />
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(1).nth(1));
+      await expect.element(col2Editor).toBeInTheDocument();
+      await userEvent.click(page.getByRole('button', { name: 'remove last row' }));
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      // the summary cell is active
+      await validateCellPosition(1, 2);
+    });
+
+    it('should close the editor when closeOnExternalRowChange is false and a summary row takes its position', async () => {
+      await page.render(
+        <EditorTest
+          editorOptions={{
+            commitOnOutsideClick: false,
+            closeOnExternalRowChange: false
+          }}
+          bottomSummaryRows={[{}]}
+        />
+      );
+      await userEvent.dblClick(getCellsAtRowIndex(1).nth(1));
+      await expect.element(col2Editor).toBeInTheDocument();
+      await userEvent.click(page.getByRole('button', { name: 'remove last row' }));
+      await expect.element(col2Editor).not.toBeInTheDocument();
+      await validateCellPosition(1, 2);
+      // When the position state is in edit mode on a summary cell, the grid renders no editor,
+      // but it ignores navigation keys, so moving the active cell checks that the editor closed
+      await safeTab();
+      await expect.element(page.getActiveCell()).toHaveFocus();
+      await userEvent.keyboard('{arrowup}');
+      await validateCellPosition(1, 1);
     });
   });
 
@@ -489,7 +535,7 @@ function showModalRef(dialog: HTMLDialogElement | null) {
 interface EditorTestProps
   extends
     Pick<Column<Row>, 'editorOptions' | 'editable'>,
-    Pick<DataGridProps<Row>, 'onCellKeyDown'> {
+    Pick<DataGridProps<Row>, 'onCellKeyDown' | 'bottomSummaryRows'> {
   onSave?: (rows: readonly Row[]) => void;
   gridRows?: readonly Row[];
   createEditorPortal?: boolean;
@@ -513,6 +559,7 @@ function EditorTest({
   editable,
   editorOptions,
   onCellKeyDown,
+  bottomSummaryRows,
   onSave,
   gridRows = initialRows,
   createEditorPortal,
@@ -603,11 +650,20 @@ function EditorTest({
       >
         update
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          setRows((rows) => rows.slice(0, -1));
+        }}
+      >
+        remove last row
+      </button>
       <DataGrid
         columns={columns}
         rows={rows}
         onRowsChange={setRows}
         onCellKeyDown={onCellKeyDown}
+        bottomSummaryRows={bottomSummaryRows}
       />
     </>
   );
