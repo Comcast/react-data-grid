@@ -127,9 +127,13 @@ test('should measure columns with the ResizeObserver of the window the grid is r
 
   const grid = frame.getGrid();
   await expect.element(grid).toBeInTheDocument();
-  expect(observeSpy).toHaveBeenCalledWith(
-    grid.element().querySelector('[data-measuring-cell-key="a"]')
-  );
+  // measuring cells are observed in the next animation frame.
+  // Poll a boolean: printing the calls of a failed attempt would read the props of the observed elements,
+  // and React logs an error when `props.key` is read.
+  const measuringCell = grid.element().querySelector('[data-measuring-cell-key="a"]');
+  await expect
+    .poll(() => observeSpy.mock.calls.some(([target]) => target === measuringCell))
+    .toBe(true);
 
   // auto-sizing the column waits for it to be measured
   await userEvent.dblClick(frame.getHeaderCell({ name: 'A' }).getBySelector('.rdg-resize-handle'));
