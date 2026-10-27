@@ -26,8 +26,6 @@ jobs:
         scenario: [ci]
         sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         include:
-          # the first attempt downloads from the degraded westus mirror,
-          # the retry from archive.ubuntu.com
           - scenario: slow-mirror
             sample: 1
           - scenario: slow-mirror
@@ -50,14 +48,10 @@ jobs:
         if: matrix.scenario == 'slow-mirror' && matrix.sample == 1
         continue-on-error: true
 
+      # the first attempt downloads from the degraded westus mirror
       - name: Simulate a slow first-choice mirror
         if: matrix.scenario == 'slow-mirror'
-        run: |
-          echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
-          printf '%s\tpriority:1\n' http://azure.archive.ubuntu.com/ubuntu/ > .github/apt-mirrors.txt
-          # the list the script falls back to
-          printf '%s\tpriority:%s\n' https://archive.ubuntu.com/ubuntu/ 1 https://security.ubuntu.com/ubuntu/ 2 \
-            | sudo tee /etc/apt/apt-mirrors.txt
+        run: echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
 
       - name: vp run install-browsers
         timeout-minutes: 8
@@ -72,7 +66,9 @@ jobs:
       - name: Summarize apt transfers
         if: always()
         run: |
-          grep -E '^(Fetched|Need to get|Download complete|Err|Ign|W:|E:|::warning::)' /tmp/install.log || true
+          grep -E '^(Fetched|Need to get|Download complete|Err|Ign|W:|E:)' /tmp/install.log || true
+          echo "SWITCHES $(grep -c '^::warning::' /tmp/install.log || true)"
           # which mirror served the files
           grep -oE '^(Get|Hit):[0-9]+ [a-z]+://[^/ ]+' /tmp/install.log | cut -d' ' -f2 | sort | uniq -c || true
           dig +noall +answer azure.archive.ubuntu.com
+          echo "LEFTOVER $(pgrep -c -x apt-get || true) apt-get processes"
