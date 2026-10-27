@@ -28,7 +28,8 @@ function setupGrid(
       key,
       name: key,
       width: 100 + ((i * 10) % 50),
-      frozen: i < frozenColumnCount ? true : i >= columnCount - endFrozenColumnCount ? 'end' : false
+      frozen:
+        i < frozenColumnCount ? 'start' : i >= columnCount - endFrozenColumnCount ? 'end' : false
     });
   }
 

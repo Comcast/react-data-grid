@@ -130,7 +130,7 @@ function TreeView() {
       {
         key: 'id',
         name: 'ID',
-        frozen: true
+        frozen: 'start'
       },
       {
         key: 'name',

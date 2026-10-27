@@ -130,14 +130,14 @@ test('should keep the drag handle at the end of a start-frozen cell that spans c
     {
       key: 'col',
       name: 'Col',
-      frozen: true,
+      frozen: 'start',
       width: 100,
       colSpan: (args) => (args.type === 'ROW' ? 2 : undefined),
       renderEditCell() {
         return null;
       }
     },
-    { key: 'frozen', name: 'Frozen', frozen: true, width: 100 },
+    { key: 'frozen', name: 'Frozen', frozen: 'start', width: 100 },
     ...Array.from({ length: 30 }, (_, i) => ({ key: `col${i}`, name: `Col ${i}`, width: 100 }))
   ];
 

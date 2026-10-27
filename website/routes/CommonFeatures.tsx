@@ -64,7 +64,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   {
     key: 'id',
     name: 'ID',
-    frozen: true,
+    frozen: 'start',
     resizable: false,
     renderSummaryCell() {
       return <strong>Total</strong>;

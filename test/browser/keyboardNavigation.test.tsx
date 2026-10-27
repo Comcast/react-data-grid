@@ -327,7 +327,7 @@ test('navigation when the active cell is not in the viewport', async () => {
   const columns: Column<Row, Row>[] = [SelectColumn];
   const activeRowCells = getRowWithCell(activeCell).getCell();
   for (let i = 0; i < 99; i++) {
-    columns.push({ key: `col${i}`, name: `col${i}`, frozen: i < 5 });
+    columns.push({ key: `col${i}`, name: `col${i}`, frozen: i < 5 ? 'start' : false });
   }
   await setup({ columns, rows, bottomSummaryRows });
   await safeTab();

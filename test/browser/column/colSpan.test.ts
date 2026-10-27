@@ -18,7 +18,7 @@ describe('colSpan', () => {
         key,
         name: key,
         width: 80,
-        frozen: i < 5,
+        frozen: i < 5 ? 'start' : false,
         colSpan(args) {
           if (args.type === 'ROW') {
             if (key === '2' && args.row === 2) return 3;

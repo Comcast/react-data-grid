@@ -1418,13 +1418,13 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-##### `frozen?: Maybe<ColumnFrozen | true>`
+##### `frozen?: Maybe<ColumnFrozen>`
 
 **Default:** `false`
 
 Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally. See the [`ColumnFrozen`](#columnfrozen) type.
 
-- `'start'` (or `true` for backward compatibility) — pins the column to the start edge (left in LTR, right in RTL).
+- `'start'` — pins the column to the start edge (left in LTR, right in RTL).
 - `'end'` — pins the column to the end edge (right in LTR, left in RTL).
 - `false` (default) — the column scrolls with the rest of the grid.
 
@@ -1613,7 +1613,7 @@ Whether a column is frozen, and on which edge.
 type ColumnFrozen = false | 'start' | 'end';
 ```
 
-**See also:** [`column.frozen`](#frozen-maybecolumnfrozen--true)
+**See also:** [`column.frozen`](#frozen-maybecolumnfrozen)
 
 #### `RenderCellContentProps<TRow, TSummaryRow>`
 
