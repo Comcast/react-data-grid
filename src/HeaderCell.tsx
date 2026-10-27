@@ -78,7 +78,7 @@ type SharedHeaderRowProps<R, SR> = Pick<
 
 export interface HeaderCellProps<R, SR> extends SharedHeaderRowProps<R, SR> {
   column: CalculatedColumn<R, SR>;
-  colSpan: number | undefined;
+  colSpan: number;
   rowIdx: number;
   isCellActive: boolean;
   draggedColumnKey: string | undefined;

@@ -1,7 +1,6 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
 
 export * from './activePositionUtils';
-export * from './colSpanUtils';
 export * from './domUtils';
 export * from './eventUtils';
 export * from './frozenColumnUtils';

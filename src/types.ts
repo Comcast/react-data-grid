@@ -101,6 +101,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
+  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow>) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
   readonly headerCellClass: Column<TRow, TSummaryRow>['headerCellClass'];
@@ -197,7 +198,7 @@ interface BaseRenderCellProps<TRow, TSummaryRow = unknown>
 export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<TRow, TSummaryRow> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
-  colSpan: number | undefined;
+  colSpan: number;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
@@ -287,7 +288,7 @@ export type MapViewportColumns<TRow, TSummaryRow> = <T>(
   callback: (
     column: CalculatedColumn<TRow, TSummaryRow>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ) => T[];

@@ -1,5 +1,4 @@
 import type { CalculatedColumn, ColSpanArgs } from '../types';
-import { getColSpan } from './colSpanUtils';
 
 // These functions build arrays with plain loops instead of using generators:
 // iterating over generator objects is much slower, and React Compiler doesn't support `yield`
@@ -54,13 +53,11 @@ export function getViewportColumns<R, SR>(
 export function mapColumnsWithColSpan<R, SR, T>(
   viewportColumns: readonly CalculatedColumn<R, SR>[],
   activeColumnIdx: number,
-  lastStartFrozenColumnIndex: number,
-  firstEndFrozenColumnIndex: number,
   colSpanArgs: ColSpanArgs<R, SR> | undefined,
   callback: (
     column: CalculatedColumn<R, SR>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ): T[] {
@@ -74,11 +71,9 @@ export function mapColumnsWithColSpan<R, SR, T>(
     // so the skipped columns are counted by index, not by their position in the list
     if (column.idx < nextColumnIdx) continue;
 
-    const colSpan =
-      colSpanArgs &&
-      getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, colSpanArgs);
+    const colSpan = colSpanArgs == null ? 1 : column.getColSpan(colSpanArgs);
     results.push(callback(column, column.idx === activeColumnIdx, colSpan, results.length));
-    nextColumnIdx = column.idx + (colSpan ?? 1);
+    nextColumnIdx = column.idx + colSpan;
   }
 
   return results;

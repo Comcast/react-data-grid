@@ -29,7 +29,7 @@ export function getHeaderCellStyle<R, SR>(
 
 export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
-  colSpan = 1
+  colSpan: number
 ): React.CSSProperties {
   const index = column.idx + 1;
   return {

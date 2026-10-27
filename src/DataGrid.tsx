@@ -27,7 +27,6 @@ import {
   focusCell,
   getCellStyle,
   getCellToScroll,
-  getColSpan,
   getLeftRightKey,
   getNextActivePosition,
   isCellEditableUtil,
@@ -925,8 +924,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       minRowIdx,
       mainHeaderRowIdx,
       maxRowIdx,
-      lastStartFrozenColumnIndex,
-      firstEndFrozenColumnIndex,
       cellNavigationMode,
       activePosition,
       nextPosition,
@@ -961,11 +958,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const isLastRow = rowIdx === maxRowIdx;
     const columnWidth = getColumnWidth(column);
-    const colSpan =
-      getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
-        type: 'ROW',
-        row: getActiveRow()
-      }) ?? 1;
+    const colSpan = column.getColSpan({
+      type: 'ROW',
+      row: getActiveRow()
+    });
     const style = getCellStyle(column, colSpan);
     const { insetInlineStart } = style;
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
@@ -1054,7 +1050,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { row } = activePosition;
     const column = getActiveColumn();
-    const colSpan = getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
+    const colSpan = column.getColSpan({
       type: 'ROW',
       row
     });

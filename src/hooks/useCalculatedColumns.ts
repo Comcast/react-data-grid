@@ -4,6 +4,7 @@ import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
+  ColSpanArgs,
   ColumnFrozen,
   ColumnOrColumnGroup,
   Omit
@@ -81,6 +82,28 @@ export function useCalculatedColumns<R, SR>({
 
     collectColumns(rawColumns, 1);
 
+    function getColSpan(column: CalculatedColumn<R, SR>, args: ColSpanArgs<R, SR>): number {
+      const colSpan = column.colSpan!(args) ?? 1;
+
+      if (!Number.isInteger(colSpan) || colSpan <= 1) return 1;
+
+      const spanEnd = column.idx + colSpan - 1;
+
+      // start-frozen column: span must stay within the start-frozen band
+      if (isStartFrozen(column.frozen) && spanEnd > lastStartFrozenColumnIndex) return 1;
+      // unfrozen column: span must not enter the end-frozen band
+      if (
+        column.frozen === false &&
+        firstEndFrozenColumnIndex !== -1 &&
+        spanEnd >= firstEndFrozenColumnIndex
+      ) {
+        return 1;
+      }
+      // end-frozen columns are the contiguous tail, so spans within the band are self-contained
+
+      return colSpan;
+    }
+
     function collectColumns(
       rawColumns: readonly ColumnOrColumnGroup<R, SR>[],
       level: number,
@@ -125,6 +148,8 @@ export function useCalculatedColumns<R, SR>({
           renderEditCell: rawColumn.renderEditCell,
           editable: rawColumn.editable,
           colSpan: rawColumn.colSpan,
+          getColSpan:
+            rawColumn.colSpan == null ? getDefaultColSpan : (args) => getColSpan(column, args),
           frozen,
           resizable: rawColumn.resizable ?? defaultResizable,
           sortable: rawColumn.sortable ?? defaultSortable,
@@ -333,6 +358,10 @@ export function useCalculatedColumns<R, SR>({
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth
   };
+}
+
+function getDefaultColSpan() {
+  return 1;
 }
 
 function updateColumnParent<R, SR>(
