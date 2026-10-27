@@ -14,7 +14,6 @@ import { configure } from 'vitest-browser-react/pure';
 // Chromium defaults to 10
 // Firefox defaults to 128
 // WebKit defaults to 100
-// @ts-expect-error
 Error.stackTraceLimit = 10;
 
 configure({
