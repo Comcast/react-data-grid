@@ -48,7 +48,7 @@ function GroupCell<R, SR>({
       tabIndex={tabIndex === -1 ? undefined : tabIndex}
       className={getCellClassname(column)}
       style={{
-        ...getCellStyle(column),
+        ...getCellStyle(column, 1),
         cursor: isLevelMatching ? 'pointer' : 'default'
       }}
       onClick={isLevelMatching ? toggleGroup : undefined}

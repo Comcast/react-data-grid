@@ -36,7 +36,7 @@ function SummaryCell<R, SR>({
     <div
       role="gridcell"
       aria-colindex={column.idx + 1}
-      aria-colspan={colSpan}
+      aria-colspan={colSpan > 1 ? colSpan : undefined}
       aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={className}
