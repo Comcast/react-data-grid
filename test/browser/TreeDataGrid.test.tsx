@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column } from '../../src';
-import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import type {
+  CellKeyDownArgs,
+  Column,
+  DataGridProps,
+  GroupRow,
+  TreeCellKeyDownArgs,
+  TreeDataGridProps,
+  TreePositionChangeArgs
+} from '../../src';
+import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
@@ -543,6 +551,105 @@ test('update row using cell content renderer', async () => {
   await expect.element(activeCell).toHaveTextContent('value: 2');
   await userEvent.click(page.getByRole('button', { name: 'value: 2' }));
   await expect.element(activeCell).toHaveTextContent('value: 12');
+});
+
+test('onCellKeyDown and onActivePositionChange are typed with group rows', () => {
+  type TreeKeyDownArgs = Parameters<NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>>[0];
+  type GridKeyDownArgs = Parameters<NonNullable<DataGridProps<Row>['onCellKeyDown']>>[0];
+  type TreePositionArgs = Parameters<
+    NonNullable<TreeDataGridProps<Row>['onActivePositionChange']>
+  >[0];
+  type GridPositionArgs = Parameters<NonNullable<DataGridProps<Row>['onActivePositionChange']>>[0];
+
+  expectTypeOf<TreeKeyDownArgs>().toEqualTypeOf<TreeCellKeyDownArgs<Row>>();
+  expectTypeOf<Extract<TreeKeyDownArgs, { mode: 'ACTIVE' }>['row']>().toEqualTypeOf<
+    Row | GroupRow<Row>
+  >();
+  expectTypeOf<Extract<TreeKeyDownArgs, { mode: 'EDIT' }>['row']>().toEqualTypeOf<Row>();
+  expectTypeOf<Extract<GridKeyDownArgs, { mode: 'ACTIVE' }>['row']>().toEqualTypeOf<Row>();
+  expectTypeOf<TreePositionArgs['row']>().toEqualTypeOf<Row | GroupRow<Row> | undefined>();
+  expectTypeOf<GridPositionArgs['row']>().toEqualTypeOf<Row | undefined>();
+
+  // a handler that only accepts regular rows cannot be passed to `TreeDataGrid`
+  expectTypeOf<(args: CellKeyDownArgs<Row>) => void>().not.toExtend<
+    NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>
+  >();
+  expectTypeOf<(args: TreeCellKeyDownArgs<Row>) => void>().toExtend<
+    NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>
+  >();
+});
+
+test('onCellKeyDown and onActivePositionChange receive group rows', async () => {
+  interface Call {
+    rowIdx: number;
+    idx: number;
+    isGroupRow: boolean;
+  }
+
+  const keyDownCalls: Call[] = [];
+  const positionChangeCalls: Call[] = [];
+
+  function onCellKeyDown(args: TreeCellKeyDownArgs<Row, SummaryRow>) {
+    if (args.mode === 'EDIT') return;
+    keyDownCalls.push({
+      rowIdx: args.rowIdx,
+      idx: args.column?.idx ?? -1,
+      isGroupRow: isGroupRow(args.row)
+    });
+  }
+
+  function onActivePositionChange({
+    rowIdx,
+    row,
+    column
+  }: TreePositionChangeArgs<Row, SummaryRow>) {
+    positionChangeCalls.push({
+      rowIdx,
+      idx: column?.idx ?? -1,
+      isGroupRow: row !== undefined && isGroupRow(row)
+    });
+  }
+
+  await page.render(
+    <TreeDataGrid<Row, SummaryRow>
+      columns={columns}
+      rows={initialRows}
+      groupBy={['country']}
+      expandedGroupIds={new Set(['USA'])}
+      onExpandedGroupIdsChange={() => {}}
+      onCellKeyDown={onCellKeyDown}
+      onActivePositionChange={onActivePositionChange}
+    />
+  );
+
+  // the rows are: USA (expanded), 1, 2, Canada (collapsed);
+  // the columns are: select, country, sport, year, id
+
+  // activate the USA group row, without toggling it
+  const usaGroupRow = getRowWithCell(page.getCell({ name: 'USA' }));
+  await userEvent.click(usaGroupRow.getCell().nth(2));
+  await expect.element(usaGroupRow).toHaveClass(rowActiveClassname);
+
+  // activate the first cell of the group row
+  await userEvent.keyboard('{arrowright}');
+  await expect.element(usaGroupRow.getCell().nth(0)).toHaveAttribute('aria-selected', 'true');
+
+  // activate a cell of a regular row
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await expect.element(page.getCell({ name: '2020' })).toHaveAttribute('aria-selected', 'true');
+  await userEvent.keyboard('{arrowright}');
+  await expect.element(activeCell).toHaveTextContent('value: 1');
+
+  expect(keyDownCalls).toStrictEqual([
+    { rowIdx: 0, idx: -1, isGroupRow: true },
+    { rowIdx: 1, idx: 3, isGroupRow: false }
+  ]);
+  expect(positionChangeCalls).toStrictEqual([
+    { rowIdx: 0, idx: -1, isGroupRow: true },
+    { rowIdx: 0, idx: 0, isGroupRow: true },
+    { rowIdx: 1, idx: 3, isGroupRow: false },
+    { rowIdx: 1, idx: 4, isGroupRow: false }
+  ]);
 });
 
 test('custom renderGroupCell', async () => {

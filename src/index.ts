@@ -6,7 +6,7 @@ export {
   type DataGridProps,
   type DefaultColumnOptions
 } from './DataGrid';
-export { TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
+export { isGroupRow, TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
 export { DataGridRenderersContext } from './DataGridRenderersContext';
 export { Row } from './Row';
 export { Cell } from './Cell';
@@ -55,5 +55,7 @@ export type {
   SelectRowEvent,
   SetActivePositionOptions,
   SortColumn,
-  SortDirection
+  SortDirection,
+  TreeCellKeyDownArgs,
+  TreePositionChangeArgs
 } from './types';

@@ -7,7 +7,6 @@ import type {
   CellClipboardEvent,
   CellCopyArgs,
   CellKeyboardEvent,
-  CellKeyDownArgs,
   CellPasteArgs,
   Column,
   GroupRow,
@@ -15,7 +14,9 @@ import type {
   Omit,
   RenderRowProps,
   RowHeightArgs,
-  RowsChangeData
+  RowsChangeData,
+  TreeCellKeyDownArgs,
+  TreePositionChangeArgs
 } from './types';
 import { renderToggleGroup } from './cellRenderers';
 import { SELECT_COLUMN_KEY } from './Columns';
@@ -27,10 +28,23 @@ import { defaultRenderRow } from './Row';
 
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
   DataGridProps<R, SR, K>,
-  'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
+  | 'columns'
+  | 'role'
+  | 'aria-rowcount'
+  | 'rowHeight'
+  | 'onFill'
+  | 'isRowSelectionDisabled'
+  | 'onCellKeyDown'
+  | 'onActivePositionChange'
 > {
   columns: readonly Column<NoInfer<R>, NoInfer<SR>>[];
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
+  /** Callback triggered when a key is pressed in a cell or a row, including group rows */
+  onCellKeyDown?: Maybe<
+    (args: TreeCellKeyDownArgs<NoInfer<R>, NoInfer<SR>>, event: CellKeyboardEvent) => void
+  >;
+  /** Function called whenever the active position is changed, including to a group row */
+  onActivePositionChange?: Maybe<(args: TreePositionChangeArgs<NoInfer<R>, NoInfer<SR>>) => void>;
   groupBy: readonly string[];
   getRowGroupKey?: Maybe<(row: NoInfer<R>, columnKey: string) => string>;
   expandedGroupIds: ReadonlySet<string>;
@@ -72,7 +86,11 @@ interface FlattenedRows<TRow> {
 // set, which keeps `isGroupRow` stable and out of the dependency arrays below
 const allGroupRows = new WeakSet<object>();
 
-function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow> {
+/**
+ * Returns whether a row of a `TreeDataGrid` is a group row,
+ * e.g., the active row passed to `onCellKeyDown` or `onActivePositionChange`
+ */
+export function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow> {
   return typeof row === 'object' && row !== null && allGroupRows.has(row);
 }
 
@@ -349,7 +367,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return undefined;
   }
 
-  function handleKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
+  function handleKeyDown(args: TreeCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
     rawOnCellKeyDown?.(args, event);
     if (event.isGridDefaultPrevented()) return;
 
@@ -494,7 +512,11 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         rowsCount + 1 + (props.topSummaryRows?.length ?? 0) + (props.bottomSummaryRows?.length ?? 0)
       }
       columns={columns}
-      rows={rows as R[]} // TODO: check types
+      // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
+      // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
+      // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
+      // to handle group rows, or never called with one
+      rows={rows as R[]}
       rowHeight={rowHeight}
       getRowKey={getRowKey}
       onRowsChange={handleRowsChange}

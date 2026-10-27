@@ -242,14 +242,15 @@ export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   setActivePosition: (enableEditor?: boolean) => void;
 }
 
-interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   mode: 'ACTIVE';
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  row: TRow;
+  /** The active row. In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow` */
+  row: TActiveRow;
   rowIdx: number;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
@@ -263,24 +264,45 @@ interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
-export type CellKeyDownArgs<TRow, TSummaryRow = unknown> =
-  | ActiveCellKeyDownArgs<TRow, TSummaryRow>
+/**
+ * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+export type CellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> =
+  | ActiveCellKeyDownArgs<TRow, TSummaryRow, TActiveRow>
   | EditCellKeyDownArgs<TRow, TSummaryRow>;
 
-export interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+/**
+ * @typeParam TActiveRow - The type of the active row, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+export interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   /** row index of the active position */
   rowIdx: number;
   /**
    * row object of the active position,
-   * undefined if the active position is on a header or summary row
+   * undefined if the active position is on a header or summary row.
+   * In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow`
    */
-  row: TRow | undefined;
+  row: TActiveRow | undefined;
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
+
+/** The arguments of `TreeDataGrid`'s `onCellKeyDown`, whose active row can be a `GroupRow` */
+export type TreeCellKeyDownArgs<TRow, TSummaryRow = unknown> = CellKeyDownArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
+
+/** The arguments of `TreeDataGrid`'s `onActivePositionChange`, whose row can be a `GroupRow` */
+export type TreePositionChangeArgs<TRow, TSummaryRow = unknown> = PositionChangeArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
 
 export type CellMouseEventHandler<R, SR> = Maybe<
   (args: CellMouseArgs<NoInfer<R>, NoInfer<SR>>, event: CellMouseEvent) => void
