@@ -1497,7 +1497,7 @@ interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSu
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
-  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow>) => number;
+  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow> | undefined) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
   readonly headerCellClass: Column<TRow, TSummaryRow>['headerCellClass'];

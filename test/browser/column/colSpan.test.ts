@@ -1,5 +1,6 @@
 import { page, userEvent } from 'vite-plus/test/browser';
 
+import { renderTextEditor } from '../../../src';
 import type { Column, ColumnFrozen, ColumnOrColumnGroup } from '../../../src';
 import { getCellsAtRowIndex, safeTab, scrollGrid, setup, validateCellPosition } from '../utils';
 
@@ -131,6 +132,33 @@ describe('colSpan', () => {
     await expect.element(cells.nth(1)).toHaveStyle({
       gridColumnStart: '2',
       gridColumnEnd: '4'
+    });
+  });
+
+  it('should span the editor like the cell', async () => {
+    interface Row {
+      col1: string;
+    }
+
+    const columns: readonly Column<Row>[] = [
+      {
+        key: 'col1',
+        name: 'col1',
+        colSpan: (args) => (args.type === 'ROW' ? 2 : undefined),
+        renderEditCell: renderTextEditor
+      },
+      { key: 'col2', name: 'col2' },
+      { key: 'col3', name: 'col3' }
+    ];
+    await setup({ columns, rows: [{ col1: 'value' }] });
+
+    await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+    const editCell = page.getActiveCell();
+    await expect.element(editCell.getByRole('textbox')).toHaveFocus();
+    await expect.element(editCell).toHaveAttribute('aria-colspan', '2');
+    await expect.element(editCell).toHaveStyle({
+      gridColumnStart: '1',
+      gridColumnEnd: '3'
     });
   });
 
