@@ -3,12 +3,7 @@ import { css } from 'ecij';
 
 import { classnames } from './utils';
 import type { RenderRowProps } from './types';
-import {
-  bottomSummaryRowClassname,
-  rowClassname,
-  rowActiveClassname,
-  topSummaryRowClassname
-} from './style/row';
+import { bottomSummaryRowClassname, rowClassname, topSummaryRowClassname } from './style/row';
 import SummaryCell from './SummaryCell';
 
 type SharedRenderRowProps<R, SR> = Pick<
@@ -18,7 +13,8 @@ type SharedRenderRowProps<R, SR> = Pick<
   | 'gridRowStart'
   | 'setActivePosition'
   | 'activeCellIdx'
-  | 'isTreeGrid'
+  | 'tabIndex'
+  | 'className'
 >;
 
 interface SummaryRowProps<R, SR> extends SharedRenderRowProps<R, SR> {
@@ -48,11 +44,10 @@ function SummaryRow<R, SR>({
   top,
   bottom,
   isTop,
-  isTreeGrid,
+  tabIndex,
+  className,
   'aria-rowindex': ariaRowIndex
 }: SummaryRowProps<R, SR>) {
-  const isPositionOnRow = activeCellIdx === -1;
-
   const cells = mapViewportColumns(
     activeCellIdx,
     { type: 'SUMMARY', row },
@@ -73,13 +68,13 @@ function SummaryRow<R, SR>({
     <div
       role="row"
       aria-rowindex={ariaRowIndex}
-      tabIndex={isTreeGrid ? (isPositionOnRow ? 0 : -1) : undefined}
+      tabIndex={tabIndex}
       className={classnames(
         rowClassname,
         `rdg-row-${rowIdx % 2 === 0 ? 'even' : 'odd'}`,
         summaryRowClassname,
         isTop ? topSummaryRowClassname : bottomSummaryRowClassname,
-        isPositionOnRow && rowActiveClassname
+        className
       )}
       style={{
         gridRowStart,
