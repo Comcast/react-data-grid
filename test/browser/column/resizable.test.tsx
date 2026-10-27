@@ -112,6 +112,71 @@ test('should use the minWidth if specified when resizing using keyboard', async 
   expect(onColumnResize).toHaveBeenCalledTimes(10);
 });
 
+test('should call onColumnWidthsChange when the key is released after resizing using keyboard', async () => {
+  const onColumnWidthsChange = vi.fn();
+  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
+  await userEvent.click(page.getHeaderCell({ name: 'col2' }));
+
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  expect(onColumnWidthsChange).not.toHaveBeenCalled();
+
+  await userEvent.keyboard('{/ArrowRight}');
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
+  );
+  await userEvent.keyboard('{/Control}');
+  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
+});
+
+test('should end the keyboard resize when the header cell loses focus', async () => {
+  const onColumnWidthsChange = vi.fn();
+  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
+  const headerCell = page.getHeaderCell({ name: 'col2' });
+
+  await userEvent.click(headerCell);
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  expect(onColumnWidthsChange).not.toHaveBeenCalled();
+
+  (headerCell.element() as HTMLElement).blur();
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
+  );
+  await userEvent.keyboard('{/ArrowRight}{/Control}');
+  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
+});
+
+test('should use the columnWidths prop again after resizing using keyboard', async () => {
+  function TestGrid() {
+    const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
+
+    return (
+      <>
+        <button type="button" onClick={() => setColumnWidths(new Map())}>
+          Reset widths
+        </button>
+        <DataGrid<Row>
+          columns={columns}
+          rows={[]}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={setColumnWidths}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await userEvent.click(page.getHeaderCell({ name: 'col2' }));
+  await userEvent.keyboard('{Control>}{ArrowRight}{/Control}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  await userEvent.click(page.getByRole('button', { name: 'Reset widths' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
+});
+
 test('should auto resize column when resize handle is double-clicked', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({
@@ -557,25 +622,6 @@ test('should keep the widths when onColumnWidthsChange is removed', async () => 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px' });
   await userEvent.click(page.getByRole('button', { name: 'Read only' }));
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px' });
-});
-
-test('should end the keyboard resize when the header cell loses focus', async () => {
-  const onColumnWidthsChange = vi.fn();
-  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
-  const headerCell = page.getHeaderCell({ name: 'col2' });
-
-  await userEvent.click(headerCell);
-  // keep the key pressed, so the column is still being resized
-  await userEvent.keyboard('{Control>}{ArrowRight>}');
-  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
-  expect(onColumnWidthsChange).not.toHaveBeenCalled();
-
-  (headerCell.element() as HTMLElement).blur();
-  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
-    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
-  );
-  await userEvent.keyboard('{/ArrowRight}{/Control}');
-  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
 });
 
 test('should not mark a column as resized when auto-sizing does not change its width', async () => {
