@@ -13,55 +13,75 @@ defaults:
 
 jobs:
   apt:
-    name: apt (${{ matrix.mirrors }} ${{ matrix.sample }})
+    name: apt (${{ matrix.variant }} ${{ matrix.sample }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     permissions: {}
 
     strategy:
       fail-fast: false
       matrix:
-        mirrors: [default, archive-first]
-        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        variant: [default, archive, archive-pipelined, archive-security, archive-security-pipelined]
+        sample: [1, 2, 3, 4, 5]
 
     steps:
-      - name: Show runner, DNS, and apt configuration
+      - name: Show DNS and apt configuration
         run: |
-          echo "::group::runner"
-          curl -sS --max-time 2 -H Metadata:true --noproxy '*' 'http://169.254.169.254/metadata/instance/compute/location?api-version=2021-02-01&format=text' || true
-          echo
-          echo "::endgroup::"
           echo "::group::DNS"
           for host in azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
             dig +noall +answer "$host"
           done
           echo "::endgroup::"
           echo "::group::apt"
+          ls -la /etc/apt/
           cat /etc/apt/apt-mirrors.txt
-          cat /etc/apt/sources.list.d/*.sources
-          ls -la /etc/apt/apt.conf.d/ /etc/apt/sources.list.d/
-          grep -r . /etc/apt/apt.conf.d/
           echo "::endgroup::"
 
-      - name: Prefer archive.ubuntu.com
-        if: matrix.mirrors == 'archive-first'
+      # the regional mirror's cache: the same file, served from the cache, then fetched through it
+      - name: Probe mirrors
         run: |
-          printf '%s\tpriority:%s\n' \
-            https://archive.ubuntu.com/ubuntu/ 1 \
-            https://security.ubuntu.com/ubuntu/ 2 \
-            http://azure.archive.ubuntu.com/ubuntu/ 3 \
-            | sudo tee /etc/apt/apt-mirrors.txt
+          probe() {
+            curl -sS -o /dev/null -D /tmp/headers --max-time 20 \
+              -w "PROBE $1 %{remote_ip} %{http_code} %{size_download}B %{time_total}s %{speed_download}B/s" "$2" || true
+            echo " $(grep -i -E '^(via|x-cache):' /tmp/headers | tr -d '\r' | tr '\n' ' ')"
+          }
+          file=ubuntu/dists/noble/universe/binary-amd64/Packages.xz
+          for i in 1 2; do
+            probe azure-cached "http://azure.archive.ubuntu.com/$file"
+            probe azure-uncached "http://azure.archive.ubuntu.com/$file?$RANDOM$RANDOM"
+            probe archive "https://archive.ubuntu.com/$file"
+          done
+          probe azure-pool "http://azure.archive.ubuntu.com/ubuntu/pool/main/g/gtk4/libgtk-4-1_4.14.5+ds-0ubuntu0.10_amd64.deb"
 
-      # same as .github/apt.conf, but with progress output
-      - name: Configure apt like CI
+      - name: Configure apt
         run: |
+          # as .github/apt.conf, without `quiet`
           printf '%s\n' \
             'Acquire::Retries "0";' \
             'Acquire::http::Timeout "10";' \
             'Acquire::https::Timeout "10";' \
             | sudo tee /etc/apt/apt.conf.d/99-ci
-          apt-config dump Acquire::Retries Acquire::http::Timeout Acquire::https::Timeout quiet
+          case "$VARIANT" in
+            archive*)
+              security_priority=2
+              if [[ $VARIANT == archive-security* ]]; then
+                security_priority=1
+              fi
+              printf '%s\tpriority:%s\n' \
+                https://archive.ubuntu.com/ubuntu/ 1 \
+                https://security.ubuntu.com/ubuntu/ "$security_priority" \
+                http://azure.archive.ubuntu.com/ubuntu/ 3 \
+                | sudo tee /etc/apt/apt-mirrors.txt
+              ;;
+          esac
+          if [[ $VARIANT == *-pipelined ]]; then
+            # read after /etc/apt/apt.conf.d/, so it overrides 99bad_proxy's Pipeline-Depth 0
+            echo 'Acquire::https::Pipeline-Depth "10";' | sudo tee /etc/apt/apt.conf
+          fi
+          apt-config dump Acquire::Retries Acquire::http Acquire::https quiet
+        env:
+          VARIANT: ${{ matrix.variant }}
 
       - name: Start TCP monitor
         run: |
@@ -73,13 +93,13 @@ jobs:
             done' > /tmp/ss.log 2>&1 < /dev/null &
 
       - name: playwright install-deps
-        timeout-minutes: 15
+        timeout-minutes: 8
         run: |
           start=$(date +%s)
           npx --yes playwright@1.64.1 install-deps 2>&1 | tee /tmp/install.log
-          echo "RESULT mirrors=${MIRRORS} seconds=$(($(date +%s) - start))"
+          echo "RESULT variant=${VARIANT} seconds=$(($(date +%s) - start))"
         env:
-          MIRRORS: ${{ matrix.mirrors }}
+          VARIANT: ${{ matrix.variant }}
 
       - name: Summarize apt transfers
         if: always()
@@ -87,17 +107,6 @@ jobs:
           grep -E '^(Fetched|Need to get|Err|Ign|W:|E:)' /tmp/install.log || true
           # which mirror served the files
           grep -oE '^(Get|Hit):[0-9]+ [a-z]+://[^/ ]+' /tmp/install.log | cut -d' ' -f2 | sort | uniq -c || true
-
-      - name: Probe mirror throughput with fresh connections
-        if: always()
-        run: |
-          for mirror in http://azure.archive.ubuntu.com https://archive.ubuntu.com; do
-            for i in 1 2 3; do
-              curl -sS -o /dev/null --max-time 30 \
-                -w "PROBE $mirror %{remote_ip} %{http_code} %{size_download}B %{time_total}s %{speed_download}B/s\n" \
-                "$mirror/ubuntu/dists/noble/universe/binary-amd64/Packages.xz" || true
-            done
-          done
 
       # each second, the connections of apt's http and https methods, and their TCP info
       - name: TCP connections of apt's download methods
