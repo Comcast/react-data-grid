@@ -27,7 +27,6 @@ import {
   focusCell,
   getCellStyle,
   getCellToScroll,
-  getColSpan,
   getLeftRightKey,
   getNextActivePosition,
   isCellEditableUtil,
@@ -697,13 +696,17 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // ensure cell is fully visible
       scrollIntoView(cell);
 
-      setActivePosition(({ idx, rowIdx }) => ({
-        idx,
-        rowIdx,
-        mode: 'EDIT',
-        row,
-        originalRow: row
-      }));
+      // ensure we render the editor quickly enough,
+      // otherwise the user input might be lost in Firefox
+      flushSync(() => {
+        setActivePosition(({ idx, rowIdx }) => ({
+          idx,
+          rowIdx,
+          mode: 'EDIT',
+          row,
+          originalRow: row
+        }));
+      });
     }
   }
 
@@ -926,8 +929,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       minRowIdx,
       mainHeaderRowIdx,
       maxRowIdx,
-      lastStartFrozenColumnIndex,
-      firstEndFrozenColumnIndex,
       cellNavigationMode,
       activePosition,
       nextPosition,
@@ -961,12 +962,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     const isLastRow = rowIdx === maxRowIdx;
-    const columnWidth = getColumnWidth(column);
-    const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
+    const colSpan = column.getColSpan({
+      type: 'ROW',
+      row: getActiveRow()
+    });
     const style = getCellStyle(column, colSpan);
-    const { insetInlineStart } = style;
+    // the drag handle is at the end of the last column that the cell spans,
+    // where it sticks when the column is start-frozen
+    const lastColumn = columns[column.idx + colSpan - 1];
+    const columnWidth = getColumnWidth(lastColumn);
+    const { insetInlineStart } = getCellStyle(lastColumn, 1);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
-    const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
+    const isLastColumn = lastColumn.idx === maxColIdx;
     const dragHandleStyle: React.CSSProperties = {
       ...style,
       gridRowStart: headerAndTopSummaryRowsCount + rowIdx + 1,
@@ -1051,10 +1058,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { row } = activePosition;
     const column = getActiveColumn();
-    const colSpan = getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
-      type: 'ROW',
-      row
-    });
 
     function closeEditor(shouldFocus: boolean) {
       const newPosition: ActivePosition = { idx: activePosition.idx, rowIdx, mode: 'ACTIVE' };
@@ -1082,7 +1085,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       <EditCell
         key={column.key}
         column={column}
-        colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
         onRowChange={onRowChange}

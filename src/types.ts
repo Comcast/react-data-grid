@@ -51,10 +51,14 @@ export interface Column<TRow, TSummaryRow = unknown> {
   >;
   /** Control whether cells can be edited with `renderEditCell` */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
+  /**
+   * Returns the number of columns that the cell spans, or `undefined` for no spanning.
+   * The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
+   */
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
   /** Determines whether the column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backward compatibility. */
-  readonly frozen?: Maybe<ColumnFrozen>;
+  readonly frozen?: Maybe<ColumnFrozen | true>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */
@@ -101,6 +105,8 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
+  /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
+  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow> | undefined) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
   readonly headerCellClass: Column<TRow, TSummaryRow>['headerCellClass'];
@@ -197,7 +203,7 @@ interface BaseRenderCellProps<TRow, TSummaryRow = unknown>
 export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<TRow, TSummaryRow> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
-  colSpan: number | undefined;
+  colSpan: number;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
@@ -205,7 +211,7 @@ export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<
 
 export interface EditCellProps<R, SR> extends Pick<
   RenderCellProps<R, SR>,
-  'column' | 'colSpan' | 'row' | 'rowIdx'
+  'column' | 'row' | 'rowIdx'
 > {
   onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
   closeEditor: (shouldFocus: boolean) => void;
@@ -287,7 +293,7 @@ export type MapViewportColumns<TRow, TSummaryRow> = <T>(
   callback: (
     column: CalculatedColumn<TRow, TSummaryRow>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ) => T[];
@@ -372,7 +378,7 @@ export interface SortColumn {
 }
 
 export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
-export type ColumnFrozen = boolean | 'start' | 'end';
+export type ColumnFrozen = false | 'start' | 'end';
 export type SortDirection = 'ASC' | 'DESC';
 
 export type ColSpanArgs<TRow, TSummaryRow> =
