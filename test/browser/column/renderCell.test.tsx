@@ -107,7 +107,8 @@ describe('Custom cell content renderer', () => {
         sortable: false,
         draggable: false,
         width: 'auto',
-        renderHeaderCell
+        renderHeaderCell,
+        getColSpan: expect.any(Function)
       },
       indexes: [0]
     });
