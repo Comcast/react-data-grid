@@ -78,7 +78,8 @@ function getCellColSpan<R, SR>({
     });
   }
 
-  return undefined;
+  // the header rows of column groups
+  return 1;
 }
 
 export function getNextActivePosition<R, SR>({
@@ -115,7 +116,7 @@ export function getNextActivePosition<R, SR>({
         column
       });
 
-      if (colSpan && nextIdx > colIdx && nextIdx < colSpan + colIdx) {
+      if (nextIdx > colIdx && nextIdx < colSpan + colIdx) {
         nextIdx = colIdx + (moveNext ? colSpan : 0);
         break;
       }

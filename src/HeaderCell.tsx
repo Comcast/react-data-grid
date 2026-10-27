@@ -282,7 +282,7 @@ export default function HeaderCell<R, SR>({
       <div
         role="columnheader"
         aria-colindex={column.idx + 1}
-        aria-colspan={colSpan}
+        aria-colspan={colSpan > 1 ? colSpan : undefined}
         aria-rowspan={rowSpan}
         aria-selected={isCellActive}
         aria-sort={ariaSort}

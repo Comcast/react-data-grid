@@ -51,6 +51,10 @@ export interface Column<TRow, TSummaryRow = unknown> {
   >;
   /** Control whether cells can be edited with `renderEditCell` */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
+  /**
+   * Returns the number of columns that the cell spans, or `undefined` for no spanning.
+   * The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
+   */
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
   /** Determines whether the column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backward compatibility. */
@@ -101,6 +105,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
+  /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
   readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow>) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
