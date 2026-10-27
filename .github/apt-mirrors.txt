@@ -1,0 +1,7 @@
+# Replaces the runner image's /etc/apt/apt-mirrors.txt, which lists azure.archive.ubuntu.com first.
+# It resolves to a mirror in the runner's Azure region, and the westus and westus3 mirrors relay packages
+# from upstream at ~50 kB/s, which apt can take ~40 minutes to download, as it never fails over from a slow mirror:
+# https://github.com/actions/runner-images/issues/14823
+https://archive.ubuntu.com/ubuntu/	priority:1
+https://security.ubuntu.com/ubuntu/	priority:2
+http://azure.archive.ubuntu.com/ubuntu/	priority:3

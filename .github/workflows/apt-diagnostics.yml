@@ -1,4 +1,4 @@
-# Temporary: samples `playwright install-deps` across runners to find why it hangs in CI.
+# Temporary: checks that `vp run install-browsers` succeeds quickly across runners.
 # Removed before merging.
 name: apt diagnostics
 
@@ -12,103 +12,67 @@ defaults:
     shell: bash
 
 jobs:
-  apt:
-    name: apt (${{ matrix.variant }} ${{ matrix.sample }})
+  install-browsers:
+    name: install-browsers (${{ matrix.scenario }} ${{ matrix.sample }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    permissions: {}
+    permissions:
+      contents: read # check out the repository
 
     strategy:
       fail-fast: false
       matrix:
-        variant: [default, archive, archive-pipelined, archive-security, archive-security-pipelined]
-        sample: [1, 2, 3, 4, 5]
+        scenario: [ci]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        include:
+          # the first attempt downloads from the degraded westus mirror,
+          # the retry from archive.ubuntu.com
+          - scenario: slow-mirror
+            sample: 1
+          - scenario: slow-mirror
+            sample: 2
+          - scenario: slow-mirror
+            sample: 3
 
     steps:
-      - name: Show DNS and apt configuration
-        run: |
-          echo "::group::DNS"
-          for host in azure.archive.ubuntu.com archive.ubuntu.com security.ubuntu.com; do
-            dig +noall +answer "$host"
-          done
-          echo "::endgroup::"
-          echo "::group::apt"
-          ls -la /etc/apt/
-          cat /etc/apt/apt-mirrors.txt
-          echo "::endgroup::"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      # the regional mirror's cache: the same file, served from the cache, then fetched through it
-      - name: Probe mirrors
-        run: |
-          probe() {
-            curl -sS -o /dev/null -D /tmp/headers --max-time 20 \
-              -w "PROBE $1 %{remote_ip} %{http_code} %{size_download}B %{time_total}s %{speed_download}B/s" "$2" || true
-            echo " $(grep -i -E '^(via|x-cache):' /tmp/headers | tr -d '\r' | tr '\n' ' ')"
-          }
-          file=ubuntu/dists/noble/universe/binary-amd64/Packages.xz
-          for i in 1 2; do
-            probe azure-cached "http://azure.archive.ubuntu.com/$file"
-            probe azure-uncached "http://azure.archive.ubuntu.com/$file?$RANDOM$RANDOM"
-            probe archive "https://archive.ubuntu.com/$file"
-          done
-          probe azure-pool "http://azure.archive.ubuntu.com/ubuntu/pool/main/g/gtk4/libgtk-4-1_4.14.5+ds-0ubuntu0.10_amd64.deb"
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          run-install: false
 
-      - name: Configure apt
-        run: |
-          # as .github/apt.conf, without `quiet`
-          printf '%s\n' \
-            'Acquire::Retries "0";' \
-            'Acquire::http::Timeout "10";' \
-            'Acquire::https::Timeout "10";' \
-            | sudo tee /etc/apt/apt.conf.d/99-ci
-          case "$VARIANT" in
-            archive*)
-              security_priority=2
-              if [[ $VARIANT == archive-security* ]]; then
-                security_priority=1
-              fi
-              printf '%s\tpriority:%s\n' \
-                https://archive.ubuntu.com/ubuntu/ 1 \
-                https://security.ubuntu.com/ubuntu/ "$security_priority" \
-                http://azure.archive.ubuntu.com/ubuntu/ 3 \
-                | sudo tee /etc/apt/apt-mirrors.txt
-              ;;
-          esac
-          if [[ $VARIANT == *-pipelined ]]; then
-            # read after /etc/apt/apt.conf.d/, so it overrides 99bad_proxy's Pipeline-Depth 0
-            echo 'Acquire::https::Pipeline-Depth "10";' | sudo tee /etc/apt/apt.conf
-          fi
-          apt-config dump Acquire::Retries Acquire::http Acquire::https quiet
-        env:
-          VARIANT: ${{ matrix.variant }}
+      - run: vp install --frozen-lockfile
 
-      - name: Start TCP monitor
-        run: |
-          sudo setsid bash -c '
-            while :; do
-              echo "@ $(date -u +%T.%N | cut -c1-12)"
-              ss -tinpH state established "( dport = :80 or dport = :443 )"
-              sleep 1
-            done' > /tmp/ss.log 2>&1 < /dev/null &
+      - run: shellcheck .github/install-browsers.sh
+        if: matrix.scenario == 'slow-mirror' && matrix.sample == 1
+        continue-on-error: true
 
-      - name: playwright install-deps
+      - name: Simulate a slow first-choice mirror
+        if: matrix.scenario == 'slow-mirror'
+        run: |
+          echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
+          printf '%s\tpriority:1\n' http://azure.archive.ubuntu.com/ubuntu/ > .github/apt-mirrors.txt
+          # the list the script falls back to
+          printf '%s\tpriority:%s\n' https://archive.ubuntu.com/ubuntu/ 1 https://security.ubuntu.com/ubuntu/ 2 \
+            | sudo tee /etc/apt/apt-mirrors.txt
+
+      - name: vp run install-browsers
         timeout-minutes: 8
         run: |
           start=$(date +%s)
-          npx --yes playwright@1.64.1 install-deps 2>&1 | tee /tmp/install.log
-          echo "RESULT variant=${VARIANT} seconds=$(($(date +%s) - start))"
+          vp run install-browsers 2>&1 | tee /tmp/install.log
+          echo "RESULT scenario=${SCENARIO} seconds=$(($(date +%s) - start))"
         env:
-          VARIANT: ${{ matrix.variant }}
+          CI: true
+          SCENARIO: ${{ matrix.scenario }}
 
       - name: Summarize apt transfers
         if: always()
         run: |
-          grep -E '^(Fetched|Need to get|Err|Ign|W:|E:)' /tmp/install.log || true
+          grep -E '^(Fetched|Need to get|Download complete|Err|Ign|W:|E:|::warning::)' /tmp/install.log || true
           # which mirror served the files
           grep -oE '^(Get|Hit):[0-9]+ [a-z]+://[^/ ]+' /tmp/install.log | cut -d' ' -f2 | sort | uniq -c || true
-
-      # each second, the connections of apt's http and https methods, and their TCP info
-      - name: TCP connections of apt's download methods
-        if: always()
-        run: awk '/^@/ { t = $2; next } /"https?",/ { print t, $0; getline; print t, $0 }' /tmp/ss.log
+          dig +noall +answer azure.archive.ubuntu.com
