@@ -1,6 +1,6 @@
 import { createContext, use } from 'react';
 
-import type { SelectHeaderRowEvent, SelectRowEvent } from '../types';
+import type { SelectHeaderRowArgs, SelectRowArgs } from '../types';
 
 export interface RowSelectionContextValue {
   readonly isRowSelected: boolean;
@@ -12,7 +12,7 @@ RowSelectionContext.displayName = 'RowSelectionContext';
 
 export const RowSelectionChangeContext = createContext<
   // oxlint-disable-next-line typescript/no-explicit-any
-  ((selectRowEvent: SelectRowEvent<any>) => void) | undefined
+  ((args: SelectRowArgs<any>) => void) | undefined
 >(undefined);
 RowSelectionChangeContext.displayName = 'RowSelectionChangeContext';
 
@@ -42,7 +42,7 @@ export const HeaderRowSelectionContext = createContext<HeaderRowSelectionContext
 HeaderRowSelectionContext.displayName = 'HeaderRowSelectionContext';
 
 export const HeaderRowSelectionChangeContext = createContext<
-  ((selectRowEvent: SelectHeaderRowEvent) => void) | undefined
+  ((args: SelectHeaderRowArgs) => void) | undefined
 >(undefined);
 HeaderRowSelectionChangeContext.displayName = 'HeaderRowSelectionChangeContext';
 

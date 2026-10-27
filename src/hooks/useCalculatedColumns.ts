@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { clampColumnWidth, max, min } from '../utils';
 import type {
   CalculatedColumn,
-  CalculatedColumnParent,
+  CalculatedColumnGroup,
   ColSpanArgs,
   ColumnFrozen,
   ColumnOrColumnGroup,
@@ -19,10 +19,10 @@ type Mutable<T> = {
 };
 
 interface WithParent<R, SR> {
-  readonly parent: MutableCalculatedColumnParent<R, SR> | undefined;
+  readonly parent: MutableCalculatedColumnGroup<R, SR> | undefined;
 }
 
-type MutableCalculatedColumnParent<R, SR> = Omit<Mutable<CalculatedColumnParent<R, SR>>, 'parent'> &
+type MutableCalculatedColumnGroup<R, SR> = Omit<Mutable<CalculatedColumnGroup<R, SR>>, 'parent'> &
   WithParent<R, SR>;
 type MutableCalculatedColumn<R, SR> = Omit<Mutable<CalculatedColumn<R, SR>>, 'parent'> &
   WithParent<R, SR>;
@@ -109,11 +109,11 @@ export function useCalculatedColumns<R, SR>({
     function collectColumns(
       rawColumns: readonly ColumnOrColumnGroup<R, SR>[],
       level: number,
-      parent?: MutableCalculatedColumnParent<R, SR>
+      parent?: MutableCalculatedColumnGroup<R, SR>
     ) {
       for (const rawColumn of rawColumns) {
         if ('children' in rawColumn) {
-          const calculatedColumnParent: MutableCalculatedColumnParent<R, SR> = {
+          const calculatedColumnGroup: MutableCalculatedColumnGroup<R, SR> = {
             name: rawColumn.name,
             parent,
             idx: -1,
@@ -122,7 +122,7 @@ export function useCalculatedColumns<R, SR>({
             headerCellClass: rawColumn.headerCellClass
           };
 
-          collectColumns(rawColumn.children, level + 1, calculatedColumnParent);
+          collectColumns(rawColumn.children, level + 1, calculatedColumnGroup);
           continue;
         }
 
@@ -193,7 +193,7 @@ export function useCalculatedColumns<R, SR>({
     for (let idx = 0; idx < columns.length; idx++) {
       const column = columns[idx];
       column.idx = idx;
-      updateColumnParent(column, idx, 0);
+      updateColumnGroups(column, idx, 0);
 
       if (column.colSpan != null) {
         colSpanColumns.push(column);
@@ -367,8 +367,8 @@ function getDefaultColSpan() {
   return 1;
 }
 
-function updateColumnParent<R, SR>(
-  column: MutableCalculatedColumn<R, SR> | MutableCalculatedColumnParent<R, SR>,
+function updateColumnGroups<R, SR>(
+  column: MutableCalculatedColumn<R, SR> | MutableCalculatedColumnGroup<R, SR>,
   index: number,
   level: number
 ) {
@@ -382,6 +382,6 @@ function updateColumnParent<R, SR>(
       parent.idx = index;
     }
     parent.colSpan += 1;
-    updateColumnParent(parent, index, level - 1);
+    updateColumnGroups(parent, index, level - 1);
   }
 }

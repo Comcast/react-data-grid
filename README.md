@@ -234,7 +234,7 @@ Control column widths using the [`width`](#width-maybenumber--string), [`minWidt
 
 ### Custom Renderers
 
-Replace default components with custom implementations using the [`renderers`](#renderers-mayberenderersr-sr) prop. Columns can also have custom renderers using the [`renderCell`](#rendercell-maybeprops-rendercellcontentpropstrow-tsummaryrow--reactnode), [`renderHeaderCell`](#renderheadercell-maybeprops-renderheadercellcontentpropstrow-tsummaryrow--reactnode), [`renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellcontentpropstsummaryrow-trow--reactnode), [`renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellcontentpropstrow-tsummaryrow--reactnode), and [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode) properties.
+Replace default components with custom implementations using the [`renderers`](#renderers-mayberenderersr-sr) prop. Columns can also have custom renderers using the [`renderCell`](#rendercell-maybeprops-rendercellcontentpropstrow-tsummaryrow--reactnode), [`renderHeaderCell`](#renderheadercell-maybeprops-renderheadercellcontentpropstrow-tsummaryrow--reactnode), [`renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellcontentpropstrow-tsummaryrow--reactnode), [`renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellcontentpropstrow-tsummaryrow--reactnode), and [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode) properties.
 
 ## Keyboard Shortcuts
 
@@ -648,14 +648,14 @@ Return the updated row; the grid will call `onRowsChange` with it.
 
 Callback triggered when the active position changes. See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type.
 
-###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
+###### `onFill?: Maybe<(args: FillArgs<R>) => R>`
 
 Callback triggered when the value of the active cell is dragged to fill other cells. When this prop is set, a drag handle is shown on the active cell if it is editable. Drag the handle up or down to fill the cells it passes over, or double-click it to fill all the cells below.
 
-The grid calls `onFill` for each editable target cell. Return the updated target row; the grid will call `onRowsChange` with the updated rows. See the [`FillEvent`](#filleventtrow) type.
+The grid calls `onFill` for each editable target cell. Return the updated target row; the grid will call `onRowsChange` with the updated rows. See the [`FillArgs`](#fillargstrow) type.
 
 ```tsx
-function onFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+function onFill({ columnKey, sourceRow, targetRow }: FillArgs<Row>): Row {
   return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
 }
 
@@ -1007,7 +1007,7 @@ Hook for managing header row selection state. Used within custom header cell ren
 
 - `isIndeterminate: boolean` - Whether some (but not all) rows are selected
 - `isRowSelected: boolean` - Whether all rows are selected
-- `onRowSelectionChange: (event: SelectHeaderRowEvent) => void` - Callback to change selection state
+- `onRowSelectionChange: (args: SelectHeaderRowArgs) => void` - Callback to change selection state
 
 **Example:**
 
@@ -1043,7 +1043,7 @@ Hook for managing row selection state. Used within custom cell renderers to impl
 
 - `isRowSelectionDisabled: boolean` - Whether selection is disabled for this row
 - `isRowSelected: boolean` - Whether this row is selected
-- `onRowSelectionChange: (event: SelectRowEvent<R>) => void` - Callback to change selection state
+- `onRowSelectionChange: (args: SelectRowArgs<R>) => void` - Callback to change selection state
 
 **Example:**
 
@@ -1377,7 +1377,7 @@ Render function to render the content of cells.
 
 Render function to render the content of the header cell.
 
-##### `renderSummaryCell?: Maybe<(props: RenderSummaryCellContentProps<TSummaryRow, TRow>) => ReactNode>`
+##### `renderSummaryCell?: Maybe<(props: RenderSummaryCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
 Render function to render the content of summary cells.
 
@@ -1526,7 +1526,7 @@ Extends `Column` with additional computed properties used internally by the grid
 ```tsx
 interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
   /** The column group that contains the column, or `undefined` if the column is not in a group */
-  readonly parent: CalculatedColumnParent<TRow, TSummaryRow> | undefined;
+  readonly parent: CalculatedColumnGroup<TRow, TSummaryRow> | undefined;
   /** The index of the column in the grid. Column groups are flattened and frozen columns are moved to their edge, so it can differ from the column's index in `columns` */
   readonly idx: number;
   /** Header row level, counted from the bottom header row: always `0` for columns, and negative for column groups */
@@ -1558,18 +1558,18 @@ interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSu
 
 **See also:** [`Column`](#columntrow-tsummaryrow), [`onColumnResize`](#oncolumnresize-maybecolumn-calculatedcolumnr-sr-width-number--void) prop on `<DataGrid />`
 
-#### `CalculatedColumnParent<TRow, TSummaryRow>`
+#### `CalculatedColumnGroup<TRow, TSummaryRow>`
 
 Represents a parent column group in the calculated column structure.
 
 ```tsx
-interface CalculatedColumnParent<R, SR> {
+interface CalculatedColumnGroup<R, SR> {
   readonly name: string | ReactElement;
-  readonly parent: CalculatedColumnParent<R, SR> | undefined;
+  readonly parent: CalculatedColumnGroup<R, SR> | undefined;
   readonly idx: number;
   readonly colSpan: number;
   readonly level: number;
-  readonly headerCellClass?: Maybe<string>;
+  readonly headerCellClass: Maybe<string>;
 }
 ```
 
@@ -1577,13 +1577,13 @@ interface CalculatedColumnParent<R, SR> {
 
 #### `CalculatedColumnOrColumnGroup<TRow, TSummaryRow>`
 
-Union type representing either a `CalculatedColumnParent` or a `CalculatedColumn`.
+Union type representing either a `CalculatedColumnGroup` or a `CalculatedColumn`.
 
 ```tsx
-type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnParent<R, SR> | CalculatedColumn<R, SR>;
+type CalculatedColumnOrColumnGroup<R, SR> = CalculatedColumnGroup<R, SR> | CalculatedColumn<R, SR>;
 ```
 
-**See also:** [`CalculatedColumn`](#calculatedcolumntrow-tsummaryrow), [`CalculatedColumnParent`](#calculatedcolumnparenttrow-tsummaryrow)
+**See also:** [`CalculatedColumn`](#calculatedcolumntrow-tsummaryrow), [`CalculatedColumnGroup`](#calculatedcolumngrouptrow-tsummaryrow)
 
 #### `DefaultColumnOptions<TRow, TSummaryRow>`
 
@@ -1695,19 +1695,19 @@ function renderEditor({ row, column, onRowChange, onClose }: RenderEditCellConte
 
 **See also:** [`column.renderEditCell`](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode), [`renderTextEditor`](#rendertexteditortrow-tsummaryrowprops-rendereditcellcontentpropstrow-tsummaryrow) function
 
-#### `RenderSummaryCellContentProps<TSummaryRow, TRow>`
+#### `RenderSummaryCellContentProps<TRow, TSummaryRow>`
 
 Props passed to summary cell content renderers (`column.renderSummaryCell`).
 
 ```tsx
-interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
+interface RenderSummaryCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TSummaryRow;
   tabIndex: number;
 }
 ```
 
-**See also:** [`column.renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellcontentpropstsummaryrow-trow--reactnode)
+**See also:** [`column.renderSummaryCell`](#rendersummarycell-maybeprops-rendersummarycellcontentpropstrow-tsummaryrow--reactnode)
 
 #### `RenderGroupCellContentProps<TRow, TSummaryRow>`
 
@@ -2160,12 +2160,12 @@ interface RowsChangeData<R, SR = unknown> {
 
 **See also:** [`onRowsChange`](#onrowschange-mayberows-r-data-rowschangedatar-sr--void) prop on `<DataGrid />`
 
-#### `SelectRowEvent<TRow>`
+#### `SelectRowArgs<TRow>`
 
-Event object for row selection changes.
+Arguments for row selection changes.
 
 ```tsx
-interface SelectRowEvent<TRow> {
+interface SelectRowArgs<TRow> {
   row: TRow;
   checked: boolean;
   isShiftClick: boolean;
@@ -2174,31 +2174,31 @@ interface SelectRowEvent<TRow> {
 
 **See also:** [`useRowSelection`](#userowselection) hook
 
-#### `SelectHeaderRowEvent`
+#### `SelectHeaderRowArgs`
 
-Event object for header row selection changes.
+Arguments for header row selection changes.
 
 ```tsx
-interface SelectHeaderRowEvent {
+interface SelectHeaderRowArgs {
   checked: boolean;
 }
 ```
 
 **See also:** [`useHeaderRowSelection`](#useheaderrowselection) hook
 
-#### `FillEvent<TRow>`
+#### `FillArgs<TRow>`
 
-Event object for drag-fill operations.
+Arguments for drag-fill operations.
 
 ```tsx
-interface FillEvent<TRow> {
+interface FillArgs<TRow> {
   columnKey: string;
   sourceRow: TRow;
   targetRow: TRow;
 }
 ```
 
-**See also:** [`onFill`](#onfill-maybeevent-filleventr--r) prop on `<DataGrid />`
+**See also:** [`onFill`](#onfill-maybeargs-fillargsr--r) prop on `<DataGrid />`
 
 #### `DataGridHandle`
 
