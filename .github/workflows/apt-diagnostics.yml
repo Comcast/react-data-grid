@@ -1,4 +1,4 @@
-# Temporary: compares downloads from archive.ubuntu.com with and without pipelining.
+# Temporary: checks that `vp run install-browsers` succeeds quickly across runners.
 # Removed before merging.
 name: apt diagnostics
 
@@ -12,54 +12,78 @@ defaults:
     shell: bash
 
 jobs:
-  archive:
-    name: archive (pipelining ${{ matrix.pipelining }} ${{ matrix.sample }})
+  install-browsers:
+    name: install-browsers (${{ matrix.scenario }} ${{ matrix.sample }})
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
 
-    permissions: {}
+    permissions:
+      contents: read # check out the repository
 
     strategy:
       fail-fast: false
       matrix:
-        pipelining: [on, off]
-        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        scenario: [ci]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        include:
+          - { scenario: stalled-first, sample: 1 }
+          - { scenario: stalled-first, sample: 2 }
+          - { scenario: slow-archive, sample: 1 }
+          - { scenario: slow-archive, sample: 2 }
 
     steps:
-      - name: Configure apt
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          run-install: false
+
+      - run: vp install --frozen-lockfile
+
+      - run: shellcheck .github/install-browsers.sh
+        if: matrix.scenario == 'ci' && matrix.sample == 1
+        continue-on-error: true
+
+      # the first list is the runner image's, with the degraded westus mirror
+      - name: Stall the first mirror list
+        if: matrix.scenario == 'stalled-first'
         run: |
+          echo '40.81.13.82 azure.archive.ubuntu.com' | sudo tee -a /etc/hosts
+          cp /etc/apt/apt-mirrors.txt .github/apt-mirrors.txt
           printf '%s\tpriority:%s\n' https://archive.ubuntu.com/ubuntu/ 1 https://security.ubuntu.com/ubuntu/ 2 \
             | sudo tee /etc/apt/apt-mirrors.txt
-          if [ "$PIPELINING" = on ]; then
-            echo 'Acquire::https::Pipeline-Depth "10";' | sudo tee /etc/apt/apt.conf
-          fi
-          echo 'APT::Get::Download-Only "true";' | sudo tee /etc/apt/apt.conf.d/download-only
-        env:
-          PIPELINING: ${{ matrix.pipelining }}
 
-      - name: Start TCP monitor
+      # limits downloads from Canonical's servers to 32 Mbit/s
+      - name: Slow down archive.ubuntu.com
+        if: matrix.scenario == 'slow-archive'
         run: |
-          sudo setsid bash -c '
-            while :; do
-              echo "@ $(date -u +%T.%N | cut -c1-12)"
-              ss -tinpH state established "( dport = :443 )"
-              sleep 1
-            done' > /tmp/ss.log 2>&1 < /dev/null &
+          dev=$(ip route show default | awk '{ print $5; exit }')
+          sudo tc qdisc add dev "$dev" handle ffff: ingress
+          prio=1
+          for net in 91.189.88.0/21 185.125.188.0/22; do
+            sudo tc filter add dev "$dev" parent ffff: protocol ip prio "$prio" u32 match ip src "$net" \
+              police rate 32mbit burst 256k drop flowid :1
+            prio=$((prio + 1))
+          done
 
-      - name: Download
-        timeout-minutes: 6
+      - name: vp run install-browsers
+        timeout-minutes: 8
         run: |
           start=$(date +%s)
-          npx --yes playwright@1.64.1 install-deps 2>&1 | tee /tmp/install.log
-          echo "RESULT pipelining=${PIPELINING} seconds=$(($(date +%s) - start))"
+          vp run install-browsers 2>&1 | tee /tmp/install.log
+          echo "RESULT scenario=${SCENARIO} seconds=$(($(date +%s) - start))"
         env:
-          PIPELINING: ${{ matrix.pipelining }}
+          CI: true
+          SCENARIO: ${{ matrix.scenario }}
 
       - name: Summarize apt transfers
         if: always()
-        run: grep -E '^(Fetched|Need to get|Download complete|Err|Ign|W:|E:)' /tmp/install.log || true
-
-      # each second, the connections of apt's https method, and their TCP info
-      - name: TCP connections of apt's https method
-        if: always()
-        run: awk '/^@/ { t = $2; next } /"https",/ { print t, $0; getline; print t, $0 }' /tmp/ss.log
+        run: |
+          grep -E '^(Fetched|Need to get|Download complete|Err|Ign|W:|E:)' /tmp/install.log || true
+          echo "SWITCHES $(grep -c '^::warning::' /tmp/install.log || true)"
+          # which mirror served the files
+          grep -oE '^(Get|Hit):[0-9]+ [a-z]+://[^/ ]+' /tmp/install.log | cut -d' ' -f2 | sort | uniq -c || true
+          dig +noall +answer azure.archive.ubuntu.com
+          echo "LEFTOVER $(pgrep -c -x apt-get || true) apt-get processes"

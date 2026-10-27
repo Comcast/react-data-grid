@@ -14,7 +14,7 @@ cp /etc/apt/apt-mirrors.txt "${mirror_lists[1]}"
 # https://github.com/actions/runner-images/issues/14823
 # Instead, Playwright's `apt-get install` only downloads the packages here, in attempts of 30 seconds,
 # as they normally take about 10. After an attempt that downloads less than 10 MB, the next one switches
-# between .github/apt-mirrors.txt and the runner image's mirrors, and the third such attempt fails.
+# between .github/apt-mirrors.txt and the runner image's mirrors, and the fifth such attempt fails.
 # Each attempt keeps the packages that the previous ones downloaded, and stopping one can't interrupt dpkg.
 echo 'APT::Get::Download-Only "true";' | sudo tee /etc/apt/apt.conf.d/download-only > /dev/null
 list=0
@@ -30,7 +30,7 @@ while true; do
   sudo pkill -KILL -x apt-get || true
   while pgrep -x apt-get > /dev/null; do sleep 1; done
   if (($(sudo du -sm /var/cache/apt/archives | cut -f1) - downloaded < 10)); then
-    if ((++stalls == 3)); then
+    if ((++stalls == 5)); then
       exit 1
     fi
     list=$((1 - list))
