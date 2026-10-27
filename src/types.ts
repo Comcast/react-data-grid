@@ -165,7 +165,7 @@ export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
 }
 
 export interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
-  groupKey: unknown;
+  groupKey: string;
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: GroupRow<TRow>;
   childRows: readonly TRow[];
@@ -361,14 +361,23 @@ export type CellCopyArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, 
 export type CellPasteArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, TSummaryRow>;
 
 export interface GroupRow<TRow> {
+  /** The rows of the group, including the rows of its subgroups */
   readonly childRows: readonly TRow[];
+  /** The group's ID, returned by `getGroupId` */
   readonly id: string;
-  readonly parentId: unknown;
-  readonly groupKey: unknown;
+  /** The ID of the parent group, or `undefined` on the first level */
+  readonly parentId: string | undefined;
+  /** The group's key, returned by `getRowGroupKey` */
+  readonly groupKey: string;
+  /** Whether the group is expanded, i.e., its ID is in `expandedGroupIds` */
   readonly isExpanded: boolean;
+  /** The nesting level, `0` for the first level */
   readonly level: number;
+  /** The position of the group among its sibling groups, `0` for the first one */
   readonly posInSet: number;
+  /** The number of sibling groups, including this one */
   readonly setSize: number;
+  /** The index of the group row among all the rows, counting every group as expanded */
   readonly startRowIndex: number;
 }
 

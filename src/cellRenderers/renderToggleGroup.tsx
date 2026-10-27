@@ -46,7 +46,7 @@ export function ToggleGroup<R, SR>({
 
   return (
     <span className={groupCellContentClassname} tabIndex={tabIndex} onKeyDown={handleKeyDown}>
-      {groupKey as string}
+      {groupKey}
       <svg viewBox="0 0 14 8" width="14" height="8" className={caretClassname} aria-hidden>
         <path d={d} />
       </svg>

@@ -25,7 +25,7 @@ const groupRowClassname = `rdg-group-row ${groupRow}`;
 interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
   row: GroupRow<R>;
   groupBy: readonly string[];
-  toggleGroup: (expandedGroupId: unknown) => void;
+  toggleGroup: (expandedGroupId: string) => void;
 }
 
 function GroupedRow<R, SR>({
