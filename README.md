@@ -547,7 +547,7 @@ function MyGrid() {
 
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -568,7 +568,7 @@ This event can be used to open the cell editor on a single click:
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.setActivePosition(true);
+    args.setActivePosition({ enableEditor: true });
   }
 }
 
@@ -1887,8 +1887,8 @@ interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   /** The row index of the cell. */
   rowIdx: number;
-  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setActivePosition: (enableEditor?: boolean) => void;
+  /** Sets the active position to the cell. Pass `{ enableEditor: true }` to open its editor, or `{ shouldFocus: true }` to also focus it. */
+  setActivePosition: (options?: SetActivePositionOptions) => void;
 }
 ```
 
@@ -1899,7 +1899,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.setActivePosition(true); // Focus and start editing
+  args.setActivePosition({ enableEditor: true }); // Activate the cell and open its editor
 }
 ```
 

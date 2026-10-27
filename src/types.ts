@@ -239,8 +239,8 @@ export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   /** The row index of the cell. */
   rowIdx: number;
-  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setActivePosition: (enableEditor?: boolean) => void;
+  /** Sets the active position to the cell. Pass `{ enableEditor: true }` to open its editor, or `{ shouldFocus: true }` to also focus it. */
+  setActivePosition: (options?: SetActivePositionOptions) => void;
 }
 
 interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
