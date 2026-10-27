@@ -139,7 +139,8 @@ test('should not start editing when pressing ctrl+<input key>', async () => {
 test('should allow paste on editable cells without renderEditCell', async () => {
   const columns: readonly Column<Row>[] = [
     { key: 'col', name: 'Col', editable: true },
-    { key: 'readonly', name: 'Read-only' }
+    { key: 'readonly', name: 'Read-only' },
+    { key: 'editableFunction', name: 'Editable function', editable: (row) => row.col !== 'a2' }
   ];
   const onRowsChange = vi.fn();
   const onCellPaste = vi.fn(({ row }: CellPasteArgs<Row>): Row => ({ ...row, col: 'pasted' }));
@@ -167,4 +168,19 @@ test('should allow paste on editable cells without renderEditCell', async () => 
   await userEvent.paste();
   expect(onCellPaste).toHaveBeenCalledOnce();
   expect(onRowsChange).toHaveBeenCalledOnce();
+
+  // a function `editable` decides for each row
+  await userEvent.click(getCellsAtRowIndex(1).nth(2));
+  await userEvent.paste();
+  expect(onCellPaste).toHaveBeenCalledOnce();
+  await userEvent.click(getCellsAtRowIndex(0).nth(2));
+  await userEvent.paste();
+  expect(onCellPaste).toHaveBeenCalledTimes(2);
+  expect(onRowsChange).toHaveBeenLastCalledWith(
+    [{ col: 'pasted' }, initialRows[1], initialRows[2]],
+    {
+      indexes: [0],
+      column: expect.objectContaining(columns[2])
+    }
+  );
 });
