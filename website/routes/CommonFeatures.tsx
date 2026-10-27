@@ -11,6 +11,7 @@ import {
   SelectColumn,
   type Column,
   type DataGridHandle,
+  type FillEvent,
   type SortColumn
 } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
@@ -228,6 +229,8 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     key: 'available',
     name: 'Available',
     frozen: 'end',
+    // no editor, but the checkbox column can still be drag-filled
+    editable: true,
     renderCell({ row, onRowChange, tabIndex }) {
       return (
         <SelectCheckbox
@@ -247,6 +250,10 @@ const columns: readonly Column<Row, SummaryRow>[] = [
 
 function rowKeyGetter(row: Row) {
   return row.id;
+}
+
+function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+  return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
 }
 
 let countries: string[];
@@ -410,6 +417,7 @@ function CommonFeatures() {
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         onRowsChange={setRows}
+        onFill={handleFill}
         sortColumns={sortColumns}
         onSortColumnsChange={setSortColumns}
         topSummaryRows={summaryRows}

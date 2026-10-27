@@ -24,11 +24,17 @@ const columns: readonly Column<Row>[] = [
 
 const initialRows: readonly Row[] = [{ col: 'a1' }, { col: 'a2' }, { col: 'a3' }, { col: 'a4' }];
 
-function setup(allowDragFill = true) {
-  return page.render(<DragFillTest allowDragFill={allowDragFill} />);
+function setup(allowDragFill = true, testColumns = columns) {
+  return page.render(<DragFillTest allowDragFill={allowDragFill} columns={testColumns} />);
 }
 
-function DragFillTest({ allowDragFill = true }: { allowDragFill?: boolean }) {
+function DragFillTest({
+  allowDragFill = true,
+  columns
+}: {
+  allowDragFill?: boolean;
+  columns: readonly Column<Row>[];
+}) {
   const [rows, setRows] = useState(initialRows);
 
   function onFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
@@ -80,10 +86,53 @@ test('should update multiple rows using mouse', async () => {
 
 test('should allow drag up using mouse', async () => {
   await setup();
-  await commands.dragFill('a4', 'a1');
-  await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('a4');
-  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a4');
-  await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a4');
+  await commands.dragFill('a3', 'a1');
+  await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('a3');
+  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a3');
+  await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a3');
+  await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveTextContent('a4');
+});
+
+test('should not show the drag handle on a cell whose editable function returns false', async () => {
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(2).nth(0));
+  await expect.element(dragHandle).toBeInTheDocument();
+  await userEvent.click(getCellsAtRowIndex(3).nth(0));
+  await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveFocus();
+  await expect.element(dragHandle).not.toBeInTheDocument();
+});
+
+test('should allow dragFill on an editable column without renderEditCell', async () => {
+  await setup(true, [{ key: 'col', name: 'Col', editable: true }]);
+  await commands.dragFill('a1', 'a3');
+  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a1');
+  await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a1');
+  await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveTextContent('a4');
+
+  await userEvent.dblClick(dragHandle);
+  await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveTextContent('a1');
+});
+
+test('should only fill the editable cells of a column without renderEditCell', async () => {
+  await setup(true, [{ key: 'col', name: 'Col', editable: (row) => row.col !== 'a3' }]);
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
+  await userEvent.dblClick(dragHandle);
+  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a1');
+  await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a3'); // read-only cell
+  await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveTextContent('a1');
+});
+
+test('should not show the drag handle on a column that is not editable', async () => {
+  await setup(true, [
+    { key: 'col', name: 'Col' },
+    { key: 'editableFalse', name: 'Editable false', editable: () => false }
+  ]);
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
+  await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
+  await expect.element(dragHandle).not.toBeInTheDocument();
+  await userEvent.keyboard('{arrowright}');
+  await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveFocus();
+  await expect.element(dragHandle).not.toBeInTheDocument();
 });
 
 test('should focus the cell when drag handle is clicked', async () => {

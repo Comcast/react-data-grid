@@ -1,5 +1,5 @@
 import { createRef, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../../src';
@@ -185,6 +185,81 @@ describe('Editor', () => {
 
       await userEvent.dblClick(getCellsAtRowIndex(1).nth(1));
       await expect.element(col2Editor).toBeInTheDocument();
+    });
+
+    it('should not open an editor on an editable column without renderEditCell', async () => {
+      const ref = createRef<DataGridHandle>();
+      const onRowsChange = vi.fn();
+      const columns: readonly Column<Row>[] = [
+        {
+          key: 'col1',
+          name: 'Col1',
+          editable: true,
+          renderCell({ row, isCellEditable }) {
+            return `${row.col1} ${isCellEditable ? 'editable' : 'read-only'}`;
+          }
+        }
+      ];
+
+      await page.render(
+        <DataGrid
+          ref={ref}
+          columns={columns}
+          rows={[{ col1: 1, col2: 'a1' }]}
+          onRowsChange={onRowsChange}
+        />
+      );
+      const cell = getCellsAtRowIndex(0).nth(0);
+      const editorContainer = page.getBySelector('.rdg-editor-container');
+      await expect.element(cell).not.toHaveAttribute('aria-readonly');
+      await expect.element(cell).toHaveTextContent('1 editable');
+
+      await userEvent.click(cell);
+      await userEvent.keyboard('x');
+      await expect.element(editorContainer).not.toBeInTheDocument();
+      await userEvent.keyboard('{enter}');
+      await expect.element(editorContainer).not.toBeInTheDocument();
+      await userEvent.dblClick(cell);
+      await expect.element(editorContainer).not.toBeInTheDocument();
+      // render synchronously so the assertion doesn't run before an editor could open
+      flushSync(() => {
+        ref.current!.setActivePosition({ idx: 0, rowIdx: 0 }, { enableEditor: true });
+      });
+      await expect.element(editorContainer).not.toBeInTheDocument();
+
+      await expect.element(cell).toHaveFocus();
+      await expect.element(cell).toHaveTextContent('1 editable');
+      expect(onRowsChange).not.toHaveBeenCalled();
+    });
+
+    it('should set aria-readonly and isCellEditable from editable without renderEditCell', async () => {
+      const columns: readonly Column<Row>[] = [
+        {
+          key: 'col1',
+          name: 'Col1',
+          editable: (row) => row.col1 === 2,
+          renderCell({ row, isCellEditable }) {
+            return `${row.col1} ${isCellEditable ? 'editable' : 'read-only'}`;
+          }
+        },
+        { key: 'col2', name: 'Col2' }
+      ];
+
+      await page.render(
+        <DataGrid
+          columns={columns}
+          rows={[
+            { col1: 1, col2: 'a1' },
+            { col1: 2, col2: 'a2' }
+          ]}
+        />
+      );
+      await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveAttribute('aria-readonly', 'true');
+      await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('1 read-only');
+      await expect.element(getCellsAtRowIndex(1).nth(0)).not.toHaveAttribute('aria-readonly');
+      await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('2 editable');
+      // a column with neither `editable` nor `renderEditCell` is read-only
+      await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveAttribute('aria-readonly', 'true');
     });
   });
 
