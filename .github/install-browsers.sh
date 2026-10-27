@@ -4,10 +4,8 @@ set -euo pipefail
 
 echo '::group::Install browsers'
 
-# see the comments in these files
+# see the comment in this file
 sudo cp .github/apt.conf /etc/apt/apt.conf
-mirror_lists=(.github/apt-mirrors.txt "$(mktemp)")
-cp /etc/apt/apt-mirrors.txt "${mirror_lists[1]}"
 
 # apt only moves on to the next mirror in /etc/apt/apt-mirrors.txt after an error,
 # so any mirror that keeps sending data, however slowly, stalls it:
@@ -16,6 +14,8 @@ cp /etc/apt/apt-mirrors.txt "${mirror_lists[1]}"
 # as they normally take about 10. After an attempt that downloads less than 10 MB, the next one switches
 # between .github/apt-mirrors.txt and the runner image's mirrors, and the fifth such attempt fails.
 # Each attempt keeps the packages that the previous ones downloaded, and stopping one can't interrupt dpkg.
+mirror_lists=(.github/apt-mirrors.txt "$(mktemp)")
+cp /etc/apt/apt-mirrors.txt "${mirror_lists[1]}"
 echo 'APT::Get::Download-Only "true";' | sudo tee /etc/apt/apt.conf.d/download-only > /dev/null
 list=0
 stalls=0
