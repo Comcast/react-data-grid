@@ -231,7 +231,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     renderCell({ row, onRowChange, tabIndex }) {
       return (
         <SelectCheckbox
-          value={row.available}
+          checked={row.available}
           onChange={() => {
             onRowChange({ ...row, available: !row.available });
           }}
