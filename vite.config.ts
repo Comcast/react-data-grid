@@ -121,7 +121,13 @@ export default defineConfig({
         cache: {
           // `CI` enables visual tests, `GITHUB_WORKFLOW` enables coverage
           env: ['CI', 'GITHUB_WORKFLOW'],
-          input: [{ auto: true }, '!coverage/**', '!node_modules/.cache/vite/**']
+          input: [
+            { auto: true },
+            // failing tests like `test.fails()` output screenshot failures, invalidating the task cache
+            '!.vitest/**',
+            '!coverage/**',
+            '!node_modules/.cache/vite/**'
+          ]
         }
       },
       ci: {
