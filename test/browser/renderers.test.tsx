@@ -306,7 +306,7 @@ test('renderRow can render its cells with mapViewportColumns', async () => {
   const cells = page.getCell();
   await testCount(cells, 2);
   await expect.element(cells.nth(0)).toHaveTextContent('0: col1, colSpan 2, active false');
-  await expect.element(cells.nth(1)).toHaveTextContent('1: id, colSpan undefined, active false');
+  await expect.element(cells.nth(1)).toHaveTextContent('1: id, colSpan 1, active false');
 });
 
 test('renderRow defined using both context and renderers', async () => {

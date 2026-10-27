@@ -37,7 +37,6 @@ const cellEditing = css`
 
 export default function EditCell<R, SR>({
   column,
-  colSpan,
   row,
   rowIdx,
   onRowChange,
@@ -175,6 +174,7 @@ export default function EditCell<R, SR>({
     onRowChange(row, commitChangesAndFocus, commitChangesAndFocus);
   }
 
+  const colSpan = column.getColSpan({ type: 'ROW', row });
   const { cellClass } = column;
   const className = getCellClassname(
     column,
@@ -188,7 +188,7 @@ export default function EditCell<R, SR>({
       ref={editCellRef}
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
-      aria-colspan={colSpan}
+      aria-colspan={colSpan > 1 ? colSpan : undefined}
       aria-selected
       className={className}
       style={getCellStyle(column, colSpan)}
