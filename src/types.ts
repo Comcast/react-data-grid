@@ -317,7 +317,7 @@ export interface Position {
 }
 
 /**
- * Props passed to custom cell content renderers (`column.renderCell`).
+ * Props passed to custom cell content renderers ({@linkcode Column.renderCell | column.renderCell}).
  *
  * @example
  * ```tsx
@@ -345,7 +345,7 @@ export interface RenderCellContentProps<R, SR = unknown> {
 }
 
 /**
- * Props passed to summary cell content renderers (`column.renderSummaryCell`).
+ * Props passed to summary cell content renderers ({@linkcode Column.renderSummaryCell | column.renderSummaryCell}).
  *
  * @see {@linkcode Column.renderSummaryCell | column.renderSummaryCell}
  */
@@ -356,7 +356,7 @@ export interface RenderSummaryCellContentProps<SR, R = unknown> {
 }
 
 /**
- * Props passed to group cell content renderers (`column.renderGroupCell`) when using `TreeDataGrid`.
+ * Props passed to group cell content renderers ({@linkcode Column.renderGroupCell | column.renderGroupCell}) when using `TreeDataGrid`.
  *
  * @see {@linkcode Column.renderGroupCell | column.renderGroupCell}, {@linkcode renderToggleGroup} function, {@linkcode ToggleGroup | <ToggleGroup />}
  */
@@ -371,7 +371,7 @@ export interface RenderGroupCellContentProps<R, SR = unknown> {
 }
 
 /**
- * Props passed to custom editors (`column.renderEditCell`).
+ * Props passed to custom editors ({@linkcode Column.renderEditCell | column.renderEditCell}).
  *
  * @example
  * ```tsx
@@ -400,7 +400,7 @@ export interface RenderEditCellContentProps<R, SR = unknown> {
 }
 
 /**
- * Props passed to custom header cell content renderers (`column.renderHeaderCell`).
+ * Props passed to custom header cell content renderers ({@linkcode Column.renderHeaderCell | column.renderHeaderCell}).
  *
  * @see {@linkcode Column.renderHeaderCell | column.renderHeaderCell}, {@linkcode renderHeaderCell} function
  */
@@ -423,7 +423,7 @@ interface BaseRenderCellProps<R, SR = unknown>
 }
 
 /**
- * Props passed to the cell renderer when using `renderers.renderCell`.
+ * Props passed to the cell renderer when using {@linkcode Renderers.renderCell | renderers.renderCell}.
  *
  * @see {@linkcode DataGridProps.renderers | renderers.renderCell}, {@linkcode Cell | <Cell />}
  */

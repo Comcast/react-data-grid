@@ -857,7 +857,7 @@ const customRenderers: Renderers<Row, SummaryRow> = {
 <DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
 ```
 
-The default `<Row />` component can be wrapped via `renderers.renderRow` to add contexts or tweak props:
+The default `<Row />` component can be wrapped via [`renderers.renderRow`](#renderers-1) to add contexts or tweak props:
 
 ```tsx
 import { DataGrid, Row, type RenderRowProps } from 'react-data-grid';
@@ -1983,7 +1983,7 @@ type ColumnFrozen = false | 'start' | 'end';
 
 #### `RenderCellContentProps`
 
-Props passed to custom cell content renderers (`column.renderCell`).
+Props passed to custom cell content renderers ([`column.renderCell`](#rendercell)).
 
 ```tsx
 interface RenderCellContentProps<R, SR = unknown> {
@@ -2015,7 +2015,7 @@ function renderCell({ row, column, onRowChange }: RenderCellContentProps<MyRow>)
 
 #### `RenderHeaderCellContentProps`
 
-Props passed to custom header cell content renderers (`column.renderHeaderCell`).
+Props passed to custom header cell content renderers ([`column.renderHeaderCell`](#renderheadercell-1)).
 
 ```tsx
 interface RenderHeaderCellContentProps<R, SR = unknown> {
@@ -2030,7 +2030,7 @@ interface RenderHeaderCellContentProps<R, SR = unknown> {
 
 #### `RenderEditCellContentProps`
 
-Props passed to custom editors (`column.renderEditCell`).
+Props passed to custom editors ([`column.renderEditCell`](#rendereditcell)).
 
 ```tsx
 interface RenderEditCellContentProps<R, SR = unknown> {
@@ -2063,7 +2063,7 @@ function renderEditor({ row, column, onRowChange, onClose }: RenderEditCellConte
 
 #### `RenderSummaryCellContentProps`
 
-Props passed to summary cell content renderers (`column.renderSummaryCell`).
+Props passed to summary cell content renderers ([`column.renderSummaryCell`](#rendersummarycell)).
 
 ```tsx
 interface RenderSummaryCellContentProps<SR, R = unknown> {
@@ -2077,7 +2077,7 @@ interface RenderSummaryCellContentProps<SR, R = unknown> {
 
 #### `RenderGroupCellContentProps`
 
-Props passed to group cell content renderers (`column.renderGroupCell`) when using `TreeDataGrid`.
+Props passed to group cell content renderers ([`column.renderGroupCell`](#rendergroupcell)) when using `TreeDataGrid`.
 
 ```tsx
 interface RenderGroupCellContentProps<R, SR = unknown> {
@@ -2132,7 +2132,7 @@ interface RenderRowProps<R, SR = unknown>
 
 #### `RenderCellProps`
 
-Props passed to the cell renderer when using `renderers.renderCell`.
+Props passed to the cell renderer when using [`renderers.renderCell`](#renderers-1).
 
 ```tsx
 interface RenderCellProps<R, SR>

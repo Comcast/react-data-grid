@@ -593,7 +593,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
    * <DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
    * ```
    *
-   * The default `<Row />` component can be wrapped via `renderers.renderRow` to add contexts or tweak props:
+   * The default `<Row />` component can be wrapped via {@linkcode Renderers.renderRow | renderers.renderRow} to add contexts or tweak props:
    *
    * ```tsx
    * import { DataGrid, Row, type RenderRowProps } from 'react-data-grid';
