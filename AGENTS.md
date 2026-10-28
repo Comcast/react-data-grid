@@ -58,7 +58,7 @@ The project uses [Vite+](https://viteplus.dev/guide/), whose global `vp` CLI wra
 
 ## Validation
 
-Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed.
+Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed. CI also fails when test coverage drops below `coverage.thresholds` in `vite.config.ts`: run the full suite with `vp test --coverage` to check it.
 
 While iterating, run individual checks instead. The static checks take seconds, so run them before tests:
 

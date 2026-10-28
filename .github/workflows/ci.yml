@@ -61,7 +61,8 @@ jobs:
       # Vite Task compares directory listings with those recorded after the cached run,
       # so directories created during the run must exist upfront for the cache to hit:
       # https://github.com/voidzero-dev/vite-task/issues/504
-      - run: mkdir lib coverage node_modules/.vite-temp
+      # `coverage` isn't one of them: Vitest deletes it after the run, as no coverage reporter writes files
+      - run: mkdir lib node_modules/.vite-temp
 
       - run: vp run -v ci
         timeout-minutes: 6
@@ -82,11 +83,6 @@ jobs:
           # `.vitest` is a hidden directory
           include-hidden-files: true
           if-no-files-found: ignore
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
 
       # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
       # and checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit;
