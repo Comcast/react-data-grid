@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
-import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
+import { assertIsValidGetRowKey, getLeftRightKey } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -80,7 +80,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,
   rows: rawRows,
   rowHeight: rawRowHeight,
-  rowKeyGetter: rawRowKeyGetter,
+  getRowKey: rawGetRowKey,
   onCellKeyDown: rawOnCellKeyDown,
   onCellCopy: rawOnCellCopy,
   onCellPaste: rawOnCellPaste,
@@ -260,23 +260,23 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return rawRowHeight;
   }, [rawRowHeight]);
 
-  // Without rawRowKeyGetter, the keys are computed in renderRow, where the row index is known
-  const rowKeyGetter = useMemo(() => {
-    if (typeof rawRowKeyGetter !== 'function') return undefined;
-    return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawRowKeyGetter(row));
-  }, [rawRowKeyGetter]);
+  // Without rawGetRowKey, the keys are computed in renderRow, where the row index is known
+  const getRowKey = useMemo(() => {
+    if (typeof rawGetRowKey !== 'function') return undefined;
+    return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawGetRowKey(row));
+  }, [rawGetRowKey]);
 
   const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
     if (rawSelectedRows == null) return null;
 
-    assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
+    assertIsValidGetRowKey<R, K>(rawGetRowKey);
 
     const selectedRows = new Set<Key>(rawSelectedRows);
     for (const row of rows) {
       if (isGroupRow(row)) {
         // select parent row if all the children are selected
         const isGroupRowSelected = row.childRows.every((cr) =>
-          rawSelectedRows.has(rawRowKeyGetter(cr))
+          rawSelectedRows.has(rawGetRowKey(cr))
         );
         if (isGroupRowSelected) {
           selectedRows.add(row.id);
@@ -285,21 +285,21 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
 
     return selectedRows;
-  }, [rawRowKeyGetter, rawSelectedRows, rows]);
+  }, [rawGetRowKey, rawSelectedRows, rows]);
 
   function onSelectedRowsChange(newSelectedRows: Set<Key>) {
     if (!rawOnSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
+    assertIsValidGetRowKey<R, K>(rawGetRowKey);
 
     const newRawSelectedRows = new Set(rawSelectedRows);
     for (const row of rows) {
-      const key = isGroupRow(row) ? row.id : rawRowKeyGetter(row);
+      const key = isGroupRow(row) ? row.id : rawGetRowKey(row);
       if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
         if (isGroupRow(row)) {
           // unselect all children if the parent row is unselected
           for (const cr of row.childRows) {
-            newRawSelectedRows.delete(rawRowKeyGetter(cr));
+            newRawSelectedRows.delete(rawGetRowKey(cr));
           }
         } else {
           newRawSelectedRows.delete(key as K);
@@ -308,7 +308,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         if (isGroupRow(row)) {
           // select all children if the parent row is selected
           for (const cr of row.childRows) {
-            newRawSelectedRows.add(rawRowKeyGetter(cr));
+            newRawSelectedRows.add(rawGetRowKey(cr));
           }
         } else {
           newRawSelectedRows.add(key as K);
@@ -464,7 +464,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       // the rows of a group directly follow its group row
       const groupIndex = rowIdx - parentIdx - 1;
       ariaRowIndex = startRowIndex + headerAndTopSummaryRowsCount + groupIndex + 2;
-      if (rowKeyGetter === undefined) {
+      if (getRowKey === undefined) {
         rowKey = startRowIndex + groupIndex + 1;
       }
     }
@@ -496,7 +496,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       columns={columns}
       rows={rows as R[]} // TODO: check types
       rowHeight={rowHeight}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       onRowsChange={handleRowsChange}
       selectedRows={selectedRows}
       onSelectedRowsChange={onSelectedRowsChange}
