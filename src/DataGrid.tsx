@@ -124,8 +124,10 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   /** Rows pinned at the bottom of the grid for summary purposes */
   bottomSummaryRows?: Maybe<readonly SR[]>;
   /**
-   * Returns a unique key for each row. Required for row selection, and recommended otherwise,
-   * as the key is used as the `key` of the row elements
+   * Function to get the key of each row.
+   * Required for row selection.
+   * Recommended otherwise, as the key is also used as the `key` prop of the row elements.
+   * @returns a unique key for the row
    */
   getRowKey?: Maybe<(row: NoInfer<R>) => K>;
   /** Callback triggered when rows are changed */

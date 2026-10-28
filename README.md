@@ -326,7 +326,7 @@ Rows pinned at the bottom of the grid for summary purposes.
 
 ###### `getRowKey?: Maybe<(row: R) => K>`
 
-Function to return a unique key/identifier for each row. `getRowKey` is required for row selection to work.
+Function to get a unique key for each row. Required for row selection.
 
 ```tsx
 import { DataGrid } from 'react-data-grid';
