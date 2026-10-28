@@ -2,7 +2,7 @@ import { startTransition, useCallback, useMemo, useState, ViewTransition } from 
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column, type ColumnWidths, type SortColumn } from '../../src';
-import { compare } from '../utils';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
@@ -31,10 +31,6 @@ function createRows(): readonly Row[] {
   }
 
   return rows;
-}
-
-function getRowKey(row: Row): number {
-  return row.id;
 }
 
 const columns: Column<Row>[] = [

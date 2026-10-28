@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
-import { compare } from '../utils';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -118,10 +118,6 @@ const columns: readonly Column<Row>[] = [
     }
   }
 ];
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 function createRows(): readonly Row[] {
   const rows: Row[] = [];

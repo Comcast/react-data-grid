@@ -1,6 +1,7 @@
 import { page } from 'vite-plus/test/browser';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
+import { getRowKey } from '../browser/utils';
 
 const treeGrid = page.getTreeGrid();
 
@@ -78,7 +79,3 @@ test('tree grid', async () => {
 
   await expect.element(treeGrid).toMatchScreenshot('tree-grid');
 });
-
-function getRowKey(row: Row) {
-  return row.id;
-}

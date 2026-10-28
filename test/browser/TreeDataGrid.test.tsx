@@ -4,7 +4,7 @@ import { page, server, userEvent } from 'vite-plus/test/browser';
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
-import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
+import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
 const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
@@ -85,9 +85,6 @@ const initialRows: readonly Row[] = [
 const onCellCopySpy = vi.fn();
 const onCellPasteSpy = vi.fn(({ row }: { row: Row }) => row);
 
-function getRowKey(row: Row) {
-  return row.id;
-}
 function TestGrid({
   groupBy,
   getGroupId,

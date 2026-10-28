@@ -1,7 +1,7 @@
 import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor, SelectColumn, type Column } from '../../src';
-import { safeTab } from '../browser/utils';
+import { getRowKey, safeTab } from '../browser/utils';
 
 const grid = page.getGrid();
 
@@ -26,10 +26,6 @@ const rows: readonly Row[] = [
 ];
 
 const selectedRows: ReadonlySet<number> = new Set([1, 2]);
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 // Windows contrast themes are light or dark, so test both palettes
 const palettes = [

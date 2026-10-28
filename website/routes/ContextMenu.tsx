@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ContextMenu')({
@@ -48,10 +49,6 @@ const columns: readonly Column<Row>[] = [
   { key: 'product', name: 'Product' },
   { key: 'price', name: 'Price' }
 ];
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 function ContextMenuDemo() {
   const direction = useDirection();

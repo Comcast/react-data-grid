@@ -5,6 +5,7 @@ import { css } from 'ecij';
 
 import { DataGrid, type Column, type Direction, type RowsChangeData } from '../../src';
 import { CellExpander } from '../components';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/MasterDetail')({
@@ -166,8 +167,4 @@ function ProductGrid({ parentId, direction }: { parentId: number; direction: Dir
       direction={direction}
     />
   );
-}
-
-function getRowKey(row: DepartmentRow | ProductRow) {
-  return row.id;
 }

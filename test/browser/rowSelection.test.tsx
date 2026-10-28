@@ -3,6 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
+import { getRowKey } from './utils';
 
 const rows = page.getRow();
 const headerCheckbox = page.getSelectAllCheckbox();
@@ -20,10 +21,6 @@ const columns: readonly Column<Row>[] = [
 ];
 
 const defaultRows: readonly Row[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 function RowSelectionTest({
   initialRows,
@@ -65,7 +62,7 @@ async function toggleSelection(rowIdx: number, shift = false, force = false) {
 
 test('should not check the selection of every row when the rows and the selection do not change', async () => {
   const manyRows: readonly Row[] = Array.from({ length: 1000 }, (_, id) => ({ id }));
-  const getRowKeySpy = vi.fn(getRowKey);
+  const getRowKeySpy = vi.fn(getRowKey<number>);
 
   function Test() {
     const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());

@@ -20,6 +20,7 @@ import {
   exportToPdf,
   formatCurrency,
   formatDate,
+  getRowKey,
   showModalRef
 } from '../utils';
 import { useDirection } from '../directionContext';
@@ -244,10 +245,6 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     }
   }
 ];
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 let countries: string[];
 

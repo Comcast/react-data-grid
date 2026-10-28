@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/NoRows')({
@@ -36,10 +37,6 @@ const columns: readonly Column<Row>[] = [
 ];
 
 const rows: readonly Row[] = [];
-
-function getRowKey(row: Row) {
-  return row.id;
-}
 
 function NoRows() {
   const direction = useDirection();
