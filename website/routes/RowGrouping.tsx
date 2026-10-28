@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
-import { compare } from '../utils';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -119,10 +119,6 @@ const columns: readonly Column<Row>[] = [
   }
 ];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 function createRows(): readonly Row[] {
   const rows: Row[] = [];
   for (let i = 1; i < 10_000; i++) {
@@ -209,7 +205,7 @@ function RowGrouping() {
         aria-label="Row Grouping Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}

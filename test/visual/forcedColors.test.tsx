@@ -1,7 +1,7 @@
 import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor, SelectColumn, type Column } from '../../src';
-import { safeTab } from '../browser/utils';
+import { getRowKey, safeTab } from '../browser/utils';
 
 const grid = page.getGrid();
 
@@ -27,10 +27,6 @@ const rows: readonly Row[] = [
 
 const selectedRows: ReadonlySet<number> = new Set([1, 2]);
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 // Windows contrast themes are light or dark, so test both palettes
 const palettes = [
   { colorScheme: 'light', prefix: 'forced-colors' },
@@ -52,7 +48,7 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
     await page.render(
       <DataGrid
         aria-label="Forced colors"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={rows}
         selectedRows={selectedRows}

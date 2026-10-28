@@ -4,7 +4,7 @@ import { page, server, userEvent } from 'vite-plus/test/browser';
 import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
-import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
+import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
 const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
@@ -85,9 +85,6 @@ const initialRows: readonly Row[] = [
 const onCellCopySpy = vi.fn();
 const onCellPasteSpy = vi.fn(({ row }: { row: Row }) => row);
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
 function TestGrid({
   groupBy,
   getGroupId,
@@ -107,7 +104,7 @@ function TestGrid({
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       groupBy={groupBy}
       getRowGroupKey={getRowGroupKey}
       selectedRows={selectedRows}
@@ -256,7 +253,7 @@ test(
   }
 );
 
-test('should keep the row keys when an earlier group is expanded, without rowKeyGetter', async () => {
+test('should keep the row keys when an earlier group is expanded, without getRowKey', async () => {
   function Test() {
     const [expandedGroupIds, setExpandedGroupIds] = useState(
       (): ReadonlySet<unknown> => new Set(['Canada'])
