@@ -22,16 +22,12 @@ const cellSortableClassname = css`
   }
 `;
 
-const cellResizable = css`
-  @layer rdg.HeaderCell {
-    touch-action: none;
-  }
-`;
-
-const cellResizableClassname = `rdg-cell-resizable ${cellResizable}`;
+const cellResizableClassname = 'rdg-cell-resizable';
 
 const resizeHandle = css`
   @layer rdg.HeaderCell {
+    /* prevent touch scrolling, so dragging the handle resizes the column */
+    touch-action: none;
     cursor: col-resize;
     position: absolute;
     inset-block-start: 0;
