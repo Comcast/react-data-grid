@@ -50,14 +50,14 @@ import type {
   ColumnOrColumnGroup,
   ColumnWidths,
   Direction,
-  FillEvent,
+  FillArgs,
   Maybe,
   Position,
   Renderers,
   RowsChangeData,
   SetActivePositionOptions,
-  SelectHeaderRowEvent,
-  SelectRowEvent,
+  SelectHeaderRowArgs,
+  SelectRowArgs,
   SortColumn
 } from './types';
 import { defaultRenderCell } from './Cell';
@@ -202,7 +202,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   /** Callback triggered when columns are reordered */
   onColumnsReorder?: Maybe<(sourceColumnKey: string, targetColumnKey: string) => void>;
   /** Callback triggered when the value of the active cell is dragged to fill other cells */
-  onFill?: Maybe<(event: FillEvent<NoInfer<R>>) => NoInfer<R>>;
+  onFill?: Maybe<(args: FillArgs<NoInfer<R>>) => NoInfer<R>>;
 
   /**
    * Toggles and modes
@@ -542,7 +542,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   /**
    * event handlers
    */
-  function selectHeaderRow(args: SelectHeaderRowEvent) {
+  function selectHeaderRow(args: SelectHeaderRowArgs) {
     if (!onSelectedRowsChange) return;
 
     assertIsValidGetRowKey<R, K>(getRowKey);
@@ -560,7 +560,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     onSelectedRowsChange(newSelectedRows);
   }
 
-  function selectRow(args: SelectRowEvent<R>) {
+  function selectRow(args: SelectRowArgs<R>) {
     if (!onSelectedRowsChange) return;
 
     assertIsValidGetRowKey<R, K>(getRowKey);

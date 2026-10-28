@@ -39,7 +39,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   >;
   /** Render function to render the content of summary cells */
   readonly renderSummaryCell?: Maybe<
-    (props: RenderSummaryCellContentProps<TSummaryRow, TRow>) => ReactNode
+    (props: RenderSummaryCellContentProps<TRow, TSummaryRow>) => ReactNode
   >;
   /** Render function to render the content of group cells */
   readonly renderGroupCell?: Maybe<
@@ -91,7 +91,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
 
 export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
   /** The column group that contains the column, or `undefined` if the column is not in a group */
-  readonly parent: CalculatedColumnParent<TRow, TSummaryRow> | undefined;
+  readonly parent: CalculatedColumnGroup<TRow, TSummaryRow> | undefined;
   /** The index of the column in the grid. Column groups are flattened and frozen columns are moved to their edge, so it can differ from the column's index in `columns` */
   readonly idx: number;
   /** Header row level, counted from the bottom header row: always `0` for columns, and negative for column groups */
@@ -127,19 +127,19 @@ export interface ColumnGroup<R, SR = unknown> {
   readonly children: readonly ColumnOrColumnGroup<R, SR>[];
 }
 
-export interface CalculatedColumnParent<R, SR> {
+export interface CalculatedColumnGroup<R, SR> {
   readonly name: string | ReactElement;
-  readonly parent: CalculatedColumnParent<R, SR> | undefined;
+  readonly parent: CalculatedColumnGroup<R, SR> | undefined;
   readonly idx: number;
   readonly colSpan: number;
   readonly level: number;
-  readonly headerCellClass?: Maybe<string>;
+  readonly headerCellClass: Maybe<string>;
 }
 
 export type ColumnOrColumnGroup<R, SR = unknown> = Column<R, SR> | ColumnGroup<R, SR>;
 
 export type CalculatedColumnOrColumnGroup<R, SR> =
-  | CalculatedColumnParent<R, SR>
+  | CalculatedColumnGroup<R, SR>
   | CalculatedColumn<R, SR>;
 
 export interface Position {
@@ -158,7 +158,7 @@ export interface RenderCellContentProps<TRow, TSummaryRow = unknown> {
   onRowChange: (row: TRow) => void;
 }
 
-export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
+export interface RenderSummaryCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TSummaryRow;
   tabIndex: number;
@@ -336,17 +336,17 @@ export interface RowsChangeData<R, SR = unknown> {
   column: CalculatedColumn<R, SR>;
 }
 
-export interface SelectRowEvent<TRow> {
+export interface SelectRowArgs<TRow> {
   row: TRow;
   checked: boolean;
   isShiftClick: boolean;
 }
 
-export interface SelectHeaderRowEvent {
+export interface SelectHeaderRowArgs {
   checked: boolean;
 }
 
-export interface FillEvent<TRow> {
+export interface FillArgs<TRow> {
   columnKey: string;
   sourceRow: TRow;
   targetRow: TRow;

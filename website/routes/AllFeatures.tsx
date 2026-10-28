@@ -5,7 +5,7 @@ import { css } from 'ecij';
 import clsx from 'clsx';
 
 import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
-import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
+import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillArgs } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
@@ -203,7 +203,7 @@ function AllFeatures() {
     readonly column: CalculatedColumn<Row>;
   } | null>(null);
 
-  function handleFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+  function handleFill({ columnKey, sourceRow, targetRow }: FillArgs<Row>): Row {
     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
   }
 
