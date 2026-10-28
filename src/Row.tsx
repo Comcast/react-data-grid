@@ -89,7 +89,7 @@ function Row<R, SR>({
 }
 
 /**
- * The default row component. Can be wrapped via the `renderers.renderRow` prop.
+ * The default row component. Can be wrapped via the {@linkcode Renderers.renderRow | renderers.renderRow} prop.
  */
 const MemoRow = memo(Row) as <R, SR>(props: RenderRowProps<R, SR>) => React.JSX.Element;
 

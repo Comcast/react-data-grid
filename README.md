@@ -238,7 +238,7 @@ Replace default components with custom implementations using the [`renderers`](#
 
 ## Keyboard Shortcuts
 
-<kbd>Ctrl</kbd> also accepts <kbd>⌘</kbd>, as macOS uses <kbd>Ctrl</kbd>+<kbd>←</kbd>/<kbd>→</kbd> to switch desktops. In right-to-left grids, <kbd>←</kbd> and <kbd>→</kbd> are swapped. See [`onCellKeyDown`](#oncellkeydown-maybeargs-cellkeydownargsr-sr-event-cellkeyboardevent--void) to customize them.
+<kbd>Ctrl</kbd> also accepts <kbd>⌘</kbd>, as macOS uses <kbd>Ctrl</kbd>+<kbd>←</kbd>/<kbd>→</kbd> to switch desktops. In right-to-left grids, <kbd>←</kbd> and <kbd>→</kbd> are swapped. See [`onCellKeyDown`](#oncellkeydown 'DataGridProps.onCellKeyDown') to customize them.
 
 ### Navigation
 
@@ -252,26 +252,26 @@ Replace default components with custom implementations using the [`renderers`](#
 
 ### Editing
 
-| Keys                                                        | Action                                                                                                                                                                                              |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Typing or <kbd>Enter</kbd>                                  | Open the [editor](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode)                                                                                                 |
-| <kbd>Enter</kbd> / <kbd>Escape</kbd>                        | Commit or discard the changes and close the editor                                                                                                                                                  |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>            | Commit the changes and move to the next or previous cell                                                                                                                                            |
-| <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> | Copy or paste, with [`onCellCopy`](#oncellcopy-maybeargs-cellcopyargsr-sr-event-cellclipboardevent--void) and [`onCellPaste`](#oncellpaste-maybeargs-cellpasteargsr-sr-event-cellclipboardevent--r) |
+| Keys                                                        | Action                                                                                                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Typing or <kbd>Enter</kbd>                                  | Open the [editor](#rendereditcell 'Column.renderEditCell')                                                                               |
+| <kbd>Enter</kbd> / <kbd>Escape</kbd>                        | Commit or discard the changes and close the editor                                                                                       |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>            | Commit the changes and move to the next or previous cell                                                                                 |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> | Copy or paste, with [`onCellCopy`](#oncellcopy 'DataGridProps.onCellCopy') and [`onCellPaste`](#oncellpaste 'DataGridProps.onCellPaste') |
 
 ### Selection
 
-| Keys                              | Action                                                                           |
-| --------------------------------- | -------------------------------------------------------------------------------- |
-| <kbd>Shift</kbd>+<kbd>Space</kbd> | Select or deselect the [row](#selectedrows-maybereadonlysetk) of the active cell |
+| Keys                              | Action                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------- |
+| <kbd>Shift</kbd>+<kbd>Space</kbd> | Select or deselect the [row](#selectedrows 'DataGridProps.selectedRows') of the active cell |
 
 ### Header Cells
 
 | Keys                                                                | Action                                                       |
 | ------------------------------------------------------------------- | ------------------------------------------------------------ |
-| <kbd>Enter</kbd> / <kbd>Space</kbd>                                 | [Sort](#sortable-maybeboolean) by the column                 |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>                                 | [Sort](#sortable 'Column.sortable') by the column            |
 | <kbd>Ctrl</kbd>+<kbd>Enter</kbd> / <kbd>Ctrl</kbd>+<kbd>Space</kbd> | Add the column to the sort, keeping the other sorted columns |
-| <kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>Ctrl</kbd>+<kbd>→</kbd>         | [Resize](#resizable-maybeboolean) the column                 |
+| <kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>Ctrl</kbd>+<kbd>→</kbd>         | [Resize](#resizable 'Column.resizable') the column           |
 
 See [`TreeDataGrid`](#treedatagrid-) for the keys that expand and collapse groups.
 
@@ -1189,7 +1189,7 @@ Function to generate unique IDs for group rows. If not provided, a default imple
 
 #### `<Row />`
 
-The default row component. Can be wrapped via the `renderers.renderRow` prop.
+The default row component. Can be wrapped via the [`renderers.renderRow`](#renderers-1) prop.
 
 ##### Props
 
@@ -1197,7 +1197,7 @@ The default row component. Can be wrapped via the `renderers.renderRow` prop.
 
 #### `<Cell />`
 
-The default cell component. Can be wrapped via the `renderers.renderCell` prop.
+The default cell component. Can be wrapped via the [`renderers.renderCell`](#renderers-1) prop.
 
 ##### Props
 
@@ -1209,7 +1209,7 @@ A component for rendering row selection checkboxes.
 
 ##### Props
 
-The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `value: boolean` in place of `checked`.
+[`SelectCheckboxProps`](#selectcheckboxprops-internal)
 
 #### `<ToggleGroup />`
 
@@ -1234,6 +1234,8 @@ function useHeaderRowSelection(): {
 Hook for managing header row selection state. Used within custom header cell renderers to implement custom "select all" functionality.
 
 **Returns:**
+
+An object with:
 
 - `isIndeterminate: boolean` - Whether some (but not all) rows are selected
 - `isRowSelected: boolean` - Whether all rows are selected
@@ -1278,6 +1280,8 @@ function useRowSelection(): {
 Hook for managing row selection state. Used within custom cell renderers to implement custom row selection.
 
 **Returns:**
+
+An object with:
 
 - `isRowSelectionDisabled: boolean` - Whether selection is disabled for this row
 - `isRowSelected: boolean` - Whether this row is selected
@@ -2722,6 +2726,20 @@ interface Position {
 ```
 
 **See also:** [`DataGridHandle`](#datagridhandle), [`CellKeyDownArgs`](#cellkeydownargs)
+
+#### `SelectCheckboxProps` (internal)
+
+The props of [`<SelectCheckbox />`](#selectcheckbox-): the same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `value: boolean` in place of `checked`.
+
+```tsx
+interface SelectCheckboxProps extends Pick<
+  RenderCheckboxProps,
+  'disabled' | 'tabIndex' | 'aria-label' | 'aria-labelledby' | 'indeterminate' | 'onChange'
+> {
+  /** Whether the checkbox is checked */
+  value: boolean;
+}
+```
 
 <!-- api:end -->
 

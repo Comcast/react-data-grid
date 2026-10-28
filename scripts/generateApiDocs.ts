@@ -169,23 +169,16 @@ function renderItem(item: Declaration, section: string, hasPropsInterface: boole
 
     const propsType = getComponentPropsType(node);
     const typeName = /^\w+/.exec(propsType)![0];
-    if (!helperTypes.has(typeName)) {
-      return [
-        title,
-        ...renderSummary(doc),
-        ...renderTags(doc),
-        heading(5, 'Props'),
-        `[\`${propsType}\`](#!${typeName})`
-      ].join('\n\n');
+    if (helperTypes.has(typeName)) {
+      throw new Error(`${typeName}, the props of ${name}, must have a JSDoc comment`);
     }
-
-    // the props of a component with an undocumented props type are described
-    // by the paragraphs after the first, e.g. `SelectCheckbox`
-    const [description, ...props] = doc.summary.split('\n\n');
-    if (props.length === 0) {
-      throw new Error(`${name} must describe its props after the first paragraph`);
-    }
-    return [title, description, ...renderTags(doc), heading(5, 'Props'), ...props].join('\n\n');
+    return [
+      title,
+      ...renderSummary(doc),
+      ...renderTags(doc),
+      heading(5, 'Props'),
+      `[\`${propsType}\`](#!${typeName})`
+    ].join('\n\n');
   }
 
   const isFunction = !isVariableStatement(node);

@@ -19,7 +19,7 @@ RowSelectionChangeContext.displayName = 'RowSelectionChangeContext';
 /**
  * Hook for managing row selection state. Used within custom cell renderers to implement custom row selection.
  *
- * @returns
+ * @returns An object with:
  *
  * - `isRowSelectionDisabled: boolean` - Whether selection is disabled for this row
  * - `isRowSelected: boolean` - Whether this row is selected
@@ -80,7 +80,7 @@ HeaderRowSelectionChangeContext.displayName = 'HeaderRowSelectionChangeContext';
 /**
  * Hook for managing header row selection state. Used within custom header cell renderers to implement custom "select all" functionality.
  *
- * @returns
+ * @returns An object with:
  *
  * - `isIndeterminate: boolean` - Whether some (but not all) rows are selected
  * - `isRowSelected: boolean` - Whether all rows are selected

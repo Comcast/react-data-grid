@@ -1,20 +1,19 @@
 import type { RenderCheckboxProps } from '../types';
 import { useRenderers } from '../DataGridRenderersContext';
 
-type SharedInputProps = Pick<
+/**
+ * The props of {@linkcode SelectCheckbox | <SelectCheckbox />}: the same props as {@linkcode RenderCheckboxProps}, with `value: boolean` in place of `checked`.
+ */
+interface SelectCheckboxProps extends Pick<
   RenderCheckboxProps,
   'disabled' | 'tabIndex' | 'aria-label' | 'aria-labelledby' | 'indeterminate' | 'onChange'
->;
-
-interface SelectCheckboxProps extends SharedInputProps {
+> {
   /** Whether the checkbox is checked */
   value: boolean;
 }
 
 /**
  * A component for rendering row selection checkboxes.
- *
- * The same props as {@linkcode RenderCheckboxProps}, with `value: boolean` in place of `checked`.
  */
 export function SelectCheckbox({
   value,
