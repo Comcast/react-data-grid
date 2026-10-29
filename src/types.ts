@@ -165,12 +165,11 @@ export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
 }
 
 export interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
-  groupKey: string;
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The group row: its key, rows, expanded state, level, and ID */
   row: GroupRow<TRow>;
-  childRows: readonly TRow[];
-  isExpanded: boolean;
   tabIndex: number;
+  /** Expands or collapses the group */
   toggleGroup: () => void;
 }
 

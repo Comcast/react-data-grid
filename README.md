@@ -1143,7 +1143,7 @@ import { DataGrid, renderCheckbox } from 'react-data-grid';
 
 #### `renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, SR>)`
 
-The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the expand/collapse toggle.
+The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the group key, `row.groupKey`, and the expand/collapse toggle.
 
 **Props:** [`RenderGroupCellContentProps<TRow, TSummaryRow>`](#rendergroupcellcontentpropstrow-tsummaryrow)
 
@@ -1383,7 +1383,19 @@ Render function to render the content of summary cells.
 
 ##### `renderGroupCell?: Maybe<(props: RenderGroupCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
-Render function to render the content of group cells when using `TreeDataGrid`.
+Render function to render the content of group cells when using `TreeDataGrid`. The group row is passed as `row`, a [`GroupRow`](#grouprowtrow) with the group's key, rows, and expanded state.
+
+```tsx
+const columns: readonly Column<Row>[] = [
+  {
+    key: 'gold',
+    name: 'Gold',
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((sum, childRow) => sum + childRow.gold, 0);
+    }
+  }
+];
+```
 
 ##### `renderEditCell?: Maybe<(props: RenderEditCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
@@ -1715,12 +1727,11 @@ Props passed to group cell content renderers (`column.renderGroupCell`) when usi
 
 ```tsx
 interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
-  groupKey: string;
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The group row: its key, rows, expanded state, level, and ID */
   row: GroupRow<TRow>;
-  childRows: readonly TRow[];
-  isExpanded: boolean;
   tabIndex: number;
+  /** Expands or collapses the group */
   toggleGroup: () => void;
 }
 ```

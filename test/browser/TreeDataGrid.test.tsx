@@ -53,8 +53,8 @@ const columns: readonly Column<Row, SummaryRow>[] = [
         </button>
       );
     },
-    renderGroupCell({ childRows }) {
-      return Math.min(...childRows.map((c) => c.id));
+    renderGroupCell({ row }) {
+      return Math.min(...row.childRows.map((c) => c.id));
     }
   }
 ];
