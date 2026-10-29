@@ -1012,7 +1012,7 @@ A component for rendering row selection checkboxes.
 
 ##### Props
 
-The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `value: boolean` in place of `checked`.
+The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `checked` required.
 
 #### `<ToggleGroup />`
 
