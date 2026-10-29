@@ -3,7 +3,6 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor } from '../../src';
 import type { Column } from '../../src';
-import { safeTab } from './utils';
 
 interface Row {
   readonly name: string;
@@ -24,7 +23,13 @@ const initialRows: readonly Row[] = [{ name: 'Tacitus Kilgore' }];
 function Test() {
   const [rows, setRows] = useState(initialRows);
 
-  return <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />;
+  return (
+    <>
+      <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
+      {/* tabbing out of the grid must not move focus out of the page */}
+      <button type="button">After</button>
+    </>
+  );
 }
 
 test('renderTextEditor', async () => {
@@ -49,7 +54,7 @@ test('renderTextEditor', async () => {
   // blurring the input closes and commits the editor
   await userEvent.dblClick(cell);
   await userEvent.fill(input, 'Jim Milton');
-  await safeTab();
+  await userEvent.tab();
   await expect.element(input).not.toBeInTheDocument();
   await expect.element(cell).toHaveTextContent('Jim Milton');
 });

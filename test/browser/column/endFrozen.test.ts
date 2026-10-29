@@ -6,7 +6,7 @@ import {
   cellFrozenStartClassname,
   cellFrozenEndClassname
 } from '../../../src/style/cell';
-import { getCellsAtRowIndex, safeTab, setup } from '../utils';
+import { getCellsAtRowIndex, setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
 const dragHandle = page.getDragHandle();
@@ -195,7 +195,7 @@ test('keyboard navigation reaches end-frozen columns', async () => {
 
   await setup({ columns, rows });
 
-  await safeTab();
+  await userEvent.tab();
   // Ctrl+End jumps to the last cell; the end-frozen column sits at aria-colindex=3
   await userEvent.keyboard('{Control>}{End}{/Control}');
   await expect.element(page.getActiveCell()).toHaveAttribute('aria-colindex', '3');
