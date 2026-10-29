@@ -30,13 +30,19 @@ export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
   colSpan: number
 ): React.CSSProperties {
-  const { idx, frozen } = column;
+  const { idx, frozen, minWidth, maxWidth } = column;
   const index = idx + 1;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
     insetInlineStart: frozen === 'start' ? `var(--rdg-frozen-start-${idx})` : undefined,
-    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined
+    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined,
+    // Cells size `auto`, `min-content`, and `max-content` columns with their content,
+    // so they must not be wider than `maxWidth`, or the column would exceed it
+    // and leave less room for the other columns.
+    // `maxWidth` is ignored when it is less than `minWidth`, as when clamping widths.
+    // `minWidth` is set on the measuring cells instead, so that cells keep the minimum width of their content.
+    maxWidth: colSpan === 1 && maxWidth !== undefined && maxWidth >= minWidth ? maxWidth : undefined
   };
 }
 

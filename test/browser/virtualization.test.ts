@@ -124,9 +124,8 @@ test('virtualization is enabled', async () => {
   scrollGrid({ top: 1000 });
   await assertRows(39, 24, 62);
 
-  // scroll height = header height + row height * row count
-  // max top = scroll height - grid height
-  scrollGrid({ top: rowHeight + rowHeight * 100 - 1080 });
+  // scroll to the end
+  scrollGrid({ top: 9999 });
   await assertRows(34, 66, 99);
 
   scrollGrid({ left: 92 });
@@ -145,8 +144,8 @@ test('virtualization is enabled', async () => {
   await assertHeaderCells(18, 1, 18);
   await assertCells(66, 18, 1, 18);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   await assertHeaderCells(17, 13, 29);
   await assertCells(66, 17, 13, 29);
 });
@@ -163,8 +162,8 @@ test('virtualization is enabled with 4 frozen columns', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   indexes = [0, 1, 2, 3, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
@@ -184,8 +183,8 @@ test('virtualization is enabled with all columns frozen', async () => {
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 
-  // max left = row width - grid width
-  scrollGrid({ left: 3600 - 1920 });
+  // scroll to the end
+  scrollGrid({ left: 9999 });
   await assertHeaderCellIndexes(indexes);
   await assertCellIndexes(0, indexes);
 });
@@ -245,6 +244,27 @@ test('virtualization is enabled with start + end frozen columns', async () => {
   await expect.element(page.getHeaderCell({ name: '29' })).toBeInTheDocument();
 });
 
+test('columns outside of the viewport keep their width', async () => {
+  const columns: Column<unknown>[] = [];
+
+  for (let i = 0; i < 100; i++) {
+    const key = String(i);
+    columns.push({
+      key,
+      name: key,
+      // these widths depend on the cells, and the columns outside of the viewport have none
+      width: i % 2 === 0 ? 'auto' : 'max-content',
+      maxWidth: i % 2 === 0 ? 200 : undefined
+    });
+  }
+
+  await setup<unknown, unknown>({ columns, rows: [] });
+  await assertHeaderCells(40, 0, 39);
+
+  // every column is `minWidth` wide
+  await expect.poll(() => page.getGrid().element().scrollWidth).toBe(100 * 50);
+});
+
 test('virtualization is enabled with 2 summary rows', async () => {
   await setupGrid(true, 1, 100, 0, 2);
 
@@ -298,6 +318,21 @@ test('virtualization is disabled with some frozen columns', async () => {
   await assertHeaderCells(40, 0, 39);
   await assertRows(100, 0, 99);
   await expect.element(cells).toHaveLength(40 * 100);
+});
+
+test('virtualization is disabled with frozen columns wider than the grid', async () => {
+  await setup<unknown, unknown>({
+    columns: [
+      { key: '0', name: '0', width: 150, frozen: true },
+      { key: '1', name: '1', width: 100 },
+      { key: '2', name: '2', width: 100 }
+    ],
+    rows: [],
+    enableVirtualization: false,
+    style: { width: 120 }
+  });
+
+  await assertHeaderCells(3, 0, 2);
 });
 
 test('virtualization is disabled with start and end frozen columns', async () => {

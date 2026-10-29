@@ -1,4 +1,4 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -151,9 +151,13 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
    * @default `rowHeight` when it is a number, otherwise 35
    */
   summaryRowHeight?: Maybe<number>;
-  /** A map of column widths */
+  /**
+   * A map of column widths.
+   * With `onColumnWidthsChange`, a new map replaces the widths that were measured and resized since the previous one,
+   * otherwise it only sets the initial widths.
+   */
   columnWidths?: Maybe<ColumnWidths>;
-  /** Callback triggered when column widths change */
+  /** Callback triggered when the user has resized a column */
   onColumnWidthsChange?: Maybe<(columnWidths: ColumnWidths) => void>;
 
   /**
@@ -318,53 +322,47 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * states
    */
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
-  const [gridWidth, gridHeight] = useGridDimensions(gridRef);
-  const [columnWidthsInternal, setColumnWidthsInternal] = useState(
-    (): ColumnWidths => columnWidthsRaw ?? new Map()
-  );
-  const [isColumnResizing, setIsColumnResizing] = useState(false);
+  const [gridWidth, gridHeight, previousGridWidth] = useGridDimensions(gridRef);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedOverRowIdx, setDraggedOverRowIdx] = useState<number | undefined>();
   const [previousRowIdx, setPreviousRowIdx] = useState(-1);
-
-  const isColumnWidthsControlled =
-    columnWidthsRaw != null && onColumnWidthsChangeRaw != null && !isColumnResizing;
-  const columnWidths = isColumnWidthsControlled ? columnWidthsRaw : columnWidthsInternal;
-  const onColumnWidthsChange = isColumnWidthsControlled
-    ? (columnWidths: ColumnWidths) => {
-        // we keep the internal state in sync with the prop but this prevents an extra render
-        setColumnWidthsInternal(columnWidths);
-        onColumnWidthsChangeRaw(columnWidths);
-      }
-    : setColumnWidthsInternal;
-
-  const getColumnWidth = useCallback(
-    (column: CalculatedColumn<R, SR>) => {
-      return columnWidths.get(column.key)?.width ?? column.width;
-    },
-    [columnWidths]
-  );
 
   const {
     columns,
     colSpanColumns,
     lastStartFrozenColumnIndex,
     firstEndFrozenColumnIndex,
-    headerRowsCount,
-    colOverscanStartIdx,
-    colOverscanEndIdx,
-    templateColumns,
-    layoutCssVars,
-    totalStartFrozenColumnWidth,
-    totalEndFrozenColumnWidth
+    headerRowsCount
   } = useCalculatedColumns({
     rawColumns,
-    defaultColumnOptions,
-    getColumnWidth,
-    scrollLeft,
-    viewportWidth: gridWidth,
-    enableVirtualization
+    defaultColumnOptions
   });
+
+  const {
+    colOverscanStartIdx,
+    colOverscanEndIdx,
+    totalStartFrozenColumnWidth,
+    totalEndFrozenColumnWidth,
+    gridTemplateColumns,
+    layoutCssVars,
+    columnMetrics,
+    measuredColumns,
+    observeMeasuringCellRef,
+    handleColumnResizeLatest,
+    handleColumnResizeEndLatest
+  } = useColumnWidths(
+    gridRef,
+    columns,
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex,
+    gridWidth,
+    scrollLeft,
+    previousGridWidth,
+    enableVirtualization,
+    columnWidthsRaw,
+    onColumnResize,
+    onColumnWidthsChangeRaw
+  );
 
   /**
    * computed values
@@ -484,23 +482,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       bottomSummaryRows
     });
 
-  const { gridTemplateColumns, handleColumnResize } = useColumnWidths(
-    columns,
-    viewportColumns,
-    templateColumns,
-    gridRef,
-    gridWidth,
-    columnWidths,
-    onColumnWidthsChange,
-    onColumnResize,
-    setIsColumnResizing
-  );
-
   /**
    * The identity of the wrapper function is stable, so it won't break memoization
    */
-  const handleColumnResizeLatest = useLatestFunc(handleColumnResize);
-  const handleColumnResizeEndLatest = useLatestFunc(handleColumnResizeEnd);
   const onColumnsReorderLatest = useLatestFunc(onColumnsReorder);
   const onSortColumnsChangeLatest = useLatestFunc(onSortColumnsChange);
   const onCellMouseDownLatest = useLatestFunc(onCellMouseDown);
@@ -712,14 +696,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
           originalRow: row
         }));
       });
-    }
-  }
-
-  function handleColumnResizeEnd() {
-    // This check is needed as double-clicking the resize handle triggers onLostPointerCapture without resizing the column
-    if (isColumnResizing) {
-      onColumnWidthsChangeRaw?.(columnWidths);
-      setIsColumnResizing(false);
     }
   }
 
@@ -975,7 +951,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     // the drag handle is at the end of the last column that the cell spans,
     // where it sticks when the column is start-frozen
     const lastColumn = columns[column.idx + colSpan - 1];
-    const columnWidth = getColumnWidth(lastColumn);
+    const columnWidth = columnMetrics.get(lastColumn)?.width ?? 0;
     const { insetInlineStart } = getCellStyle(lastColumn, 1);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
     const isLastColumn = lastColumn.idx === maxColIdx;
@@ -1160,11 +1136,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     });
   }
 
-  // Keep the state and prop in sync
-  if (isColumnWidthsControlled && columnWidthsInternal !== columnWidthsRaw) {
-    setColumnWidthsInternal(columnWidthsRaw);
-  }
-
   let templateRows = `repeat(${headerRowsCount}, ${headerRowHeight}px)`;
   if (topSummaryRowsCount > 0) {
     templateRows += ` repeat(${topSummaryRowsCount}, ${summaryRowHeight}px)`;
@@ -1336,7 +1307,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       {getDragHandle()}
 
       {/* render empty cells that span only 1 column so we can safely measure column widths, regardless of colSpan */}
-      {renderMeasuringCells(viewportColumns)}
+      {renderMeasuringCells(viewportColumns, measuredColumns, observeMeasuringCellRef)}
 
       {scrollToPositionElement}
     </div>

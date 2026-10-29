@@ -106,6 +106,54 @@ test('should observe grid resizes with the ResizeObserver of the window the grid
   await expect.element(headerCells).toHaveLength(9);
 });
 
+test('should measure columns with the ResizeObserver of the window the grid is rendered in', async () => {
+  const { iframeDocument, iframeWindow, frame } = await createIframe();
+  const observeSpy = vi.spyOn(iframeWindow.ResizeObserver.prototype, 'observe');
+  const onColumnResize = vi.fn();
+
+  await page.render(
+    createPortal(
+      <DataGrid
+        columns={[
+          { key: 'a', name: 'A', resizable: true },
+          { key: 'b', name: 'B', width: 100 }
+        ]}
+        rows={initialRows}
+        onColumnResize={onColumnResize}
+      />,
+      iframeDocument.body
+    )
+  );
+
+  const grid = frame.getGrid();
+  await expect.element(grid).toBeInTheDocument();
+  // measuring cells are observed in the next animation frame.
+  // Poll a boolean: printing the calls of a failed attempt would read the props of the observed elements,
+  // and React logs an error when `props.key` is read.
+  const measuringCell = grid.element().querySelector('[data-measuring-cell-key="a"]');
+  await expect
+    .poll(() => observeSpy.mock.calls.some(([target]) => target === measuringCell))
+    .toBe(true);
+
+  // auto-sizing the column waits for it to be measured
+  await userEvent.dblClick(frame.getHeaderCell({ name: 'A' }).getBySelector('.rdg-resize-handle'));
+  await expect.poll(() => onColumnResize).toHaveBeenCalledOnce();
+});
+
+test('should not break in a window without ResizeObserver', async () => {
+  const { iframeDocument, iframeWindow, frame } = await createIframe();
+  // @ts-expect-error the property is not optional
+  delete iframeWindow.ResizeObserver;
+
+  const { unmount } = await page.render(
+    createPortal(<DataGrid columns={columns} rows={noRows} />, iframeDocument.body)
+  );
+
+  await expect.element(frame.getGrid()).toBeInTheDocument();
+  await unmount();
+  await expect.element(frame.getGrid()).not.toBeInTheDocument();
+});
+
 test('should navigate between cells with the keyboard', async () => {
   const { iframeDocument, frame } = await createIframe();
   await page.render(createPortal(<EditableGrid />, iframeDocument.body));
