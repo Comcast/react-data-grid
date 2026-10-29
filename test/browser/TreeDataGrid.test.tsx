@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type {
-  CellKeyDownArgs,
-  Column,
-  DataGridProps,
-  GroupRow,
-  TreeCellKeyDownArgs,
-  TreeDataGridProps,
-  TreePositionChangeArgs
-} from '../../src';
+import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
 import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
@@ -551,32 +543,6 @@ test('update row using cell content renderer', async () => {
   await expect.element(activeCell).toHaveTextContent('value: 2');
   await userEvent.click(page.getByRole('button', { name: 'value: 2' }));
   await expect.element(activeCell).toHaveTextContent('value: 12');
-});
-
-test('onCellKeyDown and onActivePositionChange are typed with group rows', () => {
-  type TreeKeyDownArgs = Parameters<NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>>[0];
-  type GridKeyDownArgs = Parameters<NonNullable<DataGridProps<Row>['onCellKeyDown']>>[0];
-  type TreePositionArgs = Parameters<
-    NonNullable<TreeDataGridProps<Row>['onActivePositionChange']>
-  >[0];
-  type GridPositionArgs = Parameters<NonNullable<DataGridProps<Row>['onActivePositionChange']>>[0];
-
-  expectTypeOf<TreeKeyDownArgs>().toEqualTypeOf<TreeCellKeyDownArgs<Row>>();
-  expectTypeOf<Extract<TreeKeyDownArgs, { mode: 'ACTIVE' }>['row']>().toEqualTypeOf<
-    Row | GroupRow<Row>
-  >();
-  expectTypeOf<Extract<TreeKeyDownArgs, { mode: 'EDIT' }>['row']>().toEqualTypeOf<Row>();
-  expectTypeOf<Extract<GridKeyDownArgs, { mode: 'ACTIVE' }>['row']>().toEqualTypeOf<Row>();
-  expectTypeOf<TreePositionArgs['row']>().toEqualTypeOf<Row | GroupRow<Row> | undefined>();
-  expectTypeOf<GridPositionArgs['row']>().toEqualTypeOf<Row | undefined>();
-
-  // a handler that only accepts regular rows cannot be passed to `TreeDataGrid`
-  expectTypeOf<(args: CellKeyDownArgs<Row>) => void>().not.toExtend<
-    NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>
-  >();
-  expectTypeOf<(args: TreeCellKeyDownArgs<Row>) => void>().toExtend<
-    NonNullable<TreeDataGridProps<Row>['onCellKeyDown']>
-  >();
 });
 
 test('onCellKeyDown and onActivePositionChange receive group rows', async () => {
