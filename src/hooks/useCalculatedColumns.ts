@@ -95,10 +95,10 @@ export function useCalculatedColumns<R, SR>({
       const { idx, frozen } = column;
       let maxColSpan;
 
-      if (frozen === 'end') {
-        maxColSpan = columns.length - idx;
-      } else if (frozen === false) {
+      if (frozen === false) {
         maxColSpan = columns.length - endFrozenColumnCount - idx;
+      } else if (frozen === 'end') {
+        maxColSpan = columns.length - idx;
       } else {
         maxColSpan = startFrozenColumnCount - idx;
       }
