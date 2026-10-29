@@ -3,7 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderHeaderCell } from '../../../src';
 import type { CalculatedColumn, Column, RenderCellContentProps } from '../../../src';
-import { getCellsAtRowIndex, getRowKey, safeTab, setup } from '../utils';
+import { getCellsAtRowIndex, getRowKey, setup } from '../utils';
 
 const cells = page.getCell();
 
@@ -306,7 +306,7 @@ test('Focus child if it sets tabIndex', async () => {
   await userEvent.click(page.getByText('Text'));
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await expect.element(button1).not.toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '-1');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
@@ -314,7 +314,7 @@ test('Focus child if it sets tabIndex', async () => {
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await userEvent.click(button2);
   await expect.element(button2).toHaveFocus();
   // It is the user's responsibility to set the tabIndex on button2
