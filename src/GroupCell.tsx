@@ -6,9 +6,9 @@ import type { CalculatedColumn, GroupRow } from './types';
 
 interface GroupCellProps<R, SR> {
   id: string;
-  groupKey: unknown;
+  groupKey: string;
   childRows: readonly R[];
-  toggleGroup: (expandedGroupId: unknown) => void;
+  toggleGroup: (expandedGroupId: string) => void;
   isExpanded: boolean;
   column: CalculatedColumn<R, SR>;
   row: GroupRow<R>;

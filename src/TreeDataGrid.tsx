@@ -33,8 +33,8 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
   groupBy: readonly string[];
   getRowGroupKey?: Maybe<(row: NoInfer<R>, columnKey: string) => string>;
-  expandedGroupIds: ReadonlySet<unknown>;
-  onExpandedGroupIdsChange: (expandedGroupIds: Set<unknown>) => void;
+  expandedGroupIds: ReadonlySet<string>;
+  onExpandedGroupIdsChange: (expandedGroupIds: Set<string>) => void;
   getGroupId?: Maybe<(groupKey: string, parentId?: string) => string>;
 }
 
@@ -414,7 +414,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     });
   }
 
-  function toggleGroup(groupId: unknown) {
+  function toggleGroup(groupId: string) {
     const newExpandedGroupIds = new Set(expandedGroupIds);
     if (newExpandedGroupIds.has(groupId)) {
       newExpandedGroupIds.delete(groupId);

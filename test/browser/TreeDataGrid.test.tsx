@@ -96,7 +96,7 @@ function TestGrid({
 }) {
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set());
+  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<string> => new Set());
 
   return (
     <TreeDataGrid
@@ -256,7 +256,7 @@ test(
 test('should keep the row keys when an earlier group is expanded, without getRowKey', async () => {
   function Test() {
     const [expandedGroupIds, setExpandedGroupIds] = useState(
-      (): ReadonlySet<unknown> => new Set(['Canada'])
+      (): ReadonlySet<string> => new Set(['Canada'])
     );
 
     return (

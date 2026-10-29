@@ -167,7 +167,7 @@ function RowGrouping() {
   ]);
   const rows = useMemo(() => sortRows(rawRows, selectedOptions), [rawRows, selectedOptions]);
   const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> =>
+    (): ReadonlySet<string> =>
       new Set(['United States of America', 'United States of America__2015'])
   );
 

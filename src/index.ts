@@ -35,6 +35,7 @@ export type {
   ColumnWidths,
   Direction,
   FillEvent,
+  GroupRow,
   PositionChangeArgs,
   RenderCellContentProps,
   RenderCellProps,
