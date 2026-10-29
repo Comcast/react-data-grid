@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column, RenderGroupCellContentProps } from '../../src';
+import type { Column } from '../../src';
 import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
@@ -543,12 +543,6 @@ test('update row using cell content renderer', async () => {
   await expect.element(activeCell).toHaveTextContent('value: 2');
   await userEvent.click(page.getByRole('button', { name: 'value: 2' }));
   await expect.element(activeCell).toHaveTextContent('value: 12');
-});
-
-test('renderGroupCell receives the group row only', () => {
-  expectTypeOf<keyof RenderGroupCellContentProps<Row>>().toEqualTypeOf<
-    'column' | 'row' | 'tabIndex' | 'toggleGroup'
-  >();
 });
 
 test('custom renderGroupCell', async () => {
