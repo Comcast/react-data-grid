@@ -95,12 +95,12 @@ export function useCalculatedColumns<R, SR>({
       const { idx, frozen } = column;
       let maxColSpan;
 
-      if (frozen === 'end') {
-        maxColSpan = columns.length - idx;
-      } else if (frozen === false) {
+      if (frozen === false) {
         maxColSpan = columns.length - endFrozenColumnCount - idx;
-      } else {
+      } else if (frozen === 'start') {
         maxColSpan = startFrozenColumnCount - idx;
+      } else {
+        maxColSpan = columns.length - idx;
       }
 
       return min(colSpan, maxColSpan);
@@ -126,9 +126,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        // normalize the `frozen` value
-        const frozen: ColumnFrozen =
-          rawColumn.frozen === true ? 'start' : (rawColumn.frozen ?? false);
+        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
         // Set every property in a fixed order instead of spreading `rawColumn`,
         // so that all calculated columns share a single hidden class (shape) in JS engines,
@@ -183,8 +181,8 @@ export function useCalculatedColumns<R, SR>({
 
       // Sort by band: start-frozen → unfrozen → end-frozen.
       // Stable sort preserves definition order within each band.
-      const ra = a.frozen === 'end' ? 2 : a.frozen === false ? 1 : 0;
-      const rb = b.frozen === 'end' ? 2 : b.frozen === false ? 1 : 0;
+      const ra = a.frozen === false ? 1 : a.frozen === 'start' ? 0 : 2;
+      const rb = b.frozen === false ? 1 : b.frozen === 'start' ? 0 : 2;
 
       // TODO: sort columns to keep them grouped if they have a parent
       return ra - rb;

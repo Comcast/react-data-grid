@@ -9,13 +9,13 @@ const headerCells = page.getHeaderCell();
 const frozen1: Column<unknown> = {
   key: 'f1',
   name: 'frz1',
-  frozen: true
+  frozen: 'start'
 };
 
 const frozen2: Column<unknown> = {
   key: 'f2',
   name: 'frz2',
-  frozen: true
+  frozen: 'start'
 };
 
 const standard1: Column<unknown> = {
