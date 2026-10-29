@@ -49,6 +49,14 @@ jobs:
 
       - run: vp install --frozen-lockfile
 
+      # `npm ci` doesn't catch every mismatch between package.json and package-lock.json,
+      # e.g., Dependabot rewriting the `beta` dist-tag to `*` in the lockfile,
+      # so update the lockfile without installing anything and fail if either file changed
+      - name: Check that package-lock.json is up to date
+        run: |
+          vp install --lockfile-only --ignore-scripts
+          git diff --exit-code -- package.json package-lock.json
+
       # https://viteplus.dev/guide/github-actions-cache
       - name: Restore Vite Task cache
         id: vite-task-cache
