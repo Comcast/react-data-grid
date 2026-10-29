@@ -3,7 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderHeaderCell } from '../../../src';
 import type { CalculatedColumn, Column, RenderCellContentProps } from '../../../src';
-import { getCellsAtRowIndex, setup } from '../utils';
+import { getCellsAtRowIndex, getRowKey, setup } from '../utils';
 
 const cells = page.getCell();
 
@@ -346,12 +346,7 @@ test('Cell should not steal focus when the focus is outside the grid and the cel
         >
           Test
         </button>
-        <DataGrid
-          columns={columns}
-          rows={rows}
-          onRowsChange={setRows}
-          rowKeyGetter={(row) => row.id}
-        />
+        <DataGrid columns={columns} rows={rows} onRowsChange={setRows} getRowKey={getRowKey} />
       </>
     );
   }
