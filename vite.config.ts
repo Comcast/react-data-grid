@@ -110,6 +110,12 @@ export default defineConfig({
         command: 'tsc --build',
         cache: false
       },
+      // generates the API reference of the README from the declarations and JSDoc comments of `lib/index.d.ts`
+      docs: {
+        command: ['vp pack', 'node scripts/generateApiDocs.ts', 'vp fmt README.md'],
+        // the README is both an input and the output
+        cache: false
+      },
       'install-browsers': {
         command: isCI ? 'bash .github/install-browsers.sh' : 'playwright install --no-shell',
         // browsers are installed outside the workspace, so they cannot be restored from the cache
@@ -137,7 +143,9 @@ export default defineConfig({
           'vp run typecheck',
           'vp check',
           'vp run eslint',
-          'vp pack',
+          // runs `vp pack`, then generates the API reference from its output
+          'vp run docs',
+          'git diff --exit-code README.md',
           'vp build',
           'git diff --exit-code website/routeTree.gen.ts',
           'vp run test'
@@ -361,7 +369,7 @@ export default defineConfig({
   lint: {
     ignorePatterns: ['/website/routeTree.gen.ts'],
 
-    plugins: ['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
+    plugins: ['eslint', 'jsdoc', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
 
     options: {
       denyWarnings: true,
@@ -374,10 +382,18 @@ export default defineConfig({
       builtin: true
     },
 
+    settings: {
+      jsdoc: {
+        tagNamePreference: {
+          default: 'defaultValue'
+        }
+      }
+    },
+
     // https://oxc.rs/docs/guide/usage/linter/rules.html
     /*
 // copy all the rules from the rules table for easy pasting
-const groups = new Set(['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest']);
+const groups = new Set(['eslint', 'jsdoc', 'oxc', 'react', 'typescript', 'unicorn', 'vitest']);
 copy(
   Iterator.from(document.querySelectorAll('tbody tr'))
     .map((row) => [
@@ -582,6 +598,35 @@ copy(
       'eslint/valid-typeof': ['warn', { requireStringLiterals: true }],
       'eslint/vars-on-top': 'off',
       'eslint/yoda': 'off',
+      'jsdoc/check-access': 'warn',
+      'jsdoc/check-property-names': 'warn',
+      'jsdoc/check-tag-names': [
+        'warn',
+        {
+          // TSDoc tags
+          definedTags: ['defaultValue', 'typeParam']
+        }
+      ],
+      'jsdoc/empty-tags': 'warn',
+      'jsdoc/implements-on-classes': 'warn',
+      'jsdoc/no-blank-blocks': 'warn',
+      'jsdoc/no-defaults': 'warn',
+      'jsdoc/require-param': 'off',
+      'jsdoc/require-param-description': 'warn',
+      'jsdoc/require-param-name': 'warn',
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/require-property': 'warn',
+      'jsdoc/require-property-description': 'warn',
+      'jsdoc/require-property-name': 'warn',
+      'jsdoc/require-property-type': 'off',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/require-returns-description': 'warn',
+      'jsdoc/require-returns-type': 'off',
+      'jsdoc/require-throws-description': 'warn',
+      'jsdoc/require-throws-type': 'off',
+      'jsdoc/require-yields': 'warn',
+      'jsdoc/require-yields-description': 'warn',
+      'jsdoc/require-yields-type': 'off',
       'oxc/approx-constant': 'warn',
       'oxc/bad-array-method-on-arguments': 'warn',
       'oxc/bad-bitwise-operator': 'warn',

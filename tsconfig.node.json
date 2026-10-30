@@ -5,5 +5,5 @@
     "module": "NodeNext",
     "types": ["node"]
   },
-  "include": ["eslint.config.ts"]
+  "include": ["eslint.config.ts", "scripts/**/*"]
 }

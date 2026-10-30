@@ -23,6 +23,9 @@ export default function renderSortStatus({ sortDirection, priority }: RenderSort
   );
 }
 
+/**
+ * Renders the sort direction arrow icon.
+ */
 export function renderSortIcon({ sortDirection }: RenderSortIconProps) {
   if (sortDirection === undefined) return null;
 
@@ -33,6 +36,9 @@ export function renderSortIcon({ sortDirection }: RenderSortIconProps) {
   );
 }
 
+/**
+ * Renders the sort priority number for multi-column sorting.
+ */
 export function renderSortPriority({ priority }: RenderSortPriorityProps) {
   return priority;
 }

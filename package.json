@@ -43,6 +43,7 @@
     "clsx": "^2.1.1",
     "ecij": "^0.6.0",
     "eslint": "^10.2.1",
+    "github-slugger": "^2.0.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "oxc-transform-react": "^0.155.0",

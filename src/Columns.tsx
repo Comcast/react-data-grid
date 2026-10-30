@@ -7,6 +7,16 @@ import type {
 } from './types';
 import { SelectCheckbox } from './cellRenderers';
 
+/**
+ * The key used for the `SelectColumn`. Useful for identifying or filtering the select column.
+ *
+ * @example
+ * ```tsx
+ * import { SELECT_COLUMN_KEY } from 'react-data-grid';
+ *
+ * const nonSelectColumns = columns.filter((column) => column.key !== SELECT_COLUMN_KEY);
+ * ```
+ */
 export const SELECT_COLUMN_KEY = 'rdg-select-column';
 
 function SelectAllCell({ tabIndex }: RenderHeaderCellContentProps<unknown>) {
@@ -56,6 +66,33 @@ function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>
   );
 }
 
+/**
+ * A pre-configured column for row selection.
+ * Includes checkbox renderers for the header row, regular rows, and group rows.
+ *
+ * @example
+ * ```tsx
+ * import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
+ *
+ * const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
+ *
+ * function getRowKey(row: Row) {
+ *   return row.id;
+ * }
+ *
+ * function MyGrid() {
+ *   return (
+ *     <DataGrid
+ *       columns={columns}
+ *       rows={rows}
+ *       getRowKey={getRowKey}
+ *       selectedRows={selectedRows}
+ *       onSelectedRowsChange={setSelectedRows}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 // oxlint-disable-next-line typescript/no-explicit-any
 export const SelectColumn: Column<any, any> = {
   key: SELECT_COLUMN_KEY,

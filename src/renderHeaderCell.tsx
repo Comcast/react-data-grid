@@ -19,6 +19,23 @@ const headerSortName = css`
 
 const headerSortNameClassname = `rdg-header-sort-name ${headerSortName}`;
 
+/**
+ * The default header cell content renderer. Renders sortable columns with sort indicators.
+ *
+ * @example
+ * ```tsx
+ * import { renderHeaderCell, type Column } from 'react-data-grid';
+ *
+ * const columns: readonly Column<Row>[] = [
+ *   {
+ *     key: 'name',
+ *     name: 'Name',
+ *     sortable: true,
+ *     renderHeaderCell
+ *   }
+ * ];
+ * ```
+ */
 export function renderHeaderCell<R, SR>({
   column,
   sortDirection,

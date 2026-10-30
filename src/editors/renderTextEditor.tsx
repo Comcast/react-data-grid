@@ -38,17 +38,33 @@ function autoFocusAndSelect(input: HTMLInputElement | null) {
   input?.select();
 }
 
-export function renderTextEditor<TRow, TSummaryRow>({
+/**
+ * A basic text editor provided for convenience.
+ *
+ * @example
+ * ```tsx
+ * import { renderTextEditor, type Column } from 'react-data-grid';
+ *
+ * const columns: readonly Column<Row>[] = [
+ *   {
+ *     key: 'title',
+ *     name: 'Title',
+ *     renderEditCell: renderTextEditor
+ *   }
+ * ];
+ * ```
+ */
+export function renderTextEditor<R, SR>({
   row,
   column,
   onRowChange,
   onClose
-}: RenderEditCellContentProps<TRow, TSummaryRow>) {
+}: RenderEditCellContentProps<R, SR>) {
   return (
     <input
       className={textEditorClassname}
       ref={autoFocusAndSelect}
-      value={row[column.key as keyof TRow] as unknown as string}
+      value={row[column.key as keyof R] as unknown as string}
       onChange={(event) => onRowChange({ ...row, [column.key]: event.target.value })}
       onBlur={() => onClose(true, false)}
     />
