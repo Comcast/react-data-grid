@@ -27,7 +27,7 @@ function SelectAllCell({ tabIndex }: RenderHeaderCellContentProps<unknown>) {
       aria-label="Select All"
       tabIndex={tabIndex}
       indeterminate={isIndeterminate}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked) => {
         onRowSelectionChange({ checked: isIndeterminate ? false : checked });
       }}
@@ -43,7 +43,7 @@ function RowSelectCell({ row, tabIndex }: RenderCellContentProps<unknown>) {
       aria-label="Select"
       tabIndex={tabIndex}
       disabled={isRowSelectionDisabled}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked, isShiftClick) => {
         onRowSelectionChange({ row, checked, isShiftClick });
       }}
@@ -58,7 +58,7 @@ function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>
     <SelectCheckbox
       aria-label="Select Group"
       tabIndex={tabIndex}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked) => {
         onRowSelectionChange({ row, checked, isShiftClick: false });
       }}
@@ -76,7 +76,7 @@ function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>
  *
  * const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
  *
- * function rowKeyGetter(row: Row) {
+ * function getRowKey(row: Row) {
  *   return row.id;
  * }
  *
@@ -85,7 +85,7 @@ function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>
  *     <DataGrid
  *       columns={columns}
  *       rows={rows}
- *       rowKeyGetter={rowKeyGetter}
+ *       getRowKey={getRowKey}
  *       selectedRows={selectedRows}
  *       onSelectedRowsChange={setSelectedRows}
  *     />

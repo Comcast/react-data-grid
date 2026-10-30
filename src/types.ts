@@ -113,7 +113,21 @@ export interface Column<R, SR = unknown> {
   readonly renderHeaderCell?: Maybe<(props: RenderHeaderCellContentProps<R, SR>) => ReactNode>;
   /** Render function to render the content of summary cells. */
   readonly renderSummaryCell?: Maybe<(props: RenderSummaryCellContentProps<SR, R>) => ReactNode>;
-  /** Render function to render the content of group cells when using `TreeDataGrid`. */
+  /**
+   * Render function to render the content of group cells when using `TreeDataGrid`. The group row is passed as `row`, a {@linkcode GroupRow} with the group's key, rows, and expanded state.
+   *
+   * ```tsx
+   * const columns: readonly Column<Row>[] = [
+   *   {
+   *     key: 'gold',
+   *     name: 'Gold',
+   *     renderGroupCell({ row }) {
+   *       return row.childRows.reduce((sum, childRow) => sum + childRow.gold, 0);
+   *     }
+   *   }
+   * ];
+   * ```
+   */
   readonly renderGroupCell?: Maybe<(props: RenderGroupCellContentProps<R, SR>) => ReactNode>;
   /**
    * Render function to render the content of edit cells. When set, the column is automatically set to be editable.
@@ -358,15 +372,14 @@ export interface RenderSummaryCellContentProps<SR, R = unknown> {
 /**
  * Props passed to group cell content renderers ({@linkcode Column.renderGroupCell | column.renderGroupCell}) when using `TreeDataGrid`.
  *
- * @see {@linkcode Column.renderGroupCell | column.renderGroupCell}, {@linkcode renderToggleGroup} function, {@linkcode ToggleGroup | <ToggleGroup />}
+ * @see {@linkcode Column.renderGroupCell | column.renderGroupCell}, {@linkcode renderToggleGroup} function, {@linkcode ToggleGroup | <ToggleGroup />}, {@linkcode GroupRow}
  */
 export interface RenderGroupCellContentProps<R, SR = unknown> {
-  groupKey: unknown;
   column: CalculatedColumn<R, SR>;
+  /** The group row: its key, rows, expanded state, level, and ID */
   row: GroupRow<R>;
-  childRows: readonly R[];
-  isExpanded: boolean;
   tabIndex: number;
+  /** Expands or collapses the group */
   toggleGroup: () => void;
 }
 
@@ -516,14 +529,15 @@ export interface CellMouseArgs<R, SR = unknown> {
   setActivePosition: (enableEditor?: boolean) => void;
 }
 
-interface ActiveCellKeyDownArgs<R, SR = unknown> {
+interface ActiveCellKeyDownArgs<R, SR = unknown, TActiveRow = R> {
   mode: 'ACTIVE';
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<R, SR> | undefined;
-  row: R;
+  /** The active row. In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow` */
+  row: TActiveRow;
   rowIdx: number;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
@@ -552,31 +566,50 @@ interface EditCellKeyDownArgs<R, SR = unknown> {
  * }
  * ```
  *
- * @see {@linkcode DataGridProps.onCellKeyDown | onCellKeyDown} prop on `<DataGrid />`
+ * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `R | GroupRow<R>` in `TreeDataGrid`
+ *
+ * @see {@linkcode DataGridProps.onCellKeyDown | onCellKeyDown} prop on `<DataGrid />`, {@linkcode TreeCellKeyDownArgs}
  */
-export type CellKeyDownArgs<R, SR = unknown> =
-  | ActiveCellKeyDownArgs<R, SR>
+export type CellKeyDownArgs<R, SR = unknown, TActiveRow = R> =
+  | ActiveCellKeyDownArgs<R, SR, TActiveRow>
   | EditCellKeyDownArgs<R, SR>;
 
 /**
  * Arguments passed to `onActivePositionChange`.
  *
- * @see {@linkcode DataGridProps.onActivePositionChange | onActivePositionChange} prop on `<DataGrid />`
+ * @typeParam TActiveRow - The type of the active row, `R | GroupRow<R>` in `TreeDataGrid`
+ *
+ * @see {@linkcode DataGridProps.onActivePositionChange | onActivePositionChange} prop on `<DataGrid />`, {@linkcode TreePositionChangeArgs}
  */
-export interface PositionChangeArgs<R, SR = unknown> {
+export interface PositionChangeArgs<R, SR = unknown, TActiveRow = R> {
   /** row index of the active position */
   rowIdx: number;
   /**
    * row object of the active position,
-   * undefined if the active position is on a header or summary row
+   * undefined if the active position is on a header or summary row.
+   * In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow`
    */
-  row: R | undefined;
+  row: TActiveRow | undefined;
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<R, SR> | undefined;
 }
+
+/**
+ * Arguments passed to the `onCellKeyDown` handler of `TreeDataGrid`: the active row can be a group row.
+ *
+ * @see {@linkcode TreeDataGridProps.onCellKeyDown | onCellKeyDown} prop on `<TreeDataGrid />`, {@linkcode CellKeyDownArgs}, {@linkcode isGroupRow}
+ */
+export type TreeCellKeyDownArgs<R, SR = unknown> = CellKeyDownArgs<R, SR, R | GroupRow<R>>;
+
+/**
+ * Arguments passed to the `onActivePositionChange` handler of `TreeDataGrid`: the active row can be a group row.
+ *
+ * @see {@linkcode TreeDataGridProps.onActivePositionChange | onActivePositionChange} prop on `<TreeDataGrid />`, {@linkcode PositionChangeArgs}, {@linkcode isGroupRow}
+ */
+export type TreePositionChangeArgs<R, SR = unknown> = PositionChangeArgs<R, SR, R | GroupRow<R>>;
 
 /**
  * Handler type used by `onCellMouseDown`, `onCellClick`, `onCellDoubleClick`, and `onCellContextMenu`. This helper type is not exported; the shape is shown for reference.
@@ -693,19 +726,28 @@ export type CellCopyArgs<R, SR = unknown> = CellCopyPasteArgs<R, SR>;
 export type CellPasteArgs<R, SR = unknown> = CellCopyPasteArgs<R, SR>;
 
 /**
- * Represents a group row in `TreeDataGrid`. This helper type is not exported; the shape is shown for reference.
+ * Represents a group row in `TreeDataGrid`.
  *
  * @see {@linkcode RenderGroupCellContentProps}, {@linkcode RowHeightArgs}, {@linkcode TreeDataGrid | <TreeDataGrid />}
  */
 export interface GroupRow<R> {
+  /** The rows of the group, including the rows of its subgroups */
   readonly childRows: readonly R[];
+  /** The group's ID, returned by `getGroupId` */
   readonly id: string;
-  readonly parentId: unknown;
-  readonly groupKey: unknown;
+  /** The ID of the parent group, or `undefined` on the first level */
+  readonly parentId: string | undefined;
+  /** The group's key, returned by `getRowGroupKey` */
+  readonly groupKey: string;
+  /** Whether the group is expanded, i.e., its ID is in `expandedGroupIds` */
   readonly isExpanded: boolean;
+  /** The nesting level, `0` for the first level */
   readonly level: number;
+  /** The position of the group among its sibling groups, `0` for the first one */
   readonly posInSet: number;
+  /** The number of sibling groups, including this one */
   readonly setSize: number;
+  /** The index of the group row among all the rows, counting every group as expanded */
   readonly startRowIndex: number;
 }
 
@@ -774,7 +816,7 @@ export type ColSpanArgs<R, SR> =
  * <TreeDataGrid rowHeight={getRowHeight} ... />
  * ```
  *
- * @see {@linkcode TreeDataGridProps.rowHeight | rowHeight} prop on `<TreeDataGrid />`
+ * @see {@linkcode TreeDataGridProps.rowHeight | rowHeight} prop on `<TreeDataGrid />`, {@linkcode GroupRow}
  */
 export type RowHeightArgs<R> = { type: 'ROW'; row: R } | { type: 'GROUP'; row: GroupRow<R> };
 

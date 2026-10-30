@@ -27,7 +27,7 @@ const caret = css`
 const caretClassname = `rdg-caret ${caret}`;
 
 /**
- * The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the expand/collapse toggle.
+ * The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the group key, `row.groupKey`, and the expand/collapse toggle.
  *
  * @example
  * ```tsx
@@ -50,8 +50,7 @@ export function renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, S
  * Low-level component used by `renderToggleGroup` to render the expand/collapse control. Useful if you build a custom group cell renderer.
  */
 export function ToggleGroup<R, SR>({
-  groupKey,
-  isExpanded,
+  row,
   tabIndex,
   toggleGroup
 }: RenderGroupCellContentProps<R, SR>) {
@@ -61,11 +60,11 @@ export function ToggleGroup<R, SR>({
     }
   }
 
-  const d = isExpanded ? 'M1 1 L 7 7 L 13 1' : 'M1 7 L 7 1 L 13 7';
+  const d = row.isExpanded ? 'M1 1 L 7 7 L 13 1' : 'M1 7 L 7 1 L 13 7';
 
   return (
     <span className={groupCellContentClassname} tabIndex={tabIndex} onKeyDown={handleKeyDown}>
-      {groupKey as string}
+      {row.groupKey}
       <svg viewBox="0 0 14 8" width="14" height="8" className={caretClassname} aria-hidden>
         <path d={d} />
       </svg>

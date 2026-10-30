@@ -2,12 +2,11 @@ import { useMemo } from 'react';
 import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
-import { assertIsValidKeyGetter, getLeftRightKey } from './utils';
+import { assertIsValidGetRowKey, getLeftRightKey } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
   CellKeyboardEvent,
-  CellKeyDownArgs,
   CellPasteArgs,
   Column,
   GroupRow,
@@ -15,7 +14,9 @@ import type {
   Omit,
   RenderRowProps,
   RowHeightArgs,
-  RowsChangeData
+  RowsChangeData,
+  TreeCellKeyDownArgs,
+  TreePositionChangeArgs
 } from './types';
 import { renderToggleGroup } from './cellRenderers';
 import { SELECT_COLUMN_KEY } from './Columns';
@@ -26,7 +27,7 @@ import GroupedRow from './GroupedRow';
 import { defaultRenderRow } from './Row';
 
 /**
- * All {@linkcode DataGridProps} are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives {@linkcode RowHeightArgs} instead of just the row. Additional props are listed below:
+ * All {@linkcode DataGridProps} are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives {@linkcode RowHeightArgs} instead of just the row, and `onCellKeyDown` and `onActivePositionChange` receive group rows too. Additional props are listed below:
  *
  * @typeParam R - Row type
  * @typeParam SR - Summary row type
@@ -34,7 +35,14 @@ import { defaultRenderRow } from './Row';
  */
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
   DataGridProps<R, SR, K>,
-  'columns' | 'role' | 'aria-rowcount' | 'rowHeight' | 'onFill' | 'isRowSelectionDisabled'
+  | 'columns'
+  | 'role'
+  | 'aria-rowcount'
+  | 'rowHeight'
+  | 'onFill'
+  | 'isRowSelectionDisabled'
+  | 'onCellKeyDown'
+  | 'onActivePositionChange'
 > {
   columns: readonly Column<NoInfer<R>, NoInfer<SR>>[];
   /**
@@ -52,6 +60,16 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
    * ```
    */
   rowHeight?: Maybe<number | ((args: RowHeightArgs<NoInfer<R>>) => number)>;
+  /**
+   * Callback triggered when a key is pressed in a cell or a row, including group rows. Unlike `DataGrid`, the active row in `ACTIVE` mode can be a group row: use {@linkcode isGroupRow} to narrow it. See the {@linkcode TreeCellKeyDownArgs} type and the {@linkcode DataGridProps.onCellKeyDown | onCellKeyDown} prop on `<DataGrid />`.
+   */
+  onCellKeyDown?: Maybe<
+    (args: TreeCellKeyDownArgs<NoInfer<R>, NoInfer<SR>>, event: CellKeyboardEvent) => void
+  >;
+  /**
+   * Callback triggered when the active position changes, including to a group row or a cell of one: use {@linkcode isGroupRow} to narrow the row. See the {@linkcode TreePositionChangeArgs} type.
+   */
+  onActivePositionChange?: Maybe<(args: TreePositionChangeArgs<NoInfer<R>, NoInfer<SR>>) => void>;
   /**
    * **Required.** An array of column keys to group by. The order determines the grouping hierarchy (first key is the top level, second key is nested under the first, etc.).
    *
@@ -96,7 +114,7 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
    * import { TreeDataGrid } from 'react-data-grid';
    *
    * function MyGrid() {
-   *   const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set());
+   *   const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<string> => new Set());
    *
    *   return (
    *     <TreeDataGrid
@@ -108,11 +126,11 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
    * }
    * ```
    */
-  expandedGroupIds: ReadonlySet<unknown>;
+  expandedGroupIds: ReadonlySet<string>;
   /**
    * **Required.** Callback triggered when groups are expanded or collapsed.
    */
-  onExpandedGroupIdsChange: (expandedGroupIds: Set<unknown>) => void;
+  onExpandedGroupIdsChange: (expandedGroupIds: Set<string>) => void;
   /**
    * A function that returns the key of the group a row belongs to, for the specified column key. Rows sharing the same group key are grouped together, and groups are ordered by the first row that belongs to them. If not provided, a default implementation is used that stringifies the row's value for that column, i.e., `String(row[columnKey])`.
    *
@@ -172,7 +190,22 @@ interface FlattenedRows<R> {
 // set, which keeps `isGroupRow` stable and out of the dependency arrays below
 const allGroupRows = new WeakSet<object>();
 
-function isGroupRow<R>(row: R | GroupRow<R>): row is GroupRow<R> {
+/**
+ * Returns whether a row of a `TreeDataGrid` is a group row, e.g., the active row passed to `onCellKeyDown` or `onActivePositionChange`.
+ *
+ * @example
+ * ```tsx
+ * import { isGroupRow, type TreePositionChangeArgs } from 'react-data-grid';
+ *
+ * function onActivePositionChange({ row }: TreePositionChangeArgs<Row>) {
+ *   if (row === undefined || isGroupRow(row)) return;
+ *   console.log(row.name);
+ * }
+ * ```
+ *
+ * @see {@linkcode GroupRow}, {@linkcode TreeCellKeyDownArgs}, {@linkcode TreePositionChangeArgs}
+ */
+export function isGroupRow<R>(row: R | GroupRow<R>): row is GroupRow<R> {
   return typeof row === 'object' && row !== null && allGroupRows.has(row);
 }
 
@@ -208,6 +241,23 @@ function isGroupRow<R>(row: R | GroupRow<R>): row is GroupRow<R> {
  * - Cell copy/paste does not work on group rows
  * - Column groups are not supported; `columns` must be `Column[]`
  *
+ * **Group rows in callbacks:**
+ *
+ * Callbacks that receive the active row receive group rows too: `onCellKeyDown` and `onActivePositionChange`. Their arguments are typed with {@linkcode TreeCellKeyDownArgs} and {@linkcode TreePositionChangeArgs}; use {@linkcode isGroupRow} to tell group rows apart from regular rows.
+ *
+ * ```tsx
+ * import { isGroupRow, type CellKeyboardEvent, type TreeCellKeyDownArgs } from 'react-data-grid';
+ *
+ * function onCellKeyDown(args: TreeCellKeyDownArgs<Row>, event: CellKeyboardEvent) {
+ *   if (args.mode !== 'ACTIVE') return;
+ *   if (isGroupRow(args.row)) {
+ *     console.log(`Group ${args.row.groupKey} with ${args.row.childRows.length} rows`);
+ *     return;
+ *   }
+ *   console.log(args.row.name);
+ * }
+ * ```
+ *
  * @typeParam R - Row type
  * @typeParam SR - Summary row type
  * @typeParam K - Row key type
@@ -216,7 +266,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,
   rows: rawRows,
   rowHeight: rawRowHeight,
-  rowKeyGetter: rawRowKeyGetter,
+  getRowKey: rawGetRowKey,
   onCellKeyDown: rawOnCellKeyDown,
   onCellCopy: rawOnCellCopy,
   onCellPaste: rawOnCellPaste,
@@ -396,23 +446,23 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return rawRowHeight;
   }, [rawRowHeight]);
 
-  // Without rawRowKeyGetter, the keys are computed in renderRow, where the row index is known
-  const rowKeyGetter = useMemo(() => {
-    if (typeof rawRowKeyGetter !== 'function') return undefined;
-    return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawRowKeyGetter(row));
-  }, [rawRowKeyGetter]);
+  // Without rawGetRowKey, the keys are computed in renderRow, where the row index is known
+  const getRowKey = useMemo(() => {
+    if (typeof rawGetRowKey !== 'function') return undefined;
+    return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawGetRowKey(row));
+  }, [rawGetRowKey]);
 
   const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
     if (rawSelectedRows == null) return null;
 
-    assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
+    assertIsValidGetRowKey<R, K>(rawGetRowKey);
 
     const selectedRows = new Set<Key>(rawSelectedRows);
     for (const row of rows) {
       if (isGroupRow(row)) {
         // select parent row if all the children are selected
         const isGroupRowSelected = row.childRows.every((cr) =>
-          rawSelectedRows.has(rawRowKeyGetter(cr))
+          rawSelectedRows.has(rawGetRowKey(cr))
         );
         if (isGroupRowSelected) {
           selectedRows.add(row.id);
@@ -421,21 +471,21 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     }
 
     return selectedRows;
-  }, [rawRowKeyGetter, rawSelectedRows, rows]);
+  }, [rawGetRowKey, rawSelectedRows, rows]);
 
   function onSelectedRowsChange(newSelectedRows: Set<Key>) {
     if (!rawOnSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rawRowKeyGetter);
+    assertIsValidGetRowKey<R, K>(rawGetRowKey);
 
     const newRawSelectedRows = new Set(rawSelectedRows);
     for (const row of rows) {
-      const key = isGroupRow(row) ? row.id : rawRowKeyGetter(row);
+      const key = isGroupRow(row) ? row.id : rawGetRowKey(row);
       if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
         if (isGroupRow(row)) {
           // unselect all children if the parent row is unselected
           for (const cr of row.childRows) {
-            newRawSelectedRows.delete(rawRowKeyGetter(cr));
+            newRawSelectedRows.delete(rawGetRowKey(cr));
           }
         } else {
           newRawSelectedRows.delete(key as K);
@@ -444,7 +494,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         if (isGroupRow(row)) {
           // select all children if the parent row is selected
           for (const cr of row.childRows) {
-            newRawSelectedRows.add(rawRowKeyGetter(cr));
+            newRawSelectedRows.add(rawGetRowKey(cr));
           }
         } else {
           newRawSelectedRows.add(key as K);
@@ -485,7 +535,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return undefined;
   }
 
-  function handleKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
+  function handleKeyDown(args: TreeCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
     rawOnCellKeyDown?.(args, event);
     if (event.isGridDefaultPrevented()) return;
 
@@ -550,7 +600,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     });
   }
 
-  function toggleGroup(groupId: unknown) {
+  function toggleGroup(groupId: string) {
     const newExpandedGroupIds = new Set(expandedGroupIds);
     if (newExpandedGroupIds.has(groupId)) {
       newExpandedGroupIds.delete(groupId);
@@ -600,7 +650,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       // the rows of a group directly follow its group row
       const groupIndex = rowIdx - parentIdx - 1;
       ariaRowIndex = startRowIndex + headerAndTopSummaryRowsCount + groupIndex + 2;
-      if (rowKeyGetter === undefined) {
+      if (getRowKey === undefined) {
         rowKey = startRowIndex + groupIndex + 1;
       }
     }
@@ -630,9 +680,13 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         rowsCount + 1 + (props.topSummaryRows?.length ?? 0) + (props.bottomSummaryRows?.length ?? 0)
       }
       columns={columns}
-      rows={rows as R[]} // TODO: check types
+      // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
+      // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
+      // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
+      // to handle group rows, or never called with one
+      rows={rows as R[]}
       rowHeight={rowHeight}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       onRowsChange={handleRowsChange}
       selectedRows={selectedRows}
       onSelectedRowsChange={onSelectedRowsChange}

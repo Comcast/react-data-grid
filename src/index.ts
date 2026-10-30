@@ -7,7 +7,7 @@ export { DataGrid, type DataGridProps } from './DataGrid';
 export { TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
 export { Row } from './Row';
 export { Cell } from './Cell';
-export { SelectCheckbox, ToggleGroup } from './cellRenderers';
+export { SelectCheckbox, type SelectCheckboxProps, ToggleGroup } from './cellRenderers';
 
 // Hooks
 export { useHeaderRowSelection, useRowSelection } from './hooks';
@@ -23,6 +23,7 @@ export { DataGridRenderersContext } from './DataGridRenderersContext';
 
 // Other
 export { SelectColumn, SELECT_COLUMN_KEY } from './Columns';
+export { isGroupRow } from './TreeDataGrid';
 
 // Types
 export type {
@@ -41,6 +42,7 @@ export type {
   RenderEditCellContentProps,
   RenderSummaryCellContentProps,
   RenderGroupCellContentProps,
+  GroupRow,
   RenderRowProps,
   RenderCellProps,
   RenderCheckboxProps,
@@ -55,6 +57,8 @@ export type {
   CellCopyArgs,
   CellPasteArgs,
   PositionChangeArgs,
+  TreeCellKeyDownArgs,
+  TreePositionChangeArgs,
   ColSpanArgs,
   RowHeightArgs,
   SortColumn,

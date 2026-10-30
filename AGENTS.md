@@ -46,7 +46,7 @@ website/              # demo site (Vite + TanStack Router)
 ## Testing
 
 - Browser tests use `vite-plus/test/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getActiveCell()`, etc. over raw `page.getByRole()`.
-- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `safeTab()`, `testCount()`, `testRowCount()`.
+- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
 - Firefox runs test files in parallel. Firefox sends the mouse events of all its pages with the same pointer ID, so each test file that drags a resize or drag-fill handle, which captures the pointer, runs in a separate Firefox instance with a browser of its own: add such test files to `firefoxPointerCaptureTests` in `vite.config.ts`. Use `--project "*firefox*"` to run all the Firefox instances.
 - **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.

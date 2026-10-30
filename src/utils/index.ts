@@ -10,11 +10,11 @@ export * from './viewportUtils';
 
 export const { min, max, floor, abs } = Math;
 
-export function assertIsValidKeyGetter<R, K extends React.Key>(
-  keyGetter: Maybe<(row: NoInfer<R>) => K>
-): asserts keyGetter is (row: R) => K {
-  if (typeof keyGetter !== 'function') {
-    throw new TypeError('Please specify the rowKeyGetter prop to use selection');
+export function assertIsValidGetRowKey<R, K extends React.Key>(
+  getRowKey: Maybe<(row: NoInfer<R>) => K>
+): asserts getRowKey is (row: R) => K {
+  if (typeof getRowKey !== 'function') {
+    throw new TypeError('Please specify the getRowKey prop to use selection');
   }
 }
 
