@@ -846,6 +846,12 @@ Optional attribute to help with Cypress (or similar) selectors.
 - <kbd>→</kbd> (Right Arrow): Expand a collapsed group row when focused
 - <kbd>←</kbd> (Left Arrow): Collapse an expanded group row when focused, or navigate to the parent group
 
+**Row Selection:**
+
+- A group row is selected when all its rows are, and selecting a group row selects all its rows, including the rows of its collapsed groups. <kbd>Shift</kbd>+<kbd>Space</kbd> on a cell of a group row selects or unselects its rows.
+- The select-all checkbox applies to all the rows, including the rows of collapsed groups.
+- A Shift+click range includes all the rows of the collapsed groups in it, and the rows of expanded groups that it covers.
+
 **Unsupported Props:**
 
 The following `DataGrid` props are not supported in `TreeDataGrid`:

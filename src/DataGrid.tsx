@@ -1,4 +1,4 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Key, KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -6,6 +6,7 @@ import {
   HeaderRowSelectionChangeContext,
   HeaderRowSelectionContext,
   RowSelectionChangeContext,
+  SelectionOverrideContext,
   useActivePosition,
   useCalculatedColumns,
   useColumnWidths,
@@ -295,6 +296,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * defaults
    */
   const contextRenderers = useRenderers<R, SR>();
+  // `TreeDataGrid` handles the selection, see `SelectionOverrideContext`
+  const selectionOverride = use(SelectionOverrideContext);
   const role = rawRole ?? 'grid';
   const rowHeight = rawRowHeight ?? 35;
   const headerRowHeight = rawHeaderRowHeight ?? (typeof rowHeight === 'number' ? rowHeight : 35);
@@ -433,7 +436,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   let hasUnselectedRow = false;
 
   // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
-  if (getRowKey != null && selectedRows != null && selectedRows.size > 0) {
+  if (
+    selectionOverride === undefined &&
+    getRowKey != null &&
+    selectedRows != null &&
+    selectedRows.size > 0
+  ) {
     for (const row of rows) {
       if (selectedRows.has(getRowKey(row))) {
         hasSelectedRow = true;
@@ -445,13 +453,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
   }
 
-  const headerSelectionValue = useMemo(
-    (): HeaderRowSelectionContextValue => ({
+  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
+    if (selectionOverride !== undefined) return selectionOverride.headerRowSelection;
+    return {
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
-    }),
-    [hasSelectedRow, hasUnselectedRow]
-  );
+    };
+  }, [selectionOverride, hasSelectedRow, hasUnselectedRow]);
 
   const {
     rowOverscanStartIdx,
@@ -691,7 +699,16 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     if (isSelectable && shiftKey && key === ' ') {
       assertIsValidGetRowKey<R, K>(getRowKey);
       const rowKey = getRowKey(row);
-      selectRow({ row, checked: !selectedRows.has(rowKey), isShiftClick: false });
+      const selectRowEvent: SelectRowEvent<R> = {
+        row,
+        checked: !selectedRows.has(rowKey),
+        isShiftClick: false
+      };
+      if (selectionOverride === undefined) {
+        selectRow(selectRowEvent);
+      } else {
+        selectionOverride.onRowSelectionChange(selectRowEvent);
+      }
       // prevent scrolling
       event.preventDefault();
       return;
@@ -1223,100 +1240,107 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       data-cy={dataCy}
     >
       <DataGridRenderersContext value={defaultGridComponents}>
-        <HeaderRowSelectionChangeContext value={selectHeaderRowLatest}>
-          <HeaderRowSelectionContext value={headerSelectionValue}>
-            {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
-              <GroupedColumnHeaderRow
-                key={index}
-                rowIdx={index + 1}
-                level={-groupedColumnHeaderRowsCount + index}
+        {/* a grid rendered in a cell handles its own selection, not this grid's `TreeDataGrid` */}
+        <SelectionOverrideContext value={undefined}>
+          <HeaderRowSelectionChangeContext
+            value={selectionOverride?.onHeaderRowSelectionChange ?? selectHeaderRowLatest}
+          >
+            <HeaderRowSelectionContext value={headerSelectionValue}>
+              {Array.from({ length: groupedColumnHeaderRowsCount }, (_, index) => (
+                <GroupedColumnHeaderRow
+                  key={index}
+                  rowIdx={index + 1}
+                  level={-groupedColumnHeaderRowsCount + index}
+                  mapViewportColumns={mapViewportColumns}
+                  activeCellIdx={
+                    activePosition.rowIdx === minRowIdx + index ? activePosition.idx : undefined
+                  }
+                  setPosition={selectHeaderCellLatest}
+                />
+              ))}
+              <HeaderRow
+                headerRowClass={headerRowClass}
+                rowIdx={headerRowsCount}
                 mapViewportColumns={mapViewportColumns}
+                onColumnResize={handleColumnResizeLatest}
+                onColumnResizeEnd={handleColumnResizeEndLatest}
+                onColumnsReorder={onColumnsReorderLatest}
+                sortColumns={sortColumns}
+                onSortColumnsChange={onSortColumnsChangeLatest}
                 activeCellIdx={
-                  activePosition.rowIdx === minRowIdx + index ? activePosition.idx : undefined
+                  activePosition.rowIdx === mainHeaderRowIdx ? activePosition.idx : undefined
                 }
                 setPosition={selectHeaderCellLatest}
+                shouldFocusGrid={!activePositionIsInActiveBounds}
+                direction={direction}
               />
-            ))}
-            <HeaderRow
-              headerRowClass={headerRowClass}
-              rowIdx={headerRowsCount}
-              mapViewportColumns={mapViewportColumns}
-              onColumnResize={handleColumnResizeLatest}
-              onColumnResizeEnd={handleColumnResizeEndLatest}
-              onColumnsReorder={onColumnsReorderLatest}
-              sortColumns={sortColumns}
-              onSortColumnsChange={onSortColumnsChangeLatest}
-              activeCellIdx={
-                activePosition.rowIdx === mainHeaderRowIdx ? activePosition.idx : undefined
-              }
-              setPosition={selectHeaderCellLatest}
-              shouldFocusGrid={!activePositionIsInActiveBounds}
-              direction={direction}
-            />
-          </HeaderRowSelectionContext>
-        </HeaderRowSelectionChangeContext>
-        {rows.length === 0 && noRowsFallback ? (
-          noRowsFallback
-        ) : (
-          <>
-            {topSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerRowsCount + 1 + rowIdx;
-              const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
-              const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
-              const top = headerRowsHeight + summaryRowHeight * rowIdx;
+            </HeaderRowSelectionContext>
+          </HeaderRowSelectionChangeContext>
+          {rows.length === 0 && noRowsFallback ? (
+            noRowsFallback
+          ) : (
+            <>
+              {topSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerRowsCount + 1 + rowIdx;
+                const summaryRowIdx = mainHeaderRowIdx + 1 + rowIdx;
+                const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
+                const top = headerRowsHeight + summaryRowHeight * rowIdx;
 
-              return (
-                <SummaryRow
-                  key={rowIdx}
-                  aria-rowindex={gridRowStart}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={undefined}
-                  mapViewportColumns={mapViewportColumns}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-            <RowSelectionChangeContext value={selectRowLatest}>
-              {getViewportRows()}
-            </RowSelectionChangeContext>
-            {bottomSummaryRows?.map((row, rowIdx) => {
-              const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
-              const summaryRowIdx = rows.length + rowIdx;
-              const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
-              const top =
-                clientHeight > totalRowHeight
-                  ? gridHeight - summaryRowHeight * (bottomSummaryRowsCount - rowIdx)
-                  : undefined;
-              const bottom =
-                top === undefined
-                  ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
-                  : undefined;
+                return (
+                  <SummaryRow
+                    key={rowIdx}
+                    aria-rowindex={gridRowStart}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={undefined}
+                    mapViewportColumns={mapViewportColumns}
+                    activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
+                    isTop
+                    setActivePosition={setPositionLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+              <RowSelectionChangeContext
+                value={selectionOverride?.onRowSelectionChange ?? selectRowLatest}
+              >
+                {getViewportRows()}
+              </RowSelectionChangeContext>
+              {bottomSummaryRows?.map((row, rowIdx) => {
+                const gridRowStart = headerAndTopSummaryRowsCount + rows.length + rowIdx + 1;
+                const summaryRowIdx = rows.length + rowIdx;
+                const isSummaryRowActive = activePosition.rowIdx === summaryRowIdx;
+                const top =
+                  clientHeight > totalRowHeight
+                    ? gridHeight - summaryRowHeight * (bottomSummaryRowsCount - rowIdx)
+                    : undefined;
+                const bottom =
+                  top === undefined
+                    ? summaryRowHeight * (bottomSummaryRowsCount - 1 - rowIdx)
+                    : undefined;
 
-              return (
-                <SummaryRow
-                  aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
-                  key={rowIdx}
-                  rowIdx={summaryRowIdx}
-                  gridRowStart={gridRowStart}
-                  row={row}
-                  top={top}
-                  bottom={bottom}
-                  mapViewportColumns={mapViewportColumns}
-                  activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
-                  isTop={false}
-                  setActivePosition={setPositionLatest}
-                  isTreeGrid={isTreeGrid}
-                />
-              );
-            })}
-          </>
-        )}
+                return (
+                  <SummaryRow
+                    aria-rowindex={ariaRowCount - bottomSummaryRowsCount + rowIdx + 1}
+                    key={rowIdx}
+                    rowIdx={summaryRowIdx}
+                    gridRowStart={gridRowStart}
+                    row={row}
+                    top={top}
+                    bottom={bottom}
+                    mapViewportColumns={mapViewportColumns}
+                    activeCellIdx={isSummaryRowActive ? activePosition.idx : undefined}
+                    isTop={false}
+                    setActivePosition={setPositionLatest}
+                    isTreeGrid={isTreeGrid}
+                  />
+                );
+              })}
+            </>
+          )}
+        </SelectionOverrideContext>
       </DataGridRenderersContext>
 
       {lastStartFrozenColumnIndex > -1 &&
