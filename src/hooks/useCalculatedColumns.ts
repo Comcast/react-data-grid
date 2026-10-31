@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 
-import { clampColumnWidth, isStartFrozen, max, min } from '../utils';
+import { clampColumnWidth, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
+  ColSpanArgs,
   ColumnFrozen,
   ColumnOrColumnGroup,
   Omit
@@ -73,13 +74,37 @@ export function useCalculatedColumns<R, SR>({
     readonly firstEndFrozenColumnIndex: number;
     readonly headerRowsCount: number;
   } => {
-    let lastStartFrozenColumnIndex = -1;
-    let firstEndFrozenColumnIndex = -1;
+    let startFrozenColumnCount = 0;
+    let endFrozenColumnCount = 0;
     let headerRowsCount = 1;
     const columns: MutableCalculatedColumn<R, SR>[] = [];
     const colSpanColumns: CalculatedColumn<R, SR>[] = [];
 
     collectColumns(rawColumns, 1);
+
+    function getColSpan(
+      column: CalculatedColumn<R, SR>,
+      args: ColSpanArgs<R, SR> | undefined
+    ): number {
+      if (args === undefined) return 1;
+
+      const colSpan = column.colSpan!(args) ?? 1;
+
+      if (!Number.isInteger(colSpan) || colSpan <= 1) return 1;
+
+      const { idx, frozen } = column;
+      let maxColSpan;
+
+      if (frozen === 'end') {
+        maxColSpan = columns.length - idx;
+      } else if (frozen === false) {
+        maxColSpan = columns.length - endFrozenColumnCount - idx;
+      } else {
+        maxColSpan = startFrozenColumnCount - idx;
+      }
+
+      return min(colSpan, maxColSpan);
+    }
 
     function collectColumns(
       rawColumns: readonly ColumnOrColumnGroup<R, SR>[],
@@ -101,7 +126,9 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
+        // normalize the `frozen` value
+        const frozen: ColumnFrozen =
+          rawColumn.frozen === true ? 'start' : (rawColumn.frozen ?? false);
 
         // Set every property in a fixed order instead of spreading `rawColumn`,
         // so that all calculated columns share a single hidden class (shape) in JS engines,
@@ -125,6 +152,8 @@ export function useCalculatedColumns<R, SR>({
           renderEditCell: rawColumn.renderEditCell,
           editable: rawColumn.editable,
           colSpan: rawColumn.colSpan,
+          getColSpan:
+            rawColumn.colSpan == null ? getDefaultColSpan : (args) => getColSpan(column, args),
           frozen,
           resizable: rawColumn.resizable ?? defaultResizable,
           sortable: rawColumn.sortable ?? defaultSortable,
@@ -135,8 +164,10 @@ export function useCalculatedColumns<R, SR>({
 
         columns.push(column);
 
-        if (isStartFrozen(frozen)) {
-          lastStartFrozenColumnIndex += 1;
+        if (frozen === 'start') {
+          startFrozenColumnCount += 1;
+        } else if (frozen === 'end') {
+          endFrozenColumnCount += 1;
         }
 
         if (level > headerRowsCount) {
@@ -167,17 +198,14 @@ export function useCalculatedColumns<R, SR>({
       if (column.colSpan != null) {
         colSpanColumns.push(column);
       }
-
-      if (column.frozen === 'end' && firstEndFrozenColumnIndex === -1) {
-        firstEndFrozenColumnIndex = idx;
-      }
     }
 
     return {
       columns,
       colSpanColumns,
-      lastStartFrozenColumnIndex,
-      firstEndFrozenColumnIndex,
+      lastStartFrozenColumnIndex: startFrozenColumnCount - 1,
+      firstEndFrozenColumnIndex:
+        endFrozenColumnCount === 0 ? -1 : columns.length - endFrozenColumnCount,
       headerRowsCount
     };
   }, [
@@ -333,6 +361,10 @@ export function useCalculatedColumns<R, SR>({
     totalStartFrozenColumnWidth,
     totalEndFrozenColumnWidth
   };
+}
+
+function getDefaultColSpan() {
+  return 1;
 }
 
 function updateColumnParent<R, SR>(

@@ -3,6 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn } from '../../src';
 import type { Column } from '../../src';
+import { getRowKey } from './utils';
 
 const rows = page.getRow();
 const headerCheckbox = page.getSelectAllCheckbox();
@@ -21,10 +22,6 @@ const columns: readonly Column<Row>[] = [
 
 const defaultRows: readonly Row[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 function RowSelectionTest({
   initialRows,
   isRowSelectionDisabled
@@ -36,7 +33,7 @@ function RowSelectionTest({
 
   return (
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={initialRows}
       selectedRows={selectedRows}
@@ -62,6 +59,37 @@ async function toggleSelection(rowIdx: number, shift = false, force = false) {
   await userEvent.click(checkbox, { force });
   if (shift) await userEvent.keyboard('{/Shift}');
 }
+
+test('should not check the selection of every row when the rows and the selection do not change', async () => {
+  const manyRows: readonly Row[] = Array.from({ length: 1000 }, (_, id) => ({ id }));
+  const getRowKeySpy = vi.fn(getRowKey<number>);
+
+  function Test() {
+    const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+
+    return (
+      <DataGrid
+        getRowKey={getRowKeySpy}
+        columns={columns}
+        rows={manyRows}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+      />
+    );
+  }
+
+  await page.render(<Test />);
+  // with all the rows selected, the state of the select-all checkbox depends on every row
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).toBeChecked();
+  await userEvent.click(page.getCell({ name: '1', exact: true }));
+
+  getRowKeySpy.mockClear();
+  await userEvent.keyboard('{arrowdown}');
+  await expect.element(page.getActiveCell()).toHaveTextContent('2');
+  // only the rendered rows
+  expect(getRowKeySpy.mock.calls.length).toBeLessThan(manyRows.length);
+});
 
 test('toggle selection when checkbox is clicked', async () => {
   await setup();
@@ -170,7 +198,7 @@ test('header checkbox is not checked when there are no rows', async () => {
 test('header checkbox is not necessarily checked when selectedRows.size === rows.length', async () => {
   await page.render(
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={defaultRows}
       selectedRows={new Set([1, 2, 4])}
@@ -183,7 +211,7 @@ test('header checkbox is not necessarily checked when selectedRows.size === rows
 test('header checkbox is not necessarily checked when selectedRows.size > rows.length', async () => {
   await page.render(
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={defaultRows}
       selectedRows={new Set([1, 2, 4, 5])}
@@ -207,7 +235,7 @@ test('extra keys are preserved when updating the selectedRows Set', async () => 
 
     return (
       <DataGrid
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={defaultRows}
         selectedRows={selectedRows}

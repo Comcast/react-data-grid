@@ -3,6 +3,6 @@
   "compilerOptions": {
     "lib": ["ESNext", "DOM"]
   },
-  "include": ["src/css.d.ts", "website/**/*"],
+  "include": ["src/css.d.ts", "src/globals.d.ts", "website/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]
 }

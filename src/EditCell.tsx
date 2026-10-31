@@ -35,9 +35,17 @@ const cellEditing = css`
   }
 `;
 
+const editCell = css`
+  @layer rdg.EditCell {
+    /* forced colors mode replaces the editor's background with Canvas, even on a selected row */
+    @media (forced-colors: active) {
+      --rdg-selection-color: CanvasText;
+    }
+  }
+`;
+
 export default function EditCell<R, SR>({
   column,
-  colSpan,
   row,
   rowIdx,
   onRowChange,
@@ -48,6 +56,7 @@ export default function EditCell<R, SR>({
   const editCellRef = useRef<HTMLDivElement>(null);
   const captureEventRef = useRef<MouseEvent | undefined>(undefined);
   const cancelScheduledTaskRef = useRef<() => void>(undefined);
+  const modalKeyDownEventRef = useRef<KeyboardEvent | undefined>(undefined);
   const commitOnOutsideClick = column.editorOptions?.commitOnOutsideClick ?? true;
 
   function onClose(commitChanges = false, shouldFocus = true) {
@@ -124,7 +133,24 @@ export default function EditCell<R, SR>({
     };
   }, [commitOnOutsideClick]);
 
+  function handleKeyDownCapture(event: React.KeyboardEvent<HTMLDivElement>) {
+    // Let :modal editors handle their own keyboard events,
+    // skipping both `onCellKeyDown` and the default behavior.
+    // The check happens in the capture phase, as the editor may close the :modal while handling the event.
+    // The :modal may be rendered in the cell or in a portal,
+    // but the grid itself may also be rendered in a :modal.
+    // Ideally we would check if the cell is inert,
+    // but there's no good way to do it.
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal
+    const modal = (event.target as Element).closest(':modal');
+    if (modal !== null && !modal.contains(event.currentTarget)) {
+      modalKeyDownEventRef.current = event.nativeEvent;
+    }
+  }
+
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (modalKeyDownEventRef.current === event.nativeEvent) return;
+
     if (onKeyDown) {
       const cellEvent = createCellEvent(event);
       onKeyDown(
@@ -157,10 +183,12 @@ export default function EditCell<R, SR>({
     onRowChange(row, commitChangesAndFocus, commitChangesAndFocus);
   }
 
+  const colSpan = column.getColSpan({ type: 'ROW', row });
   const { cellClass } = column;
   const className = getCellClassname(
     column,
     'rdg-editor-container',
+    editCell,
     !column.editorOptions?.displayCellContent && cellEditing,
     typeof cellClass === 'function' ? cellClass(row) : cellClass
   );
@@ -170,10 +198,11 @@ export default function EditCell<R, SR>({
       ref={editCellRef}
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
-      aria-colspan={colSpan}
+      aria-colspan={colSpan > 1 ? colSpan : undefined}
       aria-selected
       className={className}
       style={getCellStyle(column, colSpan)}
+      onKeyDownCapture={handleKeyDownCapture}
       onKeyDown={handleKeyDown}
       onMouseDownCapture={cancelTask}
     >

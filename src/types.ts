@@ -51,10 +51,14 @@ export interface Column<TRow, TSummaryRow = unknown> {
   >;
   /** Control whether cells can be edited with `renderEditCell` */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
+  /**
+   * Returns the number of columns that the cell spans, or `undefined` for no spanning.
+   * The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
+   */
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
   /** Determines whether the column is frozen, and on which edge.
    *  `true` is an alias for `'start'` for backward compatibility. */
-  readonly frozen?: Maybe<ColumnFrozen>;
+  readonly frozen?: Maybe<ColumnFrozen | true>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */
@@ -101,6 +105,8 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   readonly frozen: ColumnFrozen;
   readonly renderCell: (props: RenderCellContentProps<TRow, TSummaryRow>) => ReactNode;
   readonly renderHeaderCell: (props: RenderHeaderCellContentProps<TRow, TSummaryRow>) => ReactNode;
+  /** Returns the number of columns that the cell spans: the clamped value returned by `colSpan`, or `1` */
+  readonly getColSpan: (args: ColSpanArgs<TRow, TSummaryRow> | undefined) => number;
   // Always set, `undefined` when not set on the column
   readonly cellClass: Column<TRow, TSummaryRow>['cellClass'];
   readonly headerCellClass: Column<TRow, TSummaryRow>['headerCellClass'];
@@ -159,12 +165,11 @@ export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
 }
 
 export interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
-  groupKey: unknown;
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The group row: its key, rows, expanded state, level, and ID */
   row: GroupRow<TRow>;
-  childRows: readonly TRow[];
-  isExpanded: boolean;
   tabIndex: number;
+  /** Expands or collapses the group */
   toggleGroup: () => void;
 }
 
@@ -197,7 +202,7 @@ interface BaseRenderCellProps<TRow, TSummaryRow = unknown>
 export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<TRow, TSummaryRow> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
-  colSpan: number | undefined;
+  colSpan: number;
   isDraggedOver: boolean;
   isCellActive: boolean;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
@@ -205,7 +210,7 @@ export interface RenderCellProps<TRow, TSummaryRow> extends BaseRenderCellProps<
 
 export interface EditCellProps<R, SR> extends Pick<
   RenderCellProps<R, SR>,
-  'column' | 'colSpan' | 'row' | 'rowIdx'
+  'column' | 'row' | 'rowIdx'
 > {
   onRowChange: (row: R, commitChanges: boolean, shouldFocus: boolean) => void;
   closeEditor: (shouldFocus: boolean) => void;
@@ -237,19 +242,20 @@ export interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   setActivePosition: (enableEditor?: boolean) => void;
 }
 
-interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   mode: 'ACTIVE';
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  row: TRow;
+  /** The active row. In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow` */
+  row: TActiveRow;
   rowIdx: number;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
 
-export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   mode: 'EDIT';
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
@@ -258,24 +264,45 @@ export interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
   onClose: (commitChanges?: boolean, shouldFocus?: boolean) => void;
 }
 
-export type CellKeyDownArgs<TRow, TSummaryRow = unknown> =
-  | ActiveCellKeyDownArgs<TRow, TSummaryRow>
+/**
+ * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+export type CellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> =
+  | ActiveCellKeyDownArgs<TRow, TSummaryRow, TActiveRow>
   | EditCellKeyDownArgs<TRow, TSummaryRow>;
 
-export interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+/**
+ * @typeParam TActiveRow - The type of the active row, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+export interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   /** row index of the active position */
   rowIdx: number;
   /**
    * row object of the active position,
-   * undefined if the active position is on a header or summary row
+   * undefined if the active position is on a header or summary row.
+   * In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow`
    */
-  row: TRow | undefined;
+  row: TActiveRow | undefined;
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
+
+/** The arguments of `TreeDataGrid`'s `onCellKeyDown`, whose active row can be a `GroupRow` */
+export type TreeCellKeyDownArgs<TRow, TSummaryRow = unknown> = CellKeyDownArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
+
+/** The arguments of `TreeDataGrid`'s `onActivePositionChange`, whose row can be a `GroupRow` */
+export type TreePositionChangeArgs<TRow, TSummaryRow = unknown> = PositionChangeArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
 
 export type CellMouseEventHandler<R, SR> = Maybe<
   (args: CellMouseArgs<NoInfer<R>, NoInfer<SR>>, event: CellMouseEvent) => void
@@ -287,7 +314,7 @@ export type MapViewportColumns<TRow, TSummaryRow> = <T>(
   callback: (
     column: CalculatedColumn<TRow, TSummaryRow>,
     isCellActive: boolean,
-    colSpan: number | undefined,
+    colSpan: number,
     index: number
   ) => T
 ) => T[];
@@ -355,14 +382,23 @@ export type CellCopyArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, 
 export type CellPasteArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, TSummaryRow>;
 
 export interface GroupRow<TRow> {
+  /** The rows of the group, including the rows of its subgroups */
   readonly childRows: readonly TRow[];
+  /** The group's ID, returned by `getGroupId` */
   readonly id: string;
-  readonly parentId: unknown;
-  readonly groupKey: unknown;
+  /** The ID of the parent group, or `undefined` on the first level */
+  readonly parentId: string | undefined;
+  /** The group's key, returned by `getRowGroupKey` */
+  readonly groupKey: string;
+  /** Whether the group is expanded, i.e., its ID is in `expandedGroupIds` */
   readonly isExpanded: boolean;
+  /** The nesting level, `0` for the first level */
   readonly level: number;
+  /** The position of the group among its sibling groups, `0` for the first one */
   readonly posInSet: number;
+  /** The number of sibling groups, including this one */
   readonly setSize: number;
+  /** The index of the group row among all the rows, counting every group as expanded */
   readonly startRowIndex: number;
 }
 
@@ -372,7 +408,7 @@ export interface SortColumn {
 }
 
 export type CellNavigationMode = 'NONE' | 'CHANGE_ROW';
-export type ColumnFrozen = boolean | 'start' | 'end';
+export type ColumnFrozen = false | 'start' | 'end';
 export type SortDirection = 'ASC' | 'DESC';
 
 export type ColSpanArgs<TRow, TSummaryRow> =

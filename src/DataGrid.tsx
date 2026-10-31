@@ -20,14 +20,13 @@ import {
   type PartialPosition
 } from './hooks';
 import {
-  assertIsValidKeyGetter,
+  assertIsValidGetRowKey,
   canExitGrid,
   classnames,
   createCellEvent,
   focusCell,
   getCellStyle,
   getCellToScroll,
-  getColSpan,
   getLeftRightKey,
   getNextActivePosition,
   isCellEditableUtil,
@@ -124,8 +123,13 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   topSummaryRows?: Maybe<readonly SR[]>;
   /** Rows pinned at the bottom of the grid for summary purposes */
   bottomSummaryRows?: Maybe<readonly SR[]>;
-  /** Function to return a unique key/identifier for each row */
-  rowKeyGetter?: Maybe<(row: NoInfer<R>) => K>;
+  /**
+   * Function to get the key of each row.
+   * Required for row selection.
+   * Recommended otherwise, as the key is also used as the `key` prop of the row elements.
+   * @returns a unique key for the row
+   */
+  getRowKey?: Maybe<(row: NoInfer<R>) => K>;
   /** Callback triggered when rows are changed */
   onRowsChange?: Maybe<(rows: NoInfer<R>[], data: RowsChangeData<NoInfer<R>, NoInfer<SR>>) => void>;
 
@@ -239,7 +243,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     rows,
     topSummaryRows,
     bottomSummaryRows,
-    rowKeyGetter,
+    getRowKey,
     onRowsChange,
     // Dimensions props
     rowHeight: rawRowHeight,
@@ -390,6 +394,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     activePositionIsRow,
     activePositionIsCellInViewport,
     validatePosition,
+    queryActiveColumn,
     getActiveColumn,
     getActiveRow
   } = useActivePosition<R, SR>({
@@ -413,28 +418,30 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     [renderCheckbox, renderSortStatus, renderCell]
   );
 
-  const headerSelectionValue = useMemo((): HeaderRowSelectionContextValue => {
-    // no rows to select = explicitly unchecked
-    let hasSelectedRow = false;
-    let hasUnselectedRow = false;
+  // no rows to select = explicitly unchecked
+  let hasSelectedRow = false;
+  let hasUnselectedRow = false;
 
-    if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
-      for (const row of rows) {
-        if (selectedRows.has(rowKeyGetter(row))) {
-          hasSelectedRow = true;
-        } else {
-          hasUnselectedRow = true;
-        }
-
-        if (hasSelectedRow && hasUnselectedRow) break;
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
+  if (getRowKey != null && selectedRows != null && selectedRows.size > 0) {
+    for (const row of rows) {
+      if (selectedRows.has(getRowKey(row))) {
+        hasSelectedRow = true;
+      } else {
+        hasUnselectedRow = true;
       }
-    }
 
-    return {
+      if (hasSelectedRow && hasUnselectedRow) break;
+    }
+  }
+
+  const headerSelectionValue = useMemo(
+    (): HeaderRowSelectionContextValue => ({
       isRowSelected: hasSelectedRow && !hasUnselectedRow,
       isIndeterminate: hasSelectedRow && hasUnselectedRow
-    };
-  }, [rows, selectedRows, rowKeyGetter]);
+    }),
+    [hasSelectedRow, hasUnselectedRow]
+  );
 
   const {
     rowOverscanStartIdx,
@@ -485,12 +492,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function selectHeaderRow(args: SelectHeaderRowEvent) {
     if (!onSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rowKeyGetter);
+    assertIsValidGetRowKey<R, K>(getRowKey);
 
     const newSelectedRows = new Set(selectedRows);
     for (const row of rows) {
       if (isRowSelectionDisabled?.(row) === true) continue;
-      const rowKey = rowKeyGetter(row);
+      const rowKey = getRowKey(row);
       if (args.checked) {
         newSelectedRows.add(rowKey);
       } else {
@@ -503,11 +510,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function selectRow(args: SelectRowEvent<R>) {
     if (!onSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rowKeyGetter);
+    assertIsValidGetRowKey<R, K>(getRowKey);
     const { row, checked, isShiftClick } = args;
     if (isRowSelectionDisabled?.(row) === true) return;
     const newSelectedRows = new Set(selectedRows);
-    const rowKey = rowKeyGetter(row);
+    const rowKey = getRowKey(row);
     const rowIdx = rows.indexOf(row);
     setPreviousRowIdx(rowIdx);
 
@@ -530,9 +537,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         const row = rows[i];
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {
-          newSelectedRows.add(rowKeyGetter(row));
+          newSelectedRows.add(getRowKey(row));
         } else {
-          newSelectedRows.delete(rowKeyGetter(row));
+          newSelectedRows.delete(getRowKey(row));
         }
       }
     }
@@ -589,8 +596,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     // Select the row on Shift + Space
     if (isSelectable && shiftKey && key === ' ') {
-      assertIsValidKeyGetter<R, K>(rowKeyGetter);
-      const rowKey = rowKeyGetter(row);
+      assertIsValidGetRowKey<R, K>(getRowKey);
+      const rowKey = getRowKey(row);
       selectRow({ row, checked: !selectedRows.has(rowKey), isShiftClick: false });
       // prevent scrolling
       event.preventDefault();
@@ -601,13 +608,17 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // ensure cell is fully visible
       scrollIntoView(cell);
 
-      setActivePosition(({ idx, rowIdx }) => ({
-        idx,
-        rowIdx,
-        mode: 'EDIT',
-        row,
-        originalRow: row
-      }));
+      // ensure we render the editor quickly enough,
+      // otherwise the user input might be lost in Firefox
+      flushSync(() => {
+        setActivePosition(({ idx, rowIdx }) => ({
+          idx,
+          rowIdx,
+          mode: 'EDIT',
+          row,
+          originalRow: row
+        }));
+      });
     }
   }
 
@@ -704,6 +715,10 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const samePosition = isSamePosition(activePosition, position);
 
     if (options?.enableEditor && isCellEditable(position)) {
+      // avoid selecting text in the editor, for example
+      // after double-clicking and displayCellContent is enabled
+      gridRef.current?.ownerDocument.getSelection()?.removeAllRanges();
+
       const row = rows[rowIdx];
       setActivePosition({ idx, rowIdx, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
@@ -819,8 +834,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       minRowIdx,
       mainHeaderRowIdx,
       maxRowIdx,
-      lastStartFrozenColumnIndex,
-      firstEndFrozenColumnIndex,
       cellNavigationMode,
       activePosition,
       nextPosition,
@@ -944,12 +957,18 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
 
     const isLastRow = rowIdx === maxRowIdx;
-    const columnWidth = getColumnWidth(column);
-    const colSpan = column.colSpan?.({ type: 'ROW', row: getActiveRow() }) ?? 1;
+    const colSpan = column.getColSpan({
+      type: 'ROW',
+      row: getActiveRow()
+    });
     const style = getCellStyle(column, colSpan);
-    const { insetInlineStart } = style;
+    // the drag handle is at the end of the last column that the cell spans,
+    // where it sticks when the column is start-frozen
+    const lastColumn = columns[column.idx + colSpan - 1];
+    const columnWidth = getColumnWidth(lastColumn);
+    const { insetInlineStart } = getCellStyle(lastColumn, 1);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
-    const isLastColumn = column.idx + colSpan - 1 === maxColIdx;
+    const isLastColumn = lastColumn.idx === maxColIdx;
     const dragHandleStyle: React.CSSProperties = {
       ...style,
       gridRowStart: headerAndTopSummaryRowsCount + rowIdx + 1,
@@ -1034,10 +1053,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { row } = activePosition;
     const column = getActiveColumn();
-    const colSpan = getColSpan(column, lastStartFrozenColumnIndex, firstEndFrozenColumnIndex, {
-      type: 'ROW',
-      row
-    });
 
     function closeEditor(shouldFocus: boolean) {
       const newPosition: ActivePosition = { idx: activePosition.idx, rowIdx, mode: 'ACTIVE' };
@@ -1065,7 +1080,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       <EditCell
         key={column.key}
         column={column}
-        colSpan={colSpan}
         row={row}
         rowIdx={rowIdx}
         onRowChange={onRowChange}
@@ -1090,8 +1104,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const gridRowStart = headerAndTopSummaryRowsCount + rowIdx + 1;
     let key: K | number = rowIdx;
     let isRowSelected = false;
-    if (typeof rowKeyGetter === 'function') {
-      key = rowKeyGetter(row);
+    if (typeof getRowKey === 'function') {
+      key = getRowKey(row);
       isRowSelected = selectedRows?.has(key) ?? false;
     }
 
@@ -1162,6 +1176,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     insetInlineEnd: totalEndFrozenColumnWidth
   };
 
+  // Frozen cells, header rows, and summary rows are sticky, so they are already visible on their sticky axis.
+  // A sticky cell inside the scroll padding would be scrolled out of it when it's focused or scrolled into view,
+  // so the padding only applies when the active cell is a non-sticky cell on that axis, or when scrolling to a position.
+  const isScrollingToPosition = scrollToPositionElement !== null;
+  const hasInlineScrollPadding = isScrollingToPosition || queryActiveColumn()?.frozen === false;
+  const hasBlockScrollPadding = isScrollingToPosition || activePositionIsInViewport;
+
   return (
     <div
       ref={gridRef}
@@ -1180,10 +1201,14 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       style={{
         ...style,
         // set scrollPadding to correctly scroll to non-sticky cells/rows
-        scrollPaddingInlineStart: totalStartFrozenColumnWidth,
-        scrollPaddingInlineEnd: totalEndFrozenColumnWidth,
-        scrollPaddingBlockStart: headerRowsHeight + topSummaryRowsCount * summaryRowHeight,
-        scrollPaddingBlockEnd: bottomSummaryRowsCount * summaryRowHeight,
+        scrollPaddingInlineStart: hasInlineScrollPadding ? totalStartFrozenColumnWidth : undefined,
+        scrollPaddingInlineEnd: hasInlineScrollPadding ? totalEndFrozenColumnWidth : undefined,
+        scrollPaddingBlockStart: hasBlockScrollPadding
+          ? headerRowsHeight + topSummaryRowsCount * summaryRowHeight
+          : undefined,
+        scrollPaddingBlockEnd: hasBlockScrollPadding
+          ? bottomSummaryRowsCount * summaryRowHeight
+          : undefined,
         gridTemplateColumns,
         gridTemplateRows: templateRows,
         '--rdg-header-row-height': `${headerRowHeight}px`,
