@@ -516,7 +516,9 @@ function DetailGrid() {
       getRowKey={getDetailRowKey}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
-      style={{ blockSize: 140 }}
+      // With `content-visibility: auto`, WebKit sizes the columns of the row wrongly until the
+      // next layout, and pressing the mouse on a checkbox triggers it, so the click misses
+      style={{ blockSize: 140, contentVisibility: 'visible' }}
     />
   );
 }
