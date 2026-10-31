@@ -20,7 +20,7 @@ import {
   type PartialPosition
 } from './hooks';
 import {
-  assertIsValidKeyGetter,
+  assertIsValidGetRowKey,
   canExitGrid,
   classnames,
   createCellEvent,
@@ -123,8 +123,13 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   topSummaryRows?: Maybe<readonly SR[]>;
   /** Rows pinned at the bottom of the grid for summary purposes */
   bottomSummaryRows?: Maybe<readonly SR[]>;
-  /** Function to return a unique key/identifier for each row */
-  rowKeyGetter?: Maybe<(row: NoInfer<R>) => K>;
+  /**
+   * Function to get the key of each row.
+   * Required for row selection.
+   * Recommended otherwise, as the key is also used as the `key` prop of the row elements.
+   * @returns a unique key for the row
+   */
+  getRowKey?: Maybe<(row: NoInfer<R>) => K>;
   /** Callback triggered when rows are changed */
   onRowsChange?: Maybe<(rows: NoInfer<R>[], data: RowsChangeData<NoInfer<R>, NoInfer<SR>>) => void>;
 
@@ -238,7 +243,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     rows,
     topSummaryRows,
     bottomSummaryRows,
-    rowKeyGetter,
+    getRowKey,
     onRowsChange,
     // Dimensions props
     rowHeight: rawRowHeight,
@@ -428,9 +433,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   let hasUnselectedRow = false;
 
   // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
-  if (rowKeyGetter != null && selectedRows != null && selectedRows.size > 0) {
+  if (getRowKey != null && selectedRows != null && selectedRows.size > 0) {
     for (const row of rows) {
-      if (selectedRows.has(rowKeyGetter(row))) {
+      if (selectedRows.has(getRowKey(row))) {
         hasSelectedRow = true;
       } else {
         hasUnselectedRow = true;
@@ -540,12 +545,12 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function selectHeaderRow(args: SelectHeaderRowArgs) {
     if (!onSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rowKeyGetter);
+    assertIsValidGetRowKey<R, K>(getRowKey);
 
     const newSelectedRows = new Set(selectedRows);
     for (const row of rows) {
       if (isRowSelectionDisabled?.(row) === true) continue;
-      const rowKey = rowKeyGetter(row);
+      const rowKey = getRowKey(row);
       if (args.checked) {
         newSelectedRows.add(rowKey);
       } else {
@@ -558,11 +563,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
   function selectRow(args: SelectRowArgs<R>) {
     if (!onSelectedRowsChange) return;
 
-    assertIsValidKeyGetter<R, K>(rowKeyGetter);
+    assertIsValidGetRowKey<R, K>(getRowKey);
     const { row, checked, isShiftClick } = args;
     if (isRowSelectionDisabled?.(row) === true) return;
     const newSelectedRows = new Set(selectedRows);
-    const rowKey = rowKeyGetter(row);
+    const rowKey = getRowKey(row);
     const rowIdx = rows.indexOf(row);
     setPreviousRowIdx(rowIdx);
 
@@ -585,9 +590,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         const row = rows[i];
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {
-          newSelectedRows.add(rowKeyGetter(row));
+          newSelectedRows.add(getRowKey(row));
         } else {
-          newSelectedRows.delete(rowKeyGetter(row));
+          newSelectedRows.delete(getRowKey(row));
         }
       }
     }
@@ -684,8 +689,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     // Select the row on Shift + Space
     if (isSelectable && shiftKey && key === ' ') {
-      assertIsValidKeyGetter<R, K>(rowKeyGetter);
-      const rowKey = rowKeyGetter(row);
+      assertIsValidGetRowKey<R, K>(getRowKey);
+      const rowKey = getRowKey(row);
       selectRow({ row, checked: !selectedRows.has(rowKey), isShiftClick: false });
       // prevent scrolling
       event.preventDefault();
@@ -1126,8 +1131,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const gridRowStart = headerAndTopSummaryRowsCount + rowIdx + 1;
     let key: K | number = rowIdx;
     let isRowSelected = false;
-    if (typeof rowKeyGetter === 'function') {
-      key = rowKeyGetter(row);
+    if (typeof getRowKey === 'function') {
+      key = getRowKey(row);
       isRowSelected = selectedRows?.has(key) ?? false;
     }
 
