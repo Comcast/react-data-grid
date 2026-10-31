@@ -117,7 +117,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const rawRenderRow = renderers?.renderRow ?? contextRenderers?.renderRow ?? defaultRenderRow;
   const headerAndTopSummaryRowsCount = 1 + (props.topSummaryRows?.length ?? 0);
   const { leftKey, rightKey } = getLeftRightKey(props.direction);
-  const toggleGroupLatest = useLatestFunc(toggleGroup);
   const getRowGroupKey = rawGetRowGroupKey ?? defaultGetRowGroupKey;
   const getGroupId = rawGetGroupId ?? defaultGetGroupId;
 
@@ -367,6 +366,16 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return undefined;
   }
 
+  function toggleGroup(groupId: string) {
+    const newExpandedGroupIds = new Set(expandedGroupIds);
+    if (newExpandedGroupIds.has(groupId)) {
+      newExpandedGroupIds.delete(groupId);
+    } else {
+      newExpandedGroupIds.add(groupId);
+    }
+    onExpandedGroupIdsChange(newExpandedGroupIds);
+  }
+
   function handleKeyDown(args: TreeCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
     rawOnCellKeyDown?.(args, event);
     if (event.isGridDefaultPrevented()) return;
@@ -432,15 +441,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     });
   }
 
-  function toggleGroup(groupId: string) {
-    const newExpandedGroupIds = new Set(expandedGroupIds);
-    if (newExpandedGroupIds.has(groupId)) {
-      newExpandedGroupIds.delete(groupId);
-    } else {
-      newExpandedGroupIds.add(groupId);
-    }
-    onExpandedGroupIdsChange(newExpandedGroupIds);
-  }
+  const toggleGroupLatest = useLatestFunc(toggleGroup);
 
   function renderRow(
     key: Key,
