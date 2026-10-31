@@ -1,7 +1,7 @@
 import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderTextEditor, SelectColumn, type Column } from '../../src';
-import { getRowKey, safeTab } from '../browser/utils';
+import { getRowKey } from '../browser/utils';
 
 const grid = page.getGrid();
 
@@ -60,7 +60,7 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
     );
 
     // focus the "Select All" header cell with the keyboard, so `:focus-visible` matches
-    await safeTab();
+    await userEvent.tab();
   });
 
   it('active cell on a selected row', async () => {

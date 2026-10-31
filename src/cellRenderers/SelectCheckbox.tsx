@@ -1,34 +1,11 @@
 import type { RenderCheckboxProps } from '../types';
 import { useRenderers } from '../DataGridRenderersContext';
 
-type SharedInputProps = Pick<
-  RenderCheckboxProps,
-  'disabled' | 'tabIndex' | 'aria-label' | 'aria-labelledby' | 'indeterminate' | 'onChange'
->;
-
-interface SelectCheckboxProps extends SharedInputProps {
+export interface SelectCheckboxProps extends RenderCheckboxProps {
   /** Whether the checkbox is checked */
-  value: boolean;
+  checked: boolean;
 }
 
-export function SelectCheckbox({
-  value,
-  tabIndex,
-  indeterminate,
-  disabled,
-  onChange,
-  'aria-label': ariaLabel,
-  'aria-labelledby': ariaLabelledBy
-}: SelectCheckboxProps) {
-  const renderCheckbox = useRenderers()!.renderCheckbox!;
-
-  return renderCheckbox({
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    tabIndex,
-    indeterminate,
-    disabled,
-    checked: value,
-    onChange
-  });
+export function SelectCheckbox(props: SelectCheckboxProps) {
+  return useRenderers()!.renderCheckbox!(props);
 }
