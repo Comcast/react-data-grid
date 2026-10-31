@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column } from '../../src';
-import { renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
+import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
-import { getCellsAtRowIndex, getRowWithCell, testCount, testRowCount } from './utils';
+import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
 const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
@@ -53,8 +53,8 @@ const columns: readonly Column<Row, SummaryRow>[] = [
         </button>
       );
     },
-    renderGroupCell({ childRows }) {
-      return Math.min(...childRows.map((c) => c.id));
+    renderGroupCell({ row }) {
+      return Math.min(...row.childRows.map((c) => c.id));
     }
   }
 ];
@@ -85,21 +85,18 @@ const initialRows: readonly Row[] = [
 const onCellCopySpy = vi.fn();
 const onCellPasteSpy = vi.fn(({ row }: { row: Row }) => row);
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
 function TestGrid({
   groupBy,
-  groupIdGetter
+  getGroupId,
+  getRowGroupKey
 }: {
   groupBy: string[];
-  groupIdGetter: ((groupKey: string, parentId?: string) => string) | undefined;
+  getGroupId: ((groupKey: string, parentId?: string) => string) | undefined;
+  getRowGroupKey: ((row: Row, columnKey: string) => string) | undefined;
 }) {
   const [rows, setRows] = useState(initialRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> => new Set<unknown>([])
-  );
+  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<string> => new Set());
 
   return (
     <TreeDataGrid
@@ -107,9 +104,9 @@ function TestGrid({
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       groupBy={groupBy}
-      rowGrouper={rowGrouper}
+      getRowGroupKey={getRowGroupKey}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       expandedGroupIds={expandedGroupIds}
@@ -117,18 +114,20 @@ function TestGrid({
       onRowsChange={setRows}
       onCellCopy={onCellCopySpy}
       onCellPaste={onCellPasteSpy}
-      groupIdGetter={groupIdGetter}
+      getGroupId={getGroupId}
     />
   );
 }
 
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
+interface SetupOptions {
+  getGroupId?: (groupKey: string, parentId?: string) => string;
+  getRowGroupKey?: (row: Row, columnKey: string) => string;
 }
 
-function setup(groupBy: string[], groupIdGetter?: (groupKey: string, parentId?: string) => string) {
-  return page.render(<TestGrid groupBy={groupBy} groupIdGetter={groupIdGetter} />);
+function setup(groupBy: string[], { getGroupId, getRowGroupKey }: SetupOptions = {}) {
+  return page.render(
+    <TestGrid groupBy={groupBy} getGroupId={getGroupId} getRowGroupKey={getRowGroupKey} />
+  );
 }
 
 async function testHeaderCellsContent(expected: readonly string[]) {
@@ -166,23 +165,45 @@ test('should group by multiple columns', async () => {
   await testRowCount(4);
 });
 
-test('should use groupIdGetter when provided', async () => {
-  const groupIdGetter = vi.fn((groupKey: string, parentId?: string) =>
-    parentId !== undefined ? `${groupKey}#${parentId}` : groupKey
+test('should use getGroupId when provided', async () => {
+  const getGroupId = vi.fn((groupKey: string, parentId?: string) =>
+    parentId === undefined ? groupKey : `${groupKey}#${parentId}`
   );
-  await setup(['country', 'year'], groupIdGetter);
-  expect(groupIdGetter).toHaveBeenCalled();
+  await setup(['country', 'year'], { getGroupId });
+  expect(getGroupId).toHaveBeenCalled();
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
   await testRowCount(4);
-  groupIdGetter.mockClear();
+  getGroupId.mockClear();
   await userEvent.click(page.getCell({ name: 'USA' }));
   await testRowCount(6);
-  expect(groupIdGetter).toHaveBeenCalled();
+  expect(getGroupId).toHaveBeenCalled();
   await userEvent.click(page.getCell({ name: 'Canada' }));
   await testRowCount(8);
   await userEvent.click(page.getCell({ name: '2020' }));
   await testRowCount(9);
+});
+
+test('should use getRowGroupKey when provided', async () => {
+  const getRowGroupKey = vi.fn((row: Row, columnKey: string) =>
+    columnKey === 'country' ? row.country.slice(0, 1) : String(row[columnKey as keyof Row])
+  );
+  await setup(['country'], { getRowGroupKey });
+  expect(getRowGroupKey).toHaveBeenCalled();
+  await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '9');
+  await testRowCount(4);
+  await expect.element(page.getCell({ name: 'U' })).toBeInTheDocument();
+  await expect.element(page.getCell({ name: 'C' })).toBeInTheDocument();
+});
+
+test('should order groups by the first row that belongs to them', async () => {
+  // integer-like group keys in descending order, which must not be sorted numerically
+  await setup(['year'], { getRowGroupKey: (row) => String(3000 - row.year) });
+  for (const [index, groupKey] of ['980', '979', '978'].entries()) {
+    await expect
+      .element(getRowWithCell(page.getCell({ name: groupKey })))
+      .toHaveAttribute('aria-posinset', String(index + 1));
+  }
 });
 
 test('should ignore duplicate groupBy columns', async () => {
@@ -196,6 +217,71 @@ test('should use groupBy order while grouping', async () => {
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '14');
   await testHeaderCellsContent(['', 'Year', 'Country', 'Sport', 'Id']);
   await testRowCount(5);
+});
+
+// WebKit lays out each row track of the grid, so a million rows take ~250ms per layout
+// and ~1 GB of memory, and the page keeps over half of it after the test.
+// The tested code doesn't depend on the browser, and Chromium and Firefox have lower limits.
+test(
+  'should expand a group with more rows than a function call can take as arguments',
+  { skip: server.browser === 'webkit' },
+  async () => {
+    // browsers limit the number of arguments, e.g., in `push(...childRows)`, and a million is above all of their limits
+    const rows = Array.from({ length: 1_000_000 }, (_, id): Row => ({
+      id,
+      country: 'USA',
+      year: 2020
+    }));
+
+    await page.render(
+      <TreeDataGrid
+        columns={[
+          { key: 'country', name: 'Country' },
+          { key: 'id', name: 'Id' }
+        ]}
+        rows={rows}
+        groupBy={['country']}
+        expandedGroupIds={new Set(['USA'])}
+        onExpandedGroupIdsChange={() => {}}
+      />
+    );
+
+    // the header row, the group row, and the rows of the group
+    await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '1000002');
+    // the row count doesn't depend on the expanded state, so also check that the rows were added
+    await expect.element(page.getCell({ name: '0', exact: true })).toBeVisible();
+  }
+);
+
+test('should keep the row keys when an earlier group is expanded, without getRowKey', async () => {
+  function Test() {
+    const [expandedGroupIds, setExpandedGroupIds] = useState(
+      (): ReadonlySet<string> => new Set(['Canada'])
+    );
+
+    return (
+      <TreeDataGrid
+        columns={[
+          { key: 'country', name: 'Country' },
+          { key: 'id', name: 'Id' }
+        ]}
+        rows={initialRows}
+        groupBy={['country']}
+        expandedGroupIds={expandedGroupIds}
+        onExpandedGroupIdsChange={setExpandedGroupIds}
+      />
+    );
+  }
+
+  await page.render(<Test />);
+  await testRowCount(4);
+  const idCell = page.getCell({ name: '3', exact: true });
+  const rowElement = getRowWithCell(idCell).element();
+
+  await userEvent.click(page.getCell({ name: 'USA' }));
+  await testRowCount(6);
+  // the row moved down, but its key didn't change, so React kept its element
+  expect(getRowWithCell(idCell).element()).toBe(rowElement);
 });
 
 test('should toggle group when group cell is clicked', async () => {
@@ -398,6 +484,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowleft}{arrowleft}');
   await expect.element(rows.nth(1)).toHaveClass(rowActiveClassname);
+  await expect.element(rows.nth(1)).toHaveFocus();
 
   await userEvent.keyboard('{end}');
   await expect.element(rows.nth(5)).toHaveClass(rowActiveClassname);
@@ -448,7 +535,7 @@ test('copy/paste when grouping is enabled', async () => {
   );
 });
 
-test('update row using cell renderer', async () => {
+test('update row using cell content renderer', async () => {
   await setup(['year']);
   await userEvent.click(page.getCell({ name: '2021' }));
   await userEvent.click(page.getCell({ name: 'USA' }));
@@ -458,10 +545,121 @@ test('update row using cell renderer', async () => {
   await expect.element(activeCell).toHaveTextContent('value: 12');
 });
 
+test('onCellKeyDown and onActivePositionChange receive group rows', async () => {
+  interface Call {
+    rowIdx: number;
+    idx: number;
+    isGroupRow: boolean;
+  }
+
+  const keyDownCalls: Call[] = [];
+  const positionChangeCalls: Call[] = [];
+
+  function onCellKeyDown(args: TreeCellKeyDownArgs<Row, SummaryRow>) {
+    if (args.mode === 'EDIT') return;
+    keyDownCalls.push({
+      rowIdx: args.rowIdx,
+      idx: args.column?.idx ?? -1,
+      isGroupRow: isGroupRow(args.row)
+    });
+  }
+
+  function onActivePositionChange({
+    rowIdx,
+    row,
+    column
+  }: TreePositionChangeArgs<Row, SummaryRow>) {
+    positionChangeCalls.push({
+      rowIdx,
+      idx: column?.idx ?? -1,
+      isGroupRow: row !== undefined && isGroupRow(row)
+    });
+  }
+
+  await page.render(
+    <TreeDataGrid<Row, SummaryRow>
+      columns={columns}
+      rows={initialRows}
+      groupBy={['country']}
+      expandedGroupIds={new Set(['USA'])}
+      onExpandedGroupIdsChange={() => {}}
+      onCellKeyDown={onCellKeyDown}
+      onActivePositionChange={onActivePositionChange}
+    />
+  );
+
+  // the rows are: USA (expanded), 1, 2, Canada (collapsed);
+  // the columns are: select, country, sport, year, id
+
+  // activate the USA group row, without toggling it
+  const usaGroupRow = getRowWithCell(page.getCell({ name: 'USA' }));
+  await userEvent.click(usaGroupRow.getCell().nth(2));
+  await expect.element(usaGroupRow).toHaveClass(rowActiveClassname);
+
+  // activate the first cell of the group row
+  await userEvent.keyboard('{arrowright}');
+  await expect.element(usaGroupRow.getCell().nth(0)).toHaveAttribute('aria-selected', 'true');
+
+  // activate a cell of a regular row
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await expect.element(page.getCell({ name: '2020' })).toHaveAttribute('aria-selected', 'true');
+  await userEvent.keyboard('{arrowright}');
+  await expect.element(activeCell).toHaveTextContent('value: 1');
+
+  expect(keyDownCalls).toStrictEqual([
+    { rowIdx: 0, idx: -1, isGroupRow: true },
+    { rowIdx: 1, idx: 3, isGroupRow: false }
+  ]);
+  expect(positionChangeCalls).toStrictEqual([
+    { rowIdx: 0, idx: -1, isGroupRow: true },
+    { rowIdx: 0, idx: 0, isGroupRow: true },
+    { rowIdx: 1, idx: 3, isGroupRow: false },
+    { rowIdx: 1, idx: 4, isGroupRow: false }
+  ]);
+});
+
 test('custom renderGroupCell', async () => {
   await setup(['country']);
   const usaCell = page.getCell({ name: 'USA' });
   const canadaCell = page.getCell({ name: 'Canada' });
   await expect.element(getRowWithCell(usaCell).getCell().nth(4)).toHaveTextContent('1');
   await expect.element(getRowWithCell(canadaCell).getCell().nth(4)).toHaveTextContent('3');
+});
+
+test('adding a top summary row when no rows or cells are active should not focus the summary row', async () => {
+  const rows: readonly Row[] = [];
+
+  function Test() {
+    const [topSummaryRows, setTopSummaryRows] = useState((): readonly SummaryRow[] => []);
+
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setTopSummaryRows((topSummaryRows) => [...topSummaryRows, undefined])}
+        >
+          Add summary row
+        </button>
+        <TreeDataGrid
+          columns={columns}
+          rows={rows}
+          topSummaryRows={topSummaryRows}
+          groupBy={[]}
+          expandedGroupIds={new Set()}
+          onExpandedGroupIdsChange={() => {}}
+        />
+      </>
+    );
+  }
+
+  await page.render(<Test />);
+  const addSummaryRowButton = page.getByRole('button', { name: 'Add summary row' });
+  const activeRow = page.getBySelector(`.${rowActiveClassname}`);
+
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
+
+  await userEvent.click(addSummaryRowButton);
+  await expect.element(activeCell).not.toBeInTheDocument();
+  await expect.element(activeRow).not.toBeInTheDocument();
 });

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -42,7 +43,7 @@ const sports = [
   'Swimming',
   'Gymnastics',
   'Speed Skating',
-  'Cross Country Skiing',
+  'Cross-Country Skiing',
   'Short-Track Speed Skating',
   'Diving',
   'Cycling',
@@ -64,9 +65,7 @@ const sports = [
   'Archery',
   'Wrestling',
   'Weightlifting',
-  'Waterpolo',
-  'Wrestling',
-  'Weightlifting'
+  'Water Polo'
 ];
 
 const columns: readonly Column<Row>[] = [
@@ -90,22 +89,22 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'gold',
     name: 'Gold',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { gold }) => prev + gold, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { gold }) => prev + gold, 0);
     }
   },
   {
     key: 'silver',
     name: 'Silver',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { silver }) => prev + silver, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { silver }) => prev + silver, 0);
     }
   },
   {
     key: 'bronze',
     name: 'Bronze',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { silver }) => prev + silver, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { bronze }) => prev + bronze, 0);
     }
   },
   {
@@ -114,19 +113,18 @@ const columns: readonly Column<Row>[] = [
     renderCell({ row }) {
       return row.gold + row.silver + row.bronze;
     },
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, row) => prev + row.gold + row.silver + row.bronze, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce(
+        (prev, childRow) => prev + childRow.gold + childRow.silver + childRow.bronze,
+        0
+      );
     }
   }
 ];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 function createRows(): readonly Row[] {
   const rows: Row[] = [];
-  for (let i = 1; i < 10000; i++) {
+  for (let i = 1; i < 10_000; i++) {
     rows.push({
       id: i,
       year: 2015 + faker.number.int(3),
@@ -139,25 +137,44 @@ function createRows(): readonly Row[] {
     });
   }
 
-  return rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
+  return rows;
 }
 
 const options = ['country', 'year', 'sport', 'athlete'] as const;
 
+type Option = (typeof options)[number];
+
+// Groups are ordered by the first row that belongs to them,
+// so the rows are sorted by the grouped columns, in order, to sort the groups at every level
+function sortRows(rows: readonly Row[], groupBy: readonly Option[]): readonly Row[] {
+  return rows.toSorted((r1, r2) => {
+    for (const option of groupBy) {
+      // countries are sorted in descending order, so the expanded United States group is near the top
+      const result =
+        option === 'country'
+          ? compare(r2.country, r1.country)
+          : compare(String(r1[option]), String(r2[option]));
+      if (result !== 0) return result;
+    }
+    return 0;
+  });
+}
+
 function RowGrouping() {
   const direction = useDirection();
-  const [rows] = useState(createRows);
+  const [rawRows] = useState(createRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
-  const [selectedOptions, setSelectedOptions] = useState<readonly string[]>([
+  const [selectedOptions, setSelectedOptions] = useState<readonly Option[]>([
     options[0],
     options[1]
   ]);
+  const rows = useMemo(() => sortRows(rawRows, selectedOptions), [rawRows, selectedOptions]);
   const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> =>
-      new Set<unknown>(['United States of America', 'United States of America__2015'])
+    (): ReadonlySet<string> =>
+      new Set(['United States of America', 'United States of America__2015'])
   );
 
-  function toggleOption(option: string, enabled: boolean) {
+  function toggleOption(option: Option, enabled: boolean) {
     const index = selectedOptions.indexOf(option);
     if (enabled) {
       if (index === -1) {
@@ -191,11 +208,10 @@ function RowGrouping() {
         aria-label="Row Grouping Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
-        rowGrouper={rowGrouper}
         expandedGroupIds={expandedGroupIds}
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
@@ -203,9 +219,4 @@ function RowGrouping() {
       />
     </div>
   );
-}
-
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
 }

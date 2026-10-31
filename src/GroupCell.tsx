@@ -5,38 +5,28 @@ import { getCellClassname, getCellStyle } from './utils';
 import type { CalculatedColumn, GroupRow } from './types';
 
 interface GroupCellProps<R, SR> {
-  id: string;
-  groupKey: unknown;
-  childRows: readonly R[];
-  toggleGroup: (expandedGroupId: unknown) => void;
-  isExpanded: boolean;
   column: CalculatedColumn<R, SR>;
   row: GroupRow<R>;
   isCellActive: boolean;
-  groupColumnIndex: number;
   isGroupByColumn: boolean;
+  // Only the group-by column of the row's level renders the group cell and is clickable
+  isLevelMatching: boolean;
+  toggleGroup: (expandedGroupId: string) => void;
 }
 
 function GroupCell<R, SR>({
-  id,
-  groupKey,
-  childRows,
-  isExpanded,
-  isCellActive,
   column,
   row,
-  groupColumnIndex,
+  isCellActive,
   isGroupByColumn,
+  isLevelMatching,
   toggleGroup: toggleGroupWrapper
 }: GroupCellProps<R, SR>) {
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
   function toggleGroup() {
-    toggleGroupWrapper(id);
+    toggleGroupWrapper(row.id);
   }
-
-  // Only make the cell clickable if the group level matches
-  const isLevelMatching = isGroupByColumn && groupColumnIndex === column.idx;
 
   return (
     <div
@@ -50,7 +40,7 @@ function GroupCell<R, SR>({
       tabIndex={tabIndex === -1 ? undefined : tabIndex}
       className={getCellClassname(column)}
       style={{
-        ...getCellStyle(column),
+        ...getCellStyle(column, 1),
         cursor: isLevelMatching ? 'pointer' : 'default'
       }}
       onClick={isLevelMatching ? toggleGroup : undefined}
@@ -58,11 +48,8 @@ function GroupCell<R, SR>({
     >
       {(!isGroupByColumn || isLevelMatching) &&
         column.renderGroupCell?.({
-          groupKey,
-          childRows,
           column,
           row,
-          isExpanded,
           tabIndex: childTabIndex,
           toggleGroup
         })}

@@ -6,7 +6,6 @@ import type {
   Position
 } from '../types';
 import { getColumnInColumns, getRowInRows } from '.';
-import { getColSpan } from './colSpanUtils';
 
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
@@ -31,7 +30,6 @@ interface GetNextPositionOpts<R, SR> {
   activePosition: Position;
   nextPosition: Position;
   nextPositionIsCellInActiveBounds: boolean;
-  lastFrozenColumnIndex: number;
 }
 
 function getCellColSpan<R, SR>({
@@ -40,26 +38,28 @@ function getCellColSpan<R, SR>({
   bottomSummaryRows,
   rowIdx,
   mainHeaderRowIdx,
-  lastFrozenColumnIndex,
   column
 }: Pick<
   GetNextPositionOpts<R, SR>,
-  'rows' | 'topSummaryRows' | 'bottomSummaryRows' | 'lastFrozenColumnIndex' | 'mainHeaderRowIdx'
+  'rows' | 'topSummaryRows' | 'bottomSummaryRows' | 'mainHeaderRowIdx'
 > & {
   rowIdx: number;
   column: CalculatedColumn<R, SR>;
 }) {
-  const topSummaryRowsCount = topSummaryRows?.length ?? 0;
   if (rowIdx === mainHeaderRowIdx) {
-    return getColSpan(column, lastFrozenColumnIndex, { type: 'HEADER' });
+    return column.getColSpan({
+      type: 'HEADER'
+    });
   }
+
+  const topSummaryRowsCount = topSummaryRows?.length ?? 0;
 
   if (
     topSummaryRows &&
     rowIdx > mainHeaderRowIdx &&
     rowIdx <= topSummaryRowsCount + mainHeaderRowIdx
   ) {
-    return getColSpan(column, lastFrozenColumnIndex, {
+    return column.getColSpan({
       type: 'SUMMARY',
       row: getRowInRows(topSummaryRows, rowIdx + topSummaryRowsCount)
     });
@@ -67,17 +67,21 @@ function getCellColSpan<R, SR>({
 
   if (rowIdx >= 0 && rowIdx < rows.length) {
     const row = getRowInRows(rows, rowIdx);
-    return getColSpan(column, lastFrozenColumnIndex, { type: 'ROW', row });
+    return column.getColSpan({
+      type: 'ROW',
+      row
+    });
   }
 
-  if (bottomSummaryRows) {
-    return getColSpan(column, lastFrozenColumnIndex, {
+  if (bottomSummaryRows && rowIdx >= rows.length) {
+    return column.getColSpan({
       type: 'SUMMARY',
       row: getRowInRows(bottomSummaryRows, rowIdx - rows.length)
     });
   }
 
-  return undefined;
+  // the header rows of column groups
+  return 1;
 }
 
 export function getNextActivePosition<R, SR>({
@@ -94,8 +98,7 @@ export function getNextActivePosition<R, SR>({
   maxRowIdx,
   activePosition: { idx: activeIdx, rowIdx: activeRowIdx },
   nextPosition,
-  nextPositionIsCellInActiveBounds,
-  lastFrozenColumnIndex
+  nextPositionIsCellInActiveBounds
 }: GetNextPositionOpts<R, SR>): Position {
   let { idx: nextIdx, rowIdx: nextRowIdx } = nextPosition;
   const columnsCount = columns.length;
@@ -112,11 +115,10 @@ export function getNextActivePosition<R, SR>({
         bottomSummaryRows,
         rowIdx: nextRowIdx,
         mainHeaderRowIdx,
-        lastFrozenColumnIndex,
         column
       });
 
-      if (colSpan && nextIdx > colIdx && nextIdx < colSpan + colIdx) {
+      if (nextIdx > colIdx && nextIdx < colSpan + colIdx) {
         nextIdx = colIdx + (moveNext ? colSpan : 0);
         break;
       }

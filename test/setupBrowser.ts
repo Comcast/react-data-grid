@@ -1,9 +1,20 @@
-// vitest-browser-react also automatically injects render method on the page
-// need to import it so TypeScript can pick up types
+// vitest-browser-react also automatically injects the render method on the page,
+// so we need to import it for TypeScript to pick up its types
 import 'vitest-browser-react';
 
+import {
+  locators,
+  userEvent,
+  type Locator,
+  type LocatorByRoleOptions
+} from 'vite-plus/test/browser';
 import { configure } from 'vitest-browser-react/pure';
-import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
+
+// avoid printing huge stack traces
+// Chromium defaults to 10
+// Firefox defaults to 128
+// WebKit defaults to 100
+Error.stackTraceLimit = 10;
 
 configure({
   reactStrictMode: true
@@ -34,21 +45,19 @@ locators.extend({
   },
 
   getHeaderRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(
-      this.getBySelector('.rdg-header-row')
-    );
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-header-row'));
   },
 
   getHeaderCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('columnheader', defaultToExactOpts(opts));
+    return this.getByRole('columnheader', opts);
   },
 
   getRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-row'));
   },
 
   getCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('gridcell', defaultToExactOpts(opts));
+    return this.getByRole('gridcell', opts);
   },
 
   getSelectAllCheckbox() {
@@ -68,37 +77,29 @@ locators.extend({
   }
 });
 
-function defaultToExactOpts(
-  opts: LocatorByRoleOptions | undefined
-): LocatorByRoleOptions | undefined {
-  if (opts != null && opts.exact == null && typeof opts.name === 'string') {
-    return {
-      ...opts,
-      exact: true
-    };
-  }
-
-  return opts;
-}
-
 beforeEach(async () => {
-  // 1. reset cursor position to avoid hover issues
-  // 2. force focus to be on the page
-  await userEvent.click(document.body, { position: { x: 0, y: 0 } });
+  do {
+    // 1. reset cursor position to avoid hover issues
+    // 2. force focus to be on the page
+    await userEvent.click(document.body, { position: { x: 0, y: 0 } });
+    // Firefox needs two clicks sometimes
+  } while (!document.hasFocus());
 });
 
 afterEach(() => {
   vi.useRealTimers();
 
-  // eslint-disable-next-line @eslint-react/purity
-  if (!document.hasFocus()) {
-    // Errors thrown in `afterEach` will short-circuit subsequent `afterEach` hooks,
-    // thus preventing tests from being cleaned up properly and affecting other tests.
-    // We must therefore wait for tests to "finish" before throwing the error.
-    onTestFinished(() => {
-      throw new Error(
-        'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
-      );
-    });
-  }
+  // Tabbing past the first or last focusable element moves focus out of the page,
+  // and depending on the browser, pressing Tab again may not return it to the expected element.
+  // https://github.com/microsoft/playwright/issues/39268
+  expect
+    .soft(
+      document.hasFocus(),
+      'Focus is set on a browser UI element at the end of a test. Render a focusable element before or after the grid, so tabbing keeps focus on the page.'
+    )
+    .toBe(true);
+
+  // If a test file ends with a focused element, Firefox may not focus
+  // the first element clicked in an iframe created by the next test file.
+  (document.activeElement as HTMLElement | null)?.blur();
 });

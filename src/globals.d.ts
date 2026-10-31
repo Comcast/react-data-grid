@@ -1,9 +1,14 @@
 declare module 'react' {
-  // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
   interface CSSProperties {
     [key: `--${string}`]: string | number | undefined;
   }
+
+  // TODO: remove once in React types
+  interface ButtonHTMLAttributes<T> extends React.HTMLAttributes<T> {
+    command?: string;
+    commandfor?: string;
+  }
 }
 
-// somehow required to make `declare global` work
+// required to make types work
 export {};

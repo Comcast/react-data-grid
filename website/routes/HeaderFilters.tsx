@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
-import { DataGrid, type Column, type RenderHeaderCellProps } from '../../src';
+import { DataGrid, type Column, type RenderHeaderCellContentProps } from '../../src';
 import type { Omit } from '../../src/types';
 import { useDirection } from '../directionContext';
 
@@ -64,8 +64,8 @@ interface Filter extends Omit<Row, 'id' | 'complete'> {
   enabled: boolean;
 }
 
-// Context is needed to read filter values otherwise columns are
-// re-created when filters are changed and filter loses focus
+// Context is needed to read filter values; otherwise, columns are
+// re-created when filters are changed and the filter loses focus
 const FilterContext = createContext<Filter | undefined>(undefined);
 FilterContext.displayName = 'FilterContext';
 
@@ -84,25 +84,28 @@ function selectStopPropagation(event: React.KeyboardEvent<HTMLSelectElement>) {
 function HeaderFilters() {
   const direction = useDirection();
   const [rows] = useState(createRows);
-  const [filters, setFilters] = useState(
-    (): Filter => ({
-      task: '',
-      priority: 'Critical',
-      issueType: 'All',
-      developer: '',
-      complete: undefined,
-      enabled: true
-    })
-  );
+  const [filters, setFilters] = useState((): Filter => ({
+    task: '',
+    priority: 'Critical',
+    issueType: 'All',
+    developer: '',
+    complete: undefined,
+    enabled: true
+  }));
 
-  const developerOptions = useMemo(
-    () =>
-      Array.from(new Set(rows.map((r) => r.developer))).map((d) => ({
-        label: d,
-        value: d
-      })),
-    [rows]
-  );
+  const developerOptions = useMemo((): readonly React.ReactElement[] => {
+    const developers = new Set();
+    const options = [];
+
+    for (const { developer } of rows) {
+      if (!developers.has(developer)) {
+        options.push(<option key={developer} value={developer} />);
+        developers.add(developer);
+      }
+    }
+
+    return options;
+  }, [rows]);
 
   const columns = useMemo((): readonly Column<Row>[] => {
     return [
@@ -116,7 +119,7 @@ function HeaderFilters() {
         name: 'Title',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -131,7 +134,7 @@ function HeaderFilters() {
                 onKeyDown={inputStopPropagation}
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -139,7 +142,7 @@ function HeaderFilters() {
         name: 'Priority',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <select
                 {...rest}
@@ -160,7 +163,7 @@ function HeaderFilters() {
                 <option value="Low">Low</option>
               </select>
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -168,7 +171,7 @@ function HeaderFilters() {
         name: 'Issue Type',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <select
                 {...rest}
@@ -189,7 +192,7 @@ function HeaderFilters() {
                 <option value="Story">Story</option>
               </select>
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -197,7 +200,7 @@ function HeaderFilters() {
         name: 'Developer',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -213,7 +216,7 @@ function HeaderFilters() {
                 list="developers"
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       },
       {
@@ -221,7 +224,7 @@ function HeaderFilters() {
         name: '% Complete',
         headerCellClass: filterColumnClassName,
         renderHeaderCell: (p) => (
-          <FilterRenderer<Row> {...p}>
+          <FilterCell<Row> {...p}>
             {({ filters, ...rest }) => (
               <input
                 {...rest}
@@ -239,7 +242,7 @@ function HeaderFilters() {
                 onKeyDown={inputStopPropagation}
               />
             )}
-          </FilterRenderer>
+          </FilterCell>
         )
       }
     ];
@@ -249,12 +252,12 @@ function HeaderFilters() {
     return rows.filter((r) => {
       return (
         (filters.task ? r.task.includes(filters.task) : true) &&
-        (filters.priority !== 'All' ? r.priority === filters.priority : true) &&
-        (filters.issueType !== 'All' ? r.issueType === filters.issueType : true) &&
+        (filters.priority === 'All' || r.priority === filters.priority) &&
+        (filters.issueType === 'All' || r.issueType === filters.issueType) &&
         (filters.developer
           ? r.developer.toLowerCase().startsWith(filters.developer.toLowerCase())
           : true) &&
-        (filters.complete !== undefined ? r.complete >= filters.complete : true)
+        (filters.complete === undefined || r.complete >= filters.complete)
       );
     });
   }, [rows, filters]);
@@ -300,22 +303,16 @@ function HeaderFilters() {
           }}
         />
       </FilterContext>
-      <datalist id="developers">
-        {developerOptions.map(({ label, value }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </datalist>
+      <datalist id="developers">{developerOptions}</datalist>
     </div>
   );
 }
 
-function FilterRenderer<R>({
+function FilterCell<R>({
   tabIndex,
   column,
   children
-}: RenderHeaderCellProps<R> & {
+}: RenderHeaderCellContentProps<R> & {
   children: (args: { tabIndex: number; filters: Filter }) => React.ReactElement;
 }) {
   const filters = use(FilterContext)!;

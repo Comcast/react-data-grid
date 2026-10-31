@@ -1,18 +1,5 @@
 # AGENTS.md
 
-## Quick ref
-
-```shell
-npm install                  # setup (requires Node.js ≥ 22 for `node --run`)
-node --run build             # library → lib/
-node --run typecheck         # tsc --build
-node --run eslint            # eslint --max-warnings 0
-node --run eslint:fix        # eslint --fix
-node --run format            # oxfmt
-node --run test              # vitest (browser + node)
-node --run test -- <path>    # single test, e.g. test/browser/rowHeight.test.ts
-```
-
 ## Architecture
 
 react-data-grid is a data grid with **zero `dependencies`** (peer dependency: React 19.2+). It uses CSS Grid for layout and implements row/column virtualization in JS.
@@ -22,14 +9,14 @@ src/
   index.ts            # public API surface; all exports go through here
   DataGrid.tsx        # main <DataGrid> component (generic: <R, SR, K>)
   TreeDataGrid.tsx    # wraps DataGrid, adds row grouping (role="treegrid")
-  types.ts            # shared type definitions (e.g. Column, CalculatedColumn, render props, events)
+  types.ts            # shared type definitions (e.g., Column, CalculatedColumn, render props, events)
   hooks/              # shared custom React hooks
-  utils/              # pure utilities (e.g. keyboard, DOM, events, colSpan, style)
+  utils/              # pure utilities (e.g., keyboard, DOM, events, colSpan, style)
   style/              # build-time CSS via ecij tagged templates; layers.css declares @layer order
-  cellRenderers/      # default cell renderers (e.g. checkbox, toggleGroup, value)
+  cellRenderers/      # default cell renderers (e.g., checkbox, toggleGroup, value)
   editors/            # default editors (renderTextEditor)
 test/
-  browser/            # vitest browser-mode tests (Playwright, Chromium + Firefox)
+  browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
   visual/             # vitest visual regression tests (CI-only — never run locally)
 website/              # demo site (Vite + TanStack Router)
@@ -39,24 +26,43 @@ website/              # demo site (Vite + TanStack Router)
 
 - **Public API** — all exports flow through `src/index.ts`. Keep `README.md` in sync with user-facing changes.
 - **Docs** — keep `AGENTS.md` in sync with tooling, conventions, or architectural changes.
-- **Default renderers** — `DataGridDefaultRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
+- **Default renderers** — `DataGridRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
 - **TypeScript strict** with `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Distinguish missing properties from `undefined` values.
 - **`Maybe<T>`** (`T | undefined | null`) — used for all nullable column/render props. Do not use bare `T | undefined`.
 - **`NoInfer<>`** — wrap callback parameters to prevent reverse type inference into component generics.
-- **CSS layers** — all styles live in nested `@layer rdg.<Name>` sub-layers (e.g. `rdg.Cell`, `rdg.Row`; declared in `src/style/layers.css`). Use `ecij` `css` tagged templates (build-time extraction, not runtime CSS-in-JS). Co-locate styles in component files; `src/style/` is for shared styles.
-- **Dual classnames** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
+- **Stable object shapes** — objects read in hot rendering paths, like calculated columns, must share one hidden class so property reads stay monomorphic: create them with every property in the same order, `undefined` when unset, and do not spread user-provided objects into them.
+- **No generators in rendering code** — React Compiler can't compile components or hooks that use `yield`, and iterating over generator objects is much slower than over arrays. Build arrays with plain loops instead (see `src/utils/viewportUtils.ts`).
+- **CSS layers** — all styles live in nested `@layer rdg.<Name>` sub-layers (e.g., `rdg.Cell`, `rdg.Row`). When a sub-layer overrides another sub-layer's styles, declare both in `src/style/layers.css`, which sets their order; undeclared sub-layers come after the declared ones. Use `ecij` `css` tagged templates (build-time extraction, not runtime CSS-in-JS). Co-locate styles in component files; `src/style/` is for shared styles.
+- **Dual class names** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
-- **Accessibility first** — ARIA attributes (e.g. `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
-- **Formatting** — oxfmt (not Prettier). **Linting** — ESLint (must pass with zero warnings).
-- **Build** — Rolldown bundles library to `lib/`; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts.
+- **Accessibility first** — ARIA attributes (e.g., `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
+- **Build** — `vp pack` bundles the library to `lib/`, then lints the packed package with publint; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts. React Compiler compiles every component and hook, and `vp pack` fails in CI and agent sessions when it can't compile one.
+- **Workflows** — pin every action to a full commit SHA with its version in a comment (Dependabot updates both), pass expressions to `run` steps through `env` instead of inlining `${{ }}`, grant each job only the `permissions` it uses, and check out with `persist-credentials: false`. Jobs that install dependencies only get read permissions: publishing, pushing, and editing PRs happen in separate jobs that receive build output as artifacts and never install the project's dependencies.
+- **Releases** — the header of `.github/workflows/publish.yml` explains how to publish. Its read-only `build` job hands `lib/` to the `publish` job, so the project's dependencies never run with the `id-token: write` permission that npm's trusted publishing relies on, and a separate `release` job creates the GitHub release.
 
 ## Testing
 
-- Browser tests use `vitest/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getSelectedCell()`, etc. over raw `page.getByRole()`.
-- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `tabIntoGrid()`, `testCount()`, `testRowCount()`.
+- Browser tests use `vite-plus/test/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getActiveCell()`, etc. over raw `page.getByRole()`.
+- Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
-- **Never run visual regression tests locally** — screenshots are CI-only and environment-dependent.
+- Firefox runs test files in parallel. Firefox sends the mouse events of all its pages with the same pointer ID, so each test file that drags a resize or drag-fill handle, which captures the pointer, runs in a separate Firefox instance with a browser of its own: add such test files to `firefoxPointerCaptureTests` in `vite.config.ts`. Use `--project "*firefox*"` to run all the Firefox instances.
+- **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.
+
+## Tooling
+
+The project uses [Vite+](https://viteplus.dev/guide/), whose global `vp` CLI wraps Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Run `vp` directly, not through `npx`. Its docs are in `node_modules/vite-plus/docs`.
+
+- `vp <command>` runs a built-in command, e.g., `vp dev`, `vp check`, `vp test`, `vp pack`, `vp build`.
+- `vp run <task>` runs a task from `vite.config.ts`, e.g., `vp run typecheck`, `vp run eslint`, `vp run ci`.
+- Run `vp install` after pulling changes.
 
 ## Validation
 
-Run before submitting changes: `node --run typecheck`, `node --run eslint`, `node --run format`, `node --run test`.
+Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed.
+
+While iterating, run individual checks instead. The static checks take seconds, so run them before tests:
+
+- `vp run typecheck` type checks with `tsc --build`; `vp check` does not type check.
+- `vp check --fix` formats and lints, fixing what it can. Without `--fix`, a formatting error stops it before linting.
+- `vp run eslint` lints Markdown files.
+- `vp test <files>` runs specific test files, e.g., `vp test test/browser/sorting.test.tsx`. Add `--project "browser (chromium)"` to test in a single browser, or `--project node` to run the SSR test. The full suite takes about a minute.

@@ -1,5 +1,5 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { cellClassname, cellFrozenClassname } from '../style/cell';
+import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,
@@ -28,36 +28,30 @@ export function getHeaderCellStyle<R, SR>(
 
 export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
-  colSpan = 1
+  colSpan: number
 ): React.CSSProperties {
-  const index = column.idx + 1;
+  const { idx, frozen } = column;
+  const index = idx + 1;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined
+    insetInlineStart: frozen === 'start' ? `var(--rdg-frozen-start-${idx})` : undefined,
+    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined
   };
 }
 
-type ClassValue = Maybe<string> | Record<string, boolean> | false;
+type ClassValue = Maybe<string | false>;
 
 export function classnames(...args: readonly ClassValue[]) {
   let classname = '';
 
   for (const arg of args) {
-    if (arg) {
-      if (typeof arg === 'string') {
-        classname += ` ${arg}`;
-      } else if (typeof arg === 'object') {
-        for (const key in arg) {
-          if (arg[key]) {
-            classname += ` ${key}`;
-          }
-        }
-      }
+    if (typeof arg === 'string') {
+      classname += ` ${arg}`;
     }
   }
 
-  return classname.trimStart();
+  return classname.slice(1);
 }
 
 export function getCellClassname<R, SR>(
@@ -66,9 +60,8 @@ export function getCellClassname<R, SR>(
 ): string {
   return classnames(
     cellClassname,
-    {
-      [cellFrozenClassname]: column.frozen
-    },
+    column.frozen === 'start' && cellFrozenStartClassname,
+    column.frozen === 'end' && cellFrozenEndClassname,
     ...extraClasses
   );
 }

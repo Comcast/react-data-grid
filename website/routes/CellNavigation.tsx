@@ -67,8 +67,8 @@ function createRows(): Row[] {
       id: i,
       task: `Task ${i}`,
       complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 3 + 1)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 3 + 1)],
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
       startDate: getRandomDate(new Date(2015, 3, 1), new Date()),
       completeDate: getRandomDate(new Date(), new Date(2016, 0, 1))
     });
@@ -106,28 +106,17 @@ function CellNavigation() {
 
     const changeRowNavigation = () => {
       if (key === 'ArrowRight' && idx === columns.length - 1) {
-        if (rows.length === 0) return;
-        if (rowIdx === -1) {
-          setActivePosition({ rowIdx: 0, idx: 0 });
-        } else {
-          if (rowIdx === rows.length - 1) return;
-          setActivePosition({ rowIdx: rowIdx + 1, idx: 0 });
-        }
+        if (rowIdx === rows.length - 1) return;
+        setActivePosition({ rowIdx: rowIdx + 1, idx: 0 });
         preventDefault();
       } else if (key === 'ArrowLeft' && idx === 0) {
-        if (rowIdx === -1) return;
         setActivePosition({ rowIdx: rowIdx - 1, idx: columns.length - 1 });
         preventDefault();
       }
     };
 
     const loopOverColumnNavigation = () => {
-      let newRowIdx: number;
-      if (rowIdx === -1) {
-        newRowIdx = shiftKey ? rows.length - 1 : 0;
-      } else {
-        newRowIdx = shiftKey ? rowIdx - 1 : rowIdx === rows.length - 1 ? -1 : rowIdx + 1;
-      }
+      const newRowIdx = shiftKey ? rowIdx - 1 : rowIdx === rows.length - 1 ? -1 : rowIdx + 1;
       setActivePosition({ rowIdx: newRowIdx, idx });
       preventDefault();
     };

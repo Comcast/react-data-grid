@@ -1,14 +1,14 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
 
 export * from './activePositionUtils';
-export * from './colSpanUtils';
 export * from './domUtils';
 export * from './eventUtils';
 export * from './keyboardUtils';
 export * from './renderMeasuringCells';
 export * from './styleUtils';
+export * from './viewportUtils';
 
-export const { min, max, floor, sign, abs } = Math;
+export const { min, max, floor, abs } = Math;
 
 export function getColumnInColumns<R, SR>(
   columns: readonly CalculatedColumn<R, SR>[],
@@ -27,11 +27,11 @@ export function getRowInRows<R>(rows: readonly R[], index: number) {
   return rows[index]!;
 }
 
-export function assertIsValidKeyGetter<R, K extends React.Key>(
-  keyGetter: Maybe<(row: NoInfer<R>) => K>
-): asserts keyGetter is (row: R) => K {
-  if (typeof keyGetter !== 'function') {
-    throw new Error('Please specify the rowKeyGetter prop to use selection');
+export function assertIsValidGetRowKey<R, K extends React.Key>(
+  getRowKey: Maybe<(row: NoInfer<R>) => K>
+): asserts getRowKey is (row: R) => K {
+  if (typeof getRowKey !== 'function') {
+    throw new TypeError('Please specify the getRowKey prop to use selection');
   }
 }
 
@@ -41,7 +41,7 @@ export function clampColumnWidth<R, SR>(
 ): number {
   width = max(width, minWidth);
 
-  // ignore maxWidth if it less than minWidth
+  // ignore maxWidth if it is less than minWidth
   if (typeof maxWidth === 'number' && maxWidth >= minWidth) {
     return min(width, maxWidth);
   }

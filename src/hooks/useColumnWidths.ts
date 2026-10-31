@@ -57,7 +57,10 @@ export function useColumnWidths<R, SR>(
   useLayoutEffect(updateMeasuredAndResizedWidths);
 
   function updateMeasuredAndResizedWidths() {
-    setPrevGridWidth(gridWidth);
+    // React renders the grid again for a state update in a layout effect, even when the value is the same
+    if (prevGridWidth !== gridWidth) {
+      setPrevGridWidth(gridWidth);
+    }
     if (columnsToMeasure.length === 0) return;
 
     const newColumnWidths = new Map(columnWidths);
@@ -65,7 +68,9 @@ export function useColumnWidths<R, SR>(
 
     for (const key of columnsToMeasure) {
       const measuredWidth = measureColumnWidth(gridRef, key);
-      hasChanges ||= measuredWidth !== columnWidths.get(key)?.width;
+      if (measuredWidth !== columnWidths.get(key)?.width) {
+        hasChanges = true;
+      }
       if (measuredWidth === undefined) {
         newColumnWidths.delete(key);
       } else {

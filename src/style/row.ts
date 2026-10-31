@@ -1,7 +1,5 @@
 import { css } from 'ecij';
 
-import { cellFrozen } from './cell';
-
 export const row = css`
   @layer rdg.Row {
     display: grid;
@@ -27,13 +25,22 @@ export const row = css`
         border: var(--rdg-selection-width) solid var(--rdg-selection-color);
       }
 
-      & > .${cellFrozen}:first-child::before {
+      & > .rdg-cell-frozen-start:first-child::before,
+      & > .rdg-cell-frozen-end:last-child::after {
         content: '';
         display: inline-block;
         position: absolute;
         inset-block: 0;
+      }
+
+      & > .rdg-cell-frozen-start:first-child::before {
         inset-inline-start: 0;
         border-inline-start: var(--rdg-selection-width) solid var(--rdg-selection-color);
+      }
+
+      & > .rdg-cell-frozen-end:last-child::after {
+        inset-inline-end: 0;
+        border-inline-end: var(--rdg-selection-width) solid var(--rdg-selection-color);
       }
     }
 
@@ -42,6 +49,22 @@ export const row = css`
 
       &:hover {
         background-color: var(--rdg-row-selected-hover-background-color);
+      }
+
+      @media (forced-colors: active) {
+        /* CanvasText is not guaranteed to contrast with SelectedItem */
+        --rdg-selection-color: SelectedItemText;
+        --rdg-checkbox-focus-color: SelectedItemText;
+
+        /*
+         * Set on the property rather than on the selected row tokens,
+         * so the selection stays visible when apps override the tokens.
+         * There is no text color, so text keeps its forced color, and Chromium draws a backplate behind it.
+         */
+        &,
+        &:hover {
+          background-color: SelectedItem;
+        }
       }
     }
   }

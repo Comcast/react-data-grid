@@ -1,38 +1,23 @@
-let consoleErrorOrConsoleWarnWereCalled = false;
+beforeEach(({ onTestFinished }) => {
+  vi.spyOn(console, 'warn').mockName('console.warn');
+  vi.spyOn(console, 'error').mockName('console.error');
 
-beforeAll(() => {
-  // replace instead of mutating `console` to avoid infinite loops
-  globalThis.console = {
-    ...console,
-    error(...params) {
-      if (
-        params[0] instanceof Error &&
-        params[0].message === 'ResizeObserver loop completed with undelivered notifications.'
-      ) {
-        return;
-      }
+  // Wait for the test and all `afterEach` hooks to complete to ensure all logs are caught
+  onTestFinished(({ expect, task, signal }) => {
+    // avoid failing test runs twice
+    if (task.result?.state === 'fail' || signal.aborted) return;
 
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    },
-    warn(...params) {
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    }
-  };
-});
-
-afterEach(() => {
-  if (!consoleErrorOrConsoleWarnWereCalled) {
-    return;
-  }
-
-  consoleErrorOrConsoleWarnWereCalled = false;
-
-  // Errors thrown in `afterEach` will short-circuit subsequent `afterEach` hooks,
-  // thus preventing tests from being cleaned up properly and affecting other tests.
-  // We must therefore wait for tests to "finish" before throwing the error.
-  onTestFinished(() => {
-    throw new Error('console.error() and/or console.warn() were called during the test');
+    expect
+      .soft(
+        console.warn,
+        'console.warn() was called during the test; please resolve unexpected warnings'
+      )
+      .toHaveBeenCalledTimes(0);
+    expect
+      .soft(
+        console.error,
+        'console.error() was called during the test; please resolve unexpected errors'
+      )
+      .toHaveBeenCalledTimes(0);
   });
 });
