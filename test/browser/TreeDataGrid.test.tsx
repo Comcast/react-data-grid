@@ -449,24 +449,24 @@ test('cell navigation in a treegrid', async () => {
   // focus cell
   const cells = getCellsAtRowIndex(5);
   await userEvent.click(cells.nth(1));
-  await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(1)).toHaveClass('rdg-cell-active');
   await expect.element(cells.nth(1)).toHaveFocus();
   await expect.element(cells.nth(1)).toHaveAttribute('tabIndex', '0');
 
   // focus the previous cell
   await userEvent.keyboard('{arrowleft}');
-  await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'false');
-  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(1)).not.toHaveClass('rdg-cell-active');
+  await expect.element(cells.nth(0)).toHaveClass('rdg-cell-active');
 
   // if the first cell is focused then arrowleft should focus the row
   await userEvent.keyboard('{arrowleft}');
-  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'false');
+  await expect.element(cells.nth(0)).not.toHaveClass('rdg-cell-active');
   await expect.element(rows.nth(4)).toHaveClass(rowActiveClassname);
   await expect.element(rows.nth(4)).toHaveFocus();
 
   // if the row is focused then arrowright should focus the first cell on the same row
   await userEvent.keyboard('{arrowright}');
-  await expect.element(cells.nth(0)).toHaveAttribute('aria-selected', 'true');
+  await expect.element(cells.nth(0)).toHaveClass('rdg-cell-active');
 
   await userEvent.keyboard('{arrowleft}{arrowup}');
 
@@ -598,11 +598,11 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
 
   // activate the first cell of the group row
   await userEvent.keyboard('{arrowright}');
-  await expect.element(usaGroupRow.getCell().nth(0)).toHaveAttribute('aria-selected', 'true');
+  await expect.element(usaGroupRow.getCell().nth(0)).toHaveClass('rdg-cell-active');
 
   // activate a cell of a regular row
   await userEvent.click(page.getCell({ name: '2020' }));
-  await expect.element(page.getCell({ name: '2020' })).toHaveAttribute('aria-selected', 'true');
+  await expect.element(page.getCell({ name: '2020' })).toHaveClass('rdg-cell-active');
   await userEvent.keyboard('{arrowright}');
   await expect.element(activeCell).toHaveTextContent('value: 1');
 

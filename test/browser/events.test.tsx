@@ -65,9 +65,9 @@ describe('Events', () => {
       />
     );
     await userEvent.click(page.getCell({ name: '1' }));
-    await expect.element(page.getCell({ name: '1' })).toHaveAttribute('aria-selected', 'false');
+    await expect.element(page.getCell({ name: '1' })).not.toHaveClass('rdg-cell-active');
     await userEvent.click(page.getCell({ name: 'a1' }));
-    await expect.element(page.getCell({ name: 'a1' })).toHaveAttribute('aria-selected', 'true');
+    await expect.element(page.getCell({ name: 'a1' })).toHaveClass('rdg-cell-active');
   });
 
   it('should be able to open the editor on single click using onCellClick', async () => {

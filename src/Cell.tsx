@@ -4,6 +4,7 @@ import { css } from 'ecij';
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';
 import type { CellMouseEventHandler, RenderCellProps } from './types';
+import { cellActiveClassname } from './style/cell';
 
 const cellDraggedOver = css`
   @layer rdg.Cell {
@@ -43,6 +44,7 @@ function Cell<R, SR>({
   const { cellClass } = column;
   className = getCellClassname(
     column,
+    isCellActive && cellActiveClassname,
     isDraggedOver && cellDraggedOverClassname,
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
@@ -101,7 +103,6 @@ function Cell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
       aria-colspan={colSpan > 1 ? colSpan : undefined}
-      aria-selected={isCellActive}
       aria-readonly={!isEditable || undefined}
       tabIndex={tabIndex}
       className={className}

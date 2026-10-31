@@ -3,6 +3,7 @@ import { css } from 'ecij';
 
 import { createCellEvent, getCellClassname, getCellStyle, onEditorNavigation } from './utils';
 import type { EditCellProps } from './types';
+import { cellActiveClassname } from './style/cell';
 
 /*
  * To check for outside `mousedown` events, we listen to all `mousedown` events at their birth,
@@ -187,6 +188,7 @@ export default function EditCell<R, SR>({
   const { cellClass } = column;
   const className = getCellClassname(
     column,
+    cellActiveClassname,
     'rdg-editor-container',
     editCell,
     !column.editorOptions?.displayCellContent && cellEditing,
@@ -199,7 +201,6 @@ export default function EditCell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
       aria-colspan={colSpan > 1 ? colSpan : undefined}
-      aria-selected
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDownCapture={handleKeyDownCapture}
