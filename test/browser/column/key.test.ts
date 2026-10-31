@@ -9,5 +9,5 @@ test('key is escaped in query selectors', async () => {
     }
   ];
 
-  await expect(setup({ columns, rows: [] })).resolves.not.toThrowError();
+  await expect(setup({ columns, rows: [] })).resolves.not.toThrow();
 });

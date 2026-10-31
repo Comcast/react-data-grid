@@ -1,7 +1,7 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
-import { safeTab, setup, testCount, validateCellPosition } from '../utils';
+import { setup, testCount, validateCellPosition } from '../utils';
 
 const grid = page.getGrid();
 const headerRows = grid.getHeaderRow();
@@ -241,10 +241,8 @@ test('grouping', async () => {
     await expect.element(cell).toHaveTextContent(item.text);
     await expect.element(cell).toHaveAttribute('aria-colindex', item.colIndex);
     if (item.colSpan == null) {
-      // eslint-disable-next-line vitest/no-conditional-expect
       await expect.element(cell).not.toHaveAttribute('aria-colspan');
     } else {
-      // eslint-disable-next-line vitest/no-conditional-expect
       await expect.element(cell).toHaveAttribute('aria-colspan', item.colSpan);
     }
     await expect.element(cell).toHaveAttribute('aria-rowspan', item.rowSpan);
@@ -257,7 +255,11 @@ test('keyboard navigation', async () => {
   // no initial active position
   await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
-  await safeTab();
+  await userEvent.tab();
+  await validateCellPosition(0, 3);
+
+  // page up on the main header row does nothing
+  await userEvent.keyboard('{PageUp}');
   await validateCellPosition(0, 3);
 
   // arrow navigation
@@ -323,21 +325,21 @@ test('keyboard navigation', async () => {
   await validateCellPosition(10, 3);
 
   // tab navigation
-  await safeTab();
+  await userEvent.tab();
   await validateCellPosition(11, 3);
-  await safeTab(true);
-  await safeTab(true);
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
+  await userEvent.tab({ shift: true });
+  await userEvent.tab({ shift: true });
   await validateCellPosition(8, 3);
   await userEvent.keyboard('{arrowup}');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await validateCellPosition(4, 0);
-  await safeTab();
+  await userEvent.tab();
   await validateCellPosition(8, 0);
 
   await userEvent.keyboard('{home}{end}');
-  await safeTab();
+  await userEvent.tab();
   await validateCellPosition(0, 4);
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await validateCellPosition(11, 3);
 });

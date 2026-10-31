@@ -47,6 +47,12 @@ const cellDraggableClassname = 'rdg-cell-draggable';
 const cellDraggingOrOver = css`
   @layer rdg.HeaderCell {
     background-color: var(--rdg-header-draggable-background-color);
+
+    /* the background color is replaced in forced colors mode */
+    @media (forced-colors: active) {
+      outline: 2px dashed Highlight;
+      outline-offset: -2px;
+    }
   }
 `;
 
@@ -65,7 +71,7 @@ const dragImageClassname = css`
 
 export interface HeaderCellProps<R, SR> {
   column: CalculatedColumn<R, SR>;
-  colSpan: number | undefined;
+  colSpan: number;
   rowIdx: number;
   isCellActive: boolean;
   sortDirection: SortDirection | undefined;
@@ -99,10 +105,11 @@ function HeaderCell<R, SR>({
   setDraggedColumnKey
 }: HeaderCellProps<R, SR>) {
   const [isOver, setIsOver] = useState(false);
+  const resizingRef = useRef(false);
   const dragImageRef = useRef<HTMLDivElement>(null);
   const isDragging = draggedColumnKey === column.key;
   const rowSpan = getHeaderCellRowSpan(column, rowIdx);
-  // set the tabIndex to 0 when there is no active cell so grid can receive focus
+  // set the tabIndex to 0 when there is no active cell so the grid can receive focus
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(shouldFocusGrid || isCellActive);
   const ariaSort =
     sortDirection && !priority ? (sortDirection === 'ASC' ? 'ascending' : 'descending') : undefined;
@@ -121,7 +128,7 @@ function HeaderCell<R, SR>({
   function handleFocus(event: React.FocusEvent<HTMLDivElement>) {
     onFocus?.(event);
     if (shouldFocusGrid) {
-      // Select the first header cell if there is no active cell
+      // Activate the first header cell if there is no active cell
       setPosition({ idx: 0, rowIdx });
     }
   }
@@ -150,6 +157,7 @@ function HeaderCell<R, SR>({
       // prevent navigation
       // TODO: check if we can use `preventDefault` instead
       event.stopPropagation();
+      resizingRef.current = true;
       const { width } = event.currentTarget.getBoundingClientRect();
       const { leftKey } = getLeftRightKey(direction);
       const offset = key === leftKey ? -10 : 10;
@@ -157,6 +165,14 @@ function HeaderCell<R, SR>({
       if (newWidth !== width) {
         onColumnResize(column, newWidth);
       }
+    }
+  }
+
+  // the resize also ends when the header cell loses focus, as the key may then be released elsewhere
+  function endKeyboardResize() {
+    if (resizingRef.current) {
+      resizingRef.current = false;
+      onColumnResizeEnd();
     }
   }
 
@@ -171,12 +187,6 @@ function HeaderCell<R, SR>({
 
   function onDragEnd() {
     setDraggedColumnKey(undefined);
-  }
-
-  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
-    // prevent default to allow drop
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
   }
 
   function onDrop(event: React.DragEvent<HTMLDivElement>) {
@@ -243,7 +253,7 @@ function HeaderCell<R, SR>({
       <div
         role="columnheader"
         aria-colindex={column.idx + 1}
-        aria-colspan={colSpan}
+        aria-colspan={colSpan > 1 ? colSpan : undefined}
         aria-rowspan={rowSpan}
         aria-selected={isCellActive}
         aria-sort={ariaSort}
@@ -254,6 +264,8 @@ function HeaderCell<R, SR>({
         onFocus={handleFocus}
         onClick={onClick}
         onKeyDown={onKeyDown}
+        onKeyUp={endKeyboardResize}
+        onBlur={endKeyboardResize}
         {...dragTargetProps}
         {...dropTargetProps}
       >
@@ -338,6 +350,12 @@ function ResizeHandle<R, SR>({
       onDoubleClick={onDoubleClick}
     />
   );
+}
+
+function onDragOver(event: React.DragEvent<HTMLDivElement>) {
+  // prevent default to allow drop
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
 }
 
 // only accept pertinent drag events:

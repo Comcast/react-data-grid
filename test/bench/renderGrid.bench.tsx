@@ -1,9 +1,8 @@
 import { renderToString } from 'react-dom/server';
-import { bench } from 'vitest';
 import { render } from 'vitest-browser-react';
 
-import { DataGrid } from '../../src';
-import type { Column } from '../../src';
+import { DataGrid, type Column } from '../../src';
+import { bench } from './utils';
 
 // --- Data generation ---
 
@@ -45,14 +44,14 @@ const COLS_50 = generateColumns(50);
 const COLS_FROZEN = generateColumns(20, { frozen: 3 });
 
 const ROWS_100_5C = generateRows(100, 5);
-const ROWS_1K_5C = generateRows(1_000, 5);
+const ROWS_1K_5C = generateRows(1000, 5);
 const ROWS_10K_5C = generateRows(10_000, 5);
 const ROWS_100K_5C = generateRows(100_000, 5);
 const ROWS_100_20C = generateRows(100, 20);
-const ROWS_1K_20C = generateRows(1_000, 20);
+const ROWS_1K_20C = generateRows(1000, 20);
 const ROWS_10K_20C = generateRows(10_000, 20);
 const ROWS_100_50C = generateRows(100, 50);
-const ROWS_1K_50C = generateRows(1_000, 50);
+const ROWS_1K_50C = generateRows(1000, 50);
 
 // --- Full grid render benchmarks ---
 

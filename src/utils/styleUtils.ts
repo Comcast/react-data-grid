@@ -1,5 +1,5 @@
 import type { CalculatedColumn, CalculatedColumnOrColumnGroup, Maybe } from '../types';
-import { cellClassname, cellFrozenClassname } from '../style/cell';
+import { cellClassname, cellFrozenStartClassname, cellFrozenEndClassname } from '../style/cell';
 
 export function getHeaderCellStyle<R, SR>(
   column: CalculatedColumnOrColumnGroup<R, SR>,
@@ -28,13 +28,15 @@ export function getHeaderCellStyle<R, SR>(
 
 export function getCellStyle<R, SR>(
   column: CalculatedColumn<R, SR>,
-  colSpan = 1
+  colSpan: number
 ): React.CSSProperties {
-  const index = column.idx + 1;
+  const { idx, frozen } = column;
+  const index = idx + 1;
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: column.frozen ? `var(--rdg-frozen-left-${column.idx})` : undefined
+    insetInlineStart: frozen === 'start' ? `var(--rdg-frozen-start-${idx})` : undefined,
+    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined
   };
 }
 
@@ -56,5 +58,10 @@ export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
-  return classnames(cellClassname, column.frozen && cellFrozenClassname, ...extraClasses);
+  return classnames(
+    cellClassname,
+    column.frozen === 'start' && cellFrozenStartClassname,
+    column.frozen === 'end' && cellFrozenEndClassname,
+    ...extraClasses
+  );
 }

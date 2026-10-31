@@ -1,4 +1,4 @@
-# https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 
 version: 2
 updates:
@@ -6,17 +6,38 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    # Vite+ and the packages it keeps aligned are updated with `vp migrate`:
+    # https://viteplus.dev/guide/upgrade-project
+    ignore:
+      - dependency-name: 'vite-plus'
+      - dependency-name: 'vite'
+      - dependency-name: '@voidzero-dev/*'
+      - dependency-name: 'vitest'
+      - dependency-name: '@vitest/*'
     groups:
+      typescript:
+        patterns:
+          - 'typescript'
       react:
         patterns:
           - 'react'
           - 'react-dom'
-      vitest:
+          - '@types/react'
+          - '@types/react-dom'
+      # everything else: single PR for minor/patch bumps,
+      # majors still land individually
+      dependencies:
         patterns:
-          - 'vitest'
-          - '@vitest/*'
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'

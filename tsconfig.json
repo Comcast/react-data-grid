@@ -1,7 +1,7 @@
 {
   "include": [],
   "references": [
-    { "path": "tsconfig.js.json" },
+    { "path": "tsconfig.node.json" },
     { "path": "tsconfig.src.json" },
     { "path": "tsconfig.test.json" },
     { "path": "tsconfig.vite.json" },

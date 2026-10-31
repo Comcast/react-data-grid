@@ -6,7 +6,7 @@ import { classnames } from './utils';
 import type {
   CalculatedColumn,
   Direction,
-  IterateOverViewportColumnsForRow,
+  MapViewportColumns,
   Maybe,
   Position,
   ResizedWidth,
@@ -15,7 +15,7 @@ import type {
 } from './types';
 import type { DataGridProps } from './DataGrid';
 import HeaderCell from './HeaderCell';
-import { cell, cellFrozen } from './style/cell';
+import { cell, cellFrozenBase } from './style/cell';
 import { rowActiveClassname } from './style/row';
 
 type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
@@ -25,7 +25,7 @@ type SharedDataGridProps<R, SR, K extends React.Key> = Pick<
 
 export interface HeaderRowProps<R, SR, K extends React.Key> extends SharedDataGridProps<R, SR, K> {
   rowIdx: number;
-  iterateOverViewportColumnsForRow: IterateOverViewportColumnsForRow<R, SR>;
+  mapViewportColumns: MapViewportColumns<R, SR>;
   onColumnResize: (column: CalculatedColumn<R, SR>, width: ResizedWidth) => void;
   onColumnResizeEnd: () => void;
   activeCellIdx: number | undefined;
@@ -47,7 +47,7 @@ const headerRow = css`
       position: sticky;
     }
 
-    & > .${cellFrozen} {
+    & > .${cellFrozenBase} {
       z-index: 3;
     }
   }
@@ -64,7 +64,7 @@ interface SortInfo {
 function HeaderRow<R, SR, K extends React.Key>({
   headerRowClass,
   rowIdx,
-  iterateOverViewportColumnsForRow,
+  mapViewportColumns,
   onColumnResize,
   onColumnResizeEnd,
   onColumnsReorder,
@@ -134,8 +134,10 @@ function HeaderRow<R, SR, K extends React.Key>({
 
   const handleSortLatest = useLatestFunc(handleSort);
 
-  const cells = iterateOverViewportColumnsForRow(activeCellIdx, { type: 'HEADER' })
-    .map(([column, isCellActive, colSpan], index) => {
+  const cells = mapViewportColumns(
+    activeCellIdx,
+    { type: 'HEADER' },
+    (column, isCellActive, colSpan, index) => {
       const sortInfo = sortMap?.get(column.key);
       return (
         <HeaderCell<R, SR>
@@ -157,13 +159,13 @@ function HeaderRow<R, SR, K extends React.Key>({
           setDraggedColumnKey={setDraggedColumnKey}
         />
       );
-    })
-    .toArray();
+    }
+  );
 
   return (
     <div
       role="row"
-      aria-rowindex={rowIdx} // aria-rowindex is 1 based
+      aria-rowindex={rowIdx} // aria-rowindex is 1-based
       className={classnames(
         headerRowClassname,
         isPositionOnRow && rowActiveClassname,

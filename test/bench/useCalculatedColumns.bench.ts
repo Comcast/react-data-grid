@@ -1,8 +1,8 @@
-import { bench } from 'vitest';
 import { renderHook } from 'vitest-browser-react';
 
 import { useCalculatedColumns } from '../../src/hooks/useCalculatedColumns';
 import type { Column } from '../../src/types';
+import { bench } from './utils';
 
 // --- Data generation ---
 

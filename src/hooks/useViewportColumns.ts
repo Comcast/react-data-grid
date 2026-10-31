@@ -1,14 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
-import { getColSpan } from '../utils';
-import type {
-  CalculatedColumn,
-  ColSpanArgs,
-  IterateOverViewportColumns,
-  IterateOverViewportColumnsForRow,
-  Maybe,
-  ViewportColumnWithColSpan
-} from '../types';
+import { getViewportColumns, mapColumnsWithColSpan, min } from '../utils';
+import type { CalculatedColumn, ColSpanArgs, MapViewportColumns, Maybe } from '../types';
 
 interface ViewportColumnsArgs<R, SR> {
   columns: readonly CalculatedColumn<R, SR>[];
@@ -18,7 +11,8 @@ interface ViewportColumnsArgs<R, SR> {
   bottomSummaryRows: Maybe<readonly SR[]>;
   colOverscanStartIdx: number;
   colOverscanEndIdx: number;
-  lastFrozenColumnIndex: number;
+  lastStartFrozenColumnIndex: number;
+  firstEndFrozenColumnIndex: number;
   rowOverscanStartIdx: number;
   rowOverscanEndIdx: number;
 }
@@ -31,47 +25,50 @@ export function useViewportColumns<R, SR>({
   bottomSummaryRows,
   colOverscanStartIdx,
   colOverscanEndIdx,
-  lastFrozenColumnIndex,
+  lastStartFrozenColumnIndex,
+  firstEndFrozenColumnIndex,
   rowOverscanStartIdx,
   rowOverscanEndIdx
 }: ViewportColumnsArgs<R, SR>) {
   // find the column that spans over a column within the visible columns range and adjust colOverscanStartIdx
   const startIdx = useMemo(() => {
-    if (colOverscanStartIdx === 0) return 0;
+    if (colOverscanStartIdx === 0 || colSpanColumns.length === 0) return colOverscanStartIdx;
 
-    function* iterateOverRowsForColSpanArgs(): Generator<ColSpanArgs<R, SR>> {
-      // check header row
-      yield { type: 'HEADER' };
+    // only the unfrozen columns before the range can span over a column within it
+    const candidateColumns = colSpanColumns.filter(
+      (column) => !column.frozen && column.idx < colOverscanStartIdx
+    );
+    if (candidateColumns.length === 0) return colOverscanStartIdx;
 
-      // check top summary rows
-      if (topSummaryRows != null) {
-        for (const row of topSummaryRows) {
-          yield { type: 'SUMMARY', row };
-        }
-      }
+    // check header row
+    const colSpanArgs: ColSpanArgs<R, SR>[] = [{ type: 'HEADER' }];
 
-      // check viewport rows
-      for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
-        yield { type: 'ROW', row: rows[rowIdx] };
-      }
-
-      // check bottom summary rows
-      if (bottomSummaryRows != null) {
-        for (const row of bottomSummaryRows) {
-          yield { type: 'SUMMARY', row };
-        }
+    // check top summary rows
+    if (topSummaryRows != null) {
+      for (const row of topSummaryRows) {
+        colSpanArgs.push({ type: 'SUMMARY', row });
       }
     }
 
-    for (const column of colSpanColumns) {
-      if (column.frozen) continue;
+    // check viewport rows
+    for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
+      colSpanArgs.push({ type: 'ROW', row: rows[rowIdx] });
+    }
+
+    // check bottom summary rows
+    if (bottomSummaryRows != null) {
+      for (const row of bottomSummaryRows) {
+        colSpanArgs.push({ type: 'SUMMARY', row });
+      }
+    }
+
+    for (const column of candidateColumns) {
       const colIdx = column.idx;
-      if (colIdx >= colOverscanStartIdx) break;
 
-      for (const args of iterateOverRowsForColSpanArgs()) {
-        const colSpan = getColSpan(column, lastFrozenColumnIndex, args);
+      for (const args of colSpanArgs) {
+        const colSpan = column.getColSpan(args);
 
-        if (colSpan !== undefined && colIdx + colSpan > colOverscanStartIdx) {
+        if (colIdx + colSpan > colOverscanStartIdx) {
           return colIdx;
         }
       }
@@ -85,71 +82,77 @@ export function useViewportColumns<R, SR>({
     topSummaryRows,
     bottomSummaryRows,
     colOverscanStartIdx,
-    lastFrozenColumnIndex,
     colSpanColumns
   ]);
 
-  const iterateOverViewportColumns = useCallback<IterateOverViewportColumns<R, SR>>(
-    function* (activeColumnIdx): Generator<CalculatedColumn<R, SR>> {
-      for (let colIdx = 0; colIdx <= lastFrozenColumnIndex; colIdx++) {
-        yield columns[colIdx];
-      }
+  // Effective inclusive upper bound for overscan in the unfrozen band.
+  // When end-frozen columns exist, the unfrozen band ends just before them.
+  const effectiveOverscanEndIdx =
+    firstEndFrozenColumnIndex > -1
+      ? min(colOverscanEndIdx, firstEndFrozenColumnIndex - 1)
+      : colOverscanEndIdx;
 
-      if (columns.length === lastFrozenColumnIndex + 1) return;
-
-      if (activeColumnIdx > lastFrozenColumnIndex && activeColumnIdx < startIdx) {
-        yield columns[activeColumnIdx];
-      }
-
-      for (let colIdx = startIdx; colIdx <= colOverscanEndIdx; colIdx++) {
-        yield columns[colIdx];
-      }
-
-      if (activeColumnIdx > colOverscanEndIdx && activeColumnIdx < columns.length) {
-        yield columns[activeColumnIdx];
-      }
-    },
-    [startIdx, colOverscanEndIdx, columns, lastFrozenColumnIndex]
-  );
-
-  const iterateOverViewportColumnsForRow = useCallback<IterateOverViewportColumnsForRow<R, SR>>(
-    function* (activeColumnIdx = -1, args): Generator<ViewportColumnWithColSpan<R, SR>> {
-      const iterator = iterateOverViewportColumns(activeColumnIdx);
-
-      for (const column of iterator) {
-        let colSpan = args && getColSpan(column, lastFrozenColumnIndex, args);
-
-        yield [column, column.idx === activeColumnIdx, colSpan];
-
-        // skip columns covered by colSpan
-        while (colSpan !== undefined && colSpan > 1) {
-          iterator.next();
-          colSpan--;
-        }
-      }
-    },
-    [iterateOverViewportColumns, lastFrozenColumnIndex]
-  );
-
-  const iterateOverViewportColumnsForRowOutsideOfViewport = useCallback<
-    IterateOverViewportColumnsForRow<R, SR>
-  >(
-    function* (activeColumnIdx = -1, args): Generator<ViewportColumnWithColSpan<R, SR>> {
-      if (activeColumnIdx >= 0 && activeColumnIdx < columns.length) {
-        const column = columns[activeColumnIdx];
-        yield [column, true, args && getColSpan(column, lastFrozenColumnIndex, args)];
-      }
-    },
-    [columns, lastFrozenColumnIndex]
-  );
-
+  // the columns of the rows without an active cell, shared by all of them
   const viewportColumns = useMemo((): readonly CalculatedColumn<R, SR>[] => {
-    return iterateOverViewportColumns(-1).toArray();
-  }, [iterateOverViewportColumns]);
+    return getViewportColumns(
+      columns,
+      lastStartFrozenColumnIndex,
+      firstEndFrozenColumnIndex,
+      startIdx,
+      effectiveOverscanEndIdx,
+      -1
+    );
+  }, [
+    columns,
+    lastStartFrozenColumnIndex,
+    firstEndFrozenColumnIndex,
+    startIdx,
+    effectiveOverscanEndIdx
+  ]);
+
+  const mapViewportColumns = useCallback<MapViewportColumns<R, SR>>(
+    (activeColumnIdx = -1, colSpanArgs, callback) => {
+      const rowColumns =
+        activeColumnIdx === -1
+          ? viewportColumns
+          : getViewportColumns(
+              columns,
+              lastStartFrozenColumnIndex,
+              firstEndFrozenColumnIndex,
+              startIdx,
+              effectiveOverscanEndIdx,
+              activeColumnIdx
+            );
+
+      return mapColumnsWithColSpan(rowColumns, activeColumnIdx, colSpanArgs, callback);
+    },
+    [
+      viewportColumns,
+      columns,
+      lastStartFrozenColumnIndex,
+      firstEndFrozenColumnIndex,
+      startIdx,
+      effectiveOverscanEndIdx
+    ]
+  );
+
+  const mapViewportColumnsOutsideOfViewport = useCallback<MapViewportColumns<R, SR>>(
+    (activeColumnIdx = -1, colSpanArgs, callback) => {
+      if (activeColumnIdx < 0 || activeColumnIdx >= columns.length) return [];
+
+      return mapColumnsWithColSpan(
+        [columns[activeColumnIdx]],
+        activeColumnIdx,
+        colSpanArgs,
+        callback
+      );
+    },
+    [columns]
+  );
 
   return {
     viewportColumns,
-    iterateOverViewportColumnsForRow,
-    iterateOverViewportColumnsForRowOutsideOfViewport
+    mapViewportColumns,
+    mapViewportColumnsOutsideOfViewport
   } as const;
 }

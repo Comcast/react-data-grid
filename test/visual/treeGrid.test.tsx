@@ -1,6 +1,7 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
+import { getRowKey } from '../browser/utils';
 
 const treeGrid = page.getTreeGrid();
 
@@ -32,8 +33,8 @@ const columns: readonly Column<Row, SummaryRow>[] = [
   {
     key: 'id',
     name: 'Id',
-    renderGroupCell({ childRows }) {
-      return Math.min(...childRows.map((c) => c.id));
+    renderGroupCell({ row }) {
+      return Math.min(...row.childRows.map((c) => c.id));
     }
   }
 ];
@@ -64,26 +65,17 @@ const rows: readonly Row[] = [
 test('tree grid', async () => {
   await page.render(
     <TreeDataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
       groupBy={['country', 'year']}
-      rowGrouper={rowGrouper}
       expandedGroupIds={new Set(['USA', 'USA__2020'])}
       onExpandedGroupIdsChange={() => {}}
+      style={{ height: 350 }}
     />
   );
 
   await expect.element(treeGrid).toMatchScreenshot('tree-grid');
 });
-
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
-function rowGrouper(rows: readonly Row[], columnKey: string) {
-  // @ts-expect-error
-  return Object.groupBy(rows, (r) => r[columnKey]) as Record<string, readonly R[]>;
-}

@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ContextMenu')({
@@ -49,10 +50,6 @@ const columns: readonly Column<Row>[] = [
   { key: 'price', name: 'Price' }
 ];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 function ContextMenuDemo() {
   const direction = useDirection();
   const [rows, setRows] = useState(createRows);
@@ -75,10 +72,10 @@ function ContextMenuDemo() {
       setContextMenuProps(null);
     }
 
-    window.addEventListener('mousedown', onMouseDown);
+    globalThis.addEventListener('mousedown', onMouseDown);
 
     return () => {
-      window.removeEventListener('mousedown', onMouseDown);
+      globalThis.removeEventListener('mousedown', onMouseDown);
     };
   }, [isContextMenuOpen]);
 
@@ -97,7 +94,7 @@ function ContextMenuDemo() {
     <>
       <DataGrid
         aria-label="Context Menu Example"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={rows}
         className="fill-grid"

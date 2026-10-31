@@ -1,7 +1,7 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column, DataGridProps } from '../../src';
-import { safeTab, setup, testRowCount } from './utils';
+import { setup, testRowCount } from './utils';
 
 const grid = page.getGrid();
 
@@ -36,7 +36,7 @@ test('rowHeight is number', async () => {
       '40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px'
   });
   await testRowCount(30);
-  await safeTab();
+  await userEvent.tab();
   await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
   const gridEl = grid.element();
@@ -52,7 +52,7 @@ test('rowHeight is function', async () => {
   });
   await testRowCount(22);
 
-  await safeTab();
+  await userEvent.tab();
   await expect.element(grid).toHaveProperty('scrollTop', 0);
   await userEvent.keyboard('{Control>}{end}');
   const gridEl = grid.element();

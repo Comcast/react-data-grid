@@ -4,7 +4,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column, type Direction, type RowsChangeData } from '../../src';
-import { CellExpanderFormatter } from '../components';
+import { CellExpander } from '../components';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/MasterDetail')({
@@ -61,6 +62,10 @@ function getProducts(parentId: number): readonly ProductRow[] {
   return products;
 }
 
+function rowHeight(row: DepartmentRow) {
+  return row.type === 'DETAIL' ? 300 : 45;
+}
+
 const productColumns: readonly Column<ProductRow>[] = [
   { key: 'id', name: 'ID', width: 35 },
   { key: 'product', name: 'Product' },
@@ -84,6 +89,8 @@ function MasterDetail() {
         cellClass(row) {
           return row.type === 'DETAIL'
             ? css`
+                /* allows shrinking the inner grid */
+                contain: inline-size;
                 padding: 24px;
               `
             : undefined;
@@ -94,7 +101,7 @@ function MasterDetail() {
           }
 
           return (
-            <CellExpanderFormatter
+            <CellExpander
               expanded={row.expanded}
               tabIndex={tabIndex}
               onCellExpand={() => {
@@ -129,12 +136,12 @@ function MasterDetail() {
   return (
     <DataGrid
       aria-label="Master Detail Example"
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       onRowsChange={onRowsChange}
       headerRowHeight={45}
-      rowHeight={(row) => (row.type === 'DETAIL' ? 300 : 45)}
+      rowHeight={rowHeight}
       className="fill-grid"
       enableVirtualization={false}
       direction={direction}
@@ -155,13 +162,9 @@ function ProductGrid({ parentId, direction }: { parentId: number; direction: Dir
     <DataGrid
       rows={products}
       columns={productColumns}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       style={{ blockSize: 250 }}
       direction={direction}
     />
   );
-}
-
-function rowKeyGetter(row: DepartmentRow | ProductRow) {
-  return row.id;
 }

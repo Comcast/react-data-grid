@@ -1,30 +1,40 @@
-import { bench } from 'vitest';
-
-import type { CalculatedColumn, CalculatedColumnParent } from '../../src/types';
+import type { CalculatedColumn, CalculatedColumnParent, ColumnFrozen } from '../../src/types';
 import { classnames, getCellClassname, getCellStyle, getHeaderCellStyle } from '../../src/utils';
+import { bench } from './utils';
 
 // --- Helpers ---
 
 function createColumn(
   idx: number,
-  frozen = false,
+  frozen: ColumnFrozen = false,
   parent?: CalculatedColumnParent<unknown, unknown>
 ): CalculatedColumn<unknown> {
   return {
-    key: `col${idx}`,
     name: `Column ${idx}`,
+    key: `col${idx}`,
+    parent,
     idx,
     level: 0,
     width: 100,
     minWidth: 50,
     maxWidth: undefined,
+    cellClass: undefined,
+    headerCellClass: undefined,
+    summaryCellClass: undefined,
+    renderCell: () => null,
+    renderHeaderCell: () => null,
+    renderSummaryCell: undefined,
+    renderGroupCell: undefined,
+    renderEditCell: undefined,
+    editable: undefined,
+    colSpan: undefined,
+    getColSpan: () => 1,
+    frozen,
     resizable: true,
     sortable: true,
     draggable: false,
-    frozen,
-    parent,
-    renderCell: () => null,
-    renderHeaderCell: () => null
+    sortDescendingFirst: undefined,
+    editorOptions: undefined
   };
 }
 
@@ -50,7 +60,7 @@ describe('classnames', () => {
 
 describe('getCellClassname', () => {
   const column = createColumn(0);
-  const frozenColumn = createColumn(0, true);
+  const frozenColumn = createColumn(0, 'start');
 
   bench('non-frozen column', () => {
     getCellClassname(column);
@@ -68,14 +78,14 @@ describe('getCellClassname', () => {
 
 describe('getCellStyle', () => {
   const column = createColumn(3);
-  const frozenColumn = createColumn(1, true);
+  const frozenColumn = createColumn(1, 'start');
 
   bench('non-frozen column', () => {
-    getCellStyle(column);
+    getCellStyle(column, 1);
   });
 
   bench('frozen column', () => {
-    getCellStyle(frozenColumn);
+    getCellStyle(frozenColumn, 1);
   });
 
   bench('with colSpan', () => {

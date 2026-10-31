@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, userEvent } from 'vitest/browser';
+import { commands, page, server, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, type Column, type ColumnWidth, type ColumnWidths } from '../../../src';
 import { setup } from '../utils';
@@ -18,7 +18,7 @@ function getResizeHandle(name: string) {
 async function resize(columnName: string, resizeBy: number | readonly number[]) {
   await expect.element(getResizeHandle(columnName)).toBeInTheDocument();
 
-  await commands.resizeColumn('col2', resizeBy);
+  await commands.resizeColumn(columnName, resizeBy);
 }
 
 async function autoResize(columnName: string) {
@@ -72,7 +72,7 @@ test('should use the minWidth if specified when dragging the handle', async () =
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 100px' });
 });
 
-test('should resize column using keboard', async () => {
+test('should resize column using keyboard', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   expect(onColumnResize).not.toHaveBeenCalled();
@@ -101,7 +101,7 @@ test('should use the maxWidth if specified when resizing using keyboard', async 
   expect(onColumnResize).toHaveBeenCalledTimes(20);
 });
 
-test('should use the minWidth if specified resizing using keyboard', async () => {
+test('should use the minWidth if specified when resizing using keyboard', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({ columns, rows: [], onColumnResize });
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
@@ -112,7 +112,72 @@ test('should use the minWidth if specified resizing using keyboard', async () =>
   expect(onColumnResize).toHaveBeenCalledTimes(10);
 });
 
-test('should auto resize column when resize handle is double clicked', async () => {
+test('should call onColumnWidthsChange when the key is released after resizing using keyboard', async () => {
+  const onColumnWidthsChange = vi.fn();
+  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
+  await userEvent.click(page.getHeaderCell({ name: 'col2' }));
+
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  expect(onColumnWidthsChange).not.toHaveBeenCalled();
+
+  await userEvent.keyboard('{/ArrowRight}');
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
+  );
+  await userEvent.keyboard('{/Control}');
+  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
+});
+
+test('should end the keyboard resize when the header cell loses focus', async () => {
+  const onColumnWidthsChange = vi.fn();
+  await setup<Row, unknown>({ columns, rows: [], onColumnWidthsChange });
+  const headerCell = page.getHeaderCell({ name: 'col2' });
+
+  await userEvent.click(headerCell);
+  // keep the key pressed, so the column is still being resized
+  await userEvent.keyboard('{Control>}{ArrowRight>}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  expect(onColumnWidthsChange).not.toHaveBeenCalled();
+
+  (headerCell.element() as HTMLElement).blur();
+  expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
+    new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
+  );
+  await userEvent.keyboard('{/ArrowRight}{/Control}');
+  expect(onColumnWidthsChange).toHaveBeenCalledOnce();
+});
+
+test('should use the columnWidths prop again after resizing using keyboard', async () => {
+  function TestGrid() {
+    const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
+
+    return (
+      <>
+        <button type="button" onClick={() => setColumnWidths(new Map())}>
+          Reset widths
+        </button>
+        <DataGrid<Row>
+          columns={columns}
+          rows={[]}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={setColumnWidths}
+        />
+      </>
+    );
+  }
+
+  await page.render(<TestGrid />);
+
+  await userEvent.click(page.getHeaderCell({ name: 'col2' }));
+  await userEvent.keyboard('{Control>}{ArrowRight}{/Control}');
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
+  await userEvent.click(page.getByRole('button', { name: 'Reset widths' }));
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
+});
+
+test('should auto resize column when resize handle is double-clicked', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({
     columns,
@@ -126,15 +191,21 @@ test('should auto resize column when resize handle is double clicked', async () 
   });
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 200px' });
   await autoResize('col2');
-  await testGridTemplateColumns('100px 327.703px', '100px 327.833px', '100px 400px');
+  await testGridTemplateColumns({
+    chrome: '100px 327.703px',
+    firefox: '100px 327.833px',
+    firefoxCI: '100px 400px',
+    webkit: '100px 327.703125px',
+    webkitCI: '100px 400px'
+  });
   expect(onColumnResize).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining(columns[1]),
-    // Due to differences in text rendering between browsers the measured width can vary
+    // Due to differences in text rendering between browsers, the measured width can vary
     expect.toSatisfy(
       (width) =>
-        // Chrome and Firefox on windows
+        // Chrome and Firefox on Windows
         (width >= 327.7 && width <= 327.9) ||
-        // Firefox on CI
+        // Firefox/WebKit in CI
         width === 400
     )
   );
@@ -207,21 +278,29 @@ test('should remeasure flex columns when resizing a column', async () => {
     onColumnResize
   });
 
-  await testGridTemplateColumns('639.328px 639.328px 639.344px', '639.333px 639.333px 639.333px');
+  await testGridTemplateColumns({
+    chrome: '639.328px 639.328px 639.344px',
+    firefox: '639.333px 639.333px 639.333px',
+    webkit: '639.328125px 639.328125px 639.328125px'
+  });
   await autoResize('col1');
-  await testGridTemplateColumns(
-    '79.1406px 919.422px 919.438px',
-    '79.1667px 919.417px 919.417px',
-    '100.5px 908.75px 908.75px'
-  );
+  await testGridTemplateColumns({
+    chrome: '79.1406px 919.422px 919.438px',
+    firefox: '79.1667px 919.417px 919.417px',
+    firefoxCI: '100.5px 908.75px 908.75px',
+    webkit: '79.140625px 919.421875px 919.421875px',
+    webkitCI: '102.796875px 907.59375px 907.59375px'
+  });
   expect(onColumnResize).toHaveBeenCalledOnce();
   // onColumnResize is not called if width is not changed
   await autoResize('col1');
-  await testGridTemplateColumns(
-    '79.1406px 919.422px 919.438px',
-    '79.1667px 919.417px 919.417px',
-    '100.5px 908.75px 908.75px'
-  );
+  await testGridTemplateColumns({
+    chrome: '79.1406px 919.422px 919.438px',
+    firefox: '79.1667px 919.417px 919.417px',
+    firefoxCI: '100.5px 908.75px 908.75px',
+    webkit: '79.140625px 919.421875px 919.421875px',
+    webkitCI: '102.796875px 907.59375px 907.59375px'
+  });
   expect(onColumnResize).toHaveBeenCalledOnce();
 });
 
@@ -312,12 +391,24 @@ test('should use columnWidths and onColumnWidthsChange props when provided', asy
   );
 });
 
-async function testGridTemplateColumns(chrome: string, firefox: string, firefoxCI = firefox) {
-  const gridTemplateColumns = navigator.userAgent.includes('Chrome')
-    ? chrome
-    : __IS_CI__
-      ? firefoxCI
-      : firefox;
+async function testGridTemplateColumns(obj: {
+  chrome: string;
+  firefox: string;
+  firefoxCI?: string;
+  webkit: string;
+  webkitCI?: string;
+}) {
+  const { browser } = server;
+  const gridTemplateColumns =
+    browser === 'chromium'
+      ? obj.chrome
+      : browser === 'webkit'
+        ? import.meta.env.CI
+          ? (obj.webkitCI ?? obj.webkit)
+          : obj.webkit
+        : import.meta.env.CI
+          ? (obj.firefoxCI ?? obj.firefox)
+          : obj.firefox;
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns });
 }

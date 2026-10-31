@@ -1,26 +1,18 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
     "composite": true,
     "emitDeclarationOnly": true,
     "erasableSyntaxOnly": true,
     "exactOptionalPropertyTypes": true,
-    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["ESNext"],
-    "libReplacement": false,
-    "module": "esnext",
+    "lib": [],
     "moduleDetection": "force",
-    "moduleResolution": "bundler",
+    "noEmit": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "outDir": "./.cache/ts",
-    "pretty": true,
-    "strict": true,
+    "outDir": "./node_modules/.cache/ts",
     "target": "esnext",
-    "types": [],
-    "useUnknownInCatchVariables": true,
     "verbatimModuleSyntax": true
   }
 }

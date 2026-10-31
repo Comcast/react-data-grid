@@ -28,17 +28,18 @@ export function useColumnWidths<R, SR>(
     columnsCanFlex &&
     // there is enough space for columns to flex and the grid was resized
     gridWidth !== prevGridWidth;
-  let newTemplateColumns: string[] | undefined;
+  let newTemplateColumns = templateColumns;
   const columnsToMeasure: string[] = [];
 
   for (const { key, idx, width } of viewportColumns) {
     const columnWidth = columnWidths.get(key);
     if (key === columnToAutoResize?.key) {
-      newTemplateColumns ??= [...templateColumns];
-      newTemplateColumns[idx] =
+      newTemplateColumns = newTemplateColumns.with(
+        idx,
         columnToAutoResize.width === 'max-content'
           ? columnToAutoResize.width
-          : `${columnToAutoResize.width}px`;
+          : `${columnToAutoResize.width}px`
+      );
       columnsToMeasure.push(key);
     } else if (
       typeof width === 'string' &&
@@ -48,18 +49,20 @@ export function useColumnWidths<R, SR>(
         columnsToMeasureOnResize?.has(key) === true ||
         columnWidth === undefined)
     ) {
-      newTemplateColumns ??= [...templateColumns];
-      newTemplateColumns[idx] = width;
+      newTemplateColumns = newTemplateColumns.with(idx, width);
       columnsToMeasure.push(key);
     }
   }
 
-  const gridTemplateColumns = (newTemplateColumns ?? templateColumns).join(' ');
+  const gridTemplateColumns = newTemplateColumns.join(' ');
 
   useLayoutEffect(updateMeasuredAndResizedWidths);
 
   function updateMeasuredAndResizedWidths() {
-    setPrevGridWidth(gridWidth);
+    // React renders the grid again for a state update in a layout effect, even when the value is the same
+    if (prevGridWidth !== gridWidth) {
+      setPrevGridWidth(gridWidth);
+    }
     if (columnsToMeasure.length === 0) return;
 
     const newColumnWidths = new Map(columnWidths);
@@ -67,7 +70,9 @@ export function useColumnWidths<R, SR>(
 
     for (const key of columnsToMeasure) {
       const measuredWidth = measureColumnWidth(gridRef, key);
-      hasChanges ||= measuredWidth !== columnWidths.get(key)?.width;
+      if (measuredWidth !== columnWidths.get(key)?.width) {
+        hasChanges = true;
+      }
       if (measuredWidth === undefined) {
         newColumnWidths.delete(key);
       } else {

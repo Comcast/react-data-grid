@@ -1,7 +1,7 @@
-import { bench } from 'vitest';
 import { renderHook } from 'vitest-browser-react';
 
 import { useViewportRows } from '../../src/hooks/useViewportRows';
+import { bench } from './utils';
 
 // --- Data generation ---
 
@@ -19,7 +19,7 @@ function generateRows(count: number): Row[] {
 }
 
 const ROWS_100 = generateRows(100);
-const ROWS_1K = generateRows(1_000);
+const ROWS_1K = generateRows(1000);
 const ROWS_10K = generateRows(10_000);
 const ROWS_100K = generateRows(100_000);
 
@@ -145,7 +145,7 @@ describe('useViewportRows - variable row height', () => {
 
   bench('10,000 rows - scrolled to middle', async () => {
     // Approximate scroll position for middle of variable height rows
-    const scrollTop = 5_000 * 40;
+    const scrollTop = 5000 * 40;
     await renderHook(() =>
       useViewportRows({
         rows: ROWS_10K,
