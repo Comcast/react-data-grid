@@ -1,7 +1,8 @@
 import { page, userEvent } from 'vite-plus/test/browser';
 
+import { renderTextEditor } from '../../../src';
 import type { Column, ColumnFrozen, ColumnOrColumnGroup } from '../../../src';
-import { getCellsAtRowIndex, safeTab, scrollGrid, setup, validateCellPosition } from '../utils';
+import { getCellsAtRowIndex, scrollGrid, setup, validateCellPosition } from '../utils';
 
 const headerCells = page.getHeaderCell();
 
@@ -21,7 +22,7 @@ describe('colSpan', () => {
         colSpan(args) {
           if (args.type === 'ROW') {
             if (key === '2' && args.row === 2) return 3;
-            if (key === '4' && args.row === 4) return 6; // Will not work as colspan includes both frozen and regular columns
+            if (key === '4' && args.row === 4) return 6; // clamped to 1, as the 5th column is the last start-frozen column
             if (key === '0' && args.row === 5) return 5;
             if (key === `${colCount - 3}` && args.row === 8) return 3;
             if (key === '6' && args.row < 8) return 2;
@@ -86,12 +87,79 @@ describe('colSpan', () => {
     });
     await expect.element(row2.nth(5)).toHaveAttribute('aria-colindex', '9');
 
-    await expect.element(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
+    await expect.element(getCellsAtRowIndex(6)).toHaveLength(14); // colSpan 6 is clamped to 1
     await expect.element(getCellsAtRowIndex(7)).toHaveLength(10);
 
     // bottom summary row
     await expect.element(getCellsAtRowIndex(12)).toHaveLength(14);
     await expect.element(getCellsAtRowIndex(13)).toHaveLength(15);
+  });
+
+  it('should clamp spans to the start-frozen, unfrozen, or end-frozen columns', async () => {
+    const columns: readonly Column<number, number>[] = [
+      { key: 's1', name: 's1', frozen: 'start', colSpan: () => 3 },
+      { key: 's2', name: 's2', frozen: 'start' },
+      { key: 'u1', name: 'u1', colSpan: () => 4 },
+      { key: 'u2', name: 'u2' },
+      { key: 'u3', name: 'u3' },
+      { key: 'e1', name: 'e1', frozen: 'end', colSpan: () => 3 },
+      { key: 'e2', name: 'e2', frozen: 'end' }
+    ];
+    await setup({ columns, rows: [0], bottomSummaryRows: [0] });
+
+    // the header row, the row, and the summary row
+    for (const cells of [headerCells, getCellsAtRowIndex(0), getCellsAtRowIndex(1)]) {
+      await expect.element(cells).toHaveLength(3);
+      await expect.element(cells.nth(0)).toHaveAttribute('aria-colspan', '2');
+      await expect.element(cells.nth(1)).toHaveAttribute('aria-colindex', '3');
+      await expect.element(cells.nth(1)).toHaveAttribute('aria-colspan', '3');
+      await expect.element(cells.nth(2)).toHaveAttribute('aria-colindex', '6');
+      await expect.element(cells.nth(2)).toHaveAttribute('aria-colspan', '2');
+    }
+  });
+
+  it('should clamp spans to the last column', async () => {
+    const columns: readonly Column<number>[] = [
+      { key: 'col1', name: 'col1' },
+      { key: 'col2', name: 'col2', colSpan: () => 3 },
+      { key: 'col3', name: 'col3' }
+    ];
+    await setup({ columns, rows: [0] });
+
+    const cells = getCellsAtRowIndex(0);
+    await expect.element(cells).toHaveLength(2);
+    await expect.element(cells.nth(1)).toHaveAttribute('aria-colspan', '2');
+    await expect.element(cells.nth(1)).toHaveStyle({
+      gridColumnStart: '2',
+      gridColumnEnd: '4'
+    });
+  });
+
+  it('should span the editor like the cell', async () => {
+    interface Row {
+      col1: string;
+    }
+
+    const columns: readonly Column<Row>[] = [
+      {
+        key: 'col1',
+        name: 'col1',
+        colSpan: (args) => (args.type === 'ROW' ? 2 : undefined),
+        renderEditCell: renderTextEditor
+      },
+      { key: 'col2', name: 'col2' },
+      { key: 'col3', name: 'col3' }
+    ];
+    await setup({ columns, rows: [{ col1: 'value' }] });
+
+    await userEvent.dblClick(getCellsAtRowIndex(0).nth(0));
+    const editCell = page.getActiveCell();
+    await expect.element(editCell.getByRole('textbox')).toHaveFocus();
+    await expect.element(editCell).toHaveAttribute('aria-colspan', '2');
+    await expect.element(editCell).toHaveStyle({
+      gridColumnStart: '1',
+      gridColumnEnd: '3'
+    });
   });
 
   it('should navigate between merged cells', async () => {
@@ -145,18 +213,18 @@ describe('colSpan', () => {
     await validateCellPosition(0, 8);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(5, 8);
-    await safeTab(true);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
+    await userEvent.tab({ shift: true });
     await validateCellPosition(14, 7);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(0, 8);
     await userEvent.click(getCellsAtRowIndex(10).nth(11));
     await validateCellPosition(11, 11);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(12, 11);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(0, 12);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
     await validateCellPosition(12, 11);
 
     // bottom summary rows
@@ -218,7 +286,7 @@ describe('colSpan', () => {
 
     async function navigate(count: number, shift = false) {
       for (let i = 0; i < count; i++) {
-        await safeTab(shift);
+        await userEvent.tab({ shift });
       }
     }
   });

@@ -20,6 +20,7 @@ import {
   exportToPdf,
   formatCurrency,
   formatDate,
+  getRowKey,
   showModalRef
 } from '../utils';
 import { useDirection } from '../directionContext';
@@ -43,7 +44,7 @@ interface SummaryRow {
 
 interface Row {
   id: number;
-  title: string;
+  task: string;
   client: string;
   area: string;
   country: string;
@@ -71,7 +72,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     }
   },
   {
-    key: 'title',
+    key: 'task',
     name: 'Task',
     frozen: 'start',
     renderEditCell: renderTextEditor,
@@ -231,7 +232,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     renderCell({ row, onRowChange, tabIndex }) {
       return (
         <SelectCheckbox
-          value={row.available}
+          checked={row.available}
           onChange={() => {
             onRowChange({ ...row, available: !row.available });
           }}
@@ -244,10 +245,6 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     }
   }
 ];
-
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
 
 let countries: string[];
 
@@ -262,7 +259,7 @@ function createRows(): readonly Row[] {
 
     rows.push({
       id: i,
-      title: `Task #${i + 1}`,
+      task: `Task #${i + 1}`,
       client: faker.company.name(),
       area: faker.person.jobArea(),
       country,
@@ -292,7 +289,7 @@ function getComparator({ columnKey, direction }: SortColumn): Comparator {
 
   switch (columnKey) {
     case 'assignee':
-    case 'title':
+    case 'task':
     case 'client':
     case 'area':
     case 'country':
@@ -400,7 +397,7 @@ function CommonFeatures() {
       <DataGrid
         ref={gridRef}
         aria-label="Common Features Example"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={sortedRows}
         defaultColumnOptions={{

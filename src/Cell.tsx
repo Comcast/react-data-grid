@@ -8,6 +8,10 @@ import type { CellMouseEventHandler, RenderCellProps } from './types';
 const cellDraggedOver = css`
   @layer rdg.Cell {
     background-color: #ccccff;
+
+    @media (forced-colors: active) {
+      background-color: Mark;
+    }
   }
 `;
 
@@ -96,7 +100,7 @@ function Cell<R, SR>({
     <div
       role="gridcell"
       aria-colindex={column.idx + 1} // aria-colindex is 1-based
-      aria-colspan={colSpan}
+      aria-colspan={colSpan > 1 ? colSpan : undefined}
       aria-selected={isCellActive}
       aria-readonly={!isEditable || undefined}
       tabIndex={tabIndex}
