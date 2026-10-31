@@ -35,6 +35,15 @@ const cellEditing = css`
   }
 `;
 
+const editCell = css`
+  @layer rdg.EditCell {
+    /* forced colors mode replaces the editor's background with Canvas, even on a selected row */
+    @media (forced-colors: active) {
+      --rdg-selection-color: CanvasText;
+    }
+  }
+`;
+
 export default function EditCell<R, SR>({
   column,
   row,
@@ -179,6 +188,7 @@ export default function EditCell<R, SR>({
   const className = getCellClassname(
     column,
     'rdg-editor-container',
+    editCell,
     !column.editorOptions?.displayCellContent && cellEditing,
     typeof cellClass === 'function' ? cellClass(row) : cellClass
   );

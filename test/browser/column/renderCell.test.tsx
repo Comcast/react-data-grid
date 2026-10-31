@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { Activity, useLayoutEffect, useState } from 'react';
 import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderHeaderCell } from '../../../src';
 import type { CalculatedColumn, Column, RenderCellContentProps } from '../../../src';
-import { getCellsAtRowIndex, safeTab, setup } from '../utils';
+import { getCellsAtRowIndex, getRowKey, setup } from '../utils';
 
 const cells = page.getCell();
 
@@ -114,6 +114,144 @@ describe('Custom cell content renderer', () => {
     });
   });
 
+  it('should keep changes to other rows when a layout effect updates a row', async () => {
+    interface NameRow {
+      id: number;
+      name: string;
+      upperName: string;
+    }
+
+    function UpperName({ row, onRowChange }: RenderCellContentProps<NameRow>) {
+      const upperName = row.name.toUpperCase();
+
+      useLayoutEffect(() => {
+        if (row.upperName !== upperName) {
+          onRowChange({ ...row, upperName });
+        }
+      });
+
+      return row.upperName;
+    }
+
+    const columns: readonly Column<NameRow>[] = [
+      { key: 'name', name: 'Name' },
+      {
+        key: 'upperName',
+        name: 'Upper name',
+        renderCell(props) {
+          return <UpperName {...props} />;
+        }
+      }
+    ];
+
+    function Test() {
+      const [rows, setRows] = useState((): readonly NameRow[] => [
+        { id: 1, name: 'a', upperName: 'A' },
+        { id: 2, name: 'b', upperName: 'B' }
+      ]);
+
+      function renameRows() {
+        // only the first row's layout effect updates its row
+        setRows([
+          { ...rows[0], name: 'c' },
+          { ...rows[1], name: 'd', upperName: 'D' }
+        ]);
+      }
+
+      return (
+        <>
+          <button type="button" onClick={renameRows}>
+            Rename
+          </button>
+          <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
+        </>
+      );
+    }
+
+    await page.render(<Test />);
+    await userEvent.click(page.getByRole('button', { name: 'Rename' }));
+    await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('C');
+    await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('d');
+  });
+
+  it('should keep changes to other rows when a row is updated under a hidden Activity', async () => {
+    interface SaveRow {
+      id: number;
+      name: string;
+      saved: boolean;
+    }
+
+    // simulates a request that updates the row when it completes
+    let completeSave: (() => void) | undefined;
+
+    const columns: readonly Column<SaveRow>[] = [
+      { key: 'name', name: 'Name' },
+      {
+        key: 'save',
+        name: 'Save',
+        renderCell({ row, onRowChange }) {
+          if (row.saved) return 'Saved';
+
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                completeSave = () => {
+                  onRowChange({ ...row, saved: true });
+                };
+              }}
+            >
+              Save {row.name}
+            </button>
+          );
+        }
+      }
+    ];
+
+    function Test() {
+      const [rows, setRows] = useState((): readonly SaveRow[] => [
+        { id: 1, name: 'a', saved: false },
+        { id: 2, name: 'b', saved: false }
+      ]);
+      const [isHidden, setIsHidden] = useState(false);
+
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              setIsHidden(!isHidden);
+            }}
+          >
+            Toggle
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRows(rows.with(1, { ...rows[1], name: 'd' }));
+            }}
+          >
+            Rename
+          </button>
+          <Activity mode={isHidden ? 'hidden' : 'visible'}>
+            <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
+          </Activity>
+        </>
+      );
+    }
+
+    await page.render(<Test />);
+    await userEvent.click(page.getByRole('button', { name: 'Save a' }));
+    await userEvent.click(page.getByRole('button', { name: 'Toggle' }));
+    await userEvent.click(page.getByRole('button', { name: 'Rename' }));
+    // React renders hidden content at a lower priority
+    await expect.element(page.getCell({ name: 'd', includeHidden: true })).toBeInTheDocument();
+    completeSave!();
+    await userEvent.click(page.getByRole('button', { name: 'Toggle' }));
+    await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('Saved');
+    await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('d');
+  });
+
   it('should receive columns that all have the same properties in the same order', async () => {
     const calculatedColumns = new Map<string, CalculatedColumn<Row>>();
 
@@ -168,7 +306,7 @@ test('Focus child if it sets tabIndex', async () => {
   await userEvent.click(page.getByText('Text'));
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await expect.element(button1).not.toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '-1');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
@@ -176,7 +314,7 @@ test('Focus child if it sets tabIndex', async () => {
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await userEvent.click(button2);
   await expect.element(button2).toHaveFocus();
   // It is the user's responsibility to set the tabIndex on button2
@@ -208,12 +346,7 @@ test('Cell should not steal focus when the focus is outside the grid and the cel
         >
           Test
         </button>
-        <DataGrid
-          columns={columns}
-          rows={rows}
-          onRowsChange={setRows}
-          rowKeyGetter={(row) => row.id}
-        />
+        <DataGrid columns={columns} rows={rows} onRowsChange={setRows} getRowKey={getRowKey} />
       </>
     );
   }

@@ -8,6 +8,10 @@ import type { CellMouseEventHandler, RenderCellProps } from './types';
 const cellDraggedOver = css`
   @layer rdg.Cell {
     background-color: #ccccff;
+
+    @media (forced-colors: active) {
+      background-color: Mark;
+    }
   }
 `;
 
