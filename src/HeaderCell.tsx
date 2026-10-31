@@ -48,6 +48,12 @@ const cellDraggableClassname = 'rdg-cell-draggable';
 const cellDraggingOrOver = css`
   @layer rdg.HeaderCell {
     background-color: var(--rdg-header-draggable-background-color);
+
+    /* the background color is replaced in forced colors mode */
+    @media (forced-colors: active) {
+      outline: 2px dashed Highlight;
+      outline-offset: -2px;
+    }
   }
 `;
 

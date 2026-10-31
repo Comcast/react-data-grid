@@ -59,6 +59,11 @@ const cellDragHandle = css`
       border: 2px solid var(--rdg-selection-color);
       background-color: var(--rdg-background-color);
     }
+
+    /* keep the handle visible on both Canvas and SelectedItem backgrounds */
+    @media (forced-colors: active) {
+      outline: 1px solid Canvas;
+    }
   }
 `;
 
