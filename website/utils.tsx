@@ -1,3 +1,5 @@
+import type { Key } from 'react';
+
 const { language } = navigator;
 
 export const { compare } = new Intl.Collator(language, { numeric: true });
@@ -9,6 +11,10 @@ export const formatCurrency = new Intl.NumberFormat(language, {
 
 export function showModalRef(dialog: HTMLDialogElement | null) {
   dialog?.showModal();
+}
+
+export function getRowKey<K extends Key>(row: { readonly id: K }): K {
+  return row.id;
 }
 
 export function exportToCsv(gridEl: HTMLDivElement, fileName: string) {
