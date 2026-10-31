@@ -7,7 +7,6 @@ import type { Column, DataGridHandle, DataGridProps } from '../../../src';
 import {
   getCellsAtRowIndex,
   getRowWithCell,
-  safeTab,
   scrollGrid,
   testCount,
   validateCellPosition
@@ -31,7 +30,7 @@ describe('Editor', () => {
     await userEvent.dblClick(cell);
     await expect.element(col1Editor).toHaveValue(1);
     await userEvent.keyboard('2');
-    await safeTab();
+    await userEvent.tab();
     await expect.element(col1Editor).not.toBeInTheDocument();
     await expect.element(cell).toHaveTextContent('12');
   });
@@ -404,7 +403,7 @@ describe('Editor', () => {
       await validateCellPosition(1, 2);
       // When the position state is in edit mode on a summary cell, the grid renders no editor,
       // but it ignores navigation keys, so moving the active cell checks that the editor closed
-      await safeTab();
+      await userEvent.tab();
       await expect.element(page.getActiveCell()).toHaveFocus();
       await userEvent.keyboard('{arrowup}');
       await validateCellPosition(1, 1);
