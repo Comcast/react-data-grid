@@ -2,7 +2,6 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { Column } from '../../src';
-import { safeTab } from './utils';
 
 interface Row {
   col1: number;
@@ -173,7 +172,7 @@ describe('Events', () => {
     expect(onActivePositionChange).toHaveBeenCalledTimes(4);
 
     // Activated by Tab key
-    await safeTab();
+    await userEvent.tab();
     expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],

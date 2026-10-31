@@ -6,27 +6,19 @@ import type { CalculatedColumn, GroupRow } from './types';
 import { cellActiveClassname } from './style/cell';
 
 interface GroupCellProps<R, SR> {
-  id: string;
-  groupKey: unknown;
-  childRows: readonly R[];
-  toggleGroup: (expandedGroupId: unknown) => void;
-  isExpanded: boolean;
   column: CalculatedColumn<R, SR>;
   row: GroupRow<R>;
   isCellActive: boolean;
   isGroupByColumn: boolean;
   // Only the group-by column of the row's level renders the group cell and is clickable
   isLevelMatching: boolean;
+  toggleGroup: (expandedGroupId: string) => void;
 }
 
 function GroupCell<R, SR>({
-  id,
-  groupKey,
-  childRows,
-  isExpanded,
-  isCellActive,
   column,
   row,
+  isCellActive,
   isGroupByColumn,
   isLevelMatching,
   toggleGroup: toggleGroupWrapper
@@ -34,7 +26,7 @@ function GroupCell<R, SR>({
   const { tabIndex, childTabIndex, onFocus } = useRovingTabIndex(isCellActive);
 
   function toggleGroup() {
-    toggleGroupWrapper(id);
+    toggleGroupWrapper(row.id);
   }
 
   return (
@@ -56,11 +48,8 @@ function GroupCell<R, SR>({
     >
       {(!isGroupByColumn || isLevelMatching) &&
         column.renderGroupCell?.({
-          groupKey,
-          childRows,
           column,
           row,
-          isExpanded,
           tabIndex: childTabIndex,
           toggleGroup
         })}
