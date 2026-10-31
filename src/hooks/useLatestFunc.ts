@@ -1,20 +1,31 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useInsertionEffect, useRef } from 'react';
 
 import type { Maybe } from '../types';
 
-// https://reactjs.org/docs/hooks-faq.html#what-can-i-do-if-my-effect-dependencies-change-too-often
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useLatestFunc<T extends Maybe<(...args: any[]) => any>>(fn: T): T {
+// Returns a function with a stable identity that calls the latest `fn`,
+// so the memoized components and contexts that receive it don't re-render when `fn` changes.
+// Neither React Compiler nor `useEffectEvent` provides this guarantee.
+// Insertion effects run before all layout effects, including those of child components,
+// and also run under `<Activity mode="hidden">`, where layout effects don't.
+
+export function useLatestFunc<Args extends unknown[]>(
+  fn: (...args: Args) => void
+): (...args: Args) => void;
+
+export function useLatestFunc<Args extends unknown[]>(
+  fn: Maybe<(...args: Args) => void>
+): Maybe<(...args: Args) => void>;
+
+export function useLatestFunc<Args extends unknown[]>(fn: Maybe<(...args: Args) => void>) {
   const ref = useRef(fn);
 
-  useLayoutEffect(() => {
+  useInsertionEffect(() => {
     ref.current = fn;
   });
 
-  const callbackFn = useCallback((...args: Parameters<NonNullable<T>>) => {
+  const callbackFn = useCallback((...args: Args): void => {
     ref.current!(...args);
   }, []);
 
-  // @ts-expect-error
   return fn ? callbackFn : fn;
 }

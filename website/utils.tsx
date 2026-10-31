@@ -1,15 +1,34 @@
+import type { Key } from 'react';
+
+const { language } = navigator;
+
+export const { compare } = new Intl.Collator(language, { numeric: true });
+export const formatDate = new Intl.DateTimeFormat(language).format;
+export const formatCurrency = new Intl.NumberFormat(language, {
+  style: 'currency',
+  currency: 'eur'
+}).format;
+
+export function showModalRef(dialog: HTMLDialogElement | null) {
+  dialog?.showModal();
+}
+
+export function getRowKey<K extends Key>(row: { readonly id: K }): K {
+  return row.id;
+}
+
 export function exportToCsv(gridEl: HTMLDivElement, fileName: string) {
-  const { head, body, foot } = getGridContent(gridEl);
-  const content = [...head, ...body, ...foot]
-    .map((cells) => cells.map(serialiseCellValue).join(','))
+  // TODO: remove both toArray calls https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/join
+  const content = getGridContent(gridEl)
+    .map((row) => row.cells.map(serializeCellValue).toArray().join(','))
+    .toArray()
     .join('\n');
 
   downloadFile(fileName, new Blob([content], { type: 'text/csv;charset=utf-8;' }));
 }
 
 export async function exportToPdf(gridEl: HTMLDivElement, fileName: string) {
-  const { head, body, foot } = getGridContent(gridEl);
-  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+  const [{ jsPDF }, { autoTable }] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable')
   ]);
@@ -17,6 +36,21 @@ export async function exportToPdf(gridEl: HTMLDivElement, fileName: string) {
     orientation: 'l',
     unit: 'px'
   });
+
+  const head: string[][] = [];
+  const body: string[][] = [];
+  const foot: string[][] = [];
+
+  for (const row of getGridContent(gridEl)) {
+    const cells = row.cells.toArray();
+    if (row.type === 'body') {
+      body.push(cells);
+    } else if (row.type === 'head') {
+      head.push(cells);
+    } else {
+      foot.push(cells);
+    }
+  }
 
   autoTable(doc, {
     head,
@@ -30,27 +64,26 @@ export async function exportToPdf(gridEl: HTMLDivElement, fileName: string) {
 }
 
 function getGridContent(gridEl: HTMLDivElement) {
-  return {
-    head: getRows('.rdg-header-row'),
-    body: getRows('.rdg-row:not(.rdg-summary-row)'),
-    foot: getRows('.rdg-summary-row')
-  };
+  return Iterator.from(gridEl.children)
+    .filter((child) => child.matches('[role="row"]:not(.rdg-top-summary-row)'))
+    .map((row) => {
+      const cells = Iterator.from(row.children).map((cell) => cell.textContent);
 
-  function getRows(selector: string) {
-    return Array.from(gridEl.querySelectorAll<HTMLDivElement>(selector)).map((gridRow) => {
-      return Array.from(gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell')).map(
-        (gridCell) => gridCell.innerText
-      );
+      if (row.classList.contains('rdg-header-row')) {
+        return { type: 'head', cells } as const;
+      }
+
+      if (row.classList.contains('rdg-bottom-summary-row')) {
+        return { type: 'foot', cells } as const;
+      }
+
+      return { type: 'body', cells } as const;
     });
-  }
 }
 
-function serialiseCellValue(value: unknown) {
-  if (typeof value === 'string') {
-    const formattedValue = value.replace(/"/g, '""');
-    return formattedValue.includes(',') ? `"${formattedValue}"` : formattedValue;
-  }
-  return value;
+function serializeCellValue(value: string) {
+  const formattedValue = value.replaceAll('"', '""');
+  return formattedValue.includes(',') ? `"${formattedValue}"` : formattedValue;
 }
 
 function downloadFile(fileName: string, data: Blob) {

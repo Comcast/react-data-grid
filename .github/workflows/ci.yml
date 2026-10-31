@@ -1,65 +1,146 @@
 name: CI
+
 on:
   push:
     branches:
       - main
   pull_request:
 
+permissions: {}
+
+cache-mode: none
+
+env:
+  FORCE_COLOR: 1
+
+# unlike the default `bash -e`, `shell: bash` also sets `pipefail`, so a failing command in a pipe fails the step
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read # check out the repository
+
+    # restore and save the Vite Task cache
+    cache-mode: write
+
+    outputs:
+      # a re-run keeps the artifacts of previous attempts, and `deploy-pages` fails when
+      # several share a name, so each attempt uploads the website under its own name:
+      # https://github.com/actions/deploy-pages/issues/338
+      pages-artifact: github-pages-${{ github.run_attempt }}
+      is-head: ${{ steps.check-head.outputs.is-head }}
+
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 25
-          check-latest: true
+          persist-credentials: false
 
-      - name: Install dependencies
-        run: npm i
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          cache: true
+          cache-save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          run-install: false
 
-      - name: Typecheck
-        run: node --run typecheck
+      - run: vp install --frozen-lockfile
 
-      - name: ESLint
-        run: node --run eslint
+      # `npm ci` doesn't catch every mismatch between package.json and package-lock.json,
+      # e.g., Dependabot rewriting the `beta` dist-tag to `*` in the lockfile,
+      # so update the lockfile without installing anything and fail if either file changed
+      - name: Check that package-lock.json is up to date
+        run: |
+          vp install --lockfile-only --ignore-scripts
+          git diff --exit-code -- package.json package-lock.json
 
-      - name: Oxfmt
-        run: node --run format:check
+      # https://viteplus.dev/guide/github-actions-cache
+      - name: Restore Vite Task cache
+        id: vite-task-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.vite/task-cache
+          key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: vite-task-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Bundle
-        run: node --run build
+      # Vite Task compares directory listings with those recorded after the cached run,
+      # so directories created during the run must exist upfront for the cache to hit:
+      # https://github.com/voidzero-dev/vite-task/issues/504
+      - run: mkdir lib coverage node_modules/.vite-temp
 
-      - name: Build website
-        run: node --run build:website
+      - run: vp run -v ci
+        timeout-minutes: 6
 
-      - name: Install Playwright Browsers
-        run: npx playwright install chromium firefox
+      - name: Save Vite Task cache
+        if: success()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.vite/task-cache
+          key: ${{ steps.vite-task-cache.outputs.cache-primary-key }}
 
-      - name: Test
-        run: node --run test
-        timeout-minutes: 4
-
-      - name: Visual regression test
-        run: node --run visual
+      - name: Upload test failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-artifacts
+          path: .vitest/attachments/**
+          # `.vitest` is a hidden directory
+          include-hidden-files: true
+          if-no-files-found: ignore
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Deploy gh-pages
+      # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
+      # and checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit;
+      # the repository is public, so `git ls-remote` reads the head of main without a token
+      - name: Check that the commit is still the head of main
+        id: check-head
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          git config --global user.email 'action@github.com'
-          git config --global user.name 'GitHub Action'
-          git fetch origin gh-pages
-          git worktree add gh-pages gh-pages
-          cd gh-pages
-          git rm -r .
-          mv ../dist/* .
-          touch .nojekyll
-          git add .
-          git commit -m "gh-pages deployment" || echo "Nothing to commit"
-          git push -f https://comcast:${{secrets.GITHUB_TOKEN}}@github.com/Comcast/react-data-grid.git
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo 'is-head=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipping the deployment, main is now at $head"
+          fi
+
+      - name: Upload website
+        if: steps.check-head.outputs.is-head == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          name: github-pages-${{ github.run_attempt }}
+          path: dist
+
+  deploy:
+    if: needs.test.outputs.is-head == 'true'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      pages: write # deploy to GitHub Pages
+      id-token: write # verify the deployment originates from this workflow
+
+    # one deployment at a time, never cancel one midway,
+    # and queue the others instead of canceling the pending one
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+      queue: max
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          # when only this job is re-run, this still names the earlier attempt's artifact
+          artifact_name: ${{ needs.test.outputs.pages-artifact }}

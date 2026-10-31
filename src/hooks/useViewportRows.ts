@@ -28,8 +28,8 @@ export function useViewportRows<R>({
       };
     }
 
-    // Calcule the height of all the rows upfront. This can cause performance issues
-    // and we can consider using a similar approach as react-window
+    // Calculate the height of all the rows upfront. This can cause performance issues,
+    // and we can consider using a similar approach to react-window
     // https://github.com/bvaughn/react-window/blob/b0a470cc264e9100afcaa1b78ed59d88f7914ad4/src/VariableSizeList.js#L68
     let totalRowHeight = 0;
     let gridTemplateRows = '';
@@ -50,7 +50,7 @@ export function useViewportRows<R>({
         repeatCount = 1;
       } else if (currentHeight === currentRowHeight) {
         // If the current row height is the same as the previous one, increment the repeat count
-        repeatCount++;
+        repeatCount += 1;
       } else {
         if (repeatCount > 1) {
           gridTemplateRows += `repeat(${repeatCount}, ${currentHeight}px) `;
@@ -73,15 +73,18 @@ export function useViewportRows<R>({
       return position;
     });
 
-    const validateRowIdx = (rowIdx: number) => {
-      return max(0, min(rows.length - 1, rowIdx));
+    // Header and summary rows use the position of the closest row,
+    // or an empty position at the top when there are no rows
+    const getRowPosition = (rowIdx: number) => {
+      if (rows.length === 0) return { top: 0, height: 0 };
+      return rowPositions[max(0, min(rows.length - 1, rowIdx))];
     };
 
     return {
       totalRowHeight,
       gridTemplateRows,
-      getRowTop: (rowIdx: number) => rowPositions[validateRowIdx(rowIdx)].top,
-      getRowHeight: (rowIdx: number) => rowPositions[validateRowIdx(rowIdx)].height,
+      getRowTop: (rowIdx: number) => getRowPosition(rowIdx).top,
+      getRowHeight: (rowIdx: number) => getRowPosition(rowIdx).height,
       findRowIdx(offset: number) {
         let start = 0;
         let end = rowPositions.length - 1;

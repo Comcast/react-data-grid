@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import type { Column, DataGridHandle } from '../../src';
 import { setup } from './utils';
@@ -60,25 +60,71 @@ test('scrollToCell', async () => {
   await validateCellVisibility('40×1', false);
   await validateCellVisibility('40×30', true);
 
-  // should not scroll if scroll to column is frozen
+  // should not scroll if the column to scroll to is frozen
   ref.current!.scrollToCell({ idx: 2 });
+  await nextFrame();
   await validateCellVisibility('40×30', true);
 
-  // should not scroll if rowIdx is header row
+  // should not scroll if idx is out of bounds
   ref.current!.scrollToCell({ idx: -1 });
+  await nextFrame();
   await validateCellVisibility('40×30', true);
-
-  // should not scroll if rowIdx is summary row
   ref.current!.scrollToCell({ idx: 50 });
+  await nextFrame();
   await validateCellVisibility('40×30', true);
 
-  // should not scroll if position is out of bound
+  // should not scroll if rowIdx is the header row
+  ref.current!.scrollToCell({ rowIdx: -3 });
+  await nextFrame();
+  await validateCellVisibility('40×30', true);
+
+  // should not scroll if rowIdx is a summary row
+  ref.current!.scrollToCell({ rowIdx: -1 });
+  await nextFrame();
+  await validateCellVisibility('40×30', true);
+
+  // should not scroll if position is out of bounds
   ref.current!.scrollToCell({ idx: 60, rowIdx: 60 });
+  await nextFrame();
   await validateCellVisibility('40×30', true);
 
-  // should not scroll vertically when scrolling to summary row
-  ref.current!.scrollToCell({ idx: 49, rowIdx: 51 });
+  // should not scroll vertically when scrolling to a summary row
+  ref.current!.scrollToCell({ idx: 49, rowIdx: -1 });
+  await nextFrame();
   await validateCellVisibility('49×30', true);
+});
+
+test('scrollToCell with end-frozen columns', async () => {
+  const ref = createRef<DataGridHandle>();
+  const endFrozenColumns: Column<number, number>[] = columns.map((column, i) => ({
+    ...column,
+    frozen: i < 5 ? true : i >= 48 ? 'end' : false
+  }));
+
+  await setup({
+    ref,
+    columns: endFrozenColumns,
+    rows,
+    topSummaryRows: summaryRows,
+    rowHeight: 60
+  });
+
+  // end-frozen columns are always visible, a far-right unfrozen column is not
+  await validateCellVisibility('48×0', true);
+  await validateCellVisibility('49×0', true);
+  await validateCellVisibility('40×0', false);
+
+  // should not scroll when scrolling to an end-frozen column
+  ref.current!.scrollToCell({ idx: 48 });
+  await validateCellVisibility('0×0', true);
+  await validateCellVisibility('40×0', false);
+  ref.current!.scrollToCell({ idx: 49 });
+  await validateCellVisibility('0×0', true);
+  await validateCellVisibility('40×0', false);
+
+  // should still scroll to an unfrozen column
+  ref.current!.scrollToCell({ idx: 40 });
+  await validateCellVisibility('40×0', true);
 });
 
 function validateCellVisibility(name: string, isVisible: boolean) {
@@ -89,4 +135,9 @@ function validateCellVisibility(name: string, isVisible: boolean) {
   }
 
   return expect.element(cell).not.toBeInTheDocument();
+}
+
+// `scrollToCell` renders asynchronously, so wait before checking that the grid did not scroll
+function nextFrame() {
+  return new Promise(requestAnimationFrame);
 }

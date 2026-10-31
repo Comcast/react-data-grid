@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
-import { safeTab } from './utils';
 
 interface Row {
   col: string;
@@ -94,14 +93,14 @@ test('should call onCellPaste on cell paste', async () => {
   );
 });
 
-test('should not allow paste on readonly cells', async () => {
+test('should not allow paste on read-only cells', async () => {
   await setup();
   await userEvent.click(page.getRow({ index: 2 }).getCell({ index: 0 }));
   await userEvent.paste();
   expect(onCellPasteSpy).not.toHaveBeenCalled();
 });
 
-test('should allow copying a readonly cell', async () => {
+test('should allow copying a read-only cell', async () => {
   await setup();
   await userEvent.click(page.getRow({ index: 2 }).getCell({ index: 0 }));
   await userEvent.copy();
@@ -116,7 +115,7 @@ test('should allow copying a readonly cell', async () => {
 
 test('should not allow copy/paste on header or summary cells', async () => {
   await setup();
-  await safeTab();
+  await userEvent.tab();
   await userEvent.copy();
   expect(onCellCopySpy).not.toHaveBeenCalled();
   await userEvent.paste();

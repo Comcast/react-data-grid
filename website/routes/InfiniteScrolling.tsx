@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/InfiniteScrolling')({
@@ -28,10 +29,6 @@ interface Row {
   title: string;
   firstName: string;
   lastName: string;
-}
-
-function rowKeyGetter(row: Row) {
-  return row.id;
 }
 
 const columns: readonly Column<Row>[] = [
@@ -96,17 +93,18 @@ function loadMoreRows(newRowsCount: number, length: number): Promise<Row[]> {
 function InfiniteScrolling() {
   const direction = useDirection();
   const [rows, setRows] = useState(() => createRows(50));
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleScroll(event: React.UIEvent<HTMLDivElement>) {
-    if (isLoading || !isAtBottom(event)) return;
+  function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+    if (isPending || !isAtBottom(event)) return;
 
-    setIsLoading(true);
-
-    const newRows = await loadMoreRows(50, rows.length);
-
-    setRows([...rows, ...newRows]);
-    setIsLoading(false);
+    startTransition(async () => {
+      const newRows = await loadMoreRows(50, rows.length);
+      // state updates after `await` must be wrapped in another transition
+      startTransition(() => {
+        setRows([...rows, ...newRows]);
+      });
+    });
   }
 
   return (
@@ -115,14 +113,14 @@ function InfiniteScrolling() {
         aria-label="Infinite Scrolling Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         onRowsChange={setRows}
         rowHeight={30}
         onScroll={handleScroll}
         className="fill-grid"
         direction={direction}
       />
-      {isLoading && <div className={loadMoreRowsClassname}>Loading more rows...</div>}
+      {isPending && <div className={loadMoreRowsClassname}>Loading more rows...</div>}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { createPortal, flushSync } from 'react-dom';
+import { flushSync } from 'react-dom';
 import { faker } from '@faker-js/faker';
 import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
@@ -7,15 +7,22 @@ import { css } from 'ecij';
 import {
   DataGrid,
   renderTextEditor,
-  SelectCellFormatter,
+  SelectCheckbox,
   SelectColumn,
   type Column,
   type DataGridHandle,
-  type Direction,
   type SortColumn
 } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
-import { exportToCsv, exportToPdf } from '../utils';
+import {
+  compare,
+  exportToCsv,
+  exportToPdf,
+  formatCurrency,
+  formatDate,
+  getRowKey,
+  showModalRef
+} from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CommonFeatures')({
@@ -29,31 +36,6 @@ const toolbarClassname = css`
   margin-block-end: 8px;
 `;
 
-const dialogContainerClassname = css`
-  position: absolute;
-  inset: 0;
-  display: flex;
-  place-items: center;
-  background: rgb(0 0 0 / 10%);
-
-  > dialog {
-    width: 300px;
-    > input {
-      width: 100%;
-    }
-
-    > menu {
-      text-align: end;
-    }
-  }
-`;
-
-const dateFormatter = new Intl.DateTimeFormat(navigator.language);
-const currencyFormatter = new Intl.NumberFormat(navigator.language, {
-  style: 'currency',
-  currency: 'eur'
-});
-
 interface SummaryRow {
   id: string;
   totalCount: number;
@@ -62,7 +44,7 @@ interface SummaryRow {
 
 interface Row {
   id: number;
-  title: string;
+  task: string;
   client: string;
   area: string;
   country: string;
@@ -78,176 +60,193 @@ interface Row {
   available: boolean;
 }
 
-function getColumns(
-  countries: readonly string[],
-  direction: Direction
-): readonly Column<Row, SummaryRow>[] {
-  return [
-    SelectColumn,
-    {
-      key: 'id',
-      name: 'ID',
-      frozen: true,
-      resizable: false,
-      renderSummaryCell() {
-        return <strong>Total</strong>;
-      }
-    },
-    {
-      key: 'title',
-      name: 'Task',
-      frozen: true,
-      renderEditCell: renderTextEditor,
-      renderSummaryCell({ row }) {
-        return `${row.totalCount} records`;
-      }
-    },
-    {
-      key: 'client',
-      name: 'Client',
-      width: 'max-content',
-      draggable: true,
-      renderEditCell: renderTextEditor
-    },
-    {
-      key: 'area',
-      name: 'Area',
-      renderEditCell: renderTextEditor
-    },
-    {
-      key: 'country',
-      name: 'Country',
-      renderEditCell: (p) => (
-        <select
-          autoFocus
-          className={textEditorClassname}
-          value={p.row.country}
-          onChange={(e) => p.onRowChange({ ...p.row, country: e.target.value }, true)}
-        >
-          {countries.map((country) => (
-            <option key={country}>{country}</option>
-          ))}
-        </select>
-      )
-    },
-    {
-      key: 'contact',
-      name: 'Contact',
-      renderEditCell: renderTextEditor
-    },
-    {
-      key: 'assignee',
-      name: 'Assignee',
-      renderEditCell: renderTextEditor
-    },
-    {
-      key: 'progress',
-      name: 'Completion',
-      renderCell(props) {
-        const value = props.row.progress;
-        return (
-          <>
-            <progress max={100} value={value} style={{ inlineSize: 50 }} /> {Math.round(value)}%
-          </>
-        );
-      },
-      renderEditCell({ row, onRowChange, onClose }) {
-        return createPortal(
-          <div
-            dir={direction}
-            className={dialogContainerClassname}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                onClose();
-              }
-            }}
-          >
-            <dialog open>
-              <input
-                autoFocus
-                type="range"
-                min="0"
-                max="100"
-                value={row.progress}
-                onChange={(e) => onRowChange({ ...row, progress: e.target.valueAsNumber })}
-              />
-              <menu>
-                <button type="button" onClick={() => onClose()}>
-                  Cancel
-                </button>
-                <button type="button" onClick={() => onClose(true)}>
-                  Save
-                </button>
-              </menu>
-            </dialog>
-          </div>,
-          document.body
-        );
-      },
-      editorOptions: {
-        displayCellContent: true
-      }
-    },
-    {
-      key: 'startTimestamp',
-      name: 'Start date',
-      renderCell(props) {
-        return dateFormatter.format(props.row.startTimestamp);
-      }
-    },
-    {
-      key: 'endTimestamp',
-      name: 'Deadline',
-      renderCell(props) {
-        return dateFormatter.format(props.row.endTimestamp);
-      }
-    },
-    {
-      key: 'budget',
-      name: 'Budget',
-      renderCell(props) {
-        return currencyFormatter.format(props.row.budget);
-      }
-    },
-    {
-      key: 'transaction',
-      name: 'Transaction type'
-    },
-    {
-      key: 'account',
-      name: 'Account'
-    },
-    {
-      key: 'version',
-      name: 'Version',
-      renderEditCell: renderTextEditor
-    },
-    {
-      key: 'available',
-      name: 'Available',
-      renderCell({ row, onRowChange, tabIndex }) {
-        return (
-          <SelectCellFormatter
-            value={row.available}
-            onChange={() => {
-              onRowChange({ ...row, available: !row.available });
-            }}
-            tabIndex={tabIndex}
-          />
-        );
-      },
-      renderSummaryCell({ row: { yesCount, totalCount } }) {
-        return `${Math.floor((100 * yesCount) / totalCount)}% ✔️`;
-      }
+const columns: readonly Column<Row, SummaryRow>[] = [
+  SelectColumn,
+  {
+    key: 'id',
+    name: 'ID',
+    frozen: true,
+    resizable: false,
+    renderSummaryCell() {
+      return <strong>Total</strong>;
     }
-  ];
-}
+  },
+  {
+    key: 'task',
+    name: 'Task',
+    frozen: 'start',
+    renderEditCell: renderTextEditor,
+    renderSummaryCell({ row }) {
+      return `${row.totalCount} records`;
+    }
+  },
+  {
+    key: 'client',
+    name: 'Client',
+    width: 'max-content',
+    draggable: true,
+    renderEditCell: renderTextEditor
+  },
+  {
+    key: 'area',
+    name: 'Area',
+    renderEditCell: renderTextEditor
+  },
+  {
+    key: 'country',
+    name: 'Country',
+    renderEditCell: (p) => (
+      <select
+        autoFocus
+        className={textEditorClassname}
+        value={p.row.country}
+        onChange={(e) => p.onRowChange({ ...p.row, country: e.target.value }, true)}
+        onFocus={(event) => {
+          try {
+            event.target.showPicker();
+          } catch {
+            // showPicker() throws without transient user activation
+          }
+        }}
+      >
+        {countries.map((country) => (
+          <option key={country}>{country}</option>
+        ))}
+      </select>
+    )
+  },
+  {
+    key: 'contact',
+    name: 'Contact',
+    renderEditCell: renderTextEditor
+  },
+  {
+    key: 'assignee',
+    name: 'Assignee',
+    renderEditCell: renderTextEditor
+  },
+  {
+    key: 'progress',
+    name: 'Completion',
+    renderCell(props) {
+      const value = props.row.progress;
+      return (
+        <>
+          <progress max={100} value={value} style={{ inlineSize: 50 }} /> {Math.round(value)}%
+        </>
+      );
+    },
+    renderEditCell({ row, onRowChange, onClose }) {
+      const dialogId = 'edit-progress-dialog';
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
+      return (
+        <dialog
+          ref={showModalRef}
+          id={dialogId}
+          className={css`
+            /* don't show the closed dialog until the editor unmounts */
+            &:modal {
+              display: flex;
+              flex-direction: column;
+              width: 300px;
+              gap: 16px;
+              padding: 16px;
+            }
+          `}
+          closedby="any"
+          onClose={() => onClose()}
+        >
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={row.progress}
+            onChange={(e) => onRowChange({ ...row, progress: e.target.valueAsNumber })}
+          />
+          <menu
+            className={css`
+              list-style: none;
+              display: flex;
+              justify-content: end;
+              gap: 8px;
+              margin: 0;
+              padding: 0;
+            `}
+          >
+            <li>
+              <button type="button" command="close" commandfor={dialogId}>
+                Cancel
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={() => onClose(true)}>
+                Save
+              </button>
+            </li>
+          </menu>
+        </dialog>
+      );
+    },
+    editorOptions: {
+      displayCellContent: true
+    }
+  },
+  {
+    key: 'startTimestamp',
+    name: 'Start Date',
+    renderCell(props) {
+      return formatDate(props.row.startTimestamp);
+    }
+  },
+  {
+    key: 'endTimestamp',
+    name: 'Deadline',
+    renderCell(props) {
+      return formatDate(props.row.endTimestamp);
+    }
+  },
+  {
+    key: 'budget',
+    name: 'Budget',
+    renderCell(props) {
+      return formatCurrency(props.row.budget);
+    }
+  },
+  {
+    key: 'transaction',
+    name: 'Transaction Type'
+  },
+  {
+    key: 'account',
+    name: 'Account'
+  },
+  {
+    key: 'version',
+    name: 'Version',
+    renderEditCell: renderTextEditor
+  },
+  {
+    key: 'available',
+    name: 'Available',
+    frozen: 'end',
+    renderCell({ row, onRowChange, tabIndex }) {
+      return (
+        <SelectCheckbox
+          checked={row.available}
+          onChange={() => {
+            onRowChange({ ...row, available: !row.available });
+          }}
+          tabIndex={tabIndex}
+        />
+      );
+    },
+    renderSummaryCell({ row: { yesCount, totalCount } }) {
+      return `${Math.floor((100 * yesCount) / totalCount)}% ✔️`;
+    }
+  }
+];
 
-let countries: string[] = [];
+let countries: string[];
 
 function createRows(): readonly Row[] {
   const now = Date.now();
@@ -260,7 +259,7 @@ function createRows(): readonly Row[] {
 
     rows.push({
       id: i,
-      title: `Task #${i + 1}`,
+      task: `Task #${i + 1}`,
       client: faker.company.name(),
       area: faker.person.jobArea(),
       country,
@@ -269,7 +268,7 @@ function createRows(): readonly Row[] {
       progress: Math.random() * 100,
       startTimestamp: now - Math.round(Math.random() * 1e10),
       endTimestamp: now + Math.round(Math.random() * 1e10),
-      budget: 500 + Math.random() * 10500,
+      budget: 500 + Math.random() * 10_500,
       transaction: faker.finance.transactionType(),
       account: faker.finance.iban(),
       version: faker.system.semver(),
@@ -277,17 +276,20 @@ function createRows(): readonly Row[] {
     });
   }
 
-  countries = [...countrySet].sort(new Intl.Collator().compare);
+  countries = [...countrySet];
+  countries.sort(compare);
 
   return rows;
 }
 
 type Comparator = (a: Row, b: Row) => number;
 
-function getComparator(sortColumn: string): Comparator {
-  switch (sortColumn) {
+function getComparator({ columnKey, direction }: SortColumn): Comparator {
+  let sortFn: Comparator;
+
+  switch (columnKey) {
     case 'assignee':
-    case 'title':
+    case 'task':
     case 'client':
     case 'area':
     case 'country':
@@ -295,24 +297,33 @@ function getComparator(sortColumn: string): Comparator {
     case 'transaction':
     case 'account':
     case 'version':
-      return (a, b) => {
-        return a[sortColumn].localeCompare(b[sortColumn]);
+      sortFn = (a, b) => {
+        return compare(a[columnKey], b[columnKey]);
       };
+      break;
     case 'available':
-      return (a, b) => {
-        return a[sortColumn] === b[sortColumn] ? 0 : a[sortColumn] ? 1 : -1;
+      sortFn = (a, b) => {
+        return a[columnKey] === b[columnKey] ? 0 : a[columnKey] ? 1 : -1;
       };
+      break;
     case 'id':
     case 'progress':
     case 'startTimestamp':
     case 'endTimestamp':
     case 'budget':
-      return (a, b) => {
-        return a[sortColumn] - b[sortColumn];
+      sortFn = (a, b) => {
+        return a[columnKey] - b[columnKey];
       };
+      break;
     default:
-      throw new Error(`unsupported sortColumn: "${sortColumn}"`);
+      throw new Error(`unsupported columnKey: "${columnKey}"`);
   }
+
+  if (direction === 'DESC') {
+    return (a, b) => sortFn(b, a);
+  }
+
+  return sortFn;
 }
 
 function CommonFeatures() {
@@ -322,7 +333,6 @@ function CommonFeatures() {
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
   const [isExporting, setIsExporting] = useState(false);
   const gridRef = useRef<DataGridHandle>(null);
-  const columns = useMemo(() => getColumns(countries, direction), [direction]);
 
   const summaryRows = useMemo((): readonly SummaryRow[] => {
     return [
@@ -337,12 +347,13 @@ function CommonFeatures() {
   const sortedRows = useMemo((): readonly Row[] => {
     if (sortColumns.length === 0) return rows;
 
+    const comparators = sortColumns.map(getComparator);
+
     return rows.toSorted((a, b) => {
-      for (const sort of sortColumns) {
-        const comparator = getComparator(sort.columnKey);
+      for (const comparator of comparators) {
         const compResult = comparator(a, b);
         if (compResult !== 0) {
-          return sort.direction === 'ASC' ? compResult : -compResult;
+          return compResult;
         }
       }
       return 0;
@@ -386,7 +397,7 @@ function CommonFeatures() {
       <DataGrid
         ref={gridRef}
         aria-label="Common Features Example"
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         columns={columns}
         rows={sortedRows}
         defaultColumnOptions={{

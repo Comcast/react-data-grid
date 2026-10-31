@@ -1,4 +1,4 @@
-import { page } from 'vitest/browser';
+import { page } from 'vite-plus/test/browser';
 
 import type { Column } from '../../src';
 import { headerRowClassname } from '../../src/HeaderRow';
@@ -28,7 +28,5 @@ test('headerRowClass is a string', async () => {
     rows,
     headerRowClass: 'my-header-row'
   });
-  await expect
-    .element(headerRow)
-    .toHaveClass(`${headerRowClassname} my-header-row`, { exact: true });
+  await expect.element(headerRow).toHaveClass(headerRowClassname, 'my-header-row', { exact: true });
 });

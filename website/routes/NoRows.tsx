@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/NoRows')({
@@ -13,16 +14,14 @@ const gridClassname = css`
   block-size: 300px;
 `;
 
-function EmptyRowsRenderer() {
-  return (
-    <div style={{ gridColumn: '1/-1', placeSelf: 'center' }}>
-      Nothing to show{' '}
-      <span lang="ja" title="ショボーン">
-        (´・ω・`)
-      </span>
-    </div>
-  );
-}
+const noRowsFallback = (
+  <div style={{ gridColumn: '1/-1', placeSelf: 'center' }}>
+    Nothing to show{' '}
+    <span lang="ja" title="ショボーン">
+      (´・ω・`)
+    </span>
+  </div>
+);
 
 interface Row {
   id: number;
@@ -39,10 +38,6 @@ const columns: readonly Column<Row>[] = [
 
 const rows: readonly Row[] = [];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 function NoRows() {
   const direction = useDirection();
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
@@ -52,10 +47,10 @@ function NoRows() {
       aria-label="No Rows Example"
       columns={columns}
       rows={rows}
-      renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
+      renderers={{ noRowsFallback }}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       className={gridClassname}
       direction={direction}
     />

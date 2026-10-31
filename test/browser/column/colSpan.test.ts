@@ -1,8 +1,10 @@
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vite-plus/test/browser';
 
-import type { Column } from '../../../src';
-import { safeTab, setup } from '../utils';
+import { renderTextEditor } from '../../../src';
+import type { Column, ColumnFrozen, ColumnOrColumnGroup } from '../../../src';
+import { setup } from '../utils';
 
+const grid = page.getGrid();
 const headerCells = page.getHeaderCell();
 const topSummaryRows = page.getSummaryRow().and(page.getBySelector('.rdg-top-summary-row'));
 const bottomSummaryRows = page.getSummaryRow().and(page.getBySelector('.rdg-bottom-summary-row'));
@@ -24,7 +26,7 @@ describe('colSpan', () => {
         colSpan(args) {
           if (args.type === 'ROW') {
             if (key === '2' && args.row === 2) return 3;
-            if (key === '4' && args.row === 4) return 6; // Will not work as colspan includes both frozen and regular columns
+            if (key === '4' && args.row === 4) return 6; // clamped to 1, as the 5th column is the last start-frozen column
             if (key === '0' && args.row === 5) return 5;
             if (key === `${colCount - 3}` && args.row === 8) return 3;
             if (key === '6' && args.row < 8) return 2;
@@ -42,7 +44,7 @@ describe('colSpan', () => {
     return setup({ columns, rows, bottomSummaryRows: [1, 2], topSummaryRows: [1, 2] });
   }
 
-  it('should merges cells', async () => {
+  it('should merge cells', async () => {
     await setupColSpan();
     // header
     await expect.element(headerCells).toHaveLength(13);
@@ -50,7 +52,7 @@ describe('colSpan', () => {
     // top summary rows
     const topSummaryRow1Cells = topSummaryRows.nth(0).getCell();
     await expect.element(topSummaryRow1Cells).toHaveLength(14);
-    // 7th-8th cells are merged
+    // 8th-9th cells are merged
     await expect.element(topSummaryRow1Cells.nth(7)).toHaveAttribute('aria-colindex', '8');
     await expect.element(topSummaryRow1Cells.nth(7)).toHaveAttribute('aria-colspan', '2');
     await expect.element(topSummaryRow1Cells.nth(7)).toHaveStyle({
@@ -66,7 +68,7 @@ describe('colSpan', () => {
     await expect.element(row1.nth(6)).toHaveAttribute('aria-colindex', '7');
     await expect.element(row1.nth(6)).toHaveAttribute('aria-colspan', '2');
     await expect.element(row1.nth(6)).toHaveStyle({
-      gridTemplateColumns: '7',
+      gridColumnStart: '7',
       gridColumnEnd: '9'
     });
     await expect.element(row1.nth(7)).toHaveAttribute('aria-colindex', '9');
@@ -89,12 +91,83 @@ describe('colSpan', () => {
     });
     await expect.element(row2.nth(5)).toHaveAttribute('aria-colindex', '9');
 
-    await expect.element(page.getRow({ index: 4 }).getCell()).toHaveLength(14); // colSpan 6 won't work as there are 5 frozen columns
+    await expect.element(page.getRow({ index: 4 }).getCell()).toHaveLength(14); // colSpan 6 is clamped to 1
     await expect.element(page.getRow({ index: 5 }).getCell()).toHaveLength(10);
 
     // bottom summary rows
     await expect.element(bottomSummaryRows.nth(0).getCell()).toHaveLength(14);
     await expect.element(bottomSummaryRows.nth(1).getCell()).toHaveLength(15);
+  });
+
+  it('should clamp spans to the start-frozen, unfrozen, or end-frozen columns', async () => {
+    const columns: readonly Column<number, number>[] = [
+      { key: 's1', name: 's1', frozen: 'start', colSpan: () => 3 },
+      { key: 's2', name: 's2', frozen: 'start' },
+      { key: 'u1', name: 'u1', colSpan: () => 4 },
+      { key: 'u2', name: 'u2' },
+      { key: 'u3', name: 'u3' },
+      { key: 'e1', name: 'e1', frozen: 'end', colSpan: () => 3 },
+      { key: 'e2', name: 'e2', frozen: 'end' }
+    ];
+    await setup({ columns, rows: [0], bottomSummaryRows: [0] });
+
+    // the header row, the row, and the summary row
+    for (const cells of [
+      headerCells,
+      page.getRow({ index: 0 }).getCell(),
+      bottomSummaryRows.nth(0).getCell()
+    ]) {
+      await expect.element(cells).toHaveLength(3);
+      await expect.element(cells.nth(0)).toHaveAttribute('aria-colspan', '2');
+      await expect.element(cells.nth(1)).toHaveAttribute('aria-colindex', '3');
+      await expect.element(cells.nth(1)).toHaveAttribute('aria-colspan', '3');
+      await expect.element(cells.nth(2)).toHaveAttribute('aria-colindex', '6');
+      await expect.element(cells.nth(2)).toHaveAttribute('aria-colspan', '2');
+    }
+  });
+
+  it('should clamp spans to the last column', async () => {
+    const columns: readonly Column<number>[] = [
+      { key: 'col1', name: 'col1' },
+      { key: 'col2', name: 'col2', colSpan: () => 3 },
+      { key: 'col3', name: 'col3' }
+    ];
+    await setup({ columns, rows: [0] });
+
+    const cells = page.getRow({ index: 0 }).getCell();
+    await expect.element(cells).toHaveLength(2);
+    await expect.element(cells.nth(1)).toHaveAttribute('aria-colspan', '2');
+    await expect.element(cells.nth(1)).toHaveStyle({
+      gridColumnStart: '2',
+      gridColumnEnd: '4'
+    });
+  });
+
+  it('should span the editor like the cell', async () => {
+    interface Row {
+      col1: string;
+    }
+
+    const columns: readonly Column<Row>[] = [
+      {
+        key: 'col1',
+        name: 'col1',
+        colSpan: (args) => (args.type === 'ROW' ? 2 : undefined),
+        renderEditCell: renderTextEditor
+      },
+      { key: 'col2', name: 'col2' },
+      { key: 'col3', name: 'col3' }
+    ];
+    await setup({ columns, rows: [{ col1: 'value' }] });
+
+    await userEvent.dblClick(page.getRow({ index: 0 }).getCell({ index: 0 }));
+    const editCell = page.getActiveCell();
+    await expect.element(editCell.getByRole('textbox')).toHaveFocus();
+    await expect.element(editCell).toHaveAttribute('aria-colspan', '2');
+    await expect.element(editCell).toHaveStyle({
+      gridColumnStart: '1',
+      gridColumnEnd: '3'
+    });
   });
 
   it('should navigate between merged cells', async () => {
@@ -148,18 +221,18 @@ describe('colSpan', () => {
     await expect.element(activeCell).toHaveCellPosition(0, 8);
     await userEvent.keyboard('{arrowright}');
     await expect.element(activeCell).toHaveCellPosition(5, 8);
-    await safeTab(true);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
+    await userEvent.tab({ shift: true });
     await expect.element(activeCell).toHaveCellPosition(14, 7);
-    await safeTab();
+    await userEvent.tab();
     await expect.element(activeCell).toHaveCellPosition(0, 8);
     await userEvent.click(page.getRow({ index: 8 }).getCell({ index: 11 }));
     await expect.element(activeCell).toHaveCellPosition(11, 11);
-    await safeTab();
+    await userEvent.tab();
     await expect.element(activeCell).toHaveCellPosition(12, 11);
-    await safeTab();
+    await userEvent.tab();
     await expect.element(activeCell).toHaveCellPosition(0, 12);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
     await expect.element(activeCell).toHaveCellPosition(12, 11);
 
     // bottom summary rows
@@ -175,10 +248,30 @@ describe('colSpan', () => {
     await expect.element(activeCell).toHaveCellPosition(6, 13);
   });
 
+  it('should call colSpan with header args when navigating to a column group header row', async () => {
+    const colSpan = vi.fn(() => undefined);
+    const columns: readonly ColumnOrColumnGroup<number, number>[] = [
+      {
+        name: 'group',
+        children: [
+          { key: 'col1', name: 'col 1', colSpan },
+          { key: 'col2', name: 'col 2' }
+        ]
+      }
+    ];
+    await setup({ columns, rows: [1], bottomSummaryRows: [1] });
+    await userEvent.click(page.getHeaderCell({ name: 'col 2' }));
+    await expect.element(activeCell).toHaveCellPosition(1, 1);
+    colSpan.mockClear();
+    await userEvent.keyboard('{arrowup}');
+    await expect.element(activeCell).toHaveCellPosition(0, 0);
+    expect(colSpan).toHaveBeenCalledExactlyOnceWith({ type: 'HEADER' });
+  });
+
   it('should scroll to the merged cell when selected', async () => {
     await setupColSpan(30);
     await userEvent.click(page.getRow({ index: 8 }).getCell({ index: 23 })); // last visible cell (1920/80)
-    const spy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
     const testScrollIntoView = () => {
       expect(spy).toHaveBeenCalled();
       spy.mockClear();
@@ -201,8 +294,77 @@ describe('colSpan', () => {
 
     async function navigate(count: number, shift = false) {
       for (let i = 0; i < count; i++) {
-        await safeTab(shift);
+        await userEvent.tab({ shift });
       }
     }
+  });
+
+  describe('when a cell spans columns outside of the overscan range', () => {
+    describe.for(['ROW', 'HEADER', 'SUMMARY'] as const)('in %s rows', (type) => {
+      function setupColSpanOutsideOfOverscan(
+        spanningColumnIdx: number,
+        frozen: (idx: number) => ColumnFrozen
+      ) {
+        const columns: Column<number, number>[] = Array.from({ length: 40 }, (_, idx) => ({
+          key: String(idx),
+          name: String(idx),
+          width: 100,
+          frozen: frozen(idx),
+          colSpan(args) {
+            return idx === spanningColumnIdx &&
+              (args.type === 'HEADER' || (args.type === type && args.row === 0))
+              ? 2
+              : undefined;
+          }
+        }));
+        return setup({ columns, rows: [0, 1], bottomSummaryRows: [0, 1] });
+      }
+
+      // the cells of the row with the spanning cell: the header row, the first row, or the first bottom summary row
+      const spanningRowCells =
+        type === 'HEADER'
+          ? headerCells
+          : (type === 'ROW' ? page.getRow() : bottomSummaryRows).nth(0).getCell();
+      // the cells of a row without spanning cells
+      const otherRowCells = page.getRow().nth(1).getCell();
+
+      function getSpanningRowCellAt(idx: number) {
+        return spanningRowCells.and(page.getBySelector(`[aria-colindex="${idx + 1}"]`));
+      }
+
+      it('should render the columns after an active cell before the viewport', async () => {
+        await setupColSpanOutsideOfOverscan(1, () => false);
+        await userEvent.click(getSpanningRowCellAt(1));
+        grid.scroll({ left: 2000 });
+
+        // the active cell, then the same columns as the other row
+        await expect.element(otherRowCells.first()).toHaveAttribute('aria-colindex', '20');
+        await expect.element(spanningRowCells.first()).toHaveAttribute('aria-colindex', '2');
+        await expect.element(spanningRowCells.first()).toHaveAttribute('aria-colspan', '2');
+        await expect.element(spanningRowCells.nth(1)).toHaveAttribute('aria-colindex', '20');
+      });
+
+      it('should render the end-frozen columns after an active cell after the viewport', async () => {
+        await setupColSpanOutsideOfOverscan(30, (idx) => (idx === 39 ? 'end' : false));
+        grid.scroll({ left: 2000 });
+        await userEvent.click(getSpanningRowCellAt(30));
+        grid.scroll({ left: 0 });
+
+        await expect.element(otherRowCells.first()).toHaveAttribute('aria-colindex', '1');
+        await expect.element(spanningRowCells.nth(-2)).toHaveAttribute('aria-colindex', '31');
+        await expect.element(spanningRowCells.nth(-2)).toHaveAttribute('aria-colspan', '2');
+        await expect.element(spanningRowCells.last()).toHaveAttribute('aria-colindex', '40');
+      });
+
+      it('should render the end-frozen columns after the last cell of the overscan range', async () => {
+        // the overscan range ends at the 20th column
+        await setupColSpanOutsideOfOverscan(19, (idx) => (idx === 39 ? 'end' : false));
+
+        await expect.element(otherRowCells.nth(-2)).toHaveAttribute('aria-colindex', '20');
+        await expect.element(spanningRowCells.nth(-2)).toHaveAttribute('aria-colindex', '20');
+        await expect.element(spanningRowCells.nth(-2)).toHaveAttribute('aria-colspan', '2');
+        await expect.element(spanningRowCells.last()).toHaveAttribute('aria-colindex', '40');
+      });
+    });
   });
 });

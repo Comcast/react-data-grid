@@ -1,9 +1,20 @@
-// vitest-browser-react also automatically injects render method on the page
-// need to import it so TypeScript can pick up types
+// vitest-browser-react also automatically injects the render method on the page,
+// so we need to import it for TypeScript to pick up its types
 import 'vitest-browser-react';
 
+import {
+  locators,
+  userEvent,
+  type Locator,
+  type LocatorByRoleOptions
+} from 'vite-plus/test/browser';
 import { configure } from 'vitest-browser-react/pure';
-import { locators, userEvent, type Locator, type LocatorByRoleOptions } from 'vitest/browser';
+
+// avoid printing huge stack traces
+// Chromium defaults to 10
+// Firefox defaults to 128
+// WebKit defaults to 100
+Error.stackTraceLimit = 10;
 
 configure({
   reactStrictMode: true
@@ -23,7 +34,7 @@ declare module 'vitest/browser' {
     getDragHandle: () => Locator;
     getRowWithCell: (cell: Locator) => Locator;
     getBySelector: (selector: string) => Locator;
-    scroll: (this: Locator, options: ScrollToOptions) => Promise<void>;
+    scroll: (this: Locator, options: ScrollToOptions) => void;
     blur: (this: Locator) => void;
   }
 }
@@ -38,18 +49,17 @@ locators.extend({
   },
 
   getHeaderRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(
-      this.getBySelector('.rdg-header-row')
-    );
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-header-row'));
   },
 
   getHeaderCell(opts?: LocatorByRoleOptions) {
-    return this.getByRole('columnheader', defaultToExactOpts(opts));
+    return this.getByRole('columnheader', opts);
   },
 
   getRow(opts?: LocatorByRoleOptions & { index?: number }) {
-    const row = this.getByRole('row', defaultToExactOpts(opts)).and(this.getBySelector('.rdg-row'));
+    const row = this.getByRole('row', opts).and(this.getBySelector('.rdg-row'));
     if (opts?.index != null) {
+      // this reads the rendered grid, so `index` cannot be used before rendering it
       const grid = document.querySelector('.rdg')!;
       const headerRowsCount = grid.querySelectorAll(':scope > .rdg-header-row').length;
       const topSummaryRowsCount = grid.querySelectorAll(':scope > .rdg-top-summary-row').length;
@@ -60,7 +70,7 @@ locators.extend({
   },
 
   getCell(opts?: LocatorByRoleOptions & { index?: number }) {
-    const cell = this.getByRole('gridcell', defaultToExactOpts(opts));
+    const cell = this.getByRole('gridcell', opts);
     if (opts?.index != null) {
       return cell.and(this.getBySelector(`[aria-colindex="${opts.index + 1}"]`));
     }
@@ -68,9 +78,7 @@ locators.extend({
   },
 
   getSummaryRow(opts?: LocatorByRoleOptions) {
-    return this.getByRole('row', defaultToExactOpts(opts)).and(
-      this.getBySelector('.rdg-summary-row')
-    );
+    return this.getByRole('row', opts).and(this.getBySelector('.rdg-summary-row'));
   },
 
   getSelectAllCheckbox() {
@@ -93,12 +101,8 @@ locators.extend({
     return selector;
   },
 
-  async scroll(options: ScrollToOptions) {
-    await new Promise((resolve) => {
-      const element = (this as Locator).element();
-      element.addEventListener('scrollend', resolve, { once: true });
-      element.scroll(options);
-    });
+  scroll(options: ScrollToOptions) {
+    (this as Locator).element().scroll(options);
   },
 
   blur() {
@@ -106,27 +110,11 @@ locators.extend({
   }
 });
 
-function defaultToExactOpts(
-  opts: LocatorByRoleOptions | undefined
-): LocatorByRoleOptions | undefined {
-  if (opts != null && opts.exact == null && typeof opts.name === 'string') {
-    return {
-      ...opts,
-      exact: true
-    };
-  }
-
-  return opts;
-}
-
-interface CustomMatchers<R = unknown> {
-  toHaveRowsCount: (rowsCount: number) => R;
-  toHaveCellPosition: (columnIdx: number, rowIdx: number) => R;
-}
-
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any
-  interface Matchers<T = any> extends CustomMatchers<T> {}
+  interface Matchers<R> {
+    toHaveRowsCount: (rowsCount: number) => R;
+    toHaveCellPosition: (columnIdx: number, rowIdx: number) => R;
+  }
 }
 
 expect.extend({
@@ -166,20 +154,28 @@ expect.extend({
 });
 
 beforeEach(async () => {
-  // 1. reset cursor position to avoid hover issues
-  // 2. force focus to be on the page
-  await userEvent.click(document.body, { position: { x: 0, y: 0 } });
+  do {
+    // 1. reset cursor position to avoid hover issues
+    // 2. force focus to be on the page
+    await userEvent.click(document.body, { position: { x: 0, y: 0 } });
+    // Firefox needs two clicks sometimes
+  } while (!document.hasFocus());
 });
 
 afterEach(() => {
   vi.useRealTimers();
 
-  // eslint-disable-next-line vitest/no-standalone-expect
+  // Tabbing past the first or last focusable element moves focus out of the page,
+  // and depending on the browser, pressing Tab again may not return it to the expected element.
+  // https://github.com/microsoft/playwright/issues/39268
   expect
     .soft(
-      // eslint-disable-next-line @eslint-react/purity
       document.hasFocus(),
-      'Focus is set on a browser UI element at the end of a test. Use safeTab() to return focus to the page.'
+      'Focus is set on a browser UI element at the end of a test. Render a focusable element before or after the grid, so tabbing keeps focus on the page.'
     )
     .toBe(true);
+
+  // If a test file ends with a focused element, Firefox may not focus
+  // the first element clicked in an iframe created by the next test file.
+  (document.activeElement as HTMLElement | null)?.blur();
 });

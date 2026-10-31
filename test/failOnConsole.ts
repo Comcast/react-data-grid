@@ -1,38 +1,23 @@
-let consoleErrorOrConsoleWarnWereCalled = false;
+beforeEach(({ onTestFinished }) => {
+  vi.spyOn(console, 'warn').mockName('console.warn');
+  vi.spyOn(console, 'error').mockName('console.error');
 
-beforeAll(() => {
-  // replace instead of mutating `console` to avoid infinite loops
-  globalThis.console = {
-    ...console,
-    error(...params) {
-      if (
-        params[0] instanceof Error &&
-        params[0].message === 'ResizeObserver loop completed with undelivered notifications.'
-      ) {
-        return;
-      }
+  // Wait for the test and all `afterEach` hooks to complete to ensure all logs are caught
+  onTestFinished(({ expect, task, signal }) => {
+    // avoid failing test runs twice
+    if (task.result?.state === 'fail' || signal.aborted) return;
 
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    },
-    warn(...params) {
-      consoleErrorOrConsoleWarnWereCalled = true;
-      console.log(...params);
-    }
-  };
-});
-
-afterEach(() => {
-  // Wait for both the test and `afterEach` hooks to complete to ensure all logs are caught
-  onTestFinished(() => {
-    // eslint-disable-next-line vitest/no-standalone-expect
     expect
       .soft(
-        consoleErrorOrConsoleWarnWereCalled,
-        'console.error() and/or console.warn() were called during the test'
+        console.warn,
+        'console.warn() was called during the test; please resolve unexpected warnings'
       )
-      .toBe(false);
-
-    consoleErrorOrConsoleWarnWereCalled = false;
+      .toHaveBeenCalledTimes(0);
+    expect
+      .soft(
+        console.error,
+        'console.error() was called during the test; please resolve unexpected errors'
+      )
+      .toHaveBeenCalledTimes(0);
   });
 });

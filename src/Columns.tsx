@@ -1,18 +1,23 @@
 import { useHeaderRowSelection, useRowSelection } from './hooks';
-import type { Column, RenderCellProps, RenderGroupCellProps, RenderHeaderCellProps } from './types';
-import { SelectCellFormatter } from './cellRenderers';
+import type {
+  Column,
+  RenderCellContentProps,
+  RenderGroupCellContentProps,
+  RenderHeaderCellContentProps
+} from './types';
+import { SelectCheckbox } from './cellRenderers';
 
 export const SELECT_COLUMN_KEY = 'rdg-select-column';
 
-function HeaderRenderer({ tabIndex }: RenderHeaderCellProps<unknown>) {
+function SelectAllCell({ tabIndex }: RenderHeaderCellContentProps<unknown>) {
   const { isIndeterminate, isRowSelected, onRowSelectionChange } = useHeaderRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select All"
       tabIndex={tabIndex}
       indeterminate={isIndeterminate}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked) => {
         onRowSelectionChange({ checked: isIndeterminate ? false : checked });
       }}
@@ -20,15 +25,15 @@ function HeaderRenderer({ tabIndex }: RenderHeaderCellProps<unknown>) {
   );
 }
 
-function SelectFormatter({ row, tabIndex }: RenderCellProps<unknown>) {
+function RowSelectCell({ row, tabIndex }: RenderCellContentProps<unknown>) {
   const { isRowSelectionDisabled, isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select"
       tabIndex={tabIndex}
       disabled={isRowSelectionDisabled}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked, isShiftClick) => {
         onRowSelectionChange({ row, checked, isShiftClick });
       }}
@@ -36,14 +41,14 @@ function SelectFormatter({ row, tabIndex }: RenderCellProps<unknown>) {
   );
 }
 
-function SelectGroupFormatter({ row, tabIndex }: RenderGroupCellProps<unknown>) {
+function GroupSelectCell({ row, tabIndex }: RenderGroupCellContentProps<unknown>) {
   const { isRowSelected, onRowSelectionChange } = useRowSelection();
 
   return (
-    <SelectCellFormatter
+    <SelectCheckbox
       aria-label="Select Group"
       tabIndex={tabIndex}
-      value={isRowSelected}
+      checked={isRowSelected}
       onChange={(checked) => {
         onRowSelectionChange({ row, checked, isShiftClick: false });
       }}
@@ -51,7 +56,7 @@ function SelectGroupFormatter({ row, tabIndex }: RenderGroupCellProps<unknown>) 
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export const SelectColumn: Column<any, any> = {
   key: SELECT_COLUMN_KEY,
   name: '',
@@ -62,12 +67,12 @@ export const SelectColumn: Column<any, any> = {
   sortable: false,
   frozen: true,
   renderHeaderCell(props) {
-    return <HeaderRenderer {...props} />;
+    return <SelectAllCell {...props} />;
   },
   renderCell(props) {
-    return <SelectFormatter {...props} />;
+    return <RowSelectCell {...props} />;
   },
   renderGroupCell(props) {
-    return <SelectGroupFormatter {...props} />;
+    return <GroupSelectCell {...props} />;
   }
 };

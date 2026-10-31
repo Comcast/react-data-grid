@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { page, userEvent } from 'vitest/browser';
+import { Activity, useLayoutEffect, useState } from 'react';
+import { page, userEvent } from 'vite-plus/test/browser';
 
-import { DataGrid } from '../../../src';
-import type { Column } from '../../../src';
-import defaultRenderHeaderCell from '../../../src/renderHeaderCell';
-import { safeTab, setup } from '../utils';
+import { DataGrid, renderHeaderCell } from '../../../src';
+import type { CalculatedColumn, Column, RenderCellContentProps } from '../../../src';
+import { getRowKey, setup } from '../utils';
 
 const cells = page.getCell();
 
@@ -33,7 +32,7 @@ describe('renderValue', () => {
   });
 });
 
-describe('Custom cell renderer', () => {
+describe('Custom cell content renderer', () => {
   const columns: readonly Column<Row>[] = [
     {
       key: 'id',
@@ -49,7 +48,7 @@ describe('Custom cell renderer', () => {
 
   const rows: readonly Row[] = [{ id: 101 }];
 
-  it('should replace the default cell renderer', async () => {
+  it('should replace the default cell content renderer', async () => {
     await setup({ columns, rows });
     await expect.element(cells.nth(0)).toHaveTextContent('#101');
     await expect.element(cells.nth(1)).toHaveTextContent('No name');
@@ -108,10 +107,175 @@ describe('Custom cell renderer', () => {
         sortable: false,
         draggable: false,
         width: 'auto',
-        renderHeaderCell: defaultRenderHeaderCell
+        renderHeaderCell,
+        getColSpan: expect.any(Function)
       },
       indexes: [0]
     });
+  });
+
+  it('should keep changes to other rows when a layout effect updates a row', async () => {
+    interface NameRow {
+      id: number;
+      name: string;
+      upperName: string;
+    }
+
+    function UpperName({ row, onRowChange }: RenderCellContentProps<NameRow>) {
+      const upperName = row.name.toUpperCase();
+
+      useLayoutEffect(() => {
+        if (row.upperName !== upperName) {
+          onRowChange({ ...row, upperName });
+        }
+      });
+
+      return row.upperName;
+    }
+
+    const columns: readonly Column<NameRow>[] = [
+      { key: 'name', name: 'Name' },
+      {
+        key: 'upperName',
+        name: 'Upper name',
+        renderCell(props) {
+          return <UpperName {...props} />;
+        }
+      }
+    ];
+
+    function Test() {
+      const [rows, setRows] = useState((): readonly NameRow[] => [
+        { id: 1, name: 'a', upperName: 'A' },
+        { id: 2, name: 'b', upperName: 'B' }
+      ]);
+
+      function renameRows() {
+        // only the first row's layout effect updates its row
+        setRows([
+          { ...rows[0], name: 'c' },
+          { ...rows[1], name: 'd', upperName: 'D' }
+        ]);
+      }
+
+      return (
+        <>
+          <button type="button" onClick={renameRows}>
+            Rename
+          </button>
+          <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
+        </>
+      );
+    }
+
+    await page.render(<Test />);
+    await userEvent.click(page.getByRole('button', { name: 'Rename' }));
+    await expect.element(page.getRow({ index: 0 }).getCell({ index: 1 })).toHaveTextContent('C');
+    await expect.element(page.getRow({ index: 1 }).getCell({ index: 0 })).toHaveTextContent('d');
+  });
+
+  it('should keep changes to other rows when a row is updated under a hidden Activity', async () => {
+    interface SaveRow {
+      id: number;
+      name: string;
+      saved: boolean;
+    }
+
+    // simulates a request that updates the row when it completes
+    let completeSave: (() => void) | undefined;
+
+    const columns: readonly Column<SaveRow>[] = [
+      { key: 'name', name: 'Name' },
+      {
+        key: 'save',
+        name: 'Save',
+        renderCell({ row, onRowChange }) {
+          if (row.saved) return 'Saved';
+
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                completeSave = () => {
+                  onRowChange({ ...row, saved: true });
+                };
+              }}
+            >
+              Save {row.name}
+            </button>
+          );
+        }
+      }
+    ];
+
+    function Test() {
+      const [rows, setRows] = useState((): readonly SaveRow[] => [
+        { id: 1, name: 'a', saved: false },
+        { id: 2, name: 'b', saved: false }
+      ]);
+      const [isHidden, setIsHidden] = useState(false);
+
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              setIsHidden(!isHidden);
+            }}
+          >
+            Toggle
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRows(rows.with(1, { ...rows[1], name: 'd' }));
+            }}
+          >
+            Rename
+          </button>
+          <Activity mode={isHidden ? 'hidden' : 'visible'}>
+            <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
+          </Activity>
+        </>
+      );
+    }
+
+    await page.render(<Test />);
+    await userEvent.click(page.getByRole('button', { name: 'Save a' }));
+    await userEvent.click(page.getByRole('button', { name: 'Toggle' }));
+    await userEvent.click(page.getByRole('button', { name: 'Rename' }));
+    // React renders hidden content at a lower priority
+    await expect.element(page.getCell({ name: 'd', includeHidden: true })).toBeInTheDocument();
+    completeSave!();
+    await userEvent.click(page.getByRole('button', { name: 'Toggle' }));
+    await expect
+      .element(page.getRow({ index: 0 }).getCell({ index: 1 }))
+      .toHaveTextContent('Saved');
+    await expect.element(page.getRow({ index: 1 }).getCell({ index: 0 })).toHaveTextContent('d');
+  });
+
+  it('should receive columns that all have the same properties in the same order', async () => {
+    const calculatedColumns = new Map<string, CalculatedColumn<Row>>();
+
+    function renderCell({ column }: RenderCellContentProps<Row>) {
+      calculatedColumns.set(column.key, column);
+      return null;
+    }
+
+    await setup({
+      columns: [
+        { key: 'id', name: 'ID', renderCell },
+        { name: 'Name', key: 'name', width: 100, cellClass: 'name', renderCell },
+        { key: 'other', name: 'Other', frozen: true, editable: false, colSpan: () => 1, renderCell }
+      ],
+      rows: [{ id: 1 }]
+    });
+
+    await expect.poll(() => calculatedColumns.size).toBe(3);
+    const [idKeys, ...otherKeys] = calculatedColumns.values().map(Object.keys).toArray();
+    for (const keys of otherKeys) {
+      expect(keys).toStrictEqual(idKeys);
+    }
   });
 });
 
@@ -144,7 +308,7 @@ test('Focus child if it sets tabIndex', async () => {
   await userEvent.click(page.getByText('Text'));
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await expect.element(button1).not.toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '-1');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
@@ -152,10 +316,10 @@ test('Focus child if it sets tabIndex', async () => {
   await expect.element(button1).toHaveFocus();
   await expect.element(button1).toHaveAttribute('tabindex', '0');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
-  await safeTab(true);
+  await userEvent.tab({ shift: true });
   await userEvent.click(button2);
   await expect.element(button2).toHaveFocus();
-  // It is user's responsibilty to set the tabIndex on button2
+  // It is the user's responsibility to set the tabIndex on button2
   await expect.element(button1).toHaveAttribute('tabindex', '0');
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
   await userEvent.click(button1);
@@ -164,10 +328,10 @@ test('Focus child if it sets tabIndex', async () => {
   await expect.element(cell).toHaveAttribute('tabindex', '-1');
 });
 
-test('Cell should not steal focus when the focus is outside the grid and cell is recreated', async () => {
+test('Cell should not steal focus when the focus is outside the grid and the cell is recreated', async () => {
   const columns: readonly Column<Row>[] = [{ key: 'id', name: 'ID' }];
 
-  function FormatterTest() {
+  function Test() {
     const [rows, setRows] = useState((): readonly Row[] => [{ id: 1 }]);
 
     function onClick() {
@@ -176,20 +340,20 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
 
     return (
       <>
-        <button type="button" onClick={onClick}>
+        <button
+          type="button"
+          // tabIndex is needed; otherwise, WebKit will set focus on the <body> after clicking the button
+          tabIndex={0}
+          onClick={onClick}
+        >
           Test
         </button>
-        <DataGrid
-          columns={columns}
-          rows={rows}
-          onRowsChange={setRows}
-          rowKeyGetter={(row) => row.id}
-        />
+        <DataGrid columns={columns} rows={rows} onRowsChange={setRows} getRowKey={getRowKey} />
       </>
     );
   }
 
-  await page.render(<FormatterTest />);
+  await page.render(<Test />);
 
   const cell = page.getRow({ index: 0 }).getCell({ index: 0 });
   await userEvent.click(cell);
@@ -198,6 +362,7 @@ test('Cell should not steal focus when the focus is outside the grid and cell is
   const button = page.getByRole('button', { name: 'Test' });
   await expect.element(button).not.toHaveFocus();
   await userEvent.click(button);
+  await expect.element(button).toHaveFocus();
   await expect.element(cell).not.toHaveFocus();
   await expect.element(button).toHaveFocus();
 });

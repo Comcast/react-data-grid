@@ -2,14 +2,14 @@ import { memo } from 'react';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
-import type { CellRendererProps } from './types';
+import type { RenderCellProps } from './types';
 
-type SharedCellRendererProps<R, SR> = Pick<
-  CellRendererProps<R, SR>,
+type SharedRenderCellProps<R, SR> = Pick<
+  RenderCellProps<R, SR>,
   'rowIdx' | 'column' | 'colSpan' | 'isCellActive' | 'setActivePosition'
 >;
 
-interface SummaryCellProps<R, SR> extends SharedCellRendererProps<R, SR> {
+interface SummaryCellProps<R, SR> extends SharedRenderCellProps<R, SR> {
   row: SR;
 }
 
@@ -29,14 +29,14 @@ function SummaryCell<R, SR>({
   );
 
   function onMouseDown() {
-    setActivePosition({ rowIdx, idx: column.idx });
+    setActivePosition({ idx: column.idx, rowIdx });
   }
 
   return (
     <div
       role="gridcell"
       aria-colindex={column.idx + 1}
-      aria-colspan={colSpan}
+      aria-colspan={colSpan > 1 ? colSpan : undefined}
       aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={className}
