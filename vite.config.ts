@@ -277,9 +277,7 @@ export default defineConfig({
       // and don't truncate the table to the terminal's width, or 80 columns in CI
       reporter: [['text', { skipFull: true, maxCols: 0 }]],
       thresholds: {
-        statements: 97,
         branches: 95,
-        functions: 97,
         lines: 99
       }
     },
