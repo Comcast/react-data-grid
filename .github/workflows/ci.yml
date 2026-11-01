@@ -69,7 +69,6 @@ jobs:
       # Vite Task compares directory listings with those recorded after the cached run,
       # so directories created during the run must exist upfront for the cache to hit:
       # https://github.com/voidzero-dev/vite-task/issues/504
-      # `coverage` isn't one of them: Vitest deletes it after the run, as no coverage reporter writes files
       - run: mkdir lib node_modules/.vite-temp
 
       - run: vp run -v ci
