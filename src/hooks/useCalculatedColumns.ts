@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { clampColumnWidth, max, min } from '../utils';
+import { clampColumnWidth, getColumnInColumns, max, min } from '../utils';
 import type {
   CalculatedColumn,
   CalculatedColumnParent,
@@ -193,7 +193,7 @@ export function useCalculatedColumns<R, SR>({
     });
 
     for (let idx = 0; idx < columns.length; idx++) {
-      const column = columns[idx];
+      const column = columns[idx]!;
       column.idx = idx;
       updateColumnParent(column, idx, 0);
 
@@ -258,7 +258,9 @@ export function useCalculatedColumns<R, SR>({
     }
 
     if (lastStartFrozenColumnIndex !== -1) {
-      const lastStartFrozenColumnMetric = columnMetrics.get(columns[lastStartFrozenColumnIndex])!;
+      const lastStartFrozenColumnMetric = columnMetrics.get(
+        getColumnInColumns(columns, lastStartFrozenColumnIndex)
+      )!;
       totalStartFrozenColumnWidth =
         lastStartFrozenColumnMetric.left + lastStartFrozenColumnMetric.width;
     }
@@ -266,19 +268,21 @@ export function useCalculatedColumns<R, SR>({
     const layoutCssVars: Record<string, string> = {};
 
     for (let i = 0; i <= lastStartFrozenColumnIndex; i++) {
-      const column = columns[i];
+      const column = getColumnInColumns(columns, i);
       layoutCssVars[`--rdg-frozen-start-${column.idx}`] = `${columnMetrics.get(column)!.left}px`;
     }
 
     if (firstEndFrozenColumnIndex !== -1) {
-      const lastColumn = columns[columns.length - 1];
+      const lastColumn = getColumnInColumns(columns, columns.length - 1);
       const lastColumnMetric = columnMetrics.get(lastColumn)!;
       const gridEnd = lastColumnMetric.left + lastColumnMetric.width;
-      const firstEndFrozenColumnMetric = columnMetrics.get(columns[firstEndFrozenColumnIndex])!;
+      const firstEndFrozenColumnMetric = columnMetrics.get(
+        getColumnInColumns(columns, firstEndFrozenColumnIndex)
+      )!;
       totalEndFrozenColumnWidth = gridEnd - firstEndFrozenColumnMetric.left;
 
       for (let i = firstEndFrozenColumnIndex; i < columns.length; i++) {
-        const column = columns[i];
+        const column = getColumnInColumns(columns, i);
         const metric = columnMetrics.get(column)!;
         layoutCssVars[`--rdg-frozen-end-${column.idx}`] =
           `${gridEnd - (metric.left + metric.width)}px`;
@@ -314,7 +318,7 @@ export function useCalculatedColumns<R, SR>({
     // get the first visible non-frozen column index
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleStartIdx])!;
+      const { left, width } = columnMetrics.get(getColumnInColumns(columns, colVisibleStartIdx))!;
       // if the right side of the column is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
@@ -326,7 +330,7 @@ export function useCalculatedColumns<R, SR>({
     // get the last visible non-frozen column index
     let colVisibleEndIdx = colVisibleStartIdx;
     while (colVisibleEndIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleEndIdx])!;
+      const { left, width } = columnMetrics.get(getColumnInColumns(columns, colVisibleEndIdx))!;
       // if the right side of the column is beyond or equal to the right side of the available viewport,
       // then it is the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (left + width >= viewportRight) {

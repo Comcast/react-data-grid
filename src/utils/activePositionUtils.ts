@@ -5,6 +5,7 @@ import type {
   Maybe,
   Position
 } from '../types';
+import { getColumnInColumns, getRowInRows } from '.';
 
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
@@ -60,12 +61,12 @@ function getCellColSpan<R, SR>({
   ) {
     return column.getColSpan({
       type: 'SUMMARY',
-      row: topSummaryRows[rowIdx + topSummaryRowsCount]
+      row: getRowInRows(topSummaryRows, rowIdx + topSummaryRowsCount)
     });
   }
 
   if (rowIdx >= 0 && rowIdx < rows.length) {
-    const row = rows[rowIdx];
+    const row = getRowInRows(rows, rowIdx);
     return column.getColSpan({
       type: 'ROW',
       row
@@ -75,7 +76,7 @@ function getCellColSpan<R, SR>({
   if (bottomSummaryRows && rowIdx >= rows.length) {
     return column.getColSpan({
       type: 'SUMMARY',
-      row: bottomSummaryRows[rowIdx - rows.length]
+      row: getRowInRows(bottomSummaryRows, rowIdx - rows.length)
     });
   }
 
@@ -131,7 +132,7 @@ export function getNextActivePosition<R, SR>({
   const setHeaderGroupColAndRowSpan = () => {
     if (moveNext) {
       // find the parent at the same row level
-      const nextColumn = columns[nextIdx];
+      const nextColumn = getColumnInColumns(columns, nextIdx);
       let { parent } = nextColumn;
       while (parent !== undefined) {
         const parentRowIdx = getParentRowIdx(parent);
@@ -143,7 +144,7 @@ export function getNextActivePosition<R, SR>({
       }
     } else if (moveUp) {
       // find the first reachable parent
-      const nextColumn = columns[nextIdx];
+      const nextColumn = getColumnInColumns(columns, nextIdx);
       let { parent } = nextColumn;
       let found = false;
       while (parent !== undefined) {
@@ -197,7 +198,7 @@ export function getNextActivePosition<R, SR>({
     // Find the last reachable parent for the new rowIdx
     // This check is needed when navigating to a column
     // that does not have a parent matching the new rowIdx
-    const nextColumn = columns[nextIdx];
+    const nextColumn = getColumnInColumns(columns, nextIdx);
     let { parent } = nextColumn;
     const nextParentRowIdx = nextRowIdx;
     nextRowIdx = mainHeaderRowIdx;

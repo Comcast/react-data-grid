@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Key } from 'react';
 
 import { useLatestFunc } from './hooks';
-import { assertIsValidGetRowKey, getLeftRightKey } from './utils';
+import { assertIsValidGetRowKey, getLeftRightKey, getRowInRows } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -169,7 +169,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       let parentGroups = groups;
 
       for (let level = 0; level <= lastLevel; level++) {
-        const groupKey = getRowGroupKey(row, groupBy[level]);
+        const groupKey = getRowGroupKey(row, groupBy[level]!);
         // `getOrInsertComputed` would be slower: V8 doesn't inline it like `get`,
         // and its callback would be created for every row
         let group = parentGroups.get(groupKey);
@@ -337,6 +337,10 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     rawOnSelectedRowsChange(newRawSelectedRows);
   }
 
+  function getRow(index: number) {
+    return getRowInRows(rows, index);
+  }
+
   function getParentRowAndIndex(rowIdx: number) {
     const row = rows[rowIdx];
 
@@ -346,7 +350,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     let position = -1;
     while (low <= high) {
       const middle = (low + high) >>> 1;
-      if (groupRowIndexes[middle] < rowIdx) {
+      if (groupRowIndexes[middle]! < rowIdx) {
         position = middle;
         low = middle + 1;
       } else {
@@ -357,7 +361,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     // a row's parent is the closest group row before it,
     // a group row's parent is the closest group row before it whose id is its parentId
     for (let i = position; i >= 0; i--) {
-      const parentIdx = groupRowIndexes[i];
+      const parentIdx = groupRowIndexes[i]!;
       const parentRow = rows[parentIdx] as GroupRow<R>;
       if (!isGroupRow(row) || row.parentId === parentRow.id) {
         return [parentRow, parentIdx] as const;
@@ -374,7 +378,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     if (args.mode === 'EDIT') return;
     const { column, rowIdx, setActivePosition } = args;
     const idx = column?.idx ?? -1;
-    const row = rows[rowIdx];
+    const row = getRow(rowIdx);
 
     if (!isGroupRow(row)) return;
     if (
@@ -422,8 +426,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const updatedRawRows = [...rawRows];
     const rawIndexes: number[] = [];
     for (const index of indexes) {
-      const rawIndex = rawRows.indexOf(rows[index] as R);
-      updatedRawRows[rawIndex] = updatedRows[index];
+      const rawIndex = rawRows.indexOf(getRow(index) as R);
+      updatedRawRows[rawIndex] = getRowInRows(updatedRows, index);
       rawIndexes.push(rawIndex);
     }
     onRowsChange(updatedRawRows, {

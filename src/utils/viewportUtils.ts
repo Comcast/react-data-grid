@@ -1,4 +1,5 @@
 import type { CalculatedColumn, ColSpanArgs } from '../types';
+import { getColumnInColumns } from '.';
 
 // These functions build arrays with plain loops instead of using generators:
 // iterating over generator objects is much slower, and React Compiler doesn't support `yield`
@@ -19,7 +20,7 @@ export function getViewportColumns<R, SR>(
   const viewportColumns: CalculatedColumn<R, SR>[] = [];
 
   for (let colIdx = 0; colIdx <= lastStartFrozenColumnIndex; colIdx++) {
-    viewportColumns.push(columns[colIdx]);
+    viewportColumns.push(getColumnInColumns(columns, colIdx));
   }
 
   const unfrozenLastIdx =
@@ -27,22 +28,22 @@ export function getViewportColumns<R, SR>(
 
   if (lastStartFrozenColumnIndex < unfrozenLastIdx) {
     if (activeColumnIdx > lastStartFrozenColumnIndex && activeColumnIdx < startIdx) {
-      viewportColumns.push(columns[activeColumnIdx]);
+      viewportColumns.push(getColumnInColumns(columns, activeColumnIdx));
     }
 
     for (let colIdx = startIdx; colIdx <= effectiveOverscanEndIdx; colIdx++) {
-      viewportColumns.push(columns[colIdx]);
+      viewportColumns.push(getColumnInColumns(columns, colIdx));
     }
 
     if (activeColumnIdx > effectiveOverscanEndIdx && activeColumnIdx <= unfrozenLastIdx) {
-      viewportColumns.push(columns[activeColumnIdx]);
+      viewportColumns.push(getColumnInColumns(columns, activeColumnIdx));
     }
   }
 
   // Always include the end-frozen tail (virtualization must keep these in the DOM)
   if (firstEndFrozenColumnIndex > -1) {
     for (let colIdx = firstEndFrozenColumnIndex; colIdx < columns.length; colIdx++) {
-      viewportColumns.push(columns[colIdx]);
+      viewportColumns.push(getColumnInColumns(columns, colIdx));
     }
   }
 

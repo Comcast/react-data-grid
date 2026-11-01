@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { focusCell, focusRow } from '../utils';
+import { focusCell, focusRow, getColumnInColumns, getRowInRows } from '../utils';
 import type { CalculatedColumn, Position, StateSetter } from '../types';
 
 export interface ActivePosition extends Position {
@@ -98,7 +98,7 @@ export function useActivePosition<R, SR>({
 
       if (position.mode === 'EDIT') {
         const closeOnExternalRowChange =
-          columns[position.idx].editorOptions?.closeOnExternalRowChange ?? true;
+          getColumnInColumns(columns, position.idx).editorOptions?.closeOnExternalRowChange ?? true;
 
         // Discard changes if the row is updated from outside,
         // or if removing rows moved the position to a summary row
@@ -143,7 +143,7 @@ export function useActivePosition<R, SR>({
     if (!validatedPosition.isPositionInViewport) {
       throw new Error('No row for active position');
     }
-    return rows[resolvedActivePosition.rowIdx];
+    return getRowInRows(rows, resolvedActivePosition.rowIdx);
   }
 
   useLayoutEffect(() => {
