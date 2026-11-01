@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { commands, page, userEvent, type Locator } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
-import type { Column, FillEvent } from '../../src';
+import type { Column, FillArgs } from '../../src';
 import { getCellsAtRowIndex, scrollGrid } from './utils';
 
 const dragHandle = page.getDragHandle();
@@ -31,7 +31,7 @@ function setup(allowDragFill = true) {
 function DragFillTest({ allowDragFill = true }: { allowDragFill?: boolean }) {
   const [rows, setRows] = useState(initialRows);
 
-  function onFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
+  function onFill({ columnKey, sourceRow, targetRow }: FillArgs<Row>): Row {
     return { ...targetRow, [columnKey]: sourceRow[columnKey as keyof Row] };
   }
 
