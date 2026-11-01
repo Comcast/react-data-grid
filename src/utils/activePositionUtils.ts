@@ -6,12 +6,22 @@ import type {
   Position
 } from '../types';
 
+/**
+ * Whether the cell's value can change through the grid: with the editor, by drag-filling, and by pasting.
+ * `editable` decides when it's set, and defaults to whether the column has an editor.
+ */
 // https://github.com/vercel/next.js/issues/56480
 export function isCellEditableUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
-  return (
-    column.renderEditCell != null &&
-    (typeof column.editable === 'function' ? column.editable(row) : column.editable) !== false
-  );
+  const { editable } = column;
+  if (editable == null) return column.renderEditCell != null;
+  return typeof editable === 'function' ? editable(row) : editable;
+}
+
+/**
+ * Whether the cell's editor can open: the cell must be editable, and the column must have an editor.
+ */
+export function canOpenEditorUtil<R, SR>(column: CalculatedColumn<R, SR>, row: R): boolean {
+  return column.renderEditCell != null && isCellEditableUtil(column, row);
 }
 
 interface GetNextPositionOpts<R, SR> {
