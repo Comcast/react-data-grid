@@ -130,6 +130,11 @@ export default defineConfig({
           ]
         }
       },
+      bench: {
+        command: 'vp test bench --project "browser (chromium)"',
+        dependsOn: ['install-browsers'],
+        cache: false
+      },
       ci: {
         command: [
           // type check runs first, as type issues are often

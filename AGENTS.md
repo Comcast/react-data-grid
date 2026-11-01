@@ -16,6 +16,7 @@ src/
   cellRenderers/      # default cell renderers (e.g., checkbox, toggleGroup, value)
   editors/            # default editors (renderTextEditor)
 test/
+  bench/              # vitest benchmarks (browser mode, Chromium only)
   browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
   visual/             # vitest visual regression tests (CI-only — never run locally)
@@ -48,6 +49,7 @@ website/              # demo site (Vite + TanStack Router)
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
 - Firefox runs test files in parallel. Firefox sends the mouse events of all its pages with the same pointer ID, so each test file that drags a resize or drag-fill handle, which captures the pointer, runs in a separate Firefox instance with a browser of its own: add such test files to `firefoxPointerCaptureTests` in `vite.config.ts`. Use `--project "*firefox*"` to run all the Firefox instances.
 - **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.
+- **Benchmarks** — `vp run bench` runs `test/bench/` in Chromium, and `vp run bench <files>` runs specific files. Write them with `bench()` from `test/bench/utils.ts`: Vitest only provides `bench` as a test fixture, and importing that file also turns off Strict Mode.
 
 ## Tooling
 
