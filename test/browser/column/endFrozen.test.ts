@@ -6,7 +6,7 @@ import {
   cellFrozenStartClassname,
   cellFrozenEndClassname
 } from '../../../src/style/cell';
-import { getCellsAtRowIndex, setup } from '../utils';
+import { setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
 const dragHandle = page.getDragHandle();
@@ -250,7 +250,7 @@ test('colSpan from an unfrozen column into the end-frozen band is clamped', asyn
   await setup({ columns, rows: [1] });
 
   // colSpan is clamped to 1 (boundary crossed) → all three cells render independently
-  await expect.element(getCellsAtRowIndex(0)).toHaveLength(3);
+  await expect.element(page.getRow({ index: 0 }).getCell()).toHaveLength(3);
 });
 
 test('colSpan contained within the end-frozen band is respected', async () => {
@@ -272,7 +272,7 @@ test('colSpan contained within the end-frozen band is respected', async () => {
   await setup({ columns, rows: [1] });
 
   // colSpan=2 absorbs e2 → only 2 cells render in the body row (a + e1-spanning)
-  await expect.element(getCellsAtRowIndex(0)).toHaveLength(2);
+  await expect.element(page.getRow({ index: 0 }).getCell()).toHaveLength(2);
 });
 
 test('an end-frozen cell that spans the tail stays pinned to the inline-end edge', async () => {
@@ -301,7 +301,11 @@ test('an end-frozen cell that spans the tail stays pinned to the inline-end edge
 
   function assertFlushWithEndEdge() {
     // resolve the spanning cell fresh each call — scrolling re-renders the row
-    const spanningCellRect = getCellsAtRowIndex(0).nth(1).element().getBoundingClientRect();
+    const spanningCellRect = page
+      .getRow({ index: 0 })
+      .getCell({ index: 1 })
+      .element()
+      .getBoundingClientRect();
     expect(spanningCellRect.right).toBeCloseTo(
       grid.getBoundingClientRect().right - gridBorderWidth,
       0
@@ -341,7 +345,7 @@ test('drag handle on an editable end-frozen column is anchored via inset-inline-
   });
 
   // click the end-frozen cell in row 0 to activate it; drag handle should render
-  await userEvent.click(getCellsAtRowIndex(0).nth(1));
+  await userEvent.click(page.getRow({ index: 0 }).getCell({ index: 1 }));
   await expect.element(dragHandle).toBeInTheDocument();
 
   // drag handle must use inset-inline-end so it stays anchored to the end-frozen cell on scroll

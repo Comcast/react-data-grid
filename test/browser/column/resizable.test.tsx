@@ -141,7 +141,7 @@ test('should end the keyboard resize when the header cell loses focus', async ()
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 210px' });
   expect(onColumnWidthsChange).not.toHaveBeenCalled();
 
-  (headerCell.element() as HTMLElement).blur();
+  headerCell.blur();
   expect(onColumnWidthsChange).toHaveBeenCalledExactlyOnceWith(
     new Map<string, ColumnWidth>([['col2', { width: 210, type: 'resized' }]])
   );

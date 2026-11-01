@@ -3,7 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid, renderHeaderCell } from '../../../src';
 import type { CalculatedColumn, Column, RenderCellContentProps } from '../../../src';
-import { getCellsAtRowIndex, getRowKey, setup } from '../utils';
+import { getRowKey, setup } from '../utils';
 
 const cells = page.getCell();
 
@@ -170,8 +170,8 @@ describe('Custom cell content renderer', () => {
 
     await page.render(<Test />);
     await userEvent.click(page.getByRole('button', { name: 'Rename' }));
-    await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('C');
-    await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('d');
+    await expect.element(page.getRow({ index: 0 }).getCell({ index: 1 })).toHaveTextContent('C');
+    await expect.element(page.getRow({ index: 1 }).getCell({ index: 0 })).toHaveTextContent('d');
   });
 
   it('should keep changes to other rows when a row is updated under a hidden Activity', async () => {
@@ -248,8 +248,10 @@ describe('Custom cell content renderer', () => {
     await expect.element(page.getCell({ name: 'd', includeHidden: true })).toBeInTheDocument();
     completeSave!();
     await userEvent.click(page.getByRole('button', { name: 'Toggle' }));
-    await expect.element(getCellsAtRowIndex(0).nth(1)).toHaveTextContent('Saved');
-    await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('d');
+    await expect
+      .element(page.getRow({ index: 0 }).getCell({ index: 1 }))
+      .toHaveTextContent('Saved');
+    await expect.element(page.getRow({ index: 1 }).getCell({ index: 0 })).toHaveTextContent('d');
   });
 
   it('should receive columns that all have the same properties in the same order', async () => {
@@ -353,7 +355,7 @@ test('Cell should not steal focus when the focus is outside the grid and the cel
 
   await page.render(<Test />);
 
-  const cell = getCellsAtRowIndex(0).nth(0);
+  const cell = page.getRow({ index: 0 }).getCell({ index: 0 });
   await userEvent.click(cell);
   await expect.element(cell).toHaveFocus();
 

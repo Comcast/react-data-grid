@@ -2,8 +2,9 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { Column } from '../../../src';
 import { cellClassname, cellFrozenStartClassname } from '../../../src/style/cell';
-import { getCellsAtRowIndex, scrollGrid, setup } from '../utils';
+import { setup } from '../utils';
 
+const grid = page.getGrid();
 const headerCells = page.getHeaderCell();
 
 test('frozen columns have a specific class and are stable-sorted before non-frozen columns', async () => {
@@ -57,9 +58,9 @@ test('focusing a frozen cell does not scroll the grid', async () => {
 
   await setup({ columns, rows: [0, 1] });
   // activate the frozen cell before scrolling, as clicking scrolls the cell into view
-  await userEvent.click(getCellsAtRowIndex(0).nth(0));
-  scrollGrid({ left: 1000 });
+  await userEvent.click(page.getRow({ index: 0 }).getCell({ index: 0 }));
+  grid.scroll({ left: 1000 });
   await userEvent.keyboard('{arrowdown}');
-  await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveFocus();
-  expect(page.getGrid().element().scrollLeft).toBe(1000);
+  await expect.element(page.getRow({ index: 1 }).getCell({ index: 0 })).toHaveFocus();
+  expect(grid.element().scrollLeft).toBe(1000);
 });

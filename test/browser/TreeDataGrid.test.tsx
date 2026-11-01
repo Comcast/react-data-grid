@@ -4,7 +4,7 @@ import { page, server, userEvent } from 'vite-plus/test/browser';
 import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
 import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
-import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
+import { getRowKey } from './utils';
 
 const treeGrid = page.getTreeGrid();
 const headerRow = treeGrid.getHeaderRow();
@@ -131,7 +131,7 @@ function setup(groupBy: string[], { getGroupId, getRowGroupKey }: SetupOptions =
 }
 
 async function testHeaderCellsContent(expected: readonly string[]) {
-  await testCount(headerCells, expected.length);
+  await expect.element(headerCells).toHaveLength(expected.length);
 
   for (const [n, text] of expected.entries()) {
     await expect.element(headerCells.nth(n)).toHaveTextContent(text);
@@ -142,27 +142,27 @@ test('should not group if groupBy is empty', async () => {
   await setup([]);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '7');
   await testHeaderCellsContent(['', 'Sport', 'Country', 'Year', 'Id']);
-  await testRowCount(6);
+  await expect.element(rows).toHaveLength(6);
 });
 
 test('should not group if column does not exist', async () => {
   await setup(['abc']);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '7');
-  await testRowCount(6);
+  await expect.element(rows).toHaveLength(6);
 });
 
 test('should group by single column', async () => {
   await setup(['country']);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '9');
   await testHeaderCellsContent(['', 'Country', 'Sport', 'Year', 'Id']);
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
 });
 
 test('should group by multiple columns', async () => {
   await setup(['country', 'year']);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
 });
 
 test('should use getGroupId when provided', async () => {
@@ -173,15 +173,15 @@ test('should use getGroupId when provided', async () => {
   expect(getGroupId).toHaveBeenCalled();
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '13');
   await testHeaderCellsContent(['', 'Country', 'Year', 'Sport', 'Id']);
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
   getGroupId.mockClear();
   await userEvent.click(page.getCell({ name: 'USA' }));
-  await testRowCount(6);
+  await expect.element(rows).toHaveLength(6);
   expect(getGroupId).toHaveBeenCalled();
   await userEvent.click(page.getCell({ name: 'Canada' }));
-  await testRowCount(8);
+  await expect.element(rows).toHaveLength(8);
   await userEvent.click(page.getCell({ name: '2020' }));
-  await testRowCount(9);
+  await expect.element(rows).toHaveLength(9);
 });
 
 test('should use getRowGroupKey when provided', async () => {
@@ -191,7 +191,7 @@ test('should use getRowGroupKey when provided', async () => {
   await setup(['country'], { getRowGroupKey });
   expect(getRowGroupKey).toHaveBeenCalled();
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '9');
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
   await expect.element(page.getCell({ name: 'U' })).toBeInTheDocument();
   await expect.element(page.getCell({ name: 'C' })).toBeInTheDocument();
 });
@@ -201,7 +201,7 @@ test('should order groups by the first row that belongs to them', async () => {
   await setup(['year'], { getRowGroupKey: (row) => String(3000 - row.year) });
   for (const [index, groupKey] of ['980', '979', '978'].entries()) {
     await expect
-      .element(getRowWithCell(page.getCell({ name: groupKey })))
+      .element(page.getRowWithCell(page.getCell({ name: groupKey })))
       .toHaveAttribute('aria-posinset', String(index + 1));
   }
 });
@@ -209,14 +209,14 @@ test('should order groups by the first row that belongs to them', async () => {
 test('should ignore duplicate groupBy columns', async () => {
   await setup(['year', 'year', 'year']);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '10');
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
 });
 
 test('should use groupBy order while grouping', async () => {
   await setup(['year', 'country']);
   await expect.element(treeGrid).toHaveAttribute('aria-rowcount', '14');
   await testHeaderCellsContent(['', 'Year', 'Country', 'Sport', 'Id']);
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
 });
 
 // WebKit lays out each row track of the grid, so a million rows take ~250ms per layout
@@ -274,46 +274,46 @@ test('should keep the row keys when an earlier group is expanded, without getRow
   }
 
   await page.render(<Test />);
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
   const idCell = page.getCell({ name: '3', exact: true });
-  const rowElement = getRowWithCell(idCell).element();
+  const rowElement = page.getRowWithCell(idCell).element();
 
   await userEvent.click(page.getCell({ name: 'USA' }));
-  await testRowCount(6);
+  await expect.element(rows).toHaveLength(6);
   // the row moved down, but its key didn't change, so React kept its element
-  expect(getRowWithCell(idCell).element()).toBe(rowElement);
+  expect(page.getRowWithCell(idCell).element()).toBe(rowElement);
 });
 
 test('should toggle group when group cell is clicked', async () => {
   await setup(['year']);
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
   const groupCell = page.getCell({ name: '2021' });
   await userEvent.click(groupCell);
-  await testRowCount(7);
+  await expect.element(rows).toHaveLength(7);
   await userEvent.click(groupCell);
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
 });
 
 test('should toggle group using keyboard', async () => {
   await setup(['year']);
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
   const groupCell = page.getCell({ name: '2021' });
   await userEvent.click(groupCell);
-  await testRowCount(7);
+  await expect.element(rows).toHaveLength(7);
   // clicking on the group cell focuses the row
   await expect.element(activeCell).not.toBeInTheDocument();
-  await expect.element(getRowWithCell(groupCell)).toHaveClass(rowActiveClassname);
+  await expect.element(page.getRowWithCell(groupCell)).toHaveClass(rowActiveClassname);
   await userEvent.keyboard('{arrowright}{arrowright}{enter}');
-  await testRowCount(5);
+  await expect.element(rows).toHaveLength(5);
   await userEvent.keyboard('{enter}');
-  await testRowCount(7);
+  await expect.element(rows).toHaveLength(7);
 });
 
 test('should set aria-attributes', async () => {
   await setup(['year', 'country']);
 
   const groupCell1 = page.getCell({ name: '2020' });
-  const groupRow1 = getRowWithCell(groupCell1);
+  const groupRow1 = page.getRowWithCell(groupCell1);
   await expect.element(groupRow1).toHaveAttribute('aria-level', '1');
   await expect.element(groupRow1).toHaveAttribute('aria-setsize', '3');
   await expect.element(groupRow1).toHaveAttribute('aria-posinset', '1');
@@ -321,7 +321,7 @@ test('should set aria-attributes', async () => {
   await expect.element(groupRow1).toHaveAttribute('aria-expanded', 'false');
 
   const groupCell2 = page.getCell({ name: '2021' });
-  const groupRow2 = getRowWithCell(groupCell2);
+  const groupRow2 = page.getRowWithCell(groupCell2);
   await expect.element(groupRow2).toHaveAttribute('aria-level', '1');
   await expect.element(groupRow2).toHaveAttribute('aria-setsize', '3');
   await expect.element(groupRow2).toHaveAttribute('aria-posinset', '2');
@@ -332,7 +332,7 @@ test('should set aria-attributes', async () => {
   await expect.element(groupRow2).toHaveAttribute('aria-expanded', 'true');
 
   const groupCell3 = page.getCell({ name: 'Canada' });
-  const groupRow3 = getRowWithCell(groupCell3);
+  const groupRow3 = page.getRowWithCell(groupCell3);
   await expect.element(groupRow3).toHaveAttribute('aria-level', '2');
   await expect.element(groupRow3).toHaveAttribute('aria-setsize', '2');
   await expect.element(groupRow3).toHaveAttribute('aria-posinset', '2');
@@ -355,11 +355,13 @@ test('should select rows in a group', async () => {
   await userEvent.click(groupCell2);
 
   const selectedRows = page.getRow({ selected: true });
-  await testCount(selectedRows, 0);
+  await expect.element(selectedRows).toHaveLength(0);
 
   // select parent row
-  await userEvent.click(getRowWithCell(groupCell1).getByRole('checkbox', { name: 'Select Group' }));
-  await testCount(selectedRows, 4);
+  await userEvent.click(
+    page.getRowWithCell(groupCell1).getByRole('checkbox', { name: 'Select Group' })
+  );
+  await expect.element(selectedRows).toHaveLength(4);
   await expect.element(selectedRows.nth(0)).toHaveAttribute('aria-rowindex', '6');
   await expect.element(selectedRows.nth(1)).toHaveAttribute('aria-rowindex', '7');
   await expect.element(selectedRows.nth(2)).toHaveAttribute('aria-rowindex', '9');
@@ -367,36 +369,36 @@ test('should select rows in a group', async () => {
 
   // unselecting child should unselect the parent row
   await userEvent.click(selectedRows.nth(3).getByRole('checkbox', { name: 'Select' }));
-  await testCount(selectedRows, 1);
+  await expect.element(selectedRows).toHaveLength(1);
   await expect.element(selectedRows.nth(0)).toHaveAttribute('aria-rowindex', '7');
 
   // select child group
-  const checkbox = getRowWithCell(groupCell2).getByRole('checkbox', {
+  const checkbox = page.getRowWithCell(groupCell2).getByRole('checkbox', {
     name: 'Select Group'
   });
   await userEvent.click(checkbox);
-  await testCount(selectedRows, 4);
+  await expect.element(selectedRows).toHaveLength(4);
 
   // unselect child group
   await userEvent.click(checkbox);
-  await testCount(selectedRows, 1);
+  await expect.element(selectedRows).toHaveLength(1);
 
   await userEvent.click(page.getCell({ name: '2020' }));
   await userEvent.click(page.getCell({ name: '2022' }));
 
   await userEvent.click(headerCheckbox);
-  await testCount(selectedRows, 0);
+  await expect.element(selectedRows).toHaveLength(0);
 
   await userEvent.click(headerCheckbox);
-  await testCount(selectedRows, 8);
+  await expect.element(selectedRows).toHaveLength(8);
 
   await userEvent.click(headerCheckbox);
-  await testCount(selectedRows, 0);
+  await expect.element(selectedRows).toHaveLength(0);
 });
 
 test('cell navigation in a treegrid', async () => {
   await setup(['country', 'year']);
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
 
   const topSummaryRow = rows.nth(0);
   const row1 = rows.nth(1);
@@ -447,7 +449,7 @@ test('cell navigation in a treegrid', async () => {
   await expect.element(row3).toHaveAttribute('tabIndex', '0');
 
   // focus cell
-  const cells = getCellsAtRowIndex(5);
+  const cells = page.getRow({ index: 4 }).getCell();
   await userEvent.click(cells.nth(1));
   await expect.element(cells.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect.element(cells.nth(1)).toHaveFocus();
@@ -470,15 +472,15 @@ test('cell navigation in a treegrid', async () => {
 
   await userEvent.keyboard('{arrowleft}{arrowup}');
 
-  await testRowCount(7);
+  await expect.element(rows).toHaveLength(7);
 
   // left arrow should collapse the group
   await userEvent.keyboard('{arrowleft}');
-  await testRowCount(6);
+  await expect.element(rows).toHaveLength(6);
 
   // right arrow should expand the group
   await userEvent.keyboard('{arrowright}');
-  await testRowCount(7);
+  await expect.element(rows).toHaveLength(7);
 
   // left arrow on a collapsed group should focus the parent group
   await expect.element(rows.nth(1)).not.toHaveClass(rowActiveClassname);
@@ -497,7 +499,7 @@ test('cell navigation in a treegrid', async () => {
   // collapse parent group
   await userEvent.keyboard('{arrowdown}{arrowdown}{arrowleft}{arrowleft}');
   await expect.element(page.getCell({ name: '2021' })).not.toBeInTheDocument();
-  await testRowCount(4);
+  await expect.element(rows).toHaveLength(4);
 });
 
 test('copy/paste when grouping is enabled', async () => {
@@ -592,7 +594,7 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
   // the columns are: select, country, sport, year, id
 
   // activate the USA group row, without toggling it
-  const usaGroupRow = getRowWithCell(page.getCell({ name: 'USA' }));
+  const usaGroupRow = page.getRowWithCell(page.getCell({ name: 'USA' }));
   await userEvent.click(usaGroupRow.getCell().nth(2));
   await expect.element(usaGroupRow).toHaveClass(rowActiveClassname);
 
@@ -622,8 +624,8 @@ test('custom renderGroupCell', async () => {
   await setup(['country']);
   const usaCell = page.getCell({ name: 'USA' });
   const canadaCell = page.getCell({ name: 'Canada' });
-  await expect.element(getRowWithCell(usaCell).getCell().nth(4)).toHaveTextContent('1');
-  await expect.element(getRowWithCell(canadaCell).getCell().nth(4)).toHaveTextContent('3');
+  await expect.element(page.getRowWithCell(usaCell).getCell().nth(4)).toHaveTextContent('1');
+  await expect.element(page.getRowWithCell(canadaCell).getCell().nth(4)).toHaveTextContent('3');
 });
 
 test('adding a top summary row when no rows or cells are active should not focus the summary row', async () => {

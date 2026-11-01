@@ -1,7 +1,7 @@
 import { page, userEvent } from 'vite-plus/test/browser';
 
 import type { ColumnOrColumnGroup } from '../../../src';
-import { setup, testCount, validateCellPosition } from '../utils';
+import { setup } from '../utils';
 
 const grid = page.getGrid();
 const headerRows = grid.getHeaderRow();
@@ -97,19 +97,19 @@ test('grouping', async () => {
   await expect.element(grid).toHaveAttribute('aria-colcount', '12');
   await expect.element(grid).toHaveAttribute('aria-rowcount', '5');
 
-  await testCount(headerRows, 4);
+  await expect.element(headerRows).toHaveLength(4);
 
   await expect.element(headerRows.nth(0)).toHaveAttribute('aria-rowindex', '1');
   await expect.element(headerRows.nth(1)).toHaveAttribute('aria-rowindex', '2');
   await expect.element(headerRows.nth(2)).toHaveAttribute('aria-rowindex', '3');
   await expect.element(headerRows.nth(3)).toHaveAttribute('aria-rowindex', '4');
 
-  await testCount(headerRows.nth(0).getHeaderCell(), 2);
-  await testCount(headerRows.nth(1).getHeaderCell(), 2);
-  await testCount(headerRows.nth(2).getHeaderCell(), 4);
-  await testCount(headerRows.nth(3).getHeaderCell(), 12);
+  await expect.element(headerRows.nth(0).getHeaderCell()).toHaveLength(2);
+  await expect.element(headerRows.nth(1).getHeaderCell()).toHaveLength(2);
+  await expect.element(headerRows.nth(2).getHeaderCell()).toHaveLength(4);
+  await expect.element(headerRows.nth(3).getHeaderCell()).toHaveLength(12);
 
-  await testCount(headerCells, 20);
+  await expect.element(headerCells).toHaveLength(20);
 
   const expected = [
     {
@@ -234,7 +234,7 @@ test('grouping', async () => {
     }
   ] as const;
 
-  await testCount(headerCells, expected.length);
+  await expect.element(headerCells).toHaveLength(expected.length);
 
   for (const [n, item] of expected.entries()) {
     const cell = headerCells.nth(n);
@@ -256,90 +256,90 @@ test('keyboard navigation', async () => {
   await expect.element(grid.getActiveCell()).not.toBeInTheDocument();
 
   await userEvent.tab();
-  await validateCellPosition(0, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 3);
 
   // page up on the main header row does nothing
   await userEvent.keyboard('{PageUp}');
-  await validateCellPosition(0, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 3);
 
   // arrow navigation
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(0, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 3);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(1, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(1, 3);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(1, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(1, 2);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(1, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(1, 2);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(0, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 3);
   await userEvent.keyboard('{arrowright}{arrowright}');
-  await validateCellPosition(2, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(2, 3);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(1, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(1, 2);
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(1, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(1, 3);
   await userEvent.keyboard('{arrowright}{arrowright}');
-  await validateCellPosition(3, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(3, 3);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(4, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 3);
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(4, 4);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 4);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 3);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 2);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 1);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 1);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 0);
   await userEvent.keyboard('{arrowdown}');
-  await validateCellPosition(4, 1);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 1);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(5, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(5, 3);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(4, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 3);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 2);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(5, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(5, 3);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(6, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(6, 3);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(7, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(7, 3);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(7, 2);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(7, 2);
   await userEvent.keyboard('{arrowup}');
-  await validateCellPosition(4, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 0);
   await userEvent.keyboard('{arrowright}');
-  await validateCellPosition(8, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(8, 0);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(4, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 0);
 
   // home/end navigation
   await userEvent.keyboard('{home}');
-  await validateCellPosition(0, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 3);
   await userEvent.keyboard('{end}');
-  await validateCellPosition(11, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(11, 3);
   await userEvent.keyboard('{arrowleft}');
-  await validateCellPosition(10, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(10, 3);
 
   // tab navigation
   await userEvent.tab();
-  await validateCellPosition(11, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(11, 3);
   await userEvent.tab({ shift: true });
   await userEvent.tab({ shift: true });
   await userEvent.tab({ shift: true });
-  await validateCellPosition(8, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(8, 3);
   await userEvent.keyboard('{arrowup}');
   await userEvent.tab({ shift: true });
-  await validateCellPosition(4, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(4, 0);
   await userEvent.tab();
-  await validateCellPosition(8, 0);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(8, 0);
 
   await userEvent.keyboard('{home}{end}');
   await userEvent.tab();
-  await validateCellPosition(0, 4);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(0, 4);
   await userEvent.tab({ shift: true });
-  await validateCellPosition(11, 3);
+  await expect.element(grid.getActiveCell()).toHaveCellPosition(11, 3);
 });
