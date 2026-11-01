@@ -994,7 +994,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         style={dragHandleStyle}
         className={classnames(
           cellDragHandleClassname,
-          column.frozen && cellDragHandleFrozenClassname
+          column.frozen !== false && cellDragHandleFrozenClassname
         )}
         onPointerDown={handleDragHandlePointerDown}
         onPointerMove={isDragging ? handleDragHandlePointerMove : undefined}
