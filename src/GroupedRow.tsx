@@ -25,7 +25,7 @@ const groupRowClassname = `rdg-group-row ${groupRow}`;
 interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
   row: GroupRow<R>;
   groupBy: readonly string[];
-  toggleGroup: (expandedGroupId: unknown) => void;
+  toggleGroup: (expandedGroupId: string) => void;
 }
 
 function GroupedRow<R, SR>({
@@ -77,16 +77,12 @@ function GroupedRow<R, SR>({
         {mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => (
           <GroupCell
             key={column.key}
-            id={row.id}
-            groupKey={row.groupKey}
-            childRows={row.childRows}
-            isExpanded={row.isExpanded}
-            isCellActive={isCellActive}
             column={column}
             row={row}
-            toggleGroup={toggleGroup}
+            isCellActive={isCellActive}
             isGroupByColumn={groupBy.includes(column.key)}
             isLevelMatching={column.key === levelColumnKey}
+            toggleGroup={toggleGroup}
           />
         ))}
       </div>

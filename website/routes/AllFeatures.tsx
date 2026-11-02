@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
@@ -64,10 +65,6 @@ export interface Row {
   companyName: string;
   words: string;
   sentence: string;
-}
-
-function rowKeyGetter(row: Row) {
-  return row.id;
 }
 
 const avatarClassname = css`
@@ -283,7 +280,7 @@ function AllFeatures() {
         aria-label="All Features Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         onRowsChange={setRows}
         onFill={handleFill}
         onCellCopy={handleCellCopy}
@@ -298,7 +295,7 @@ function AllFeatures() {
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
             event.preventGridDefault();
-            args.setActivePosition(true);
+            args.setActivePosition({ enableEditor: true });
           }
         }}
         onCellKeyDown={(_, event) => {

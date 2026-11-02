@@ -11,7 +11,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
-import { compare } from '../utils';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({
@@ -118,7 +118,7 @@ function CustomizableRenderers() {
       className="fill-grid"
       columns={columns}
       rows={sortedRows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       onRowsChange={setRows}
       sortColumns={sortColumns}
       onSortColumnsChange={setSortColumns}
@@ -173,10 +173,6 @@ function renderRow(key: React.Key, props: RenderRowProps<Row>) {
   const style = props.row.complete === 100 ? rowStyle : undefined;
 
   return <BaseRow key={key} {...props} style={style} />;
-}
-
-function rowKeyGetter(row: Row) {
-  return row.id;
 }
 
 type Comparator = (a: Row, b: Row) => number;

@@ -3,7 +3,6 @@
 [![npm-badge]][npm-url]
 [![type-badge]][npm-url]
 [![size-badge]][size-url]
-[![codecov-badge]][codecov-url]
 [![ci-badge]][ci-url]
 
 The DataGrid component is designed to handle large datasets efficiently while offering a rich set of features for customization and interactivity.
@@ -324,9 +323,9 @@ Rows pinned at the bottom of the grid for summary purposes.
 
 :warning: **Performance:** Memoize this array to prevent internal memoization invalidation.
 
-###### `rowKeyGetter?: Maybe<(row: R) => K>`
+###### `getRowKey?: Maybe<(row: R) => K>`
 
-Function to return a unique key/identifier for each row. `rowKeyGetter` is required for row selection to work.
+Function to get a unique key for each row. Required for row selection.
 
 ```tsx
 import { DataGrid } from 'react-data-grid';
@@ -336,12 +335,12 @@ interface Row {
   name: string;
 }
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
 function MyGrid() {
-  return <DataGrid columns={columns} rows={rows} rowKeyGetter={rowKeyGetter} />;
+  return <DataGrid columns={columns} rows={rows} getRowKey={getRowKey} />;
 }
 ```
 
@@ -432,7 +431,7 @@ Callback triggered when column widths change. If not provided, an internal state
 
 ###### `selectedRows?: Maybe<ReadonlySet<K>>`
 
-A set of selected row keys. `rowKeyGetter` is required for row selection to work.
+A set of selected row keys. `getRowKey` is required for row selection to work.
 
 ###### `isRowSelectionDisabled?: Maybe<(row: R) => boolean>`
 
@@ -453,7 +452,7 @@ const columns: readonly Column<Row>[] = [
   // other columns
 ];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -466,7 +465,7 @@ function MyGrid() {
 
   return (
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       selectedRows={selectedRows}
@@ -547,7 +546,7 @@ function MyGrid() {
 
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -568,7 +567,7 @@ This event can be used to open the cell editor on a single click:
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.setActivePosition(true);
+    args.setActivePosition({ enableEditor: true });
   }
 }
 
@@ -606,7 +605,7 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 ###### `onCellKeyDown?: Maybe<(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>`
 
-Callback triggered when a key is pressed in a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
+Callback triggered when a key is pressed in a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow-tactiverow) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
 
 It is not called for keydown events triggered in a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) editor, see [`renderEditCell`](#rendereditcell-maybeprops-rendereditcellcontentpropstrow-tsummaryrow--reactnode).
 
@@ -646,7 +645,7 @@ Return the updated row; the grid will call `onRowsChange` with it.
 
 ###### `onActivePositionChange?: Maybe<(args: PositionChangeArgs<R, SR>) => void>`
 
-Callback triggered when the active position changes. See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow) type.
+Callback triggered when the active position changes. See the [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow-tactiverow) type.
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
@@ -862,9 +861,26 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 - Cell copy/paste does not work on group rows
 - Column groups are not supported; `columns` must be `Column[]`
 
+**Group rows in callbacks:**
+
+Callbacks that receive the active row receive group rows too: `onCellKeyDown` and `onActivePositionChange`. Their arguments are typed with [`TreeCellKeyDownArgs`](#treecellkeydownargstrow-tsummaryrow) and [`TreePositionChangeArgs`](#treepositionchangeargstrow-tsummaryrow); use [`isGroupRow`](#isgrouprowtrowrow-trow--grouprowtrow-row-is-grouprowtrow) to tell group rows apart from regular rows.
+
+```tsx
+import { isGroupRow, type CellKeyboardEvent, type TreeCellKeyDownArgs } from 'react-data-grid';
+
+function onCellKeyDown(args: TreeCellKeyDownArgs<Row>, event: CellKeyboardEvent) {
+  if (args.mode !== 'ACTIVE') return;
+  if (isGroupRow(args.row)) {
+    console.log(`Group ${args.row.groupKey} with ${args.row.childRows.length} rows`);
+    return;
+  }
+  console.log(args.row.name);
+}
+```
+
 ##### TreeDataGridProps
 
-All [`DataGridProps`](#datagridprops) are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives [`RowHeightArgs`](#rowheightargstrow) instead of just the row. Additional props are listed below:
+All [`DataGridProps`](#datagridprops) are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives [`RowHeightArgs`](#rowheightargstrow) instead of just the row, and `onCellKeyDown` and `onActivePositionChange` receive group rows too. Additional props are listed below:
 
 ###### `groupBy: readonly string[]`
 
@@ -902,7 +918,7 @@ function MyGrid() {
 
 :warning: **Performance:** Define this array outside your component or memoize it with `useMemo`, otherwise all the rows are grouped again on every render.
 
-###### `expandedGroupIds: ReadonlySet<unknown>`
+###### `expandedGroupIds: ReadonlySet<string>`
 
 **Required.** A set of group IDs that are currently expanded. Group IDs are generated by `getGroupId`.
 
@@ -911,7 +927,7 @@ import { useState } from 'react';
 import { TreeDataGrid } from 'react-data-grid';
 
 function MyGrid() {
-  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<unknown> => new Set());
+  const [expandedGroupIds, setExpandedGroupIds] = useState((): ReadonlySet<string> => new Set());
 
   return (
     <TreeDataGrid
@@ -923,7 +939,7 @@ function MyGrid() {
 }
 ```
 
-###### `onExpandedGroupIdsChange: (expandedGroupIds: Set<unknown>) => void`
+###### `onExpandedGroupIdsChange: (expandedGroupIds: Set<string>) => void`
 
 **Required.** Callback triggered when groups are expanded or collapsed.
 
@@ -965,6 +981,14 @@ function getRowHeight(args: RowHeightArgs<Row>): number {
 <TreeDataGrid rowHeight={getRowHeight} ... />
 ```
 
+###### `onCellKeyDown?: Maybe<(args: TreeCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>`
+
+Callback triggered when a key is pressed in a cell or a row, including group rows. Unlike `DataGrid`, the active row in `ACTIVE` mode can be a group row: use [`isGroupRow`](#isgrouprowtrowrow-trow--grouprowtrow-row-is-grouprowtrow) to narrow it. See the [`TreeCellKeyDownArgs`](#treecellkeydownargstrow-tsummaryrow) type and the [`onCellKeyDown`](#oncellkeydown-maybeargs-cellkeydownargsr-sr-event-cellkeyboardevent--void) prop on `<DataGrid />`.
+
+###### `onActivePositionChange?: Maybe<(args: TreePositionChangeArgs<R, SR>) => void>`
+
+Callback triggered when the active position changes, including to a group row or a cell of one: use [`isGroupRow`](#isgrouprowtrowrow-trow--grouprowtrow-row-is-grouprowtrow) to narrow the row. See the [`TreePositionChangeArgs`](#treepositionchangeargstrow-tsummaryrow) type.
+
 #### `<Row />`
 
 The default row component. Can be wrapped via the `renderers.renderRow` prop.
@@ -987,7 +1011,7 @@ A component for rendering row selection checkboxes.
 
 ##### Props
 
-The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `value: boolean` in place of `checked`.
+The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `checked` required.
 
 #### `<ToggleGroup />`
 
@@ -1143,7 +1167,7 @@ import { DataGrid, renderCheckbox } from 'react-data-grid';
 
 #### `renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, SR>)`
 
-The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the expand/collapse toggle.
+The default group cell content renderer for the columns used for grouping (`groupBy` prop). This renders the group key, `row.groupKey`, and the expand/collapse toggle.
 
 **Props:** [`RenderGroupCellContentProps<TRow, TSummaryRow>`](#rendergroupcellcontentpropstrow-tsummaryrow)
 
@@ -1232,7 +1256,7 @@ import { DataGrid, SelectColumn, type Column } from 'react-data-grid';
 
 const columns: readonly Column<Row>[] = [SelectColumn, ...otherColumns];
 
-function rowKeyGetter(row: Row) {
+function getRowKey(row: Row) {
   return row.id;
 }
 
@@ -1241,7 +1265,7 @@ function MyGrid() {
     <DataGrid
       columns={columns}
       rows={rows}
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
     />
@@ -1260,6 +1284,23 @@ import { SELECT_COLUMN_KEY } from 'react-data-grid';
 
 const nonSelectColumns = columns.filter((column) => column.key !== SELECT_COLUMN_KEY);
 ```
+
+#### `isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow>`
+
+Returns whether a row of a `TreeDataGrid` is a group row, e.g., the active row passed to `onCellKeyDown` or `onActivePositionChange`.
+
+**Example:**
+
+```tsx
+import { isGroupRow, type TreePositionChangeArgs } from 'react-data-grid';
+
+function onActivePositionChange({ row }: TreePositionChangeArgs<Row>) {
+  if (row === undefined || isGroupRow(row)) return;
+  console.log(row.name);
+}
+```
+
+**See also:** [`GroupRow`](#grouprowtrow), [`TreeCellKeyDownArgs`](#treecellkeydownargstrow-tsummaryrow), [`TreePositionChangeArgs`](#treepositionchangeargstrow-tsummaryrow)
 
 ### Types
 
@@ -1383,7 +1424,19 @@ Render function to render the content of summary cells.
 
 ##### `renderGroupCell?: Maybe<(props: RenderGroupCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
-Render function to render the content of group cells when using `TreeDataGrid`.
+Render function to render the content of group cells when using `TreeDataGrid`. The group row is passed as `row`, a [`GroupRow`](#grouprowtrow) with the group's key, rows, and expanded state.
+
+```tsx
+const columns: readonly Column<Row>[] = [
+  {
+    key: 'gold',
+    name: 'Gold',
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((sum, childRow) => sum + childRow.gold, 0);
+    }
+  }
+];
+```
 
 ##### `renderEditCell?: Maybe<(props: RenderEditCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
@@ -1715,17 +1768,45 @@ Props passed to group cell content renderers (`column.renderGroupCell`) when usi
 
 ```tsx
 interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
-  groupKey: unknown;
   column: CalculatedColumn<TRow, TSummaryRow>;
+  /** The group row: its key, rows, expanded state, level, and ID */
   row: GroupRow<TRow>;
-  childRows: readonly TRow[];
-  isExpanded: boolean;
   tabIndex: number;
+  /** Expands or collapses the group */
   toggleGroup: () => void;
 }
 ```
 
-**See also:** [`column.renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellcontentpropstrow-tsummaryrow--reactnode), [`renderToggleGroup`](#rendertogglegroupr-srprops-rendergroupcellcontentpropsr-sr) function, [`<ToggleGroup />`](#togglegroup-)
+**See also:** [`column.renderGroupCell`](#rendergroupcell-maybeprops-rendergroupcellcontentpropstrow-tsummaryrow--reactnode), [`renderToggleGroup`](#rendertogglegroupr-srprops-rendergroupcellcontentpropsr-sr) function, [`<ToggleGroup />`](#togglegroup-), [`GroupRow`](#grouprowtrow)
+
+#### `GroupRow<TRow>`
+
+Represents a group row in `TreeDataGrid`.
+
+```tsx
+interface GroupRow<TRow> {
+  /** The rows of the group, including the rows of its subgroups */
+  readonly childRows: readonly TRow[];
+  /** The group's ID, returned by `getGroupId` */
+  readonly id: string;
+  /** The ID of the parent group, or `undefined` on the first level */
+  readonly parentId: string | undefined;
+  /** The group's key, returned by `getRowGroupKey` */
+  readonly groupKey: string;
+  /** Whether the group is expanded, i.e., its ID is in `expandedGroupIds` */
+  readonly isExpanded: boolean;
+  /** The nesting level, `0` for the first level */
+  readonly level: number;
+  /** The position of the group among its sibling groups, `0` for the first one */
+  readonly posInSet: number;
+  /** The number of sibling groups, including this one */
+  readonly setSize: number;
+  /** The index of the group row among all the rows, counting every group as expanded */
+  readonly startRowIndex: number;
+}
+```
+
+**See also:** [`RenderGroupCellContentProps`](#rendergroupcellcontentpropstrow-tsummaryrow), [`RowHeightArgs`](#rowheightargstrow), [`<TreeDataGrid />`](#treedatagrid-)
 
 #### `RenderRowProps<TRow, TSummaryRow>`
 
@@ -1887,8 +1968,8 @@ interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   /** The row index of the cell. */
   rowIdx: number;
-  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setActivePosition: (enableEditor?: boolean) => void;
+  /** Sets the active position to the cell. Pass `{ enableEditor: true }` to open its editor, or `{ shouldFocus: true }` to also focus it. */
+  setActivePosition: (options?: SetActivePositionOptions) => void;
 }
 ```
 
@@ -1899,7 +1980,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.setActivePosition(true); // Focus and start editing
+  args.setActivePosition({ enableEditor: true }); // Activate the cell and open its editor
 }
 ```
 
@@ -1952,21 +2033,31 @@ function onCellMouseDown(args: CellMouseArgs<Row>, event: CellMouseEvent) {
 
 **See also:** [`onCellMouseDown`](#oncellmousedown-cellmouseeventhandlerr-sr), [`onCellClick`](#oncellclick-cellmouseeventhandlerr-sr), [`onCellDoubleClick`](#oncelldoubleclick-cellmouseeventhandlerr-sr), and [`onCellContextMenu`](#oncellcontextmenu-cellmouseeventhandlerr-sr) props on `<DataGrid />`
 
-#### `CellKeyDownArgs<TRow, TSummaryRow>`
+#### `CellKeyDownArgs<TRow, TSummaryRow, TActiveRow>`
 
 Arguments passed to the `onCellKeyDown` handler. The shape differs based on whether the cell is in ACTIVE or EDIT mode.
+
+```tsx
+/**
+ * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+type CellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> =
+  | ActiveCellKeyDownArgs<TRow, TSummaryRow, TActiveRow>
+  | EditCellKeyDownArgs<TRow, TSummaryRow>;
+```
 
 **ACTIVE mode:**
 
 ```tsx
-interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown> {
+interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   mode: 'ACTIVE';
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  row: TRow;
+  /** The active row. In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow` */
+  row: TActiveRow;
   rowIdx: number;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
 }
@@ -1998,7 +2089,7 @@ function onCellKeyDown(args: CellKeyDownArgs<Row>, event: CellKeyboardEvent) {
 }
 ```
 
-**See also:** [`onCellKeyDown`](#oncellkeydown-maybeargs-cellkeydownargsr-sr-event-cellkeyboardevent--void) prop on `<DataGrid />`
+**See also:** [`onCellKeyDown`](#oncellkeydown-maybeargs-cellkeydownargsr-sr-event-cellkeyboardevent--void) prop on `<DataGrid />`, [`TreeCellKeyDownArgs`](#treecellkeydownargstrow-tsummaryrow)
 
 #### `CellKeyboardEvent`
 
@@ -2046,19 +2137,23 @@ interface CellPasteArgs<TRow, TSummaryRow = unknown> {
 
 **See also:** [`onCellPaste`](#oncellpaste-maybeargs-cellpasteargsr-sr-event-cellclipboardevent--r) prop on `<DataGrid />`
 
-#### `PositionChangeArgs<TRow, TSummaryRow>`
+#### `PositionChangeArgs<TRow, TSummaryRow, TActiveRow>`
 
 Arguments passed to `onActivePositionChange`.
 
 ```tsx
-interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
+/**
+ * @typeParam TActiveRow - The type of the active row, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ */
+interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   /** row index of the active position */
   rowIdx: number;
   /**
    * row object of the active position,
-   * undefined if the active position is on a header or summary row
+   * undefined if the active position is on a header or summary row.
+   * In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow`
    */
-  row: TRow | undefined;
+  row: TActiveRow | undefined;
   /**
    * column object of the active position,
    * undefined if the active position is a row instead of a cell
@@ -2067,7 +2162,37 @@ interface PositionChangeArgs<TRow, TSummaryRow = unknown> {
 }
 ```
 
-**See also:** [`onActivePositionChange`](#onactivepositionchange-maybeargs-positionchangeargsr-sr--void) prop on `<DataGrid />`
+**See also:** [`onActivePositionChange`](#onactivepositionchange-maybeargs-positionchangeargsr-sr--void) prop on `<DataGrid />`, [`TreePositionChangeArgs`](#treepositionchangeargstrow-tsummaryrow)
+
+#### `TreeCellKeyDownArgs<TRow, TSummaryRow>`
+
+Arguments passed to the `onCellKeyDown` handler of `TreeDataGrid`: the active row can be a group row.
+
+```tsx
+/** The arguments of `TreeDataGrid`'s `onCellKeyDown`, whose active row can be a `GroupRow` */
+type TreeCellKeyDownArgs<TRow, TSummaryRow = unknown> = CellKeyDownArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
+```
+
+**See also:** [`onCellKeyDown`](#oncellkeydown-maybeargs-treecellkeydownargsr-sr-event-cellkeyboardevent--void) prop on `<TreeDataGrid />`, [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow-tactiverow), [`isGroupRow`](#isgrouprowtrowrow-trow--grouprowtrow-row-is-grouprowtrow)
+
+#### `TreePositionChangeArgs<TRow, TSummaryRow>`
+
+Arguments passed to the `onActivePositionChange` handler of `TreeDataGrid`: the active row can be a group row.
+
+```tsx
+/** The arguments of `TreeDataGrid`'s `onActivePositionChange`, whose row can be a `GroupRow` */
+type TreePositionChangeArgs<TRow, TSummaryRow = unknown> = PositionChangeArgs<
+  TRow,
+  TSummaryRow,
+  TRow | GroupRow<TRow>
+>;
+```
+
+**See also:** [`onActivePositionChange`](#onactivepositionchange-maybeargs-treepositionchangeargsr-sr--void) prop on `<TreeDataGrid />`, [`PositionChangeArgs`](#positionchangeargstrow-tsummaryrow-tactiverow), [`isGroupRow`](#isgrouprowtrowrow-trow--grouprowtrow-row-is-grouprowtrow)
 
 #### `ColSpanArgs<TRow, TSummaryRow>`
 
@@ -2122,7 +2247,7 @@ function getRowHeight(args: RowHeightArgs<Row>): number {
 <TreeDataGrid rowHeight={getRowHeight} ... />
 ```
 
-**See also:** [`rowHeight`](#rowheight-maybenumber--args-rowheightargsr--number) prop on `<TreeDataGrid />`
+**See also:** [`rowHeight`](#rowheight-maybenumber--args-rowheightargsr--number) prop on `<TreeDataGrid />`, [`GroupRow`](#grouprowtrow)
 
 #### `SortColumn`
 
@@ -2244,7 +2369,7 @@ interface Position {
 }
 ```
 
-**See also:** [`DataGridHandle`](#datagridhandle), [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow)
+**See also:** [`DataGridHandle`](#datagridhandle), [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow-tactiverow)
 
 #### `PartialPosition` (internal)
 
@@ -2270,7 +2395,7 @@ interface SetActivePositionOptions {
 }
 ```
 
-**See also:** [`DataGridHandle`](#datagridhandle), [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow)
+**See also:** [`DataGridHandle`](#datagridhandle), [`CellKeyDownArgs`](#cellkeydownargstrow-tsummaryrow-tactiverow)
 
 #### `ColumnWidths`
 
@@ -2307,26 +2432,6 @@ type Direction = 'ltr' | 'rtl';
 
 **See also:** [`direction`](#direction-maybeltr--rtl) prop on `<DataGrid />`
 
-#### `GroupRow<TRow>` (internal)
-
-Represents a group row in `TreeDataGrid`. This helper type is not exported; the shape is shown for reference.
-
-```tsx
-interface GroupRow<TRow> {
-  readonly childRows: readonly TRow[];
-  readonly id: string;
-  readonly parentId: unknown;
-  readonly groupKey: unknown;
-  readonly isExpanded: boolean;
-  readonly level: number;
-  readonly posInSet: number;
-  readonly setSize: number;
-  readonly startRowIndex: number;
-}
-```
-
-**See also:** [`RenderGroupCellContentProps`](#rendergroupcellcontentpropstrow-tsummaryrow), [`RowHeightArgs`](#rowheightargstrow), [`<TreeDataGrid />`](#treedatagrid-)
-
 #### `Maybe<T>` (internal)
 
 Utility type for optional values. This helper type is not exported; the shape is shown for reference.
@@ -2343,8 +2448,6 @@ type Maybe<T> = T | undefined | null;
 
 [ci-badge]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml
-[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
-[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
 [npm-badge]: https://img.shields.io/npm/v/react-data-grid
 [npm-url]: https://www.npmjs.com/package/react-data-grid
 [size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid

@@ -2,7 +2,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { renderTextEditor } from '../../../src';
 import type { Column, ColumnFrozen, ColumnOrColumnGroup } from '../../../src';
-import { getCellsAtRowIndex, safeTab, scrollGrid, setup, validateCellPosition } from '../utils';
+import { getCellsAtRowIndex, scrollGrid, setup, validateCellPosition } from '../utils';
 
 const headerCells = page.getHeaderCell();
 
@@ -213,18 +213,18 @@ describe('colSpan', () => {
     await validateCellPosition(0, 8);
     await userEvent.keyboard('{arrowright}');
     await validateCellPosition(5, 8);
-    await safeTab(true);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
+    await userEvent.tab({ shift: true });
     await validateCellPosition(14, 7);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(0, 8);
     await userEvent.click(getCellsAtRowIndex(10).nth(11));
     await validateCellPosition(11, 11);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(12, 11);
-    await safeTab();
+    await userEvent.tab();
     await validateCellPosition(0, 12);
-    await safeTab(true);
+    await userEvent.tab({ shift: true });
     await validateCellPosition(12, 11);
 
     // bottom summary rows
@@ -286,7 +286,7 @@ describe('colSpan', () => {
 
     async function navigate(count: number, shift = false) {
       for (let i = 0; i < count; i++) {
-        await safeTab(shift);
+        await userEvent.tab({ shift });
       }
     }
   });

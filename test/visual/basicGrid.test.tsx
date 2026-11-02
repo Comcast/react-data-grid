@@ -1,6 +1,7 @@
 import { page } from 'vite-plus/test/browser';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
+import { getRowKey } from '../browser/utils';
 
 const grid = page.getGrid();
 
@@ -36,14 +37,10 @@ const bottomSummaryRows: readonly Row[] = [
   { id: 7, name: 'Bottom Summary Row 2' }
 ];
 
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
-
 test('basic grid', async () => {
   await page.render(
     <DataGrid
-      rowKeyGetter={rowKeyGetter}
+      getRowKey={getRowKey}
       columns={columns}
       rows={rows}
       topSummaryRows={topSummaryRows}

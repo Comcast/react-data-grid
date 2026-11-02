@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
+import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/InfiniteScrolling')({
@@ -28,10 +29,6 @@ interface Row {
   title: string;
   firstName: string;
   lastName: string;
-}
-
-function rowKeyGetter(row: Row) {
-  return row.id;
 }
 
 const columns: readonly Column<Row>[] = [
@@ -116,7 +113,7 @@ function InfiniteScrolling() {
         aria-label="Infinite Scrolling Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         onRowsChange={setRows}
         rowHeight={30}
         onScroll={handleScroll}

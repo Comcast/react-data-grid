@@ -2,7 +2,6 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { Column } from '../../src';
-import { safeTab } from './utils';
 
 interface Row {
   col1: number;
@@ -71,6 +70,24 @@ describe('Events', () => {
     await expect.element(page.getCell({ name: 'a1' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('should activate and focus the cell if onCellMouseDown calls setActivePosition with shouldFocus', async () => {
+    await page.render(
+      <DataGrid
+        columns={columns}
+        rows={rows}
+        onCellMouseDown={(args, event) => {
+          // prevent the browser from focusing the cell, so only `shouldFocus` can focus it
+          event.preventDefault();
+          event.preventGridDefault();
+          args.setActivePosition({ shouldFocus: true });
+        }}
+      />
+    );
+    await userEvent.click(page.getCell({ name: 'a1' }));
+    await expect.element(page.getActiveCell()).toHaveTextContent('a1');
+    await expect.element(page.getCell({ name: 'a1' })).toHaveFocus();
+  });
+
   it('should be able to open the editor on single click using onCellClick', async () => {
     await page.render(
       <DataGrid
@@ -79,7 +96,7 @@ describe('Events', () => {
         onCellClick={(args, event) => {
           if (args.column.key === 'col2') {
             event.preventGridDefault();
-            args.setActivePosition(true);
+            args.setActivePosition({ enableEditor: true });
           }
         }}
       />
@@ -173,7 +190,7 @@ describe('Events', () => {
     expect(onActivePositionChange).toHaveBeenCalledTimes(4);
 
     // Activated by Tab key
-    await safeTab();
+    await userEvent.tab();
     expect(onActivePositionChange).toHaveBeenLastCalledWith({
       column: expect.objectContaining(columns[1]),
       row: rows[0],

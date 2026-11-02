@@ -7,6 +7,7 @@ import {
   DataGridRenderersContext,
   Row as DefaultRow,
   renderSortIcon,
+  SelectCheckbox,
   SelectColumn
 } from '../../src';
 import type {
@@ -319,4 +320,52 @@ test('renderRow defined using both context and renderers', async () => {
   const row = getRowWithCell(page.getCell({ name: 'value 1' }));
   await expect.element(row).toHaveClass('local');
   await expect.element(row).not.toHaveClass('global');
+});
+
+test('SelectCheckbox renders a checkbox with the checked prop', async () => {
+  interface AvailabilityRow {
+    id: number;
+    available: boolean;
+  }
+
+  const availabilityColumns: readonly Column<AvailabilityRow>[] = [
+    {
+      key: 'available',
+      name: 'Available',
+      renderCell({ row, onRowChange, tabIndex }) {
+        return (
+          <SelectCheckbox
+            aria-label={`Available ${row.id}`}
+            checked={row.available}
+            onChange={(checked) => {
+              onRowChange({ ...row, available: checked });
+            }}
+            tabIndex={tabIndex}
+          />
+        );
+      }
+    }
+  ];
+
+  function Test() {
+    const [rows, setRows] = useState<readonly AvailabilityRow[]>([
+      { id: 1, available: true },
+      { id: 2, available: false }
+    ]);
+
+    return <DataGrid columns={availabilityColumns} rows={rows} onRowsChange={setRows} />;
+  }
+
+  await page.render(<Test />);
+
+  const checkbox1 = page.getByRole('checkbox', { name: 'Available 1' });
+  const checkbox2 = page.getByRole('checkbox', { name: 'Available 2' });
+  await expect.element(checkbox1).toBeChecked();
+  await expect.element(checkbox2).not.toBeChecked();
+
+  await userEvent.click(checkbox1);
+  await expect.element(checkbox1).not.toBeChecked();
+
+  await userEvent.click(checkbox2);
+  await expect.element(checkbox2).toBeChecked();
 });

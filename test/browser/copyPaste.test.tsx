@@ -3,7 +3,7 @@ import { page, userEvent } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { CellPasteArgs, Column } from '../../src';
-import { getCellsAtRowIndex, safeTab } from './utils';
+import { getCellsAtRowIndex } from './utils';
 
 interface Row {
   col: string;
@@ -116,7 +116,7 @@ test('should allow copying a read-only cell', async () => {
 
 test('should not allow copy/paste on header or summary cells', async () => {
   await setup();
-  await safeTab();
+  await userEvent.tab();
   await userEvent.copy();
   expect(onCellCopySpy).not.toHaveBeenCalled();
   await userEvent.paste();

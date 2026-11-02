@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
-import { compare } from '../utils';
+import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -89,22 +89,22 @@ const columns: readonly Column<Row>[] = [
   {
     key: 'gold',
     name: 'Gold',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { gold }) => prev + gold, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { gold }) => prev + gold, 0);
     }
   },
   {
     key: 'silver',
     name: 'Silver',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { silver }) => prev + silver, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { silver }) => prev + silver, 0);
     }
   },
   {
     key: 'bronze',
     name: 'Bronze',
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, { bronze }) => prev + bronze, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce((prev, { bronze }) => prev + bronze, 0);
     }
   },
   {
@@ -113,15 +113,14 @@ const columns: readonly Column<Row>[] = [
     renderCell({ row }) {
       return row.gold + row.silver + row.bronze;
     },
-    renderGroupCell({ childRows }) {
-      return childRows.reduce((prev, row) => prev + row.gold + row.silver + row.bronze, 0);
+    renderGroupCell({ row }) {
+      return row.childRows.reduce(
+        (prev, childRow) => prev + childRow.gold + childRow.silver + childRow.bronze,
+        0
+      );
     }
   }
 ];
-
-function rowKeyGetter(row: Row) {
-  return row.id;
-}
 
 function createRows(): readonly Row[] {
   const rows: Row[] = [];
@@ -171,7 +170,7 @@ function RowGrouping() {
   ]);
   const rows = useMemo(() => sortRows(rawRows, selectedOptions), [rawRows, selectedOptions]);
   const [expandedGroupIds, setExpandedGroupIds] = useState(
-    (): ReadonlySet<unknown> =>
+    (): ReadonlySet<string> =>
       new Set(['United States of America', 'United States of America__2015'])
   );
 
@@ -209,7 +208,7 @@ function RowGrouping() {
         aria-label="Row Grouping Example"
         columns={columns}
         rows={rows}
-        rowKeyGetter={rowKeyGetter}
+        getRowKey={getRowKey}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
