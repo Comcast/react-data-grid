@@ -9,7 +9,7 @@ interface Row {
 }
 
 const columns: readonly Column<Row>[] = [
-  { key: 'id', name: 'ID' },
+  { key: 'id', name: 'ID', frozen: true },
   { key: 'title', name: 'Title' }
 ];
 
@@ -32,11 +32,7 @@ test('basic server-side rendering (SSR) support', () => {
 
 test('renders all the columns when virtualization is disabled', () => {
   const html = renderToString(
-    <DataGrid
-      columns={[{ ...columns[0], frozen: true }, columns[1]]}
-      rows={rows}
-      enableVirtualization={false}
-    />
+    <DataGrid columns={columns} rows={rows} enableVirtualization={false} />
   );
 
   // the grid's width is unknown on the server
