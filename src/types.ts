@@ -512,7 +512,7 @@ export type CellClipboardEvent = React.ClipboardEvent<HTMLDivElement>;
  *
  * function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
  *   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
- *   args.setActivePosition(true); // Focus and start editing
+ *   args.setActivePosition({ enableEditor: true }); // Activate the cell and open its editor
  * }
  * ```
  *
@@ -525,8 +525,8 @@ export interface CellMouseArgs<R, SR = unknown> {
   row: R;
   /** The row index of the cell. */
   rowIdx: number;
-  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setActivePosition: (enableEditor?: boolean) => void;
+  /** Sets the active position to the cell. Pass `{ enableEditor: true }` to open its editor, or `{ shouldFocus: true }` to also focus it. */
+  setActivePosition: (options?: SetActivePositionOptions) => void;
 }
 
 interface ActiveCellKeyDownArgs<R, SR = unknown, TActiveRow = R> {

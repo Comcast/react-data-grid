@@ -3,7 +3,7 @@ import { css } from 'ecij';
 
 import { useRovingTabIndex } from './hooks';
 import { createCellEvent, getCellClassname, getCellStyle, isCellEditableUtil } from './utils';
-import type { CellMouseEventHandler, RenderCellProps } from './types';
+import type { CellMouseEventHandler, RenderCellProps, SetActivePositionOptions } from './types';
 
 const cellDraggedOver = css`
   @layer rdg.Cell {
@@ -49,8 +49,8 @@ function Cell<R, SR>({
   );
   const isEditable = isCellEditableUtil(column, row);
 
-  function setActivePositionWrapper(enableEditor = false) {
-    setActivePosition({ idx: column.idx, rowIdx }, { enableEditor });
+  function setActivePositionWrapper(options?: SetActivePositionOptions) {
+    setActivePosition({ idx: column.idx, rowIdx }, options);
   }
 
   function handleMouseEvent(
@@ -83,7 +83,7 @@ function Cell<R, SR>({
     onDoubleClick?.(event);
     if (!handleMouseEvent(event, onCellDoubleClick)) {
       // go into edit mode if the event is not prevented
-      setActivePositionWrapper(true);
+      setActivePositionWrapper({ enableEditor: true });
     }
   }
 

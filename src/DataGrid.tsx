@@ -407,7 +407,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
    * Event props
    */
   /**
-   * Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. See the {@linkcode CellMouseArgs} and {@linkcode CellMouseEvent} types.
+   * Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`. See the {@linkcode CellMouseArgs} and {@linkcode CellMouseEvent} types.
    *
    * ```tsx
    * function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -428,7 +428,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
    * ```tsx
    * function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
    *   if (args.column.key === 'id') {
-   *     args.setActivePosition(true);
+   *     args.setActivePosition({ enableEditor: true });
    *   }
    * }
    *
@@ -1479,7 +1479,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         style={dragHandleStyle}
         className={classnames(
           cellDragHandleClassname,
-          column.frozen && cellDragHandleFrozenClassname
+          column.frozen !== false && cellDragHandleFrozenClassname
         )}
         onPointerDown={handleDragHandlePointerDown}
         onPointerMove={isDragging ? handleDragHandlePointerMove : undefined}
