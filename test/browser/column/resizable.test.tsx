@@ -588,9 +588,7 @@ test.fails('should keep percentage columns within their maxWidth while another c
   await userEvent.click(page.getHeaderCell({ name: 'col1' }));
   // keep the key pressed, so the column is still being resized
   await userEvent.keyboard('{Control>}{ArrowRight>}');
-  await expect
-    .poll(() => page.getHeaderCell({ name: 'col3' }).element().getBoundingClientRect().width)
-    .toBe(1428);
+  await expect.element(page.getHeaderCell({ name: 'col3' })).toHaveStyle({ width: '1428px' });
   await userEvent.keyboard('{/ArrowRight}{/Control}');
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '90px 400px 1428px' });
 });
