@@ -263,7 +263,7 @@ test('columns outside of the viewport keep their width', async () => {
   await assertHeaderCells(40, 0, 39);
 
   // every column is `minWidth` wide
-  await expect.poll(() => page.getGrid().element().scrollWidth).toBe(100 * 50);
+  await expect.element(page.getGrid()).toHaveProperty('scrollWidth', 100 * 50);
 });
 
 test('virtualization is enabled with 2 summary rows', async () => {
