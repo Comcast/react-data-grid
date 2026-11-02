@@ -51,6 +51,13 @@ test('should not allow dragFill if onFill is undefined', async () => {
   await expect.element(dragHandle).not.toBeInTheDocument();
 });
 
+test('should not apply the column width constraints to the drag handle', async () => {
+  await setup();
+  await userEvent.click(getCellsAtRowIndex(0).nth(0));
+  // the column's `minWidth` is 50px
+  await expect.element(dragHandle).toHaveStyle({ width: '8px' });
+});
+
 test('should allow dragFill if onFill is specified', async () => {
   await setup();
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
