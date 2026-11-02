@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useSyncExternalStore, type RefObject } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useMemo,
+  useSyncExternalStore,
+  type RefObject
+} from 'react';
 
 import { createResizeObserverGetter, floor, max, min } from '../utils';
 import type {
@@ -154,7 +160,6 @@ export function useColumnWidths<R, SR>(
   firstEndFrozenColumnIndex: number,
   gridWidth: number,
   scrollLeft: number,
-  previousGridWidth: number,
   enableVirtualization: boolean,
   columnWidthsRaw: DataGridProps<R, SR>['columnWidths'],
   onColumnResize: DataGridProps<R, SR>['onColumnResize'],
@@ -186,7 +191,9 @@ export function useColumnWidths<R, SR>(
   // the store is rebased when the measuring cells are attached, after rendering a new `columnWidths`
   const store = useMemo(() => rebaseStore(snapshot, columnWidths), [snapshot, columnWidths]);
 
-  // let the columns flex while the grid is resized, until it is rendered again with its new width
+  // the width the grid had before it was resized, until it is rendered again with its new width
+  const previousGridWidth = useDeferredValue(gridWidth, -1);
+  // let the columns flex while the grid is resized
   const isResizingWidth = gridWidth !== previousGridWidth;
   const isRevalidatingWidths =
     isResizingWidth ||
