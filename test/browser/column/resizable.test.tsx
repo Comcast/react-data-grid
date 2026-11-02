@@ -462,6 +462,7 @@ test('should only use the columnWidths prop as the initial widths without onColu
 
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 300px' });
   await resize('col2', 50);
+  // the map still has 300px, but without `onColumnWidthsChange` the grid keeps its own widths
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 350px' });
 });
 
