@@ -18,15 +18,11 @@ const rows: readonly Row[] = [
   { id: 1, title: 'Demo' }
 ];
 
-function App() {
-  return <DataGrid columns={columns} rows={rows} />;
-}
-
 test('basic server-side rendering (SSR) support', () => {
   // make sure we're not running in a browser environment
   expect(globalThis.window).toBeUndefined();
 
-  const html = renderToString(<App />);
+  const html = renderToString(<DataGrid columns={columns} rows={rows} />);
   expect(html).not.toHaveLength(0);
 });
 
