@@ -295,7 +295,7 @@ function AllFeatures() {
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
             event.preventGridDefault();
-            args.setActivePosition(true);
+            args.setActivePosition({ enableEditor: true });
           }
         }}
         onCellKeyDown={(_, event) => {

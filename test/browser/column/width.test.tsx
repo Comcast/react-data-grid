@@ -114,7 +114,9 @@ test('should not cause a ResizeObserver loop error when the grid is opened in a 
   );
 
   await expect.element(page.getHeaderCell()).toHaveLength(2);
-  await expect.poll(() => grid.element().style.gridTemplateColumns).toMatch(/^[\d.]+px [\d.]+px$/);
+  await expect
+    .element(grid)
+    .toHaveProperty('style.gridTemplateColumns', expect.stringMatching(/^[\d.]+px [\d.]+px$/));
 });
 
 test('should only render the columns in the viewport while a column is resized', async () => {
@@ -187,7 +189,9 @@ test('auto columns are at least as wide as their content, within their minWidth 
 
   await setup<unknown, unknown>({ columns, rows: [] });
 
-  await expect.poll(() => grid.element().style.gridTemplateColumns).toMatch(/^120px 100px /);
+  await expect
+    .element(grid)
+    .toHaveProperty('style.gridTemplateColumns', expect.stringMatching(/^120px 100px /));
   // the content of the other columns is not truncated
   const headerCell = page.getHeaderCell({ name: `0${longName}` }).element();
   expect(headerCell.clientWidth).toBe(headerCell.scrollWidth);
