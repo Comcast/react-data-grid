@@ -2,14 +2,6 @@ import { css } from 'ecij';
 
 import type { RenderGroupCellContentProps } from '../types';
 
-const groupCellContent = css`
-  @layer rdg.GroupCellContent {
-    outline: none;
-  }
-`;
-
-const groupCellContentClassname = `rdg-group-cell-content ${groupCellContent}`;
-
 const caret = css`
   @layer rdg.GroupCellCaret {
     margin-inline-start: 4px;
@@ -30,21 +22,13 @@ export function renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, S
   return <ToggleGroup {...props} />;
 }
 
-export function ToggleGroup<R, SR>({
-  row,
-  tabIndex,
-  toggleGroup
-}: RenderGroupCellContentProps<R, SR>) {
-  function handleKeyDown({ key }: React.KeyboardEvent<HTMLSpanElement>) {
-    if (key === 'Enter') {
-      toggleGroup();
-    }
-  }
-
+export function ToggleGroup<R, SR>({ row }: RenderGroupCellContentProps<R, SR>) {
   const d = row.isExpanded ? 'M1 1 L 7 7 L 13 1' : 'M1 7 L 7 1 L 13 7';
 
+  // not focusable, as TreeDataGrid toggles the group on click and on Enter,
+  // so keyboard focus stays on the row or cell
   return (
-    <span className={groupCellContentClassname} tabIndex={tabIndex} onKeyDown={handleKeyDown}>
+    <span className="rdg-group-cell-content">
       {row.groupKey}
       <svg viewBox="0 0 14 8" width="14" height="8" className={caretClassname} aria-hidden>
         <path d={d} />
