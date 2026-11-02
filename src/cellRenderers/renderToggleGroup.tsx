@@ -4,8 +4,7 @@ import type { RenderGroupCellContentProps } from '../types';
 
 const groupCellContent = css`
   @layer rdg.GroupCellContent {
-    /* reset the native button styles, the cell renders the focus outline */
-    all: unset;
+    outline: none;
   }
 `;
 
@@ -29,13 +28,6 @@ const caret = css`
 
 const caretClassname = `rdg-caret ${caret}`;
 
-function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
-  // Shift + Space selects the row, so prevent it from activating the button
-  if (event.key === ' ' && event.shiftKey) {
-    event.preventDefault();
-  }
-}
-
 export function renderToggleGroup<R, SR>(props: RenderGroupCellContentProps<R, SR>) {
   return <ToggleGroup {...props} />;
 }
@@ -45,26 +37,20 @@ export function ToggleGroup<R, SR>({
   tabIndex,
   toggleGroup
 }: RenderGroupCellContentProps<R, SR>) {
-  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
-    // the group cell also toggles the group on click
-    event.stopPropagation();
-    toggleGroup();
+  function handleKeyDown({ key }: React.KeyboardEvent<HTMLSpanElement>) {
+    if (key === 'Enter') {
+      toggleGroup();
+    }
   }
 
   const d = row.isExpanded ? 'M1 1 L 7 7 L 13 1' : 'M1 7 L 7 1 L 13 7';
 
   return (
-    <button
-      type="button"
-      className={groupCellContentClassname}
-      tabIndex={tabIndex}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    >
+    <span className={groupCellContentClassname} tabIndex={tabIndex} onKeyDown={handleKeyDown}>
       {row.groupKey}
       <svg viewBox="0 0 14 8" width="14" height="8" className={caretClassname} aria-hidden>
         <path d={d} />
       </svg>
-    </button>
+    </span>
   );
 }
