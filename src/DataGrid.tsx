@@ -22,6 +22,7 @@ import {
 import {
   assertIsValidGetRowKey,
   canExitGrid,
+  canOpenEditorUtil,
   classnames,
   createCellEvent,
   focusCell,
@@ -191,7 +192,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   onCellCopy?: Maybe<
     (args: CellCopyArgs<NoInfer<R>, NoInfer<SR>>, event: CellClipboardEvent) => void
   >;
-  /** Callback triggered when content is pasted into a cell */
+  /** Callback triggered when content is pasted into an editable cell */
   onCellPaste?: Maybe<
     (args: CellPasteArgs<NoInfer<R>, NoInfer<SR>>, event: CellClipboardEvent) => NoInfer<R>
   >;
@@ -201,7 +202,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   onColumnResize?: Maybe<(column: CalculatedColumn<R, SR>, width: number) => void>;
   /** Callback triggered when columns are reordered */
   onColumnsReorder?: Maybe<(sourceColumnKey: string, targetColumnKey: string) => void>;
-  /** Callback triggered when the value of the active cell is dragged to fill other cells */
+  /** Callback triggered when the value of the active cell is dragged to fill other editable cells */
   onFill?: Maybe<(event: FillEvent<NoInfer<R>>) => NoInfer<R>>;
 
   /**
@@ -697,7 +698,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       return;
     }
 
-    if (isCellEditable(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
+    if (canOpenEditor(activePosition) && isDefaultCellInput(event, onCellPaste != null)) {
       // ensure cell is fully visible
       scrollIntoView(cell);
 
@@ -804,6 +805,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     );
   }
 
+  function canOpenEditor(position: Position): boolean {
+    return (
+      validatePosition(position).isCellInViewport &&
+      canOpenEditorUtil(columns[position.idx], rows[position.rowIdx])
+    );
+  }
+
   function setPosition(position: Position, options?: SetActivePositionOptions): void {
     const { isPositionInActiveBounds } = validatePosition(position);
     if (!isPositionInActiveBounds) return;
@@ -814,7 +822,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const { idx, rowIdx } = position;
     const samePosition = isSamePosition(activePosition, position);
 
-    if (options?.enableEditor && isCellEditable(position)) {
+    if (options?.enableEditor && canOpenEditor(position)) {
       // avoid selecting text in the editor, for example
       // after double-clicking and displayCellContent is enabled
       gridRef.current?.ownerDocument.getSelection()?.removeAllRanges();
@@ -962,14 +970,13 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
     const { rowIdx } = activePosition;
     const column = getActiveColumn();
-    if (column.renderEditCell == null || column.editable === false) {
-      return;
-    }
+    const row = getActiveRow();
+    if (!isCellEditableUtil(column, row)) return;
 
     const isLastRow = rowIdx === maxRowIdx;
     const colSpan = column.getColSpan({
       type: 'ROW',
-      row: getActiveRow()
+      row
     });
     const style = getCellStyle(column, colSpan);
     // the drag handle is at the end of the last column that the cell spans,

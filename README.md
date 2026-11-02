@@ -576,7 +576,7 @@ function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 
 ###### `onCellDoubleClick?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable and its column has a `renderEditCell`. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
 
 ```tsx
 function onCellDoubleClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -639,7 +639,7 @@ Callback triggered when a cell's content is copied. See the [`CellCopyArgs`](#ce
 
 ###### `onCellPaste?: Maybe<(args: CellPasteArgs<R, SR>, event: CellClipboardEvent) => R>`
 
-Callback triggered when content is pasted into a cell. See the [`CellPasteArgs`](#cellpasteargstrow-tsummaryrow) type.
+Callback triggered when content is pasted into an editable cell, see [`column.editable`](#editable-maybeboolean--row-trow--boolean). Cells without `renderEditCell` can be pasted into when `editable` is `true`. See the [`CellPasteArgs`](#cellpasteargstrow-tsummaryrow) type.
 
 Return the updated row; the grid will call `onRowsChange` with it.
 
@@ -649,7 +649,7 @@ Callback triggered when the active position changes. See the [`PositionChangeArg
 
 ###### `onFill?: Maybe<(event: FillEvent<R>) => R>`
 
-Callback triggered when the value of the active cell is dragged to fill other cells. When this prop is set, a drag handle is shown on the active cell if it is editable. Drag the handle up or down to fill the cells it passes over, or double-click it to fill all the cells below.
+Callback triggered when the value of the active cell is dragged to fill other cells. When this prop is set, a drag handle is shown on the active cell if it is editable, see [`column.editable`](#editable-maybeboolean--row-trow--boolean), even when its column has no `renderEditCell`. Drag the handle up or down to fill the cells it passes over, or double-click it to fill all the cells below.
 
 The grid calls `onFill` for each editable target cell. Return the updated target row; the grid will call `onRowsChange` with the updated rows. See the [`FillEvent`](#filleventtrow) type.
 
@@ -1440,13 +1440,24 @@ const columns: readonly Column<Row>[] = [
 
 ##### `renderEditCell?: Maybe<(props: RenderEditCellContentProps<TRow, TSummaryRow>) => ReactNode>`
 
-Render function to render the content of edit cells. When set, the column is automatically set to be editable.
+Render function to render the content of edit cells. When set, the column is editable unless `editable` says otherwise, and the editor opens on the cells that are editable.
 
 Editors can render a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) element, like a `<dialog>` opened with `showModal()`, either in the cell or in a portal. Keydown events triggered in the modal are left to the editor: `onCellKeyDown` is not called, and the grid does not close the editor on `Escape`/`Enter` or navigate on `Tab`, so the editor must call `onClose` itself, for example in the dialog's `onClose` handler.
 
 ##### `editable?: Maybe<boolean | ((row: TRow) => boolean)>`
 
-Control whether cells can be edited with `renderEditCell`.
+Whether the column's cells can be edited: through `renderEditCell`, by drag-filling, and by pasting. Defaults to whether `renderEditCell` is set. Set it to `true` on a column without `renderEditCell` for cells that change through their content but can still be filled and pasted into.
+
+Typing, <kbd>Enter</kbd>, and double-clicking only open the editor on columns with `renderEditCell`. Cells that aren't editable have `aria-readonly="true"`.
+
+```tsx
+const columns: readonly Column<Row>[] = [
+  // filled and pasted into without an editor, see `onFill` and `onCellPaste`
+  { key: 'available', name: 'Available', renderCell: renderAvailableCheckbox, editable: true },
+  // editable with the editor, except on locked rows
+  { key: 'title', name: 'Title', renderEditCell: renderTextEditor, editable: (row) => !row.locked }
+];
+```
 
 ##### `colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>`
 
@@ -1677,6 +1688,7 @@ interface RenderCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
+  /** Whether the cell is editable, see `column.editable`. It can be `true` when the column has no `renderEditCell` */
   isCellEditable: boolean;
   tabIndex: number;
   onRowChange: (row: TRow) => void;

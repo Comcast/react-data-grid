@@ -45,11 +45,18 @@ export interface Column<TRow, TSummaryRow = unknown> {
   readonly renderGroupCell?: Maybe<
     (props: RenderGroupCellContentProps<TRow, TSummaryRow>) => ReactNode
   >;
-  /** Render function to render the content of edit cells. When set, the column is automatically set to be editable */
+  /**
+   * Render function to render the content of edit cells. When set, the column is editable unless `editable` says otherwise,
+   * and the editor opens on the cells that are editable
+   */
   readonly renderEditCell?: Maybe<
     (props: RenderEditCellContentProps<TRow, TSummaryRow>) => ReactNode
   >;
-  /** Control whether cells can be edited with `renderEditCell` */
+  /**
+   * Whether the column's cells can be edited: through `renderEditCell`, by drag-filling, and by pasting.
+   * Defaults to whether `renderEditCell` is set. Set it to `true` on a column without `renderEditCell`
+   * for cells that change through their content but can still be filled and pasted into
+   */
   readonly editable?: Maybe<boolean | ((row: TRow) => boolean)>;
   /**
    * Returns the number of columns that the cell spans, or `undefined` for no spanning.
@@ -153,6 +160,7 @@ export interface RenderCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
   rowIdx: number;
+  /** Whether the cell is editable, see `column.editable`. It can be `true` when the column has no `renderEditCell` */
   isCellEditable: boolean;
   tabIndex: number;
   onRowChange: (row: TRow) => void;
