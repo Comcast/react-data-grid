@@ -1,4 +1,12 @@
-import { useCallback, useLayoutEffect, useSyncExternalStore, type RefObject } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useLayoutEffect,
+  useSyncExternalStore,
+  type RefObject
+} from 'react';
+
+import { createResizeObserverGetter } from '../utils';
 
 const initialSize: ResizeObserverSize = {
   inlineSize: 1,
@@ -10,22 +18,7 @@ const initialSize: ResizeObserverSize = {
 const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
 const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
-
-// one ResizeObserver per window, so that resizes are observed in the window the grid is rendered in,
-// for example when the grid is portaled into an iframe or a popup window
-const resizeObservers = new WeakMap<Window, ResizeObserver>();
-
-function getResizeObserver(target: HTMLDivElement): ResizeObserver | null {
-  const ownerWindow = target.ownerDocument.defaultView;
-
-  // don't break in environments that don't support ResizeObserver
-  if (ownerWindow?.ResizeObserver == null) return null;
-
-  return resizeObservers.getOrInsertComputed(
-    ownerWindow,
-    () => new ownerWindow.ResizeObserver(resizeObserverCallback)
-  );
-}
+const getResizeObserver = createResizeObserverGetter(resizeObserverCallback);
 
 function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   for (const entry of entries) {
@@ -75,6 +68,8 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.
   const { inlineSize, blockSize } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // the width the grid had before it was resized, until it is rendered again with its new width
+  const previousInlineSize = useDeferredValue(inlineSize, -1);
 
   useLayoutEffect(() => {
     const target = gridRef.current!;
@@ -95,5 +90,5 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
     };
   }, [gridRef]);
 
-  return [inlineSize, blockSize] as const;
+  return [inlineSize, blockSize, previousInlineSize] as const;
 }
