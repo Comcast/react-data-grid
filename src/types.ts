@@ -860,7 +860,7 @@ export interface RenderSortStatusProps extends RenderSortIconProps, RenderSortPr
  */
 export interface RenderCheckboxProps {
   /** Whether the checkbox is checked */
-  checked?: boolean | undefined;
+  checked: boolean;
   /** Whether the checkbox is in an indeterminate state, like the select all checkbox when only some rows are selected */
   indeterminate?: boolean | undefined;
   /** Whether the checkbox is disabled */

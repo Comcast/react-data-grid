@@ -1285,13 +1285,10 @@ A component for rendering row selection checkboxes.
 
 ##### SelectCheckboxProps
 
-The same props as [`RenderCheckboxProps`](#rendercheckboxprops), with `checked` required.
+The same props as [`RenderCheckboxProps`](#rendercheckboxprops).
 
 ```tsx
-interface SelectCheckboxProps extends RenderCheckboxProps {
-  /** Whether the checkbox is checked */
-  checked: boolean;
-}
+type SelectCheckboxProps = RenderCheckboxProps;
 ```
 
 #### `<ToggleGroup />`
@@ -2318,7 +2315,7 @@ Props for custom checkbox renderers.
 ```tsx
 interface RenderCheckboxProps {
   /** Whether the checkbox is checked */
-  checked?: boolean | undefined;
+  checked: boolean;
   /** Whether the checkbox is in an indeterminate state, like the select all checkbox when only some rows are selected */
   indeterminate?: boolean | undefined;
   /** Whether the checkbox is disabled */
