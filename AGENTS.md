@@ -32,6 +32,7 @@ website/              # demo site (Vite + TanStack Router)
 - **`NoInfer<>`** — wrap callback parameters to prevent reverse type inference into component generics.
 - **Stable object shapes** — objects read in hot rendering paths, like calculated columns, must share one hidden class so property reads stay monomorphic: create them with every property in the same order, `undefined` when unset, and do not spread user-provided objects into them.
 - **No generators in rendering code** — React Compiler can't compile components or hooks that use `yield`, and iterating over generator objects is much slower than over arrays. Build arrays with plain loops instead (see `src/utils/viewportUtils.ts`).
+- **Frozen checks** — compare `column.frozen` against `false` first, as most columns aren't frozen, then against `'start'`, the second most common value.
 - **CSS layers** — all styles live in nested `@layer rdg.<Name>` sub-layers (e.g., `rdg.Cell`, `rdg.Row`). When a sub-layer overrides another sub-layer's styles, declare both in `src/style/layers.css`, which sets their order; undeclared sub-layers come after the declared ones. Use `ecij` `css` tagged templates (build-time extraction, not runtime CSS-in-JS). Co-locate styles in component files; `src/style/` is for shared styles.
 - **Dual class names** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
@@ -58,7 +59,7 @@ The project uses [Vite+](https://viteplus.dev/guide/), whose global `vp` CLI wra
 
 ## Validation
 
-Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed.
+Run `vp run ci --coverage` before submitting changes. It runs the same checks as CI, including `coverage.thresholds` in `vite.config.ts`, and skips any whose inputs haven't changed since they last passed.
 
 While iterating, run individual checks instead. The static checks take seconds, so run them before tests:
 
