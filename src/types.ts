@@ -24,6 +24,11 @@ export interface Column<R, SR = unknown> {
   /**
    * Width can be any valid CSS grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
    *
+   * `max-content` can be used to expand the column to show all the content. Note that the grid is only able to calculate column width for visible rows.
+   *
+   * @defaultValue `'auto'`
+   *
+   * @example
    * ```tsx
    * const columns: Column<Row>[] = [
    *   {
@@ -41,24 +46,16 @@ export interface Column<R, SR = unknown> {
    *   },
    *   {
    *     key: 'description',
-   *     name: 'Description'
+   *     name: 'Description',
+   *     width: 'minmax(100px, max-content)' // Fits the content, at least 100 pixels
+   *   },
+   *   {
+   *     key: 'notes',
+   *     name: 'Notes'
    *     // No width specified - automatically sized
    *   }
    * ];
    * ```
-   *
-   * Other examples:
-   *
-   * ```tsx
-   * width: 80, // pixels
-   * width: '25%',
-   * width: 'max-content',
-   * width: 'minmax(100px, max-content)',
-   * ```
-   *
-   * `max-content` can be used to expand the column to show all the content. Note that the grid is only able to calculate column width for visible rows.
-   *
-   * @defaultValue `auto`
    */
   readonly width?: Maybe<number | string>;
   /**
@@ -72,6 +69,7 @@ export interface Column<R, SR = unknown> {
   /**
    * Class name(s) for cells. Can be a string or a function that returns a class name based on the row.
    *
+   * @example
    * ```tsx
    * const columns: Column<Row>[] = [
    *   {
@@ -116,6 +114,7 @@ export interface Column<R, SR = unknown> {
   /**
    * Render function to render the content of group cells when using `TreeDataGrid`. The group row is passed as `row`, a {@linkcode GroupRow} with the group's key, rows, and expanded state.
    *
+   * @example
    * ```tsx
    * const columns: readonly Column<Row>[] = [
    *   {
@@ -138,7 +137,7 @@ export interface Column<R, SR = unknown> {
   /** Control whether cells can be edited with `renderEditCell`. */
   readonly editable?: Maybe<boolean | ((row: R) => boolean)>;
   /**
-   * Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of. See the {@linkcode ColSpanArgs} type.
+   * Function to determine how many columns this cell should span. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
    *
    * @example
    * ```tsx
@@ -157,15 +156,22 @@ export interface Column<R, SR = unknown> {
    *   }
    * ];
    * ```
+   *
+   * @returns The number of columns to span, or `undefined` for no spanning
+   *
+   * @see {@linkcode ColSpanArgs}
    */
   readonly colSpan?: Maybe<(args: ColSpanArgs<R, SR>) => Maybe<number>>;
   /**
-   * Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally. See the {@linkcode ColumnFrozen} type.
+   * Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally.
    *
    * - `'start'` (or `true` for backward compatibility) — pins the column to the start edge (left in LTR, right in RTL).
    * - `'end'` — pins the column to the end edge (right in LTR, left in RTL).
-   * - `false` (default) — the column scrolls with the rest of the grid.
+   * - `false` — the column scrolls with the rest of the grid.
    *
+   * @defaultValue `false`
+   *
+   * @example
    * ```tsx
    * const columns: readonly Column<Row>[] = [
    *   { key: 'id', name: 'ID', frozen: 'start' },
@@ -174,7 +180,7 @@ export interface Column<R, SR = unknown> {
    * ];
    * ```
    *
-   * @defaultValue `false`
+   * @see {@linkcode ColumnFrozen}
    */
   readonly frozen?: Maybe<ColumnFrozen | true>;
   /**

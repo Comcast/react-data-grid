@@ -298,7 +298,9 @@ Main API component to render a data grid of rows and columns
 ref?: Maybe<React.Ref<DataGridHandle>>;
 ```
 
-Optional ref for imperative APIs like scrolling to or focusing a cell. See [`DataGridHandle`](#datagridhandle).
+Optional ref for imperative APIs like scrolling to or focusing a cell.
+
+**See also:** [`DataGridHandle`](#datagridhandle)
 
 ###### `columns`
 
@@ -306,9 +308,11 @@ Optional ref for imperative APIs like scrolling to or focusing a cell. See [`Dat
 columns: readonly ColumnOrColumnGroup<R, SR>[];
 ```
 
-An array of column definitions and/or column groups. See the [`ColumnOrColumnGroup`](#columnorcolumngroup) type for all available options.
+An array of column definitions and/or column groups.
 
 ⚠️ **Performance:** Passing a new `columns` array will trigger a re-render and recalculation for the entire grid. Always memoize this prop using `useMemo` or define it outside the component to avoid unnecessary re-renders.
+
+**See also:** [`ColumnOrColumnGroup`](#columnorcolumngroup)
 
 ###### `rows`
 
@@ -323,15 +327,17 @@ An array of rows. The row data can be of any type.
 - **Virtualization**: Only visible rows are rendered in the DOM
 - **Individual row updates**: Row components are memoized, so updating a single row object will only re-render that specific row, not all rows
 - **Array reference matters**: Changing the array reference itself (e.g., `setRows([...rows])`) triggers viewport and layout recalculations, even if the row objects are unchanged
-- **Best practice**: When updating rows, create a new array but reuse unchanged row objects. For example:
+- **Best practice**: When updating rows, create a new array but reuse unchanged row objects.
 
-  ```tsx
-  // ✅ Good: Only the changed row is re-rendered
-  setRows(rows.map((row, idx) => (idx === targetIdx ? { ...row, updated: true } : row)));
+**Example:**
 
-  // ❌ Avoid: Creates new references for all rows, causing all visible rows to re-render
-  setRows(rows.map((row) => ({ ...row })));
-  ```
+```tsx
+// ✅ Good: Only the changed row is re-rendered
+setRows(rows.map((row, idx) => (idx === targetIdx ? { ...row, updated: true } : row)));
+
+// ❌ Avoid: Creates new references for all rows, causing all visible rows to re-render
+setRows(rows.map((row) => ({ ...row })));
+```
 
 ###### `topSummaryRows?`
 
@@ -361,6 +367,12 @@ getRowKey?: Maybe<(row: R) => K>;
 
 Function to get a unique key for each row. Required for row selection.
 
+💡 While optional, setting this prop is recommended for optimal performance, as the returned value is used to set the `key` prop on the row elements.
+
+⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback` to prevent unnecessary re-renders.
+
+**Example:**
+
 ```tsx
 import { DataGrid } from 'react-data-grid';
 
@@ -378,10 +390,6 @@ function MyGrid() {
 }
 ```
 
-💡 While optional, setting this prop is recommended for optimal performance, as the returned value is used to set the `key` prop on the row elements.
-
-⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback` to prevent unnecessary re-renders.
-
 ###### `onRowsChange?`
 
 ```tsx
@@ -391,7 +399,9 @@ onRowsChange?: Maybe<(rows: R[], data: RowsChangeData<R, SR>) => void>;
 Callback triggered when rows are changed.
 
 The first parameter is a new rows array with both the updated rows and the other untouched rows.
-The second parameter is an object with an `indexes` array highlighting which rows have changed by their index, and the `column` where the change happened. See the [`RowsChangeData`](#rowschangedata) type.
+The second parameter is an object with an `indexes` array highlighting which rows have changed by their index, and the `column` where the change happened.
+
+**Example:**
 
 ```tsx
 import { useState } from 'react';
@@ -404,6 +414,8 @@ function MyGrid() {
 }
 ```
 
+**See also:** [`RowsChangeData`](#rowschangedata)
+
 ###### `rowHeight?`
 
 ```tsx
@@ -411,6 +423,12 @@ rowHeight?: Maybe<number | ((row: R) => number)>;
 ```
 
 Height of each row in pixels. A function can be used to set different row heights.
+
+⚠️ **Performance:** When using a function, the heights of all rows are processed upfront. For large datasets (1000+ rows), this can cause performance issues if the identity of the function changes and invalidates internal memoization. Consider using a static function when possible, or memoize the `rowHeight` function.
+
+**Default:** `35` pixels
+
+**Example:**
 
 ```tsx
 // Fixed height for all rows
@@ -423,10 +441,6 @@ function getRowHeight(row) {
 
 <DataGrid columns={columns} rows={rows} rowHeight={getRowHeight} />;
 ```
-
-⚠️ **Performance:** When using a function, the heights of all rows are processed upfront. For large datasets (1000+ rows), this can cause performance issues if the identity of the function changes and invalidates internal memoization. Consider using a static function when possible, or memoize the `rowHeight` function.
-
-**Default:** `35` pixels
 
 ###### `headerRowHeight?`
 
@@ -446,17 +460,6 @@ summaryRowHeight?: Maybe<number>;
 
 Height of each summary row in pixels.
 
-```tsx
-<DataGrid
-  columns={columns}
-  rows={rows}
-  rowHeight={35}
-  headerRowHeight={45}
-  summaryRowHeight={40}
-  topSummaryRows={topSummaryRows}
-/>
-```
-
 **Default:** `rowHeight` when it is a number, otherwise `35` pixels
 
 ###### `columnWidths?`
@@ -465,7 +468,9 @@ Height of each summary row in pixels.
 columnWidths?: Maybe<ColumnWidths>;
 ```
 
-A map of column widths containing both measured and resized widths. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths-1) type.
+A map of column widths containing both measured and resized widths. If not provided, an internal state is used.
+
+**Example:**
 
 ```tsx
 const [columnWidths, setColumnWidths] = useState((): ColumnWidths => new Map());
@@ -479,13 +484,17 @@ function addNewRow() {
 return <DataGrid columnWidths={columnWidths} onColumnWidthsChange={setColumnWidths} ... />
 ```
 
+**See also:** [`ColumnWidths`](#columnwidths-1)
+
 ###### `onColumnWidthsChange?`
 
 ```tsx
 onColumnWidthsChange?: Maybe<(columnWidths: ColumnWidths) => void>;
 ```
 
-Callback triggered when column widths change. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths-1) type.
+Callback triggered when column widths change. If not provided, an internal state is used.
+
+**See also:** [`ColumnWidths`](#columnwidths-1)
 
 ###### `selectedRows?`
 
@@ -510,6 +519,8 @@ onSelectedRowsChange?: Maybe<(selectedRows: Set<K>) => void>;
 ```
 
 Callback triggered when the selection changes.
+
+**Example:**
 
 ```tsx
 import { useState } from 'react';
@@ -552,9 +563,11 @@ function MyGrid() {
 sortColumns?: Maybe<readonly SortColumn[]>;
 ```
 
-An array of sorted columns. See the [`SortColumn`](#sortcolumn) type.
+An array of sorted columns.
 
 Sorting is controlled: the grid does not reorder `rows` for you. Apply the sorting to your `rows` state (or derived rows) based on `sortColumns`.
+
+**See also:** [`SortColumn`](#sortcolumn)
 
 ###### `onSortColumnsChange?`
 
@@ -563,6 +576,10 @@ onSortColumnsChange?: Maybe<(sortColumns: SortColumn[]) => void>;
 ```
 
 Callback triggered when sorting changes.
+
+More than one column can be sorted via Ctrl+Click (Cmd+Click on macOS).
+
+**Example:**
 
 ```tsx
 import { useState } from 'react';
@@ -593,9 +610,10 @@ function MyGrid() {
 }
 ```
 
-More than one column can be sorted via Ctrl+Click (Cmd+Click on macOS). To disable multi-column sorting, change the `onSortColumnsChange` function to:
+**Example:**
 
 ```tsx
+// Disable multi-column sorting
 function onSortColumnsChange(sortColumns: SortColumn[]) {
   setSortColumns(sortColumns.slice(-1));
 }
@@ -607,7 +625,9 @@ function onSortColumnsChange(sortColumns: SortColumn[]) {
 defaultColumnOptions?: Maybe<DefaultColumnOptions<R, SR>>;
 ```
 
-Default options applied to all columns. See the [`DefaultColumnOptions`](#defaultcolumnoptions-1) type.
+Default options applied to all columns.
+
+**Example:**
 
 ```tsx
 function MyGrid() {
@@ -626,13 +646,17 @@ function MyGrid() {
 }
 ```
 
+**See also:** [`DefaultColumnOptions`](#defaultcolumnoptions-1)
+
 ###### `onCellMouseDown?`
 
 ```tsx
 onCellMouseDown?: CellMouseEventHandler<R, SR>;
 ```
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`. See the [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`.
+
+**Example:**
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -644,18 +668,21 @@ function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellMouseDown={onCellMouseDown} />;
 ```
 
+**See also:** [`CellMouseArgs`](#cellmouseargs), [`CellMouseEvent`](#cellmouseevent)
+
 ###### `onCellClick?`
 
 ```tsx
 onCellClick?: CellMouseEventHandler<R, SR>;
 ```
 
-Callback triggered when a cell is clicked. See the [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a cell is clicked.
 
-This event can be used to open the cell editor on a single click:
+**Example:**
 
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
+  // Open the editor on a single click
   if (args.column.key === 'id') {
     args.setActivePosition({ enableEditor: true });
   }
@@ -664,13 +691,17 @@ function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellClick={onCellClick} />;
 ```
 
+**See also:** [`CellMouseArgs`](#cellmouseargs), [`CellMouseEvent`](#cellmouseevent)
+
 ###### `onCellDoubleClick?`
 
 ```tsx
 onCellDoubleClick?: CellMouseEventHandler<R, SR>;
 ```
 
-Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a cell is double-clicked. The default behavior is to open the editor if the cell is editable. Call `preventGridDefault` to prevent the default behavior.
+
+**Example:**
 
 ```tsx
 function onCellDoubleClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -682,13 +713,17 @@ function onCellDoubleClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellDoubleClick={onCellDoubleClick} />;
 ```
 
+**See also:** [`CellMouseArgs`](#cellmouseargs), [`CellMouseEvent`](#cellmouseevent)
+
 ###### `onCellContextMenu?`
 
 ```tsx
 onCellContextMenu?: CellMouseEventHandler<R, SR>;
 ```
 
-Callback triggered when a cell is right-clicked. See the [`CellMouseArgs`](#cellmouseargs) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a cell is right-clicked.
+
+**Example:**
 
 ```tsx
 function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -701,39 +736,32 @@ function onCellContextMenu(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
 <DataGrid rows={rows} columns={columns} onCellContextMenu={onCellContextMenu} />;
 ```
 
+**See also:** [`CellMouseArgs`](#cellmouseargs), [`CellMouseEvent`](#cellmouseevent)
+
 ###### `onCellKeyDown?`
 
 ```tsx
 onCellKeyDown?: Maybe<(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>;
 ```
 
-Callback triggered when a key is pressed in a cell. This event can be used to customize cell navigation and editing behavior. See the [`CellKeyDownArgs`](#cellkeydownargs) and [`CellKeyboardEvent`](#cellkeyboardevent) types.
+Callback triggered when a key is pressed in a cell. This event can be used to customize cell navigation and editing behavior.
 
 It is not called for keydown events triggered in a [`:modal`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:modal) editor, see [`renderEditCell`](#rendereditcell).
 
-**Examples**
-
-- Prevent editing on `Enter`
-
-```tsx
-function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'ACTIVE' && event.key === 'Enter') {
-    event.preventGridDefault();
-  }
-}
-```
-
-- Prevent navigation on `Tab`
-
-```tsx
-function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
-  if (args.mode === 'ACTIVE' && event.key === 'Tab') {
-    event.preventGridDefault();
-  }
-}
-```
-
 See [more examples](https://github.com/Comcast/react-data-grid/blob/main/website/routes/CellNavigation.tsx).
+
+**Example:**
+
+```tsx
+function onCellKeyDown(args: CellKeyDownArgs<R, SR>, event: CellKeyboardEvent) {
+  if (args.mode === 'ACTIVE' && (event.key === 'Enter' || event.key === 'Tab')) {
+    // Prevent editing on `Enter` and navigation on `Tab`
+    event.preventGridDefault();
+  }
+}
+```
+
+**See also:** [`CellKeyDownArgs`](#cellkeydownargs), [`CellKeyboardEvent`](#cellkeyboardevent)
 
 ###### `onCellCopy?`
 
@@ -741,7 +769,9 @@ See [more examples](https://github.com/Comcast/react-data-grid/blob/main/website
 onCellCopy?: Maybe<(args: CellCopyArgs<R, SR>, event: CellClipboardEvent) => void>;
 ```
 
-Callback triggered when a cell's content is copied. See the [`CellCopyArgs`](#cellcopyargs) type.
+Callback triggered when a cell's content is copied.
+
+**See also:** [`CellCopyArgs`](#cellcopyargs)
 
 ###### `onCellPaste?`
 
@@ -749,9 +779,13 @@ Callback triggered when a cell's content is copied. See the [`CellCopyArgs`](#ce
 onCellPaste?: Maybe<(args: CellPasteArgs<R, SR>, event: CellClipboardEvent) => R>;
 ```
 
-Callback triggered when content is pasted into a cell. See the [`CellPasteArgs`](#cellpasteargs) type.
+Callback triggered when content is pasted into a cell.
 
-Return the updated row; the grid will call `onRowsChange` with it.
+**Returns:**
+
+The updated row, which the grid passes to [`onRowsChange`](#onrowschange)
+
+**See also:** [`CellPasteArgs`](#cellpasteargs)
 
 ###### `onActivePositionChange?`
 
@@ -759,7 +793,9 @@ Return the updated row; the grid will call `onRowsChange` with it.
 onActivePositionChange?: Maybe<(args: PositionChangeArgs<R, SR>) => void>;
 ```
 
-Callback triggered when the active position changes. See the [`PositionChangeArgs`](#positionchangeargs) type.
+Callback triggered when the active position changes.
+
+**See also:** [`PositionChangeArgs`](#positionchangeargs)
 
 ###### `onColumnResize?`
 
@@ -785,7 +821,9 @@ onFill?: Maybe<(event: FillEvent<R>) => R>;
 
 Callback triggered when the value of the active cell is dragged to fill other cells. When this prop is set, a drag handle is shown on the active cell if it is editable. Drag the handle up or down to fill the cells it passes over, or double-click it to fill all the cells below.
 
-The grid calls `onFill` for each editable target cell. Return the updated target row; the grid will call `onRowsChange` with the updated rows. See the [`FillEvent`](#fillevent) type.
+The grid calls `onFill` for each editable target cell.
+
+**Example:**
 
 ```tsx
 function onFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
@@ -794,6 +832,12 @@ function onFill({ columnKey, sourceRow, targetRow }: FillEvent<Row>): Row {
 
 <DataGrid columns={columns} rows={rows} onRowsChange={setRows} onFill={onFill} />;
 ```
+
+**Returns:**
+
+The updated target row. The grid passes the updated rows to [`onRowsChange`](#onrowschange)
+
+**See also:** [`FillEvent`](#fillevent)
 
 ###### `onScroll?`
 
@@ -821,17 +865,19 @@ renderers?: Maybe<Renderers<R, SR>>;
 
 Custom renderers for cells, rows, and other components.
 
-See the [`Renderers`](#renderers-1) type for the full shape.
-
-Example of replacing default components:
+**Example:**
 
 ```tsx
-import { DataGrid, type Renderers } from 'react-data-grid';
+import { DataGrid, Row, type Renderers } from 'react-data-grid';
 
-const customRenderers: Renderers<Row, SummaryRow> = {
-  // Custom row render function
+const customRenderers: Renderers<MyRow, MySummaryRow> = {
+  // Wrap the default row to add contexts or tweak props
   renderRow(key, props) {
-    return <CustomRow key={key} {...props} />;
+    return (
+      <MyContext key={key} value={123}>
+        <Row {...props} />
+      </MyContext>
+    );
   },
 
   // Custom cell render function
@@ -856,27 +902,7 @@ const customRenderers: Renderers<Row, SummaryRow> = {
 <DataGrid columns={columns} rows={rows} renderers={customRenderers} />;
 ```
 
-The default `<Row />` component can be wrapped via [`renderers.renderRow`](#renderers-1) to add contexts or tweak props:
-
-```tsx
-import { DataGrid, Row, type RenderRowProps } from 'react-data-grid';
-
-interface MyRow {
-  id: number;
-}
-
-function myRowRenderer(key: React.Key, props: RenderRowProps<MyRow>) {
-  return (
-    <MyContext key={key} value={123}>
-      <Row {...props} />
-    </MyContext>
-  );
-}
-
-function MyGrid() {
-  return <DataGrid columns={columns} rows={rows} renderers={{ renderRow: myRowRenderer }} />;
-}
-```
+**See also:** [`Renderers`](#renderers-1)
 
 ###### `rowClass?`
 
@@ -885,6 +911,10 @@ rowClass?: Maybe<(row: R, rowIdx: number) => Maybe<string>>;
 ```
 
 Function to apply custom class names to rows.
+
+⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback` to avoid re-rendering all rows on every render.
+
+**Example:**
 
 ```tsx
 import { DataGrid } from 'react-data-grid';
@@ -898,8 +928,6 @@ function MyGrid() {
 }
 ```
 
-⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback` to avoid re-rendering all rows on every render.
-
 ###### `headerRowClass?`
 
 ```tsx
@@ -908,26 +936,24 @@ headerRowClass?: Maybe<string>;
 
 Custom class name for the header row.
 
-```tsx
-<DataGrid columns={columns} rows={rows} headerRowClass="sticky-header" />
-```
-
 ###### `direction?`
 
 ```tsx
 direction?: Maybe<Direction>;
 ```
 
-This property sets the text direction of the grid. It defaults to `'ltr'` (left-to-right). See the [`Direction`](#direction-1) type.
+This property sets the text direction of the grid.
 
 Setting `direction` to `'rtl'` has the following effects:
 
 - Columns flow from right to left
 - Start-frozen columns are pinned on the right, and end-frozen columns are pinned on the left
-- Column resize cursor is shown on the left edge of the column
-- Scrollbar is moved to the left
+- Column resize is controlled on the left edge of the column
+- Vertical scrollbar is moved to the left
 
-**Default:** `'ltr'`
+**Default:** `'ltr'` left-to-right
+
+**See also:** [`Direction`](#direction-1)
 
 ###### `className?`
 
@@ -951,7 +977,9 @@ Custom styles for the grid.
 role?: React.AriaRole | undefined;
 ```
 
-ARIA role for the grid container. Defaults to `grid`.
+ARIA role for the grid container.
+
+**Default:** `'grid'`
 
 ###### `aria-label?`
 
@@ -1000,6 +1028,8 @@ If the grid has a caption or description, `aria-describedby` can be set on the g
 ```
 
 This prop can be used to add a test ID for testing. We recommend querying the grid by its `role` and `name`.
+
+**Example:**
 
 ```tsx
 function MyGrid() {
@@ -1057,6 +1087,8 @@ The following `DataGrid` props are not supported in `TreeDataGrid`:
 
 Callbacks that receive the active row receive group rows too: `onCellKeyDown` and `onActivePositionChange`. Their arguments are typed with [`TreeCellKeyDownArgs`](#treecellkeydownargs) and [`TreePositionChangeArgs`](#treepositionchangeargs); use [`isGroupRow`](#isgrouprow) to tell group rows apart from regular rows.
 
+**Example:**
+
 ```tsx
 import { isGroupRow, type CellKeyboardEvent, type TreeCellKeyDownArgs } from 'react-data-grid';
 
@@ -1086,7 +1118,9 @@ columns: readonly Column<R, SR>[];
 rowHeight?: Maybe<number | ((args: RowHeightArgs<R>) => number)>;
 ```
 
-**Note:** Unlike `DataGrid`, the `rowHeight` function receives [`RowHeightArgs<R>`](#rowheightargs), which includes a `type` property to distinguish between regular rows and group rows:
+**Note:** Unlike `DataGrid`, the `rowHeight` function receives [`RowHeightArgs<R>`](#rowheightargs), which includes a `type` property to distinguish between regular rows and group rows.
+
+**Example:**
 
 ```tsx
 function getRowHeight(args: RowHeightArgs<Row>): number {
@@ -1105,7 +1139,9 @@ function getRowHeight(args: RowHeightArgs<Row>): number {
 onCellKeyDown?: Maybe<(args: TreeCellKeyDownArgs<R, SR>, event: CellKeyboardEvent) => void>;
 ```
 
-Callback triggered when a key is pressed in a cell or a row, including group rows. Unlike `DataGrid`, the active row in `ACTIVE` mode can be a group row: use [`isGroupRow`](#isgrouprow) to narrow it. See the [`TreeCellKeyDownArgs`](#treecellkeydownargs) type and the [`onCellKeyDown`](#oncellkeydown) prop on `<DataGrid />`.
+Callback triggered when a key is pressed in a cell or a row, including group rows. Unlike `DataGrid`, the active row in `ACTIVE` mode can be a group row: use [`isGroupRow`](#isgrouprow) to narrow it.
+
+**See also:** [`TreeCellKeyDownArgs`](#treecellkeydownargs), [`onCellKeyDown`](#oncellkeydown) prop on `<DataGrid />`
 
 ###### `onActivePositionChange?`
 
@@ -1113,7 +1149,9 @@ Callback triggered when a key is pressed in a cell or a row, including group row
 onActivePositionChange?: Maybe<(args: TreePositionChangeArgs<R, SR>) => void>;
 ```
 
-Callback triggered when the active position changes, including to a group row or a cell of one: use [`isGroupRow`](#isgrouprow) to narrow the row. See the [`TreePositionChangeArgs`](#treepositionchangeargs) type.
+Callback triggered when the active position changes, including to a group row or a cell of one: use [`isGroupRow`](#isgrouprow) to narrow the row.
+
+**See also:** [`TreePositionChangeArgs`](#treepositionchangeargs)
 
 ###### `groupBy`
 
@@ -1122,6 +1160,10 @@ groupBy: readonly string[];
 ```
 
 **Required.** An array of column keys to group by. The order determines the grouping hierarchy (first key is the top level, second key is nested under the first, etc.).
+
+⚠️ **Performance:** Define this array outside your component or memoize it with `useMemo`, otherwise all the rows are grouped again on every render.
+
+**Example:**
 
 ```tsx
 import { TreeDataGrid, type Column } from 'react-data-grid';
@@ -1153,8 +1195,6 @@ function MyGrid() {
 }
 ```
 
-⚠️ **Performance:** Define this array outside your component or memoize it with `useMemo`, otherwise all the rows are grouped again on every render.
-
 ###### `expandedGroupIds`
 
 ```tsx
@@ -1162,6 +1202,8 @@ expandedGroupIds: ReadonlySet<string>;
 ```
 
 **Required.** A set of group IDs that are currently expanded. Group IDs are generated by `getGroupId`.
+
+**Example:**
 
 ```tsx
 import { useState } from 'react';
@@ -1196,7 +1238,11 @@ getRowGroupKey?: Maybe<(row: R, columnKey: string) => string>;
 
 A function that returns the key of the group a row belongs to, for the specified column key. Rows sharing the same group key are grouped together, and groups are ordered by the first row that belongs to them. If not provided, a default implementation is used that stringifies the row's value for that column, i.e., `String(row[columnKey])`.
 
-Provide your own to group on something other than the raw cell value:
+Provide your own to group on something other than the raw cell value.
+
+⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback`, otherwise all the rows are grouped again on every render.
+
+**Example:**
 
 ```tsx
 function getRowGroupKey(row: Row, columnKey: string): string {
@@ -1206,8 +1252,6 @@ function getRowGroupKey(row: Row, columnKey: string): string {
   return String(row[columnKey]);
 }
 ```
-
-⚠️ **Performance:** Define this function outside your component or memoize it with `useCallback`, otherwise all the rows are grouped again on every render.
 
 ###### `getGroupId?`
 
@@ -1623,6 +1667,12 @@ readonly width?: Maybe<number | string>;
 
 Width can be any valid CSS grid column value. If not specified, it will be determined automatically based on grid width and specified widths of other columns.
 
+`max-content` can be used to expand the column to show all the content. Note that the grid is only able to calculate column width for visible rows.
+
+**Default:** `'auto'`
+
+**Example:**
+
 ```tsx
 const columns: Column<Row>[] = [
   {
@@ -1640,24 +1690,16 @@ const columns: Column<Row>[] = [
   },
   {
     key: 'description',
-    name: 'Description'
+    name: 'Description',
+    width: 'minmax(100px, max-content)' // Fits the content, at least 100 pixels
+  },
+  {
+    key: 'notes',
+    name: 'Notes'
     // No width specified - automatically sized
   }
 ];
 ```
-
-Other examples:
-
-```tsx
-width: 80, // pixels
-width: '25%',
-width: 'max-content',
-width: 'minmax(100px, max-content)',
-```
-
-`max-content` can be used to expand the column to show all the content. Note that the grid is only able to calculate column width for visible rows.
-
-**Default:** `auto`
 
 ##### `minWidth?`
 
@@ -1684,6 +1726,8 @@ readonly cellClass?: Maybe<string | ((row: R) => Maybe<string>)>;
 ```
 
 Class name(s) for cells. Can be a string or a function that returns a class name based on the row.
+
+**Example:**
 
 ```tsx
 const columns: Column<Row>[] = [
@@ -1763,6 +1807,8 @@ readonly renderGroupCell?: Maybe<(props: RenderGroupCellContentProps<R, SR>) => 
 
 Render function to render the content of group cells when using `TreeDataGrid`. The group row is passed as `row`, a [`GroupRow`](#grouprow) with the group's key, rows, and expanded state.
 
+**Example:**
+
 ```tsx
 const columns: readonly Column<Row>[] = [
   {
@@ -1799,7 +1845,7 @@ Control whether cells can be edited with `renderEditCell`.
 readonly colSpan?: Maybe<(args: ColSpanArgs<R, SR>) => Maybe<number>>;
 ```
 
-Function to determine how many columns this cell should span. Returns the number of columns to span, or `undefined` for no spanning. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of. See the [`ColSpanArgs`](#colspanargs) type.
+Function to determine how many columns this cell should span. The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
 
 **Example:**
 
@@ -1820,17 +1866,27 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
+**Returns:**
+
+The number of columns to span, or `undefined` for no spanning
+
+**See also:** [`ColSpanArgs`](#colspanargs)
+
 ##### `frozen?`
 
 ```tsx
 readonly frozen?: Maybe<ColumnFrozen | true>;
 ```
 
-Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally. See the [`ColumnFrozen`](#columnfrozen) type.
+Determines whether the column is frozen, and on which edge. Frozen columns stay in place when the grid is scrolled horizontally.
 
 - `'start'` (or `true` for backward compatibility) — pins the column to the start edge (left in LTR, right in RTL).
 - `'end'` — pins the column to the end edge (right in LTR, left in RTL).
-- `false` (default) — the column scrolls with the rest of the grid.
+- `false` — the column scrolls with the rest of the grid.
+
+**Default:** `false`
+
+**Example:**
 
 ```tsx
 const columns: readonly Column<Row>[] = [
@@ -1840,7 +1896,7 @@ const columns: readonly Column<Row>[] = [
 ];
 ```
 
-**Default:** `false`
+**See also:** [`ColumnFrozen`](#columnfrozen)
 
 ##### `resizable?`
 
