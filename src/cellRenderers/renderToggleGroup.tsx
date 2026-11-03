@@ -18,8 +18,10 @@ const caret = css`
     fill: transparent;
     vertical-align: middle;
 
-    > path {
-      transition: d 0.1s;
+    @media (prefers-reduced-motion: no-preference) {
+      > path {
+        transition: d 0.1s;
+      }
     }
   }
 `;
