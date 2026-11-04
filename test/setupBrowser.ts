@@ -2,12 +2,7 @@
 // so we need to import it for TypeScript to pick up its types
 import 'vitest-browser-react';
 
-import {
-  locators,
-  userEvent,
-  type Locator,
-  type LocatorByRoleOptions
-} from 'vite-plus/test/browser';
+import { locators, type Locator, type LocatorByRoleOptions } from 'vite-plus/test/browser';
 import { configure } from 'vitest-browser-react/pure';
 
 // avoid printing huge stack traces
@@ -75,8 +70,4 @@ locators.extend({
   getBySelector(selector: string) {
     return selector;
   }
-});
-
-beforeEach(async () => {
-  await userEvent.click(document.body, { position: { x: 0, y: 0 } });
 });
