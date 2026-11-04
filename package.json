@@ -41,7 +41,7 @@
     "@vitest/browser-playwright": "5.0.5",
     "@vitest/coverage-istanbul": "5.0.5",
     "clsx": "^2.1.1",
-    "ecij": "^0.6.0",
+    "ecij": "^0.7.0",
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",

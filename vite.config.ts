@@ -260,8 +260,6 @@ export default defineConfig({
 
   test: {
     dir: 'test',
-    // TODO: remove, conflicts with ecij at the moment
-    fsModuleCache: false,
     globals: true,
     injectCjsGlobals: false,
     printConsoleTrace: true,
