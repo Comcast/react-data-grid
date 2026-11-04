@@ -360,6 +360,7 @@ export default defineConfig({
     ignorePatterns: ['/website/routeTree.gen.ts'],
 
     plugins: ['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
+    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
 
     options: {
       denyWarnings: true,
@@ -982,7 +983,8 @@ copy(
       'unicorn/switch-case-braces': ['warn', 'avoid'],
       'unicorn/switch-case-break-position': 'warn',
       'unicorn/text-encoding-identifier-case': 'warn',
-      'unicorn/throw-new-error': 'warn'
+      'unicorn/throw-new-error': 'warn',
+      'vite-plus/prefer-vite-plus-imports': 'warn'
     },
 
     overrides: [
