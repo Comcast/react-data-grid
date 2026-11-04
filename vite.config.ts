@@ -12,7 +12,6 @@ const isCI = process.env.CI === 'true';
 const isCIWorkflow = process.env.GITHUB_WORKFLOW === 'CI';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
-const isWindows = process.platform === 'win32';
 
 // TODO: remove when `userEvent.pointer` is supported
 async function resizeColumn(
@@ -79,6 +78,8 @@ const playwrightOptions: PlaywrightProviderOptions = {
 };
 const firefoxProvider = playwright({
   ...playwrightOptions,
+  // actions can timeout in Firefox when Firefox is busy
+  actionTimeout: isCI ? actionTimeout : actionTimeout * 4,
   launchOptions: {
     firefoxUserPrefs: {
       'accessibility.force_disabled': 1
@@ -292,13 +293,6 @@ export default defineConfig({
       }
     },
     slowTestThreshold: 1000,
-    // On Windows, WebKit slows down the mouse events of Playwright's Firefox,
-    // which dispatches those of all its pages one after the other,
-    // so with all cores but one as workers, Firefox's clicks time out.
-    // In a terminal, the browser instances get half the cores anyway, as in watch mode,
-    // since they don't inherit the `watch: false` of `vitest run`.
-    // https://github.com/vitest-dev/vitest/issues/11721
-    ...(isWindows && { maxWorkers: '50%' }),
     browser: {
       headless: true,
       ui: false,
