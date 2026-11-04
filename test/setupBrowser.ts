@@ -2,7 +2,12 @@
 // so we need to import it for TypeScript to pick up its types
 import 'vitest-browser-react';
 
-import { locators, type Locator, type LocatorByRoleOptions } from 'vite-plus/test/browser';
+import {
+  locators,
+  userEvent,
+  type Locator,
+  type LocatorByRoleOptions
+} from 'vite-plus/test/browser';
 import { configure } from 'vitest-browser-react/pure';
 
 // avoid printing huge stack traces
@@ -70,4 +75,11 @@ locators.extend({
   getBySelector(selector: string) {
     return selector;
   }
+});
+
+beforeEach(async () => {
+  // 1. move the pointer off the grid, so screenshots don't capture hover styles
+  // 2. focus the page: if the previous test file ended with a focused element,
+  //    Firefox may not focus the next file's iframe, and keyboard-first tests fail
+  await userEvent.click(document.body, { position: { x: 0, y: 0 } });
 });
