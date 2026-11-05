@@ -13,7 +13,6 @@ declare module 'vitest/browser' {
       colorScheme: 'light' | 'dark';
       forcedColors: 'active' | 'none';
     }) => Promise<void>;
-    resizeColumn: (name: string, resizeBy: number | readonly number[]) => Promise<void>;
   }
 }
 

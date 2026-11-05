@@ -14,27 +14,6 @@ const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
 
 // TODO: remove when `userEvent.pointer` is supported
-async function resizeColumn(
-  { page, iframe }: BrowserCommandContext,
-  name: string,
-  resizeBy: number | readonly number[]
-) {
-  const resizeHandle = iframe
-    .getByRole('columnheader', { name, exact: true })
-    .locator('.rdg-resize-handle');
-  const { x, y } = (await resizeHandle.boundingBox())!;
-  await page.mouse.move(x + 5, y + 5);
-  await page.mouse.down();
-  resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
-  let newX = x + 5;
-  for (const value of resizeBy) {
-    newX += value;
-    await page.mouse.move(newX, y + 5);
-  }
-  await page.mouse.up();
-}
-
-// TODO: remove when `userEvent.pointer` is supported
 async function dragFill({ page, iframe }: BrowserCommandContext, from: string, to: string) {
   await iframe.getByRole('gridcell', { name: from, exact: true }).click();
   await iframe.locator('.rdg-cell-drag-handle').hover();
@@ -297,7 +276,7 @@ export default defineConfig({
       headless: true,
       ui: false,
       viewport,
-      commands: { resizeColumn, dragFill, emulateMedia },
+      commands: { dragFill, emulateMedia },
       expect: {
         toMatchScreenshot: {
           screenshotDirectory: 'screenshots'

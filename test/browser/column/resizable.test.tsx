@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, server, userEvent } from 'vite-plus/test/browser';
+import { page, server, userEvent, type UserEventPointerInput } from 'vite-plus/test/browser';
 
 import { DataGrid, type Column, type ColumnWidth, type ColumnWidths } from '../../../src';
 import { setup } from '../utils';
@@ -16,9 +16,23 @@ function getResizeHandle(name: string) {
 }
 
 async function resize(columnName: string, resizeBy: number | readonly number[]) {
-  await expect.element(getResizeHandle(columnName)).toBeInTheDocument();
+  const resizeHandle = await getResizeHandle(columnName).findElement();
+  const rect = resizeHandle.getBoundingClientRect();
+  let x = rect.x + 5;
+  const y = rect.y + 5;
 
-  await commands.resizeColumn(columnName, resizeBy);
+  if (typeof resizeBy === 'number') {
+    resizeBy = [resizeBy];
+  }
+
+  await userEvent.pointer([
+    { coords: { x, y }, keys: '[MouseLeft>]' },
+    ...resizeBy.map((by) => {
+      x += by;
+      return { coords: { x, y } } satisfies UserEventPointerInput;
+    }),
+    { keys: '[/MouseLeft]' }
+  ]);
 }
 
 async function autoResize(columnName: string) {
@@ -415,7 +429,7 @@ test('should discard the measured and resized widths when the columnWidths prop 
   // the grid is 1918px wide
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
   // the grid ends at the edge of the viewport, so the column is resized from its end inward
-  await resize('col2', -50);
+  await resize('col2', -25);
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1768px 150px' });
   await userEvent.click(page.getByRole('button', { name: 'Reset widths' }));
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
@@ -446,7 +460,7 @@ test('should keep the resized widths when the grid is resized', async () => {
 
   // the grid has a 1px border
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '398px 200px' });
-  await resize('col2', 50);
+  await resize('col2', 25);
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '348px 250px' });
   // the measured width of `col1` is re-evaluated, but not the resized width of `col2`
   await userEvent.click(page.getByRole('button', { name: 'Widen grid' }));
