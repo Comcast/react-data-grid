@@ -45,7 +45,7 @@ const playwrightOptions: PlaywrightProviderOptions = {
 };
 const firefoxProvider = playwright({
   ...playwrightOptions,
-  // actions can timeout in Firefox when Firefox is busy
+  // actions can time out in Firefox when Firefox is busy
   actionTimeout: isCI ? actionTimeout : actionTimeout * 4,
   launchOptions: {
     firefoxUserPrefs: {
