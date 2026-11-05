@@ -20,7 +20,7 @@ for (let i = 0; i < 200; i++) {
     key,
     name: key,
     width: 120,
-    frozen: i < 5,
+    frozen: i < 5 ? 'start' : false,
     resizable: true,
     renderCell: renderCoordinates
   });

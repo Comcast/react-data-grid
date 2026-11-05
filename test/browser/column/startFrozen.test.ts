@@ -11,7 +11,7 @@ test('frozen columns have a specific class and are stable-sorted before non-froz
     {
       key: 'col1',
       name: 'col1',
-      frozen: true
+      frozen: 'start'
     },
     {
       key: 'col2',
@@ -20,7 +20,7 @@ test('frozen columns have a specific class and are stable-sorted before non-froz
     {
       key: 'col3',
       name: 'col3',
-      frozen: true
+      frozen: 'start'
     },
     {
       key: 'col4',
@@ -51,7 +51,7 @@ test('focusing a frozen cell does not scroll the grid', async () => {
       key: `col${i}`,
       name: `col${i}`,
       width: 100,
-      frozen: i === 0
+      frozen: i === 0 ? 'start' : false
     });
   }
 

@@ -18,7 +18,7 @@ for (let i = 0; i < 30; i++) {
   columns.push({
     key,
     name: key,
-    frozen: i < 5,
+    frozen: i < 5 ? 'start' : false,
     resizable: true,
     renderCell: renderCoordinates
   });
