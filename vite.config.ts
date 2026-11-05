@@ -1,10 +1,9 @@
-import { basename } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
-import type { BrowserCommandContext, BrowserInstanceOption } from 'vite-plus/test/node';
+import type { BrowserCommandContext } from 'vite-plus/test/node';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -43,25 +42,6 @@ const playwrightOptions: PlaywrightProviderOptions = {
     viewport
   }
 };
-const firefoxProvider = playwright({
-  ...playwrightOptions,
-  // actions can time out in Firefox when Firefox is busy
-  actionTimeout: isCI ? actionTimeout : actionTimeout * 4,
-  launchOptions: {
-    firefoxUserPrefs: {
-      'accessibility.force_disabled': 1
-    }
-  }
-});
-// Firefox sends the mouse events of all its pages with the same pointer ID,
-// so a page that captures the pointer also receives the other pages' mouse events.
-// These tests drag a resize or drag-fill handle, which captures the pointer,
-// so each of them runs in a browser of its own.
-// https://github.com/microsoft/playwright/issues/43631
-const firefoxPointerCaptureTests = [
-  'browser/dragFill.test.tsx',
-  'browser/column/resizable.test.tsx'
-];
 
 export default defineConfig({
   staged: {
@@ -286,17 +266,17 @@ export default defineConfig({
         },
         {
           browser: 'firefox',
-          exclude: firefoxPointerCaptureTests,
-          provider: firefoxProvider
+          provider: playwright({
+            ...playwrightOptions,
+            // actions can time out in Firefox when Firefox is busy
+            actionTimeout: isCI ? actionTimeout : actionTimeout * 4,
+            launchOptions: {
+              firefoxUserPrefs: {
+                'accessibility.force_disabled': 1
+              }
+            }
+          })
         },
-        // the names sort after `browser (webkit)`, so with few workers, as in CI,
-        // WebKit's tests start before these
-        ...firefoxPointerCaptureTests.map((test): BrowserInstanceOption => ({
-          name: `firefox (${basename(test).split('.')[0]})`,
-          browser: 'firefox',
-          include: [test],
-          provider: firefoxProvider
-        })),
         {
           browser: 'webkit',
           provider: playwright(playwrightOptions)
