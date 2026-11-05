@@ -46,7 +46,7 @@
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "oxc-transform-react": "^0.157.0",
-    "playwright": "^1.62.1",
+    "playwright": "^1.65.0-beta-1793840934000",
     "publint": "^0.3.25",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
