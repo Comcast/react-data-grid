@@ -13,18 +13,6 @@ const isCIWorkflow = process.env.GITHUB_WORKFLOW === 'CI';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
 
-// TODO: remove when `userEvent.pointer` is supported
-async function dragFill({ page, iframe }: BrowserCommandContext, from: string, to: string) {
-  await iframe.getByRole('gridcell', { name: from, exact: true }).click();
-  await iframe.locator('.rdg-cell-drag-handle').hover();
-  await page.mouse.down();
-  const target = iframe.getByRole('gridcell', { name: to, exact: true });
-  await target.hover();
-  // the grid fills the cells it rendered as dragged over, so wait for it to render the drag
-  await target.and(iframe.locator('.rdg-cell-dragged-over')).waitFor();
-  await page.mouse.up();
-}
-
 async function emulateMedia(
   { page }: BrowserCommandContext,
   options: Parameters<BrowserCommandContext['page']['emulateMedia']>[0]
@@ -276,7 +264,7 @@ export default defineConfig({
       headless: true,
       ui: false,
       viewport,
-      commands: { dragFill, emulateMedia },
+      commands: { emulateMedia },
       expect: {
         toMatchScreenshot: {
           screenshotDirectory: 'screenshots'

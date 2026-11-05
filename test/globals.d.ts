@@ -8,7 +8,6 @@ declare global {
 
 declare module 'vitest/browser' {
   interface BrowserCommands {
-    dragFill: (from: string, to: string) => Promise<void>;
     emulateMedia: (options: {
       colorScheme: 'light' | 'dark';
       forcedColors: 'active' | 'none';
