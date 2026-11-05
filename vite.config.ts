@@ -12,40 +12,6 @@ const isCI = process.env.CI === 'true';
 const isCIWorkflow = process.env.GITHUB_WORKFLOW === 'CI';
 const isTest = process.env.VITEST === 'true';
 const isAgent = process.env.AI_AGENT !== undefined;
-const isWindows = process.platform === 'win32';
-
-// TODO: remove when `userEvent.pointer` is supported
-async function resizeColumn(
-  { page, iframe }: BrowserCommandContext,
-  name: string,
-  resizeBy: number | readonly number[]
-) {
-  const resizeHandle = iframe
-    .getByRole('columnheader', { name, exact: true })
-    .locator('.rdg-resize-handle');
-  const { x, y } = (await resizeHandle.boundingBox())!;
-  await page.mouse.move(x + 5, y + 5);
-  await page.mouse.down();
-  resizeBy = Array.isArray(resizeBy) ? resizeBy : [resizeBy];
-  let newX = x + 5;
-  for (const value of resizeBy) {
-    newX += value;
-    await page.mouse.move(newX, y + 5);
-  }
-  await page.mouse.up();
-}
-
-// TODO: remove when `userEvent.pointer` is supported
-async function dragFill({ page, iframe }: BrowserCommandContext, from: string, to: string) {
-  await iframe.getByRole('gridcell', { name: from, exact: true }).click();
-  await iframe.locator('.rdg-cell-drag-handle').hover();
-  await page.mouse.down();
-  const target = iframe.getByRole('gridcell', { name: to, exact: true });
-  await target.hover();
-  // the grid fills the cells it rendered as dragged over, so wait for it to render the drag
-  await target.and(iframe.locator('.rdg-cell-dragged-over')).waitFor();
-  await page.mouse.up();
-}
 
 async function emulateMedia(
   { page }: BrowserCommandContext,
@@ -79,6 +45,8 @@ const playwrightOptions: PlaywrightProviderOptions = {
 };
 const firefoxProvider = playwright({
   ...playwrightOptions,
+  // actions can time out in Firefox when Firefox is busy
+  actionTimeout: isCI ? actionTimeout : actionTimeout * 4,
   launchOptions: {
     firefoxUserPrefs: {
       'accessibility.force_disabled': 1
@@ -292,18 +260,11 @@ export default defineConfig({
       }
     },
     slowTestThreshold: 1000,
-    // On Windows, WebKit slows down the mouse events of Playwright's Firefox,
-    // which dispatches those of all its pages one after the other,
-    // so with all cores but one as workers, Firefox's clicks time out.
-    // In a terminal, the browser instances get half the cores anyway, as in watch mode,
-    // since they don't inherit the `watch: false` of `vitest run`.
-    // https://github.com/vitest-dev/vitest/issues/11721
-    ...(isWindows && { maxWorkers: '50%' }),
     browser: {
       headless: true,
       ui: false,
       viewport,
-      commands: { resizeColumn, dragFill, emulateMedia },
+      commands: { emulateMedia },
       expect: {
         toMatchScreenshot: {
           screenshotDirectory: 'screenshots'
@@ -366,6 +327,7 @@ export default defineConfig({
     ignorePatterns: ['/website/routeTree.gen.ts'],
 
     plugins: ['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
+    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
 
     options: {
       denyWarnings: true,
@@ -741,6 +703,7 @@ copy(
       'typescript/no-extraneous-class': 'warn',
       'typescript/no-floating-promises': 'off',
       'typescript/no-for-in-array': 'warn',
+      'typescript/no-generated-empty-object-type': 'warn',
       'typescript/no-implied-eval': 'warn',
       'typescript/no-import-type-side-effects': 'warn',
       'typescript/no-inferrable-types': 'warn',
@@ -778,6 +741,7 @@ copy(
       'typescript/no-unsafe-assignment': 'off',
       'typescript/no-unsafe-call': 'off',
       'typescript/no-unsafe-declaration-merging': 'warn',
+      'typescript/no-unsafe-enum-assignment': 'warn',
       'typescript/no-unsafe-enum-comparison': 'warn',
       'typescript/no-unsafe-function-type': 'warn',
       'typescript/no-unsafe-member-access': 'off',
@@ -986,7 +950,8 @@ copy(
       'unicorn/switch-case-braces': ['warn', 'avoid'],
       'unicorn/switch-case-break-position': 'warn',
       'unicorn/text-encoding-identifier-case': 'warn',
-      'unicorn/throw-new-error': 'warn'
+      'unicorn/throw-new-error': 'warn',
+      'vite-plus/prefer-vite-plus-imports': 'warn'
     },
 
     overrides: [

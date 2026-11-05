@@ -37,23 +37,23 @@
     "@types/node": "^26.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/browser-playwright": "5.0.5",
-    "@vitest/coverage-istanbul": "5.0.5",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/browser-playwright": "5.1.0",
+    "@vitest/coverage-istanbul": "5.1.0",
     "clsx": "^2.1.1",
     "ecij": "^0.7.0",
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
-    "oxc-transform-react": "^0.156.0",
+    "oxc-transform-react": "^0.157.0",
     "playwright": "^1.62.1",
     "publint": "^0.3.25",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "^7.1.0-beta",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
-    "vite-plus": "1.4.0",
-    "vitest": "5.0.5",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
+    "vite-plus": "1.5.0",
+    "vitest": "5.1.0",
     "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
@@ -63,8 +63,8 @@
   "overrides": {
     "oxc-transform-react": "$oxc-transform-react",
     "typescript": "$typescript",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
-    "vitest": "5.0.5"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
+    "vitest": "5.1.0"
   },
   "devEngines": {
     "packageManager": {
