@@ -3,7 +3,6 @@ name: Update Screenshots
 on:
   pull_request:
     types: [labeled]
-  workflow_dispatch:
 
 permissions: {}
 
@@ -39,7 +38,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
 
   screenshots:
-    if: ${{ github.event.label.name == 'Update Screenshots' || github.event_name == 'workflow_dispatch' }}
+    if: github.event.label.name == 'Update Screenshots'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -48,7 +47,7 @@ jobs:
 
     # one at a time per branch
     concurrency:
-      group: update-screenshots@${{ github.head_ref || github.ref }}
+      group: update-screenshots@${{ github.head_ref }}
       cancel-in-progress: true
 
     outputs:
@@ -127,5 +126,5 @@ jobs:
           gh auth setup-git
           git push origin "HEAD:refs/heads/$BRANCH"
         env:
-          BRANCH: ${{ github.head_ref || github.ref_name }}
+          BRANCH: ${{ github.head_ref }}
           GH_TOKEN: ${{ github.token }}
