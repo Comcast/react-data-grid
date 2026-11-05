@@ -838,12 +838,13 @@ Optional attribute to help with Cypress (or similar) selectors.
 2. Rows are grouped by their value for each of those columns, or by `getRowGroupKey` when provided
 3. Group rows are rendered with expand/collapse toggles
 4. Child rows are nested under their parent groups
-5. Groups can be expanded/collapsed by clicking the toggle or using keyboard navigation (<kbd>←</kbd>, <kbd>→</kbd>)
+5. Groups can be expanded/collapsed by clicking the toggle or using the keyboard (<kbd>←</kbd>, <kbd>→</kbd>, <kbd>Enter</kbd>)
 
 **Keyboard Navigation:**
 
 - <kbd>→</kbd> (Right Arrow): Expand a collapsed group row when focused
 - <kbd>←</kbd> (Left Arrow): Collapse an expanded group row when focused, or navigate to the parent group
+- <kbd>Enter</kbd>: Expand or collapse the group when its row or its toggle cell is focused
 
 **Unsupported Props:**
 
