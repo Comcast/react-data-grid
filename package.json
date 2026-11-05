@@ -9,7 +9,8 @@
   "license": "MIT",
   "repository": "github:Comcast/react-data-grid",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "type": "module",
   "sideEffects": [

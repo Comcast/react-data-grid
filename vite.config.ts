@@ -165,6 +165,10 @@ export default defineConfig({
     target: ['baseline-widely-available', 'node24.0.0'],
     platform: 'neutral',
     sourcemap: true,
+    outputOptions: {
+      // the package publishes `src`, so the map doesn't embed a copy of it
+      sourcemapExcludeSources: true
+    },
     failOnWarn: isAgent || 'ci-only',
     suppressWarnings: 'TypeScript 7.0 does not yet have a stable API and is experimental.',
     treeshake: {
@@ -187,6 +191,8 @@ export default defineConfig({
     dts: {
       build: true,
       tsconfig: './tsconfig.src.json',
+      // lets editors go to the definitions in `src` instead of `lib/index.d.ts`
+      sourcemap: true,
       // TODO: remove when vite-plus detects TypeScript 7.1 as TypeScript 7
       generator: 'tsgo',
       tsgo: {
