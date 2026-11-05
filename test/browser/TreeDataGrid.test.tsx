@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
 import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
-import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import { isRowGroup, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
@@ -54,7 +54,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
       );
     },
     renderGroupCell({ row }) {
-      return Math.min(...row.childRows.map((c) => c.id));
+      return Math.min(...row.leafRows.map((c) => c.id));
     }
   }
 ];
@@ -226,7 +226,7 @@ test(
   'should expand a group with more rows than a function call can take as arguments',
   { skip: server.browser === 'webkit' },
   async () => {
-    // browsers limit the number of arguments, e.g., in `push(...childRows)`, and a million is above all of their limits
+    // browsers limit the number of arguments, e.g., in `push(...leafRows)`, and a million is above all of their limits
     const rows = Array.from({ length: 1_000_000 }, (_, id): Row => ({
       id,
       country: 'USA',
@@ -549,7 +549,7 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
   interface Call {
     rowIdx: number;
     idx: number;
-    isGroupRow: boolean;
+    isRowGroup: boolean;
   }
 
   const keyDownCalls: Call[] = [];
@@ -560,7 +560,7 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
     keyDownCalls.push({
       rowIdx: args.rowIdx,
       idx: args.column?.idx ?? -1,
-      isGroupRow: isGroupRow(args.row)
+      isRowGroup: isRowGroup(args.row)
     });
   }
 
@@ -572,7 +572,7 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
     positionChangeCalls.push({
       rowIdx,
       idx: column?.idx ?? -1,
-      isGroupRow: row !== undefined && isGroupRow(row)
+      isRowGroup: row !== undefined && isRowGroup(row)
     });
   }
 
@@ -607,14 +607,14 @@ test('onCellKeyDown and onActivePositionChange receive group rows', async () => 
   await expect.element(activeCell).toHaveTextContent('value: 1');
 
   expect(keyDownCalls).toStrictEqual([
-    { rowIdx: 0, idx: -1, isGroupRow: true },
-    { rowIdx: 1, idx: 3, isGroupRow: false }
+    { rowIdx: 0, idx: -1, isRowGroup: true },
+    { rowIdx: 1, idx: 3, isRowGroup: false }
   ]);
   expect(positionChangeCalls).toStrictEqual([
-    { rowIdx: 0, idx: -1, isGroupRow: true },
-    { rowIdx: 0, idx: 0, isGroupRow: true },
-    { rowIdx: 1, idx: 3, isGroupRow: false },
-    { rowIdx: 1, idx: 4, isGroupRow: false }
+    { rowIdx: 0, idx: -1, isRowGroup: true },
+    { rowIdx: 0, idx: 0, isRowGroup: true },
+    { rowIdx: 1, idx: 3, isRowGroup: false },
+    { rowIdx: 1, idx: 4, isRowGroup: false }
   ]);
 });
 

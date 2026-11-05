@@ -2,11 +2,11 @@ import { memo } from 'react';
 
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
-import type { CalculatedColumn, GroupRow } from './types';
+import type { CalculatedColumn, RowGroup } from './types';
 
 interface GroupCellProps<R, SR> {
   column: CalculatedColumn<R, SR>;
-  row: GroupRow<R>;
+  row: RowGroup<R>;
   isCellActive: boolean;
   isGroupByColumn: boolean;
   // Only the group-by column of the row's level renders the group cell and is clickable
