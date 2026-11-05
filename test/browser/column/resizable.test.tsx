@@ -27,11 +27,15 @@ async function resize(columnName: string, resizeBy: number | readonly number[]) 
 
   await userEvent.pointer([
     { coords: { x, y }, keys: '[MouseLeft>]' },
-    ...resizeBy.map((by) => {
+    ...resizeBy.map((by, index) => {
       x += by;
+
+      if (index === resizeBy.length - 1) {
+        return { coords: { x, y }, keys: '[/MouseLeft]' } satisfies UserEventPointerInput;
+      }
+
       return { coords: { x, y } } satisfies UserEventPointerInput;
-    }),
-    { keys: '[/MouseLeft]' }
+    })
   ]);
 }
 
@@ -429,7 +433,7 @@ test('should discard the measured and resized widths when the columnWidths prop 
   // the grid is 1918px wide
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
   // the grid ends at the edge of the viewport, so the column is resized from its end inward
-  await resize('col2', -25);
+  await resize('col2', -50);
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1768px 150px' });
   await userEvent.click(page.getByRole('button', { name: 'Reset widths' }));
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '1718px 200px' });
@@ -460,7 +464,7 @@ test('should keep the resized widths when the grid is resized', async () => {
 
   // the grid has a 1px border
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '398px 200px' });
-  await resize('col2', 25);
+  await resize('col2', 50);
   await expect.element(grid).toHaveStyle({ gridTemplateColumns: '348px 250px' });
   // the measured width of `col1` is re-evaluated, but not the resized width of `col2`
   await userEvent.click(page.getByRole('button', { name: 'Widen grid' }));
