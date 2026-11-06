@@ -25,11 +25,12 @@ import type { DataGridProps } from './DataGrid';
 import { useRenderers } from './DataGridRenderersContext';
 import GroupedRow from './GroupedRow';
 import { defaultRenderRow } from './Row';
+import { rowActiveClassname } from './style/row';
+import { TreeGridContext } from './TreeGridContext';
 
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
   DataGridProps<R, SR, K>,
   | 'columns'
-  | 'role'
   | 'aria-rowcount'
   | 'rowHeight'
   | 'onFill'
@@ -455,7 +456,6 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       draggedOverCellIdx,
       activeCellEditor,
       isRowSelectionDisabled,
-      isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
@@ -473,7 +473,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       );
     }
 
-    const { rowIdx } = rowProps;
+    const { rowIdx, activeCellIdx } = rowProps;
+    const isPositionOnRow = activeCellIdx === -1;
     let rowKey = key;
     let ariaRowIndex = rowProps['aria-rowindex'];
     const parentRowAndIndex = getParentRowAndIndex(rowIdx);
@@ -490,6 +491,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return rawRenderRow(rowKey, {
       ...rowProps,
       'aria-rowindex': ariaRowIndex,
+      // rows are focusable in a tree grid: passed as DOM props, so custom row renderers can spread them
+      tabIndex: isPositionOnRow ? 0 : -1,
+      className: isPositionOnRow ? rowActiveClassname : undefined,
       row,
       rowClass,
       onCellMouseDown,
@@ -499,37 +503,40 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       onRowChange,
       draggedOverCellIdx,
       activeCellEditor,
-      isRowSelectionDisabled,
-      isTreeGrid
+      isRowSelectionDisabled
     });
   }
 
   return (
-    <DataGrid<R, SR>
-      {...props}
-      role="treegrid"
-      aria-rowcount={
-        rowsCount + 1 + (props.topSummaryRows?.length ?? 0) + (props.bottomSummaryRows?.length ?? 0)
-      }
-      columns={columns}
-      // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
-      // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
-      // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
-      // to handle group rows, or never called with one
-      rows={rows as R[]}
-      rowHeight={rowHeight}
-      getRowKey={getRowKey}
-      onRowsChange={handleRowsChange}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={onSelectedRowsChange}
-      onCellKeyDown={handleKeyDown}
-      onCellCopy={handleCellCopy}
-      onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
-      renderers={{
-        ...renderers,
-        renderRow
-      }}
-    />
+    <TreeGridContext value>
+      <DataGrid<R, SR>
+        {...props}
+        aria-rowcount={
+          rowsCount +
+          1 +
+          (props.topSummaryRows?.length ?? 0) +
+          (props.bottomSummaryRows?.length ?? 0)
+        }
+        columns={columns}
+        // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
+        // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
+        // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
+        // to handle group rows, or never called with one
+        rows={rows as R[]}
+        rowHeight={rowHeight}
+        getRowKey={getRowKey}
+        onRowsChange={handleRowsChange}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={onSelectedRowsChange}
+        onCellKeyDown={handleKeyDown}
+        onCellCopy={handleCellCopy}
+        onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
+        renderers={{
+          ...renderers,
+          renderRow
+        }}
+      />
+    </TreeGridContext>
   );
 }
 

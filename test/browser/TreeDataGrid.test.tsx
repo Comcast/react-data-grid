@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
-import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import type {
+  Column,
+  DataGridProps,
+  RenderRowProps,
+  TreeCellKeyDownArgs,
+  TreeDataGridProps,
+  TreePositionChangeArgs
+} from '../../src';
+import { DataGrid, isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
@@ -662,4 +669,141 @@ test('adding a top summary row when no rows or cells are active should not focus
   await userEvent.click(addSummaryRowButton);
   await expect.element(activeCell).not.toBeInTheDocument();
   await expect.element(activeRow).not.toBeInTheDocument();
+});
+
+test('a custom renderRow that spreads the DOM props gets a focusable active row', async () => {
+  function renderRow(
+    key: React.Key,
+    {
+      row,
+      rowIdx,
+      gridRowStart,
+      activeCellIdx,
+      mapViewportColumns,
+      isRowSelected,
+      isRowSelectionDisabled,
+      draggedOverCellIdx,
+      activeCellEditor,
+      onRowChange,
+      rowClass,
+      onCellMouseDown,
+      onCellClick,
+      onCellDoubleClick,
+      onCellContextMenu,
+      setActivePosition,
+      ...props
+    }: RenderRowProps<Row, SummaryRow>
+  ) {
+    return (
+      <div
+        key={key}
+        role="row"
+        {...props}
+        style={{
+          display: 'grid',
+          gridColumn: '1 / -1',
+          gridTemplate: 'subgrid / subgrid',
+          gridRowStart
+        }}
+      >
+        {mapViewportColumns(activeCellIdx, { type: 'ROW', row }, (column) => (
+          <div key={column.key} role="gridcell">
+            {`custom ${row.id} ${column.key}`}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  await page.render(
+    <TreeDataGrid<Row, SummaryRow>
+      columns={columns}
+      rows={initialRows}
+      groupBy={['country']}
+      expandedGroupIds={new Set(['USA'])}
+      onExpandedGroupIdsChange={() => {}}
+      renderers={{ renderRow }}
+    />
+  );
+
+  const customRow = page.getByRole('row').filter({ has: page.getByText('custom 1 country') });
+  await expect.element(customRow).toHaveAttribute('tabIndex', '-1');
+  await expect.element(customRow).not.toHaveClass(rowActiveClassname);
+
+  await userEvent.click(page.getCell({ name: 'USA' }));
+  await userEvent.keyboard('{arrowdown}');
+  await expect.element(customRow).toHaveFocus();
+  await expect.element(customRow).toHaveAttribute('tabIndex', '0');
+  await expect.element(customRow).toHaveClass(rowActiveClassname);
+});
+
+test('a DataGrid in a cell of a TreeDataGrid is not a tree grid', async () => {
+  const nestedColumns: readonly Column<Row, SummaryRow>[] = [
+    { key: 'country', name: 'Country', renderSummaryCell: () => 'Nested summary' },
+    { key: 'year', name: 'Year' }
+  ];
+
+  function stopPropagation(event: React.SyntheticEvent) {
+    event.stopPropagation();
+  }
+
+  const outerColumns: readonly Column<Row>[] = [
+    { key: 'id', name: 'Id' },
+    {
+      key: 'nested',
+      name: 'Nested',
+      renderCell({ row }) {
+        // keep the events of the nested grid from reaching the outer grid
+        return (
+          <div
+            onMouseDown={stopPropagation}
+            onClick={stopPropagation}
+            onFocus={stopPropagation}
+            onKeyDown={stopPropagation}
+          >
+            <DataGrid
+              columns={nestedColumns}
+              rows={[row]}
+              topSummaryRows={topSummaryRows}
+              style={{ blockSize: 120 }}
+            />
+          </div>
+        );
+      }
+    }
+  ];
+
+  await page.render(
+    <TreeDataGrid
+      columns={outerColumns}
+      rows={initialRows.slice(0, 1)}
+      rowHeight={150}
+      groupBy={[]}
+      expandedGroupIds={new Set()}
+      onExpandedGroupIdsChange={() => {}}
+    />
+  );
+
+  const nestedGrid = page.getGrid();
+  const nestedSummaryRow = nestedGrid.getRow().nth(0);
+  const nestedRow = nestedGrid.getRow().nth(1);
+  const nestedCell = nestedRow.getCell().nth(0);
+  await expect.element(nestedGrid).toBeInTheDocument();
+  await expect.element(nestedSummaryRow).not.toHaveAttribute('tabIndex');
+  await expect.element(nestedRow).not.toHaveAttribute('tabIndex');
+
+  await userEvent.click(nestedCell);
+  await expect.element(nestedCell).toHaveFocus();
+
+  // the row cannot get focused
+  await userEvent.keyboard('{arrowleft}');
+  await expect.element(nestedCell).toHaveFocus();
+  await expect.element(nestedCell).toHaveAttribute('aria-selected', 'true');
+  await expect.element(nestedRow).not.toHaveClass(rowActiveClassname);
+});
+
+test('role and isTreeGrid are not props', () => {
+  expectTypeOf<DataGridProps<Row>>().not.toHaveProperty('role');
+  expectTypeOf<TreeDataGridProps<Row>>().not.toHaveProperty('role');
+  expectTypeOf<RenderRowProps<Row>>().not.toHaveProperty('isTreeGrid');
 });

@@ -347,7 +347,6 @@ export interface RenderRowProps<TRow, TSummaryRow = unknown> extends BaseRenderR
   activeCellEditor: ReactElement<EditCellProps<TRow, TSummaryRow>> | undefined;
   onRowChange: (column: CalculatedColumn<TRow, TSummaryRow>, rowIdx: number, newRow: TRow) => void;
   rowClass: Maybe<(row: TRow, rowIdx: number) => Maybe<string>>;
-  isTreeGrid: boolean;
 }
 
 export interface RowsChangeData<R, SR = unknown> {
