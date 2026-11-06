@@ -46,6 +46,19 @@ export const HeaderRowSelectionChangeContext = createContext<
 >(undefined);
 HeaderRowSelectionChangeContext.displayName = 'HeaderRowSelectionChangeContext';
 
+export interface SelectionOverride {
+  readonly headerRowSelection: HeaderRowSelectionContextValue;
+  readonly onHeaderRowSelectionChange: (selectRowEvent: SelectHeaderRowEvent) => void;
+  // oxlint-disable-next-line typescript/no-explicit-any
+  readonly onRowSelectionChange: (selectRowEvent: SelectRowEvent<any>) => void;
+}
+
+// Not exported from the package: `TreeDataGrid` handles the selection itself,
+// as a group row stands for all its rows, including the rows of collapsed groups,
+// which aren't in the rows of `DataGrid`
+export const SelectionOverrideContext = createContext<SelectionOverride | undefined>(undefined);
+SelectionOverrideContext.displayName = 'SelectionOverrideContext';
+
 export function useHeaderRowSelection() {
   const headerRowSelectionContext = use(HeaderRowSelectionContext);
   const headerRowSelectionChangeContext = use(HeaderRowSelectionChangeContext);
