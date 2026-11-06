@@ -58,9 +58,17 @@ export default defineConfig({
         command: 'tsc --build',
         cache: false
       },
+      pack: {
+        command: 'vp pack',
+        cache: {
+          // `vp pack` cleans `lib/` before writing to it
+          input: [{ auto: true }, '!lib/**']
+        }
+      },
       // generates the API reference of the README from the declarations and JSDoc comments of `lib/index.d.ts`
       docs: {
-        command: ['vp pack', 'node scripts/generateApiDocs.ts', 'vp fmt README.md'],
+        dependsOn: ['pack'],
+        command: ['node scripts/generateApiDocs.ts', 'vp fmt README.md'],
         // the README is both an input and the output
         cache: false
       },
@@ -97,11 +105,7 @@ export default defineConfig({
           'vp build',
           'git diff --exit-code website/routeTree.gen.ts',
           'vp run test'
-        ],
-        cache: {
-          // `vp pack` cleans `lib/` before writing to it
-          input: [{ auto: true }, '!lib/**']
-        }
+        ]
       },
       // the first step of a release, see the header of `.github/workflows/publish.yml`:
       // arguments are passed to `npm version`, as `vp run` appends them to the last command
