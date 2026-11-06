@@ -3,6 +3,11 @@ import { useState } from 'react';
 import { scrollIntoView } from '../utils';
 import type { Maybe } from '../types';
 
+/**
+ * Position for scrolling to a cell. Both fields are optional: omit `idx` to scroll to a row, or omit `rowIdx` to scroll to a column. This helper type is not exported; the shape is shown for reference.
+ *
+ * @see {@linkcode DataGridHandle}
+ */
 export interface PartialPosition {
   readonly idx?: Maybe<number>;
   readonly rowIdx?: Maybe<number>;

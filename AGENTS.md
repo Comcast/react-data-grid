@@ -15,6 +15,8 @@ src/
   style/              # build-time CSS via ecij tagged templates; layers.css declares @layer order
   cellRenderers/      # default cell renderers (e.g., checkbox, toggleGroup, value)
   editors/            # default editors (renderTextEditor)
+scripts/
+  generateApiDocs.ts  # generates the API reference of README.md from JSDoc (`vp run docs`)
 test/
   browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
@@ -25,6 +27,7 @@ website/              # demo site (Vite + TanStack Router)
 ## Conventions
 
 - **Public API** — all exports flow through `src/index.ts`. Keep `README.md` in sync with user-facing changes.
+- **API docs** — JSDoc comments are the source of the README's API reference. Edit the JSDoc, then run `vp run docs` to regenerate the section between `<!-- api:start -->` and `<!-- api:end -->`; never edit that section by hand. `src/index.ts` sets the layout of the API reference: the exports are listed in their order, under the section of the comment above them, one of the sections in `scripts/generateApiDocs.ts` (`// Components`, `// Hooks`, `// Render Functions`, `// Context`, `// Other`, `// Types`). Use `@defaultValue`, `@example`, `@see`, `@typeParam`, and `{@linkcode}` instead of writing these out in the description. Oxlint's `jsdoc` plugin checks the tags; add new tags to `definedTags` of `jsdoc/check-tag-names` in `vite.config.ts`. In the hand-written sections of the README, give links to API members the member as title, e.g., ``[`width`](#width "Column.width")``, so `vp run docs` keeps their anchor up to date.
 - **Docs** — keep `AGENTS.md` in sync with tooling, conventions, or architectural changes.
 - **Default renderers** — `DataGridRenderersContext` allows overriding default renderers (`renderCheckbox`, `renderSortStatus`, `renderRow`, `renderCell`, `noRowsFallback`) without prop-drilling.
 - **TypeScript strict** with `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Distinguish missing properties from `undefined` values.
@@ -53,8 +56,9 @@ website/              # demo site (Vite + TanStack Router)
 The project uses [Vite+](https://viteplus.dev/guide/), whose global `vp` CLI wraps Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Run `vp` directly, not through `npx`. Its docs are in `node_modules/vite-plus/docs`.
 
 - `vp <command>` runs a built-in command, e.g., `vp dev`, `vp check`, `vp test`, `vp pack`, `vp build`.
-- `vp run <task>` runs a task from `vite.config.ts`, e.g., `vp run typecheck`, `vp run eslint`, `vp run ci`.
+- `vp run <task>` runs a task from `vite.config.ts`, e.g., `vp run typecheck`, `vp run eslint`, `vp run docs`, `vp run ci`.
 - Run `vp install` after pulling changes.
+- `vp run docs` runs `vp pack`, then `scripts/generateApiDocs.ts`, which parses the declarations and JSDoc comments of `lib/index.d.ts` with the TypeScript 7 API (`typescript/sync`).
 
 ## Validation
 
@@ -65,4 +69,5 @@ While iterating, run individual checks instead. The static checks take seconds, 
 - `vp run typecheck` type checks with `tsc --build`; `vp check` does not type check.
 - `vp check --fix` formats and lints, fixing what it can. Without `--fix`, a formatting error stops it before linting.
 - `vp run eslint` lints Markdown files.
+- `vp run docs` regenerates the README's API reference; CI fails if it changes `README.md`.
 - `vp test <files>` runs specific test files, e.g., `vp test test/browser/sorting.test.tsx`. Add `--project "browser (chromium)"` to test in a single browser, or `--project node` to run the SSR test. The full suite takes about a minute.
