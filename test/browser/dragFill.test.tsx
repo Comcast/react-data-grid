@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, userEvent, type Locator } from 'vite-plus/test/browser';
+import { page, userEvent, type Locator } from 'vite-plus/test/browser';
 
 import { DataGrid } from '../../src';
 import type { Column, FillEvent } from '../../src';
@@ -45,6 +45,16 @@ function DragFillTest({ allowDragFill = true }: { allowDragFill?: boolean }) {
   );
 }
 
+async function dragFill(from: string, to: string) {
+  await userEvent.click(page.getCell({ name: from }));
+
+  await userEvent.pointer([
+    { target: dragHandle, keys: '[MouseLeft>]' },
+    { target: page.getCell({ name: to }) },
+    { keys: '[/MouseLeft]' }
+  ]);
+}
+
 test('should not allow dragFill if onFill is undefined', async () => {
   await setup(false);
   await userEvent.click(getCellsAtRowIndex(0).nth(0));
@@ -71,7 +81,7 @@ test('should allow dragFill if onFill is specified', async () => {
 
 test('should update single row using mouse', async () => {
   await setup();
-  await commands.dragFill('a1', 'a2');
+  await dragFill('a1', 'a2');
   await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a1');
   await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a3');
   await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveFocus();
@@ -79,7 +89,7 @@ test('should update single row using mouse', async () => {
 
 test('should update multiple rows using mouse', async () => {
   await setup();
-  await commands.dragFill('a1', 'a4');
+  await dragFill('a1', 'a4');
   await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a1');
   await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a1');
   await expect.element(getCellsAtRowIndex(3).nth(0)).toHaveTextContent('a4'); // read-only cell
@@ -87,7 +97,7 @@ test('should update multiple rows using mouse', async () => {
 
 test('should allow drag up using mouse', async () => {
   await setup();
-  await commands.dragFill('a4', 'a1');
+  await dragFill('a4', 'a1');
   await expect.element(getCellsAtRowIndex(0).nth(0)).toHaveTextContent('a4');
   await expect.element(getCellsAtRowIndex(1).nth(0)).toHaveTextContent('a4');
   await expect.element(getCellsAtRowIndex(2).nth(0)).toHaveTextContent('a4');

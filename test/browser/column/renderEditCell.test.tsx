@@ -128,7 +128,7 @@ describe('Editor', () => {
 
   it('should clear the document selection when opening the editor', async () => {
     const ref = createRef<DataGridHandle>();
-    const columns: readonly Column<NonNullable<unknown>>[] = [
+    const columns: readonly Column<object>[] = [
       {
         key: 'col1',
         name: 'Column1',
@@ -363,7 +363,7 @@ describe('Editor', () => {
     });
 
     it('should not steal focus back to the cell after being closed by clicking outside the grid', async () => {
-      const columns: readonly Column<NonNullable<unknown>>[] = [
+      const columns: readonly Column<object>[] = [
         {
           key: 'col1',
           name: 'Column1',

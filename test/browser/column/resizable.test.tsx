@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { commands, page, server, userEvent } from 'vite-plus/test/browser';
+import { page, server, userEvent, type UserEventPointerInput } from 'vite-plus/test/browser';
 
 import { DataGrid, type Column, type ColumnWidth, type ColumnWidths } from '../../../src';
 import { setup } from '../utils';
@@ -16,9 +16,27 @@ function getResizeHandle(name: string) {
 }
 
 async function resize(columnName: string, resizeBy: number | readonly number[]) {
-  await expect.element(getResizeHandle(columnName)).toBeInTheDocument();
+  const resizeHandle = await getResizeHandle(columnName).findElement();
+  const rect = resizeHandle.getBoundingClientRect();
+  let x = rect.x + 5;
+  const y = rect.y + 5;
 
-  await commands.resizeColumn(columnName, resizeBy);
+  if (typeof resizeBy === 'number') {
+    resizeBy = [resizeBy];
+  }
+
+  await userEvent.pointer([
+    { coords: { x, y }, keys: '[MouseLeft>]' },
+    ...resizeBy.map((by, index) => {
+      x += by;
+
+      if (index === resizeBy.length - 1) {
+        return { coords: { x, y }, keys: '[/MouseLeft]' } satisfies UserEventPointerInput;
+      }
+
+      return { coords: { x, y } } satisfies UserEventPointerInput;
+    })
+  ]);
 }
 
 async function autoResize(columnName: string) {
