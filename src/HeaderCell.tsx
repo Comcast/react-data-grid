@@ -195,8 +195,9 @@ export default function HeaderCell<R, SR>({
       isCtrlKeyHeldDown(event) &&
       (key === 'ArrowLeft' || key === 'ArrowRight')
     ) {
-      // prevent navigation
-      // TODO: check if we can use `preventDefault` instead
+      // prevent scrolling
+      event.preventDefault();
+      // prevent navigation, as the grid ignores `preventDefault`
       event.stopPropagation();
       resizingRef.current = true;
       const { width } = event.currentTarget.getBoundingClientRect();

@@ -108,6 +108,36 @@ test('should resize column using keyboard', async () => {
   expect(onColumnResize).toHaveBeenCalledTimes(2);
 });
 
+test('should not scroll the grid when resizing using keyboard', async ({ onTestFinished }) => {
+  await setup<Row, unknown>({
+    columns: [...columns, { key: 'col3', name: 'col3', width: 3000 }],
+    rows: []
+  });
+  await userEvent.click(page.getHeaderCell({ name: 'col2' }));
+
+  const keyDownEvents: KeyboardEvent[] = [];
+  const controller = new AbortController();
+  onTestFinished(() => {
+    controller.abort();
+  });
+  globalThis.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.key === 'ArrowRight') keyDownEvents.push(event);
+    },
+    { capture: true, signal: controller.signal }
+  );
+
+  await userEvent.keyboard(`{Control>}${'{ArrowRight}'.repeat(5)}{/Control}`);
+  await expect.element(grid).toHaveStyle({ gridTemplateColumns: '100px 250px 3000px' });
+  expect(keyDownEvents).toHaveLength(5);
+  // the browser's default action, e.g., scrolling the grid in Firefox and WebKit, is prevented
+  for (const event of keyDownEvents) {
+    expect(event.defaultPrevented).toBe(true);
+  }
+  await expect.element(grid).toHaveProperty('scrollLeft', 0);
+});
+
 test('should use the maxWidth if specified when resizing using keyboard', async () => {
   const onColumnResize = vi.fn();
   await setup<Row, unknown>({ columns, rows: [], onColumnResize });
