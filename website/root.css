@@ -22,11 +22,6 @@ body {
   color: light-dark(#111, #fff);
 }
 
-#root {
-  display: grid;
-  grid-template-columns: auto 1fr;
-}
-
 .fill-grid {
   block-size: 100%;
 }
