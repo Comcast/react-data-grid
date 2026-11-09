@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type { Direction } from '../src';
+import { demos } from './demos';
 
 const headerClassname = css`
   border-inline-start: 4px solid light-dark(hsl(210deg 50% 80%), hsl(210deg 50% 40%));
@@ -90,26 +91,11 @@ export default function Nav({ direction, onDirectionChange }: Props) {
 
       <nav aria-labelledby={demosNavId} className={navClassname}>
         <h2 id={demosNavId}>Demos</h2>
-        <Link to="/CommonFeatures">Common Features</Link>
-        <Link to="/AllFeatures">All Features</Link>
-        <Link to="/CellNavigation">Cell Navigation</Link>
-        <Link to="/ColumnSpanning">Column Spanning</Link>
-        <Link to="/ColumnGrouping">Column Grouping</Link>
-        <Link to="/ColumnsReordering">Columns Reordering</Link>
-        <Link to="/ContextMenu">Context Menu</Link>
-        <Link to="/CustomizableRenderers">Customizable Renderers</Link>
-        <Link to="/RowGrouping">Row Grouping</Link>
-        <Link to="/HeaderFilters">Header Filters</Link>
-        <Link to="/InfiniteScrolling">Infinite Scrolling</Link>
-        <Link to="/MasterDetail">Master Detail</Link>
-        <Link to="/MillionCells">A Million Cells</Link>
-        <Link to="/NoRows">No Rows</Link>
-        <Link to="/ResizableGrid">Resizable Grid</Link>
-        <Link to="/RowsReordering">Rows Reordering</Link>
-        <Link to="/ScrollToCell">Scroll to Cell</Link>
-        <Link to="/TreeView">Tree View</Link>
-        <Link to="/VariableRowHeight">Variable Row Height</Link>
-        <Link to="/Animation">Animation</Link>
+        {demos.map(({ path, label }) => (
+          <Link key={path} to={path}>
+            {label}
+          </Link>
+        ))}
       </nav>
 
       <nav aria-labelledby={linksNavId} className={navClassname}>
