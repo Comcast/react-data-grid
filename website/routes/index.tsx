@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Navigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   loader({ location }) {
@@ -11,14 +10,9 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const href = Route.useLoaderData();
-  const navigate = useNavigate();
+  const to = Route.useLoaderData();
 
-  // redirect after hydration: a redirect in `beforeLoad` would run before it,
-  // so the client's first render wouldn't match the prerendered navigation
-  useEffect(() => {
-    navigate({ href, replace: true });
-  }, [href, navigate]);
-
-  return null;
+  // `Navigate` redirects in an effect, after hydration: a redirect in `beforeLoad`
+  // would run before it, so the client's first render wouldn't match the prerendered navigation
+  return <Navigate to={to} replace />;
 }
