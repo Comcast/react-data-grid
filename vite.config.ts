@@ -116,7 +116,6 @@ export default defineConfig({
   clearScreen: false,
 
   build: {
-    chunkImportMap: true,
     modulePreload: { polyfill: false },
     sourcemap: true,
     rolldownOptions: {
@@ -144,15 +143,24 @@ export default defineConfig({
   plugins: lazyPlugins(() => [
     ecij(),
     !isTest &&
-      import('@tanstack/router-plugin/vite').then(({ tanstackRouter }) =>
-        tanstackRouter({
-          target: 'react',
-          generatedRouteTree: 'website/routeTree.gen.ts',
-          routesDirectory: 'website/routes',
-          tmpDir: 'node_modules/.cache/tanstack',
-          autoCodeSplitting: true
+      import('@tanstack/react-start/plugin/vite').then(({ tanstackStart }) =>
+        tanstackStart({
+          srcDirectory: 'website',
+          router: {
+            tmpDir: 'node_modules/.cache/tanstack'
+          },
+          prerender: {
+            enabled: true,
+            // GitHub Pages serves `/CommonFeatures` from `CommonFeatures.html`,
+            // and redirects it to `/CommonFeatures/` for `CommonFeatures/index.html`
+            autoSubfolderIndex: false,
+            // all routes are static, so they're prerendered without crawling links,
+            // which would render each page again, as links include the base path
+            crawlLinks: false
+          }
         })
       ),
+    // must come after the TanStack Start plugin
     reactPlugin
   ]),
 
@@ -935,7 +943,7 @@ copy(
       'unicorn/require-post-message-target-origin': 'warn',
       'unicorn/switch-case-braces': ['warn', 'avoid'],
       'unicorn/switch-case-break-position': 'warn',
-      'unicorn/text-encoding-identifier-case': 'warn',
+      'unicorn/text-encoding-identifier-case': ['warn', { withDash: true }],
       'unicorn/throw-new-error': 'warn',
       'vite-plus/prefer-vite-plus-imports': 'warn'
     },

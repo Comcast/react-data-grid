@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import '../root.css';
+
+import { useState, type ReactNode } from 'react';
+import { ClientOnly, createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type { Direction } from '../../src';
@@ -7,6 +9,18 @@ import { DirectionContext } from '../directionContext';
 import Nav from '../Nav';
 
 export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'React Data Grid' },
+      {
+        name: 'description',
+        content: 'Feature-rich and customizable data grid React component'
+      }
+    ]
+  }),
+  shellComponent: Shell,
   component: Root
 });
 
@@ -19,6 +33,20 @@ const mainClassname = css`
   contain: inline-size;
 `;
 
+function Shell({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en-US">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
 function Root() {
   const [direction, setDirection] = useState<Direction>('ltr');
 
@@ -26,7 +54,9 @@ function Root() {
     <DirectionContext value={direction}>
       <Nav direction={direction} onDirectionChange={setDirection} />
       <main dir={direction} className={mainClassname}>
-        <Outlet />
+        <ClientOnly>
+          <Outlet />
+        </ClientOnly>
       </main>
     </DirectionContext>
   );

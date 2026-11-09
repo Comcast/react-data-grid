@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"]
+    "lib": ["ESNext", "DOM"],
+    // the types of TanStack Start's Vite plugin import Babel packages without types,
+    // and unplugin's types, which import its optional peer dependencies, like webpack
+    "skipLibCheck": true
   },
   "include": ["package.json", "vite.config.ts"]
 }
