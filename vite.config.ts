@@ -1,7 +1,9 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
-import { defineConfig, lazyPlugins } from 'vite-plus';
+import { defineConfig, lazyPlugins, type Plugin } from 'vite-plus';
 import { playwright, type PlaywrightProviderOptions } from 'vite-plus/test/browser-playwright';
 import type { BrowserCommandContext } from 'vite-plus/test/node';
 
@@ -24,6 +26,27 @@ async function getTscPath(): Promise<string> {
   const { default: getExePath } = await import('./node_modules/typescript/lib/getExePath.js');
   return getExePath();
 }
+
+const clientImportMapId = 'virtual:client-import-map';
+const resolvedClientImportMapId = `\0${clientImportMapId}`;
+
+// TanStack Start renders the HTML itself, so Vite doesn't add the client's import map to it:
+// the server build embeds the import map instead, and `website/server.ts` adds it to each page
+const clientImportMapPlugin: Plugin = {
+  name: 'client-import-map',
+  resolveId(id) {
+    return id === clientImportMapId ? resolvedClientImportMapId : null;
+  },
+  async load(id) {
+    if (id !== resolvedClientImportMapId) return null;
+    const { command, environments, root } = this.environment.getTopLevelConfig();
+    const { build } = environments.client;
+    if (command !== 'build' || !build.chunkImportMap) return 'export default undefined;';
+    // TanStack Start builds the client before the server
+    const importMap = await readFile(path.resolve(root, build.outDir, 'importmap.json'), 'utf-8');
+    return `export default ${JSON.stringify(importMap)};`;
+  }
+};
 
 // shared by Vite and `vp pack`
 const reactPlugin = react({
@@ -132,6 +155,16 @@ export default defineConfig({
     }
   },
 
+  environments: {
+    client: {
+      build: {
+        // chunks import each other through an import map, so a chunk's hash doesn't depend on the hashes
+        // of the chunks it imports; Node.js doesn't support import maps, so the server build can't use it
+        chunkImportMap: true
+      }
+    }
+  },
+
   css: {
     transformer: 'lightningcss',
     lightningcss: {
@@ -160,6 +193,7 @@ export default defineConfig({
           }
         })
       ),
+    !isTest && clientImportMapPlugin,
     // must come after the TanStack Start plugin
     reactPlugin
   ]),
