@@ -96,15 +96,15 @@ export default defineConfig({
         }
       },
       // the first step of a release, see the header of `.github/workflows/publish.yml`:
-      // arguments are passed to `npm version`, as `vp run` appends them to the last command
+      // arguments are passed to `vp pm version`, as `vp run` appends them to the last command
       version: {
         command: [
           'git switch main',
           // also deletes local tags that aren't on GitHub
           'git fetch --prune --prune-tags origin',
-          // keeps uncommitted changes, which `npm version` refuses to run with
+          // keeps uncommitted changes, which `vp pm version` refuses to run with
           'git reset --keep origin/main',
-          'npm version'
+          'vp pm version'
         ],
         cache: false
       }

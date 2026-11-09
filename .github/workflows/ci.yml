@@ -47,15 +47,15 @@ jobs:
           cache-save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           run-install: false
 
-      - run: vp install --frozen-lockfile
+      - run: vp pm ci
 
-      # `npm ci` doesn't catch every mismatch between package.json and package-lock.json,
+      # `vp pm ci` doesn't catch every mismatch between package.json and the lockfile,
       # e.g., Dependabot rewriting the `beta` dist-tag to `*` in the lockfile,
-      # so update the lockfile without installing anything and fail if either file changed
-      - name: Check that package-lock.json is up to date
+      # so update the lockfile without installing anything and fail if any tracked file changed
+      - name: Check that the lockfile is up to date
         run: |
           vp install --lockfile-only --ignore-scripts
-          git diff --exit-code -- package.json package-lock.json
+          git diff --exit-code
 
       # https://viteplus.dev/guide/github-actions-cache
       - name: Restore Vite Task cache
