@@ -47,7 +47,7 @@ jobs:
           cache-save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           run-install: false
 
-      - run: vp install --frozen-lockfile
+      - run: vp pm ci
 
       # `npm ci` doesn't catch every mismatch between package.json and package-lock.json,
       # e.g., Dependabot rewriting the `beta` dist-tag to `*` in the lockfile,

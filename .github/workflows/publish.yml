@@ -64,7 +64,7 @@ jobs:
       - name: Check that the tag matches the package version
         run: test "$GITHUB_REF_NAME" = "v$(npm pkg get version)"
 
-      - run: vp install --frozen-lockfile
+      - run: vp pm ci
 
       - run: vp run ci
         timeout-minutes: 6
