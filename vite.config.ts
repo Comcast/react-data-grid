@@ -146,9 +146,6 @@ export default defineConfig({
       import('@tanstack/react-start/plugin/vite').then(({ tanstackStart }) =>
         tanstackStart({
           srcDirectory: 'website',
-          router: {
-            tmpDir: 'node_modules/.cache/tanstack'
-          },
           prerender: {
             enabled: true,
             // GitHub Pages serves `/CommonFeatures` from `CommonFeatures.html`,
@@ -943,7 +940,7 @@ copy(
       'unicorn/require-post-message-target-origin': 'warn',
       'unicorn/switch-case-braces': ['warn', 'avoid'],
       'unicorn/switch-case-break-position': 'warn',
-      'unicorn/text-encoding-identifier-case': 'warn',
+      'unicorn/text-encoding-identifier-case': ['warn', { withDash: true }],
       'unicorn/throw-new-error': 'warn',
       'vite-plus/prefer-vite-plus-imports': 'warn'
     },

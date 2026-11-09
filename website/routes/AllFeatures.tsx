@@ -15,7 +15,10 @@ export const Route = createFileRoute('/AllFeatures')({
   codeSplitGroupings: [['component', 'loader']],
   component: AllFeatures,
   loader,
-  staleTime: Number.POSITIVE_INFINITY
+  staleTime: Number.POSITIVE_INFINITY,
+  // generate the rows in the browser: prerendering would embed them in the page,
+  // with dates formatted in the build machine's locale
+  ssr: false
 });
 
 function loader(): readonly Row[] {

@@ -18,6 +18,8 @@ body {
 }
 
 body {
+  display: grid;
+  grid-template-columns: auto 1fr;
   background-color: light-dark(#fff, hsl(0deg 0% 10%));
   color: light-dark(#111, #fff);
 }
