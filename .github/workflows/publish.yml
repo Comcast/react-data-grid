@@ -1,6 +1,6 @@
 # To publish a new version, run these commands:
 #   vp run version <prerelease|patch|minor|major|x.y.z>
-#   git push --atomic --no-follow-tags origin main "v$(node -p "require('./package.json').version")"
+#   git push --atomic --no-follow-tags origin main "v$(vp pm pkg get version)"
 #
 # The `version` task in `vite.config.ts` switches to main and matches it and the local tags to GitHub's,
 # then runs `vp pm version` with the arguments, which commits the new version and tags it.
@@ -9,7 +9,7 @@
 #
 # Until it's pushed, any fetch that prunes tags, like an editor's auto-fetch, deletes the new tag.
 # If the push can't find it, recreate it and push again:
-#   git tag --annotate "v$(node -p "require('./package.json').version")" --message "$(node -p "require('./package.json').version")"
+#   git tag --annotate "v$(vp pm pkg get version)" --message "$(vp pm pkg get version)"
 #
 # The new tag runs this workflow, which checks the tagged commit,
 # publishes it to npm, and creates the GitHub release.
@@ -62,7 +62,7 @@ jobs:
         run: git merge-base --is-ancestor HEAD origin/main
 
       - name: Check that the tag matches the package version
-        run: test "$GITHUB_REF_NAME" = "v$(node -p "require('./package.json').version")"
+        run: test "$GITHUB_REF_NAME" = "v$(vp pm pkg get version)"
 
       - run: vp pm ci
 
