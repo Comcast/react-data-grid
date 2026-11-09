@@ -105,7 +105,7 @@ jobs:
       # https://docs.npmjs.com/trusted-publishers
       # `--ignore-scripts` skips the `prepare` script, so no project code runs either
       - name: Publish to npm
-        run: npm publish --tag latest --ignore-scripts
+        run: vp pm publish --tag latest -- --ignore-scripts
 
   # A separate job, so the job that can publish to npm has no write token,
   # and a failed release can be re-run once the version is already on npm
