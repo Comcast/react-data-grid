@@ -146,6 +146,9 @@ export default defineConfig({
       import('@tanstack/react-start/plugin/vite').then(({ tanstackStart }) =>
         tanstackStart({
           srcDirectory: 'website',
+          router: {
+            tmpDir: 'node_modules/.cache/tanstack'
+          },
           prerender: {
             enabled: true,
             // GitHub Pages serves `/CommonFeatures` from `CommonFeatures.html`,
