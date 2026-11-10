@@ -3,7 +3,50 @@ import { Link } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type { Direction } from '../src';
-import { demos } from './demos';
+import { Route as AllFeaturesRoute } from './routes/AllFeatures';
+import { Route as AnimationRoute } from './routes/Animation';
+import { Route as CellNavigationRoute } from './routes/CellNavigation';
+import { Route as ColumnGroupingRoute } from './routes/ColumnGrouping';
+import { Route as ColumnSpanningRoute } from './routes/ColumnSpanning';
+import { Route as ColumnsReorderingRoute } from './routes/ColumnsReordering';
+import { Route as CommonFeaturesRoute } from './routes/CommonFeatures';
+import { Route as ContextMenuRoute } from './routes/ContextMenu';
+import { Route as CustomizableRenderersRoute } from './routes/CustomizableRenderers';
+import { Route as HeaderFiltersRoute } from './routes/HeaderFilters';
+import { Route as InfiniteScrollingRoute } from './routes/InfiniteScrolling';
+import { Route as MasterDetailRoute } from './routes/MasterDetail';
+import { Route as MillionCellsRoute } from './routes/MillionCells';
+import { Route as NoRowsRoute } from './routes/NoRows';
+import { Route as ResizableGridRoute } from './routes/ResizableGrid';
+import { Route as RowGroupingRoute } from './routes/RowGrouping';
+import { Route as RowsReorderingRoute } from './routes/RowsReordering';
+import { Route as ScrollToCellRoute } from './routes/ScrollToCell';
+import { Route as TreeViewRoute } from './routes/TreeView';
+import { Route as VariableRowHeightRoute } from './routes/VariableRowHeight';
+
+// in navigation order
+const demoRoutes = [
+  CommonFeaturesRoute,
+  AllFeaturesRoute,
+  CellNavigationRoute,
+  ColumnSpanningRoute,
+  ColumnGroupingRoute,
+  ColumnsReorderingRoute,
+  ContextMenuRoute,
+  CustomizableRenderersRoute,
+  RowGroupingRoute,
+  HeaderFiltersRoute,
+  InfiniteScrollingRoute,
+  MasterDetailRoute,
+  MillionCellsRoute,
+  NoRowsRoute,
+  ResizableGridRoute,
+  RowsReorderingRoute,
+  ScrollToCellRoute,
+  TreeViewRoute,
+  VariableRowHeightRoute,
+  AnimationRoute
+];
 
 const headerClassname = css`
   border-inline-start: 4px solid light-dark(hsl(210deg 50% 80%), hsl(210deg 50% 40%));
@@ -91,9 +134,11 @@ export default function Nav({ direction, onDirectionChange }: Props) {
 
       <nav aria-labelledby={demosNavId} className={navClassname}>
         <h2 id={demosNavId}>Demos</h2>
-        {demos.map(({ path, label }) => (
-          <Link key={path} to={path}>
-            {label}
+        {/* not `<Route.Link>`: it navigates from its own route,
+            which the router warns about in development on other pages */}
+        {demoRoutes.map(({ fullPath, options }) => (
+          <Link key={fullPath} to={fullPath}>
+            {options.staticData?.title}
           </Link>
         ))}
       </nav>

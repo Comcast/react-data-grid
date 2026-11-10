@@ -5,7 +5,7 @@ import { ClientOnly, createRootRoute, HeadContent, Outlet, Scripts } from '@tans
 import { css } from 'ecij';
 
 import type { Direction } from '../../src';
-import { demos } from '../demos';
+import { Route as CommonFeaturesRoute } from './CommonFeatures';
 import { DirectionContext } from '../directionContext';
 import Nav from '../Nav';
 
@@ -14,24 +14,27 @@ const siteUrl = 'https://comcast.github.io/react-data-grid';
 
 export const Route = createRootRoute({
   head({ matches }) {
+    let { pathname, staticData } = matches.at(-1)!;
     // prerendering follows the index route's redirect, so `index.html` is the Common Features page,
     // which `/` hydrates before redirecting: with another head, React would add a second canonical link
-    const pathname = matches.at(-1)?.pathname;
-    const demoPath = pathname === '/' ? '/CommonFeatures' : pathname;
-    const demo = demos.find(({ path }) => path === demoPath);
+    if (pathname === '/') {
+      pathname = CommonFeaturesRoute.fullPath;
+      staticData = CommonFeaturesRoute.options.staticData!;
+    }
+    const { title } = staticData;
 
     return {
       meta: [
         { charSet: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'color-scheme', content: 'light dark' },
-        { title: demo === undefined ? 'React Data Grid' : `${demo.label} | React Data Grid` },
+        { title: title === undefined ? 'React Data Grid' : `${title} | React Data Grid` },
         {
           name: 'description',
           content: 'Feature-rich and customizable data grid React component'
         }
       ],
-      links: demo === undefined ? [] : [{ rel: 'canonical', href: `${siteUrl}${demo.path}` }]
+      links: [{ rel: 'canonical', href: `${siteUrl}${pathname}` }]
     };
   },
   shellComponent: Shell,

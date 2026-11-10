@@ -8,6 +8,9 @@ import type { Omit } from '../../src/types';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/HeaderFilters')({
+  staticData: {
+    title: 'Header Filters'
+  },
   component: HeaderFilters
 });
 

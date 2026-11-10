@@ -5,6 +5,9 @@ import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ResizableGrid')({
+  staticData: {
+    title: 'Resizable Grid'
+  },
   component: ResizableGrid
 });
 

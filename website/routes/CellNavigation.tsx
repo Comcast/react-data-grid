@@ -6,6 +6,9 @@ import type { CellKeyboardEvent, CellKeyDownArgs, Column } from '../../src';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CellNavigation')({
+  staticData: {
+    title: 'Cell Navigation'
+  },
   component: CellNavigation
 });
 

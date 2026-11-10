@@ -25,3 +25,9 @@ function PendingComponent() {
 function NotFound() {
   return 'Nothing to see here';
 }
+
+declare module '@tanstack/react-router' {
+  interface StaticDataRouteOption {
+    title?: string;
+  }
+}
