@@ -1,5 +1,7 @@
 import { css } from 'ecij';
 
+export const rowActiveClassname = 'rdg-row-active';
+
 export const row = css`
   @layer rdg.Row {
     display: grid;
@@ -15,7 +17,7 @@ export const row = css`
       outline: none;
     }
 
-    &[tabindex='0'] {
+    &.${rowActiveClassname} {
       /* we render the outline in a pseudo element as otherwise cells render above it */
       &::after {
         content: '';
@@ -71,8 +73,6 @@ export const row = css`
 `;
 
 export const rowClassname = `rdg-row ${row}`;
-
-export const rowActiveClassname = 'rdg-row-active';
 
 export const topSummaryRowClassname = 'rdg-top-summary-row';
 
