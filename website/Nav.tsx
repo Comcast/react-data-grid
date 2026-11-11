@@ -24,7 +24,6 @@ import { Route as ScrollToCellRoute } from './routes/ScrollToCell';
 import { Route as TreeViewRoute } from './routes/TreeView';
 import { Route as VariableRowHeightRoute } from './routes/VariableRowHeight';
 
-// in navigation order
 const demoRoutes = [
   CommonFeaturesRoute,
   AllFeaturesRoute,
@@ -134,10 +133,8 @@ export default function Nav({ direction, onDirectionChange }: Props) {
 
       <nav aria-labelledby={demosNavId} className={navClassname}>
         <h2 id={demosNavId}>Demos</h2>
-        {/* not `<Route.Link>`: it navigates from its own route,
-            which the router warns about in development on other pages */}
-        {demoRoutes.map(({ fullPath, options }) => (
-          <Link key={fullPath} to={fullPath}>
+        {demoRoutes.map(({ to, options }) => (
+          <Link key={to} to={to}>
             {options.staticData?.title}
           </Link>
         ))}
