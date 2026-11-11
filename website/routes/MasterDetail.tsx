@@ -9,6 +9,9 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/MasterDetail')({
+  staticData: {
+    title: 'Master Detail'
+  },
   component: MasterDetail
 });
 

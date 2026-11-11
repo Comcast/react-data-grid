@@ -11,6 +11,9 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
+  staticData: {
+    title: 'All Features'
+  },
   // split the loader to avoid importing faker in the site's entry js
   codeSplitGroupings: [['component', 'loader']],
   component: AllFeatures,

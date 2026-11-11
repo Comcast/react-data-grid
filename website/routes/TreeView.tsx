@@ -7,6 +7,9 @@ import { CellExpander, ChildRowDeleteButton } from '../components';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/TreeView')({
+  staticData: {
+    title: 'Tree View'
+  },
   component: TreeView
 });
 

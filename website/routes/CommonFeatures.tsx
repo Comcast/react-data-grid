@@ -26,6 +26,9 @@ import {
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CommonFeatures')({
+  staticData: {
+    title: 'Common Features'
+  },
   component: CommonFeatures
 });
 

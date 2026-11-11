@@ -6,8 +6,6 @@ body {
 }
 
 :root {
-  color-scheme: light dark;
-
   &:has([value='light']:checked) {
     color-scheme: light;
   }

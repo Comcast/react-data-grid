@@ -7,6 +7,9 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/NoRows')({
+  staticData: {
+    title: 'No Rows'
+  },
   component: NoRows
 });
 

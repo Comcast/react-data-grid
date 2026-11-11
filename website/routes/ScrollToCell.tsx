@@ -8,6 +8,9 @@ import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ScrollToCell')({
+  staticData: {
+    title: 'Scroll to Cell'
+  },
   component: ScrollToCell
 });
 

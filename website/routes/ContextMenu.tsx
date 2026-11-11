@@ -9,6 +9,9 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ContextMenu')({
+  staticData: {
+    title: 'Context Menu'
+  },
   component: ContextMenuDemo
 });
 

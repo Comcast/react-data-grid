@@ -15,6 +15,9 @@ import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({
+  staticData: {
+    title: 'Customizable Renderers'
+  },
   component: CustomizableRenderers
 });
 
