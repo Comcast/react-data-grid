@@ -16,6 +16,7 @@ src/
   cellRenderers/      # default cell renderers (e.g., checkbox, toggleGroup, value)
   editors/            # default editors (renderTextEditor)
 test/
+  bench/              # vitest benchmarks (browser mode, Chromium only)
   browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
   visual/             # vitest visual regression tests (CI-only — never run locally)
@@ -48,6 +49,7 @@ website/              # demo site (TanStack Start), prerendered for GitHub Pages
 - Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
 - **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.
+- **Benchmarks** — `vp run bench` runs `test/bench/` in Chromium, and `vp run bench <files>` runs specific files. Write them with `bench()` from `test/bench/utils.ts`: Vitest only provides `bench` as a test fixture, and importing that file also turns off Strict Mode.
 
 ## Tooling
 
