@@ -209,7 +209,7 @@ The DataGrid accepts standard [`className`](#classname-string--undefined) and [`
   columns={columns}
   rows={rows}
   className="my-grid custom-theme"
-  style={{ width: 800, height: 600 }}
+  style={{ inlineSize: 800, blockSize: 600 }}
 />
 ```
 

@@ -151,7 +151,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
             &:modal {
               display: flex;
               flex-direction: column;
-              width: 300px;
+              inline-size: 300px;
               gap: 16px;
               padding: 16px;
             }

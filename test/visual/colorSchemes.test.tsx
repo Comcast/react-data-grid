@@ -60,13 +60,7 @@ describe.each(modes)('$prefix', ({ colorScheme, forcedColors, prefix }) => {
         onSelectedRowsChange={() => {}}
         onRowsChange={() => {}}
         onFill={({ targetRow }) => targetRow}
-        style={{
-          blockSize: 160,
-          inlineSize: 400,
-          // follow the emulated color scheme, like apps that set `color-scheme: light dark`,
-          // but keep the default in forced colors mode, where Chromium resolves system colors for it
-          colorScheme: forcedColors === 'none' ? 'light dark' : undefined
-        }}
+        style={{ blockSize: 160, inlineSize: 400 }}
       />
     );
 

@@ -60,8 +60,8 @@ const cellOverClassname = `rdg-cell-drag-over ${cellDraggingOrOver}`;
 const dragImageClassname = css`
   @layer rdg.HeaderCell {
     border-radius: 4px;
-    width: fit-content;
-    outline: 2px solid hsl(207, 100%, 50%);
+    inline-size: fit-content;
+    outline: 2px solid hsl(207deg 100% 50%);
     outline-offset: -2px;
   }
 `;

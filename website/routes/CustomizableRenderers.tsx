@@ -33,7 +33,7 @@ const selectCellClassname = css`
 
 const sortPriorityClassname = css`
   color: gray;
-  margin-left: 2px;
+  margin-inline-start: 2px;
 `;
 
 interface Row {

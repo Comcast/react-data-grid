@@ -73,7 +73,7 @@ test('tree grid', async () => {
       groupBy={['country', 'year']}
       expandedGroupIds={new Set(['USA', 'USA__2020'])}
       onExpandedGroupIdsChange={() => {}}
-      style={{ height: 350 }}
+      style={{ blockSize: 350 }}
     />
   );
 

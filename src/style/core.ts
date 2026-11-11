@@ -104,7 +104,7 @@ export const viewportDraggingClassname = `rdg-viewport-dragging ${viewportDraggi
 const frozenColumnShadowClassname = css`
   @layer rdg.FrozenColumnShadow {
     position: sticky;
-    width: 10px;
+    inline-size: 10px;
     pointer-events: none;
     z-index: 1;
     opacity: 1;
