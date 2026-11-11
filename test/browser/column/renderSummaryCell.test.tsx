@@ -1,6 +1,6 @@
 import { page } from 'vite-plus/test/browser';
 
-import type { Column } from '../../../src';
+import type { Column, RenderSummaryCellContentProps } from '../../../src';
 import { setup } from '../utils';
 
 const cells = page.getCell();
@@ -16,6 +16,7 @@ const columns: readonly Column<never, SummaryRow>[] = [
     key: 'col1',
     name: 'Col1',
     renderSummaryCell(props) {
+      expectTypeOf(props).toEqualTypeOf<RenderSummaryCellContentProps<never, SummaryRow>>();
       return `Summary: ${props.row.id}`;
     }
   },

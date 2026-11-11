@@ -1,6 +1,6 @@
 import { useRovingTabIndex } from './hooks';
 import { classnames, getHeaderCellRowSpan, getHeaderCellStyle } from './utils';
-import type { CalculatedColumnParent } from './types';
+import type { CalculatedColumnGroup } from './types';
 import type { GroupedColumnHeaderRowProps } from './GroupedColumnHeaderRow';
 import { cellClassname } from './style/cell';
 
@@ -10,7 +10,7 @@ type SharedGroupedColumnHeaderRowProps<R, SR> = Pick<
 >;
 
 interface GroupedColumnHeaderCellProps<R, SR> extends SharedGroupedColumnHeaderRowProps<R, SR> {
-  column: CalculatedColumnParent<R, SR>;
+  column: CalculatedColumnGroup<R, SR>;
   isCellActive: boolean;
 }
 
