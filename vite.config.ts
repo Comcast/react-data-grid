@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { ecij } from 'ecij/plugin';
 import { Features } from 'lightningcss';
@@ -38,12 +38,12 @@ const clientImportMapPlugin: Plugin = {
     return id === clientImportMapId ? resolvedClientImportMapId : null;
   },
   async load(id) {
-    if (id !== resolvedClientImportMapId) return null;
+    if (id !== resolvedClientImportMapId) return;
     const { command, environments, root } = this.environment.getTopLevelConfig();
     const { build } = environments.client;
     if (command !== 'build' || !build.chunkImportMap) return 'export default undefined;';
     // TanStack Start builds the client before the server
-    const importMap = await readFile(path.resolve(root, build.outDir, 'importmap.json'), 'utf-8');
+    const importMap = await readFile(resolve(root, build.outDir, 'importmap.json'), 'utf-8');
     return `export default ${JSON.stringify(importMap)};`;
   }
 };

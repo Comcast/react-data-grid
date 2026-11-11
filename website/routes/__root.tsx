@@ -85,7 +85,6 @@ function Root() {
         Skip to demo
       </a>
       <Nav direction={direction} onDirectionChange={setDirection} />
-      {/* focusable, so the skip link moves focus to it */}
       <main id="demo" tabIndex={-1} dir={direction} className={mainClassname}>
         <ClientOnly>
           <Outlet />
