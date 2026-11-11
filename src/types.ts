@@ -56,9 +56,11 @@ export interface Column<TRow, TSummaryRow = unknown> {
    * The span is clamped to the start-frozen, unfrozen, or end-frozen columns, whichever the column is part of.
    */
   readonly colSpan?: Maybe<(args: ColSpanArgs<TRow, TSummaryRow>) => Maybe<number>>;
-  /** Determines whether the column is frozen, and on which edge.
-   *  `true` is an alias for `'start'` for backward compatibility. */
-  readonly frozen?: Maybe<ColumnFrozen | true>;
+  /**
+   * Whether the column is frozen, and on which edge
+   * @defaultValue false
+   */
+  readonly frozen?: Maybe<ColumnFrozen>;
   /** Enable resizing of the column */
   readonly resizable?: Maybe<boolean>;
   /** Enable sorting of the column */

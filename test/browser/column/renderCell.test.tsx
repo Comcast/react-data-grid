@@ -264,7 +264,14 @@ describe('Custom cell content renderer', () => {
       columns: [
         { key: 'id', name: 'ID', renderCell },
         { name: 'Name', key: 'name', width: 100, cellClass: 'name', renderCell },
-        { key: 'other', name: 'Other', frozen: true, editable: false, colSpan: () => 1, renderCell }
+        {
+          key: 'other',
+          name: 'Other',
+          frozen: 'start',
+          editable: false,
+          colSpan: () => 1,
+          renderCell
+        }
       ],
       rows: [{ id: 1 }]
     });

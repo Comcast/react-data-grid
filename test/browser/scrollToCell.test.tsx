@@ -13,7 +13,7 @@ for (let i = 0; i < 50; i++) {
   columns.push({
     key,
     name: key,
-    frozen: i < 5,
+    frozen: i < 5 ? 'start' : false,
     renderCell(props) {
       return `${props.column.key}×${props.row}`;
     },
@@ -98,7 +98,7 @@ test('scrollToCell with end-frozen columns', async () => {
   const ref = createRef<DataGridHandle>();
   const endFrozenColumns: Column<number, number>[] = columns.map((column, i) => ({
     ...column,
-    frozen: i < 5 ? true : i >= 48 ? 'end' : false
+    frozen: i < 5 ? 'start' : i >= 48 ? 'end' : false
   }));
 
   await setup({
