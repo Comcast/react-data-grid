@@ -27,19 +27,24 @@ const rows: readonly Row[] = [
 
 const selectedRows: ReadonlySet<number> = new Set([1, 2]);
 
-// Windows contrast themes are light or dark, so test both palettes
-const palettes = [
-  { colorScheme: 'light', prefix: 'forced-colors' },
-  { colorScheme: 'dark', prefix: 'forced-colors-dark' }
+// Windows contrast themes are light or dark too, so test both palettes in forced colors mode
+const modes = [
+  { colorScheme: 'light', forcedColors: 'none', prefix: 'light' },
+  { colorScheme: 'dark', forcedColors: 'none', prefix: 'dark' },
+  { colorScheme: 'light', forcedColors: 'active', prefix: 'forced-colors' },
+  { colorScheme: 'dark', forcedColors: 'active', prefix: 'forced-colors-dark' }
 ] as const;
 
-describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
+describe.each(modes)('$prefix', ({ colorScheme, forcedColors, prefix }) => {
   beforeEach(async ({ skip, onTestFinished }) => {
     // WebKit matches `(forced-colors: active)` when emulated, but does not force any colors,
     // and Firefox ignores the emulated color scheme in forced colors mode
-    skip(server.browser === 'webkit' || (server.browser === 'firefox' && colorScheme === 'dark'));
+    skip(
+      forcedColors === 'active' &&
+        (server.browser === 'webkit' || (server.browser === 'firefox' && colorScheme === 'dark'))
+    );
 
-    await commands.emulateMedia({ forcedColors: 'active', colorScheme });
+    await commands.emulateMedia({ forcedColors, colorScheme });
     onTestFinished(async () => {
       // restore the context defaults, as `null` would make the page follow the OS instead
       await commands.emulateMedia({ forcedColors: 'none', colorScheme: 'light' });
@@ -47,7 +52,7 @@ describe.each(palettes)('$colorScheme palette', ({ colorScheme, prefix }) => {
 
     await page.render(
       <DataGrid
-        aria-label="Forced colors"
+        aria-label="Color schemes"
         getRowKey={getRowKey}
         columns={columns}
         rows={rows}

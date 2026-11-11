@@ -154,7 +154,7 @@ The DataGrid supports the following CSS variables for customization:
 .rdg {
   /* Selection */
   --rdg-selection-width: 2px;
-  --rdg-selection-color: hsl(207, 75%, 66%);
+  --rdg-selection-color: light-dark(hsl(207deg 80% 42%), hsl(207deg 75% 66%));
 
   /* Typography */
   --rdg-font-size: 14px;
@@ -169,8 +169,8 @@ The DataGrid supports the following CSS variables for customization:
 
   /* Rows */
   --rdg-row-hover-background-color: light-dark(hsl(0deg 0% 96%), hsl(0deg 0% 9%));
-  --rdg-row-selected-background-color: light-dark(hsl(207deg 76% 92%), hsl(207deg 76% 42%));
-  --rdg-row-selected-hover-background-color: light-dark(hsl(207deg 76% 88%), hsl(207deg 76% 38%));
+  --rdg-row-selected-background-color: light-dark(hsl(207deg 76% 92%), hsl(207deg 76% 26%));
+  --rdg-row-selected-hover-background-color: light-dark(hsl(207deg 76% 88%), hsl(207deg 76% 22%));
 
   /* Borders */
   --rdg-border-width: 1px;
@@ -179,7 +179,7 @@ The DataGrid supports the following CSS variables for customization:
   --rdg-summary-border-color: light-dark(#aaa, #555);
 
   /* Checkboxes */
-  --rdg-checkbox-focus-color: hsl(207deg 100% 69%);
+  --rdg-checkbox-focus-color: light-dark(hsl(207deg 80% 42%), hsl(207deg 100% 69%));
 
   /* Frozen columns */
   --rdg-frozen-column-shadow-color: light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 40%));
@@ -209,7 +209,7 @@ The DataGrid accepts standard [`className`](#classname-string--undefined) and [`
   columns={columns}
   rows={rows}
   className="my-grid custom-theme"
-  style={{ width: 800, height: 600 }}
+  style={{ inlineSize: 800, blockSize: 600 }}
 />
 ```
 

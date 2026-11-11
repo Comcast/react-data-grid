@@ -16,7 +16,7 @@ const rangeClassname = css`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-block-end: 8px;
 `;
 
 const transitionClassname = css`

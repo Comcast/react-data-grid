@@ -45,7 +45,7 @@ test('basic grid', async () => {
       rows={rows}
       topSummaryRows={topSummaryRows}
       bottomSummaryRows={bottomSummaryRows}
-      style={{ height: 350 }}
+      style={{ blockSize: 350 }}
     />
   );
 
