@@ -33,7 +33,7 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
 
     if (targetToRefMap.has(target)) {
       const ref = targetToRefMap.get(target)!;
-      updateSize(ref, entry.contentBoxSize[0]);
+      updateSize(ref, entry.contentBoxSize[0]!);
     }
   }
 }

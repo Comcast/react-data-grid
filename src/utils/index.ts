@@ -10,6 +10,23 @@ export * from './viewportUtils';
 
 export const { min, max, floor, abs } = Math;
 
+export function getColumnInColumns<R, SR>(
+  columns: readonly CalculatedColumn<R, SR>[],
+  index: number
+) {
+  if (index < 0 || index >= columns.length) {
+    throw new Error(`columns[${index}] is out of bounds (length: ${columns.length})`);
+  }
+  return columns[index]!;
+}
+
+export function getRowInRows<R>(rows: readonly R[], index: number) {
+  if (index < 0 || index >= rows.length) {
+    throw new Error(`rows[${index}] is out of bounds (length: ${rows.length})`);
+  }
+  return rows[index]!;
+}
+
 export function assertIsValidGetRowKey<R, K extends React.Key>(
   getRowKey: Maybe<(row: NoInfer<R>) => K>
 ): asserts getRowKey is (row: R) => K {

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { floor, max, min } from '../utils';
+import { floor, getRowInRows, max, min } from '../utils';
 
 interface ViewportRowsArgs<R> {
   rows: readonly R[];
@@ -77,7 +77,7 @@ export function useViewportRows<R>({
     // or an empty position at the top when there are no rows
     const getRowPosition = (rowIdx: number) => {
       if (rows.length === 0) return { top: 0, height: 0 };
-      return rowPositions[max(0, min(rows.length - 1, rowIdx))];
+      return getRowInRows(rowPositions, max(0, min(rows.length - 1, rowIdx)));
     };
 
     return {
@@ -90,7 +90,7 @@ export function useViewportRows<R>({
         let end = rowPositions.length - 1;
         while (start <= end) {
           const middle = start + floor((end - start) / 2);
-          const currentOffset = rowPositions[middle].top;
+          const currentOffset = getRowInRows(rowPositions, middle).top;
 
           if (currentOffset === offset) return middle;
 

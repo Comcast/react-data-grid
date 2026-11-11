@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react';
 
-import { getViewportColumns, mapColumnsWithColSpan, min } from '../utils';
+import {
+  getColumnInColumns,
+  getRowInRows,
+  getViewportColumns,
+  mapColumnsWithColSpan,
+  min
+} from '../utils';
 import type { CalculatedColumn, ColSpanArgs, MapViewportColumns, Maybe } from '../types';
 
 interface ViewportColumnsArgs<R, SR> {
@@ -52,7 +58,7 @@ export function useViewportColumns<R, SR>({
 
     // check viewport rows
     for (let rowIdx = rowOverscanStartIdx; rowIdx <= rowOverscanEndIdx; rowIdx++) {
-      colSpanArgs.push({ type: 'ROW', row: rows[rowIdx] });
+      colSpanArgs.push({ type: 'ROW', row: getRowInRows(rows, rowIdx) });
     }
 
     // check bottom summary rows
@@ -141,7 +147,7 @@ export function useViewportColumns<R, SR>({
       if (activeColumnIdx < 0 || activeColumnIdx >= columns.length) return [];
 
       return mapColumnsWithColSpan(
-        [columns[activeColumnIdx]],
+        [getColumnInColumns(columns, activeColumnIdx)],
         activeColumnIdx,
         colSpanArgs,
         callback
