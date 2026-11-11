@@ -227,20 +227,6 @@ Apply custom CSS classes to rows using the [`rowClass`](#rowclass-mayberow-r-row
 
 Apply custom CSS classes to cells using the [`cellClass`](#cellclass-maybestring--row-trow--maybestring) property in column definitions. You can also use [`headerCellClass`](#headercellclass-maybestring) and [`summaryCellClass`](#summarycellclass-maybestring--row-tsummaryrow--maybestring) for header and summary cells, respectively.
 
-#### Active Cell
-
-The active cell has the `rdg-cell-active` class, so you can restyle its outline, which uses the `--rdg-selection-width` and `--rdg-selection-color` variables. The class only marks the active cell: adding it to other cells doesn't outline them. In a [`TreeDataGrid`](#treedatagrid-), a row can be active instead of one of its cells. The active row has the `rdg-row-active` class, and its outline is the border of its `::after` pseudo-element.
-
-```css
-.rdg-cell-active {
-  outline-style: dashed;
-}
-
-.rdg-row-active::after {
-  border-style: dashed;
-}
-```
-
 #### Column Widths
 
 Control column widths using the [`width`](#width-maybenumber--string), [`minWidth`](#minwidth-maybenumber), and [`maxWidth`](#maxwidth-maybenumber) properties in column definitions. Enable column resizing using the [`resizable`](#resizable-maybeboolean) property, or use [`defaultColumnOptions`](#defaultcolumnoptions-maybedefaultcolumnoptionsr-sr) to apply it to all columns.
