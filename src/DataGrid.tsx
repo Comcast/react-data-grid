@@ -51,6 +51,7 @@ import type {
   ColumnWidths,
   Direction,
   FillEvent,
+  GridSize,
   Maybe,
   Position,
   Renderers,
@@ -155,6 +156,12 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> extends Sha
   columnWidths?: Maybe<ColumnWidths>;
   /** Callback triggered when column widths change */
   onColumnWidthsChange?: Maybe<(columnWidths: ColumnWidths) => void>;
+  /**
+   * Size of the grid until the browser measures it, e.g., when rendering on the server.
+   * The grid renders the rows and columns that fit in this size.
+   * @default { inlineSize: 1, blockSize: 1 }
+   */
+  initialSize?: Maybe<GridSize>;
 
   /**
    * Feature props
@@ -251,6 +258,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     summaryRowHeight: rawSummaryRowHeight,
     columnWidths: columnWidthsRaw,
     onColumnWidthsChange: onColumnWidthsChangeRaw,
+    initialSize,
     // Feature props
     selectedRows,
     isRowSelectionDisabled,
@@ -318,7 +326,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
    * states
    */
   const { scrollTop, scrollLeft } = useScrollState(gridRef);
-  const [gridWidth, gridHeight] = useGridDimensions(gridRef);
+  const [gridWidth, gridHeight] = useGridDimensions(gridRef, initialSize);
   const [columnWidthsInternal, setColumnWidthsInternal] = useState(
     (): ColumnWidths => columnWidthsRaw ?? new Map()
   );
