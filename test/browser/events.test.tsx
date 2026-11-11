@@ -52,7 +52,7 @@ const rows: readonly Row[] = [
 ];
 
 describe('Events', () => {
-  it('should not select cell if onCellMouseDown prevents grid default', async () => {
+  it('should not activate the cell if onCellMouseDown prevents grid default', async () => {
     await page.render(
       <DataGrid
         columns={columns}
@@ -65,9 +65,9 @@ describe('Events', () => {
       />
     );
     await userEvent.click(page.getCell({ name: '1' }));
-    await expect.element(page.getCell({ name: '1' })).toHaveAttribute('aria-selected', 'false');
+    await expect.element(page.getCell({ name: '1' })).not.toHaveClass('rdg-cell-active');
     await userEvent.click(page.getCell({ name: 'a1' }));
-    await expect.element(page.getCell({ name: 'a1' })).toHaveAttribute('aria-selected', 'true');
+    await expect.element(page.getCell({ name: 'a1' })).toHaveClass('rdg-cell-active');
   });
 
   it('should activate and focus the cell if onCellMouseDown calls setActivePosition with shouldFocus', async () => {
