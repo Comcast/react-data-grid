@@ -343,6 +343,32 @@ test('should set aria-attributes', async () => {
   await expect.element(groupRow3).toHaveAttribute('aria-expanded', 'true');
 });
 
+test('should set the level and position of the rows in a nested group', async () => {
+  await setup(['year', 'country']);
+
+  await userEvent.click(page.getCell({ name: '2022' }));
+  await userEvent.click(page.getCell({ name: 'Canada' }));
+  const row = getRowWithCell(page.getCell({ name: 'value: 4' }));
+  await expect.element(row).toHaveAttribute('aria-level', '3');
+  await expect.element(row).toHaveAttribute('aria-setsize', '1');
+  await expect.element(row).toHaveAttribute('aria-posinset', '1');
+  await expect.element(row).not.toHaveAttribute('aria-expanded');
+});
+
+test('should set the level and position of the rows in a group', async () => {
+  await setup(['country']);
+
+  await userEvent.click(page.getCell({ name: 'Canada' }));
+  const row1 = getRowWithCell(page.getCell({ name: 'value: 3' }));
+  const row2 = getRowWithCell(page.getCell({ name: 'value: 4' }));
+  await expect.element(row1).toHaveAttribute('aria-level', '2');
+  await expect.element(row1).toHaveAttribute('aria-setsize', '2');
+  await expect.element(row1).toHaveAttribute('aria-posinset', '1');
+  await expect.element(row2).toHaveAttribute('aria-level', '2');
+  await expect.element(row2).toHaveAttribute('aria-setsize', '2');
+  await expect.element(row2).toHaveAttribute('aria-posinset', '2');
+});
+
 test('should select rows in a group', async () => {
   await setup(['year', 'country']);
 
