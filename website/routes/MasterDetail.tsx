@@ -36,6 +36,7 @@ interface ProductRow {
 }
 
 function createDepartments(): readonly DepartmentRow[] {
+  faker.seed(1);
   const departments: DepartmentRow[] = [];
   for (let i = 1; i < 30; i++) {
     departments.push({

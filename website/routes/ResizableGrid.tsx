@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';
+import { initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ResizableGrid')({
@@ -36,6 +37,7 @@ function ResizableGrid() {
       className="fill-grid"
       style={{ resize: 'both' }}
       direction={direction}
+      initialSize={initialGridSize}
     />
   );
 }

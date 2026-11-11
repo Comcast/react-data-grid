@@ -1,13 +1,10 @@
-import { useCallback, useLayoutEffect, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useSyncExternalStore, type RefObject } from 'react';
 
-const initialSize: ResizeObserverSize = {
-  inlineSize: 1,
-  blockSize: 1
-};
+import type { GridSize, Maybe } from '../types';
 
 // use an unmanaged WeakMap so we preserve the cache even when
 // the component partially unmounts via Suspense or Activity
-const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, ResizeObserverSize>();
+const sizeMap = new WeakMap<RefObject<HTMLDivElement | null>, GridSize>();
 const targetToRefMap = new WeakMap<HTMLDivElement, RefObject<HTMLDivElement | null>>();
 const subscribers = new WeakMap<RefObject<HTMLDivElement | null>, () => void>();
 
@@ -38,7 +35,7 @@ function resizeObserverCallback(entries: ResizeObserverEntry[]) {
   }
 }
 
-function updateSize(ref: RefObject<HTMLDivElement | null>, size: ResizeObserverSize) {
+function updateSize(ref: RefObject<HTMLDivElement | null>, size: GridSize) {
   if (sizeMap.has(ref)) {
     const prevSize = sizeMap.get(ref)!;
     if (prevSize.inlineSize === size.inlineSize && prevSize.blockSize === size.blockSize) {
@@ -50,11 +47,17 @@ function updateSize(ref: RefObject<HTMLDivElement | null>, size: ResizeObserverS
   subscribers.get(ref)?.();
 }
 
-function getServerSnapshot(): ResizeObserverSize {
-  return initialSize;
-}
+export function useGridDimensions(
+  gridRef: React.RefObject<HTMLDivElement | null>,
+  rawInitialSize: Maybe<GridSize>
+) {
+  const initialInlineSize = rawInitialSize?.inlineSize ?? 1;
+  const initialBlockSize = rawInitialSize?.blockSize ?? 1;
+  const initialSize = useMemo(
+    (): GridSize => ({ inlineSize: initialInlineSize, blockSize: initialBlockSize }),
+    [initialInlineSize, initialBlockSize]
+  );
 
-export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null>) {
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
       subscribers.set(gridRef, onStoreChange);
@@ -66,11 +69,14 @@ export function useGridDimensions(gridRef: React.RefObject<HTMLDivElement | null
     [gridRef]
   );
 
-  const getSnapshot = useCallback((): ResizeObserverSize => {
+  const getSnapshot = useCallback((): GridSize => {
     // ref.current is null during the initial render, when suspending, or in <Activity mode="hidden">.
     // We use the ref as the key instead to access stable values regardless of the rendering state.
     return sizeMap.get(gridRef) ?? initialSize;
-  }, [gridRef]);
+  }, [gridRef, initialSize]);
+
+  // used on the server, and when hydrating, so that both render the same rows and columns
+  const getServerSnapshot = useCallback((): GridSize => initialSize, [initialSize]);
 
   // We use `useSyncExternalStore` instead of `useState` to avoid tearing,
   // which can lead to flashing scrollbars.

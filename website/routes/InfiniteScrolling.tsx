@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
-import { getRowKey } from '../utils';
+import { getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/InfiniteScrolling')({
@@ -68,6 +68,7 @@ function createFakeRowObjectData(index: number): Row {
 }
 
 function createRows(numberOfRows: number): Row[] {
+  faker.seed(1);
   const rows: Row[] = [];
 
   for (let i = 0; i < numberOfRows; i++) {
@@ -122,6 +123,7 @@ function InfiniteScrolling() {
         onScroll={handleScroll}
         className="fill-grid"
         direction={direction}
+        initialSize={initialGridSize}
       />
       {isPending && <div className={loadMoreRowsClassname}>Loading more rows...</div>}
     </>

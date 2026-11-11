@@ -7,34 +7,30 @@ import clsx from 'clsx';
 import { DataGrid, renderTextEditor, SelectColumn } from '../../src';
 import type { CalculatedColumn, CellCopyArgs, CellPasteArgs, Column, FillEvent } from '../../src';
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
-import { getRowKey } from '../utils';
+import { formatDate, getRowKey, initialGridSize, referenceDate } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
   staticData: {
     title: 'All Features'
   },
-  // split the loader to avoid importing faker in the site's entry js
-  codeSplitGroupings: [['component', 'loader']],
-  component: AllFeatures,
-  loader,
-  staleTime: Number.POSITIVE_INFINITY,
-  // generate the rows in the browser: prerendering would embed them in the page,
-  // with dates formatted in the build machine's locale
-  ssr: false
+  component: AllFeatures
 });
 
-function loader(): readonly Row[] {
+function createRows(): readonly Row[] {
+  faker.seed(1);
+
   return Array.from({ length: 2000 }, (_, i): Row => ({
     id: `id_${i}`,
-    avatar: faker.image.avatar(),
+    // the avatars are 28px wide
+    avatar: faker.image.personPortrait({ size: 64 }),
     email: faker.internet.email(),
     title: faker.person.prefix(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     street: faker.location.street(),
     zipCode: faker.location.zipCode(),
-    date: faker.date.past().toLocaleDateString(),
+    date: formatDate(faker.date.past({ refDate: referenceDate })),
     bs: faker.company.buzzPhrase(),
     catchPhrase: faker.company.catchPhrase(),
     companyName: faker.company.name(),
@@ -201,8 +197,7 @@ const incompatibleColumns = new Set(['email', 'zipCode', 'date']);
 
 function AllFeatures() {
   const direction = useDirection();
-  const initialRows = Route.useLoaderData();
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState(createRows);
   const [selectedRows, setSelectedRows] = useState((): ReadonlySet<string> => new Set());
   const [copiedCell, setCopiedCell] = useState<{
     readonly row: Row;
@@ -298,6 +293,7 @@ function AllFeatures() {
         className="fill-grid"
         rowClass={rowClass}
         direction={direction}
+        initialSize={initialGridSize}
         onCellClick={(args, event) => {
           if (args.column.key === 'title') {
             event.preventGridDefault();

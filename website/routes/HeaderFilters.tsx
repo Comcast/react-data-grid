@@ -5,6 +5,7 @@ import { css } from 'ecij';
 
 import { DataGrid, type Column, type RenderHeaderCellContentProps } from '../../src';
 import type { Omit } from '../../src/types';
+import { createRandom, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/HeaderFilters')({
@@ -301,6 +302,7 @@ function HeaderFilters() {
           rows={filteredRows}
           headerRowHeight={filters.enabled ? 70 : undefined}
           direction={direction}
+          initialSize={initialGridSize}
           style={{
             scrollbarGutter: 'stable'
           }}
@@ -328,14 +330,16 @@ function FilterCell<R>({
 }
 
 function createRows() {
+  faker.seed(1);
+  const random = createRandom(1);
   const rows: Row[] = [];
   for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
-      complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
+      complete: Math.min(100, Math.round(random() * 110)),
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(random() * 4)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(random() * 4)],
       developer: faker.person.fullName()
     });
   }

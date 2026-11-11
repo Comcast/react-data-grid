@@ -16,11 +16,14 @@ import {
 import { textEditorClassname } from '../../src/editors/renderTextEditor';
 import {
   compare,
+  createRandom,
   exportToCsv,
   exportToPdf,
   formatCurrency,
   formatDate,
   getRowKey,
+  initialGridSize,
+  referenceDate,
   showModalRef
 } from '../utils';
 import { useDirection } from '../directionContext';
@@ -252,7 +255,8 @@ const columns: readonly Column<Row, SummaryRow>[] = [
 let countries: string[];
 
 function createRows(): readonly Row[] {
-  const now = Date.now();
+  faker.seed(1);
+  const random = createRandom(1);
   const rows: Row[] = [];
   const countrySet = new Set<string>();
 
@@ -268,14 +272,14 @@ function createRows(): readonly Row[] {
       country,
       contact: faker.internet.exampleEmail(),
       assignee: faker.person.fullName(),
-      progress: Math.random() * 100,
-      startTimestamp: now - Math.round(Math.random() * 1e10),
-      endTimestamp: now + Math.round(Math.random() * 1e10),
-      budget: 500 + Math.random() * 10_500,
+      progress: random() * 100,
+      startTimestamp: referenceDate - Math.round(random() * 1e10),
+      endTimestamp: referenceDate + Math.round(random() * 1e10),
+      budget: 500 + random() * 10_500,
       transaction: faker.finance.transactionType(),
       account: faker.finance.iban(),
       version: faker.system.semver(),
-      available: Math.random() > 0.5
+      available: random() > 0.5
     });
   }
 
@@ -417,6 +421,7 @@ function CommonFeatures() {
         className="fill-grid"
         direction={direction}
         enableVirtualization={!isExporting}
+        initialSize={initialGridSize}
       />
     </>
   );

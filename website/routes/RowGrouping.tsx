@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { SelectColumn, TreeDataGrid, type Column } from '../../src';
-import { compare, getRowKey } from '../utils';
+import { compare, getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/RowGrouping')({
@@ -126,6 +126,7 @@ const columns: readonly Column<Row>[] = [
 ];
 
 function createRows(): readonly Row[] {
+  faker.seed(1);
   const rows: Row[] = [];
   for (let i = 1; i < 10_000; i++) {
     rows.push({
@@ -219,6 +220,7 @@ function RowGrouping() {
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
         direction={direction}
+        initialSize={initialGridSize}
       />
     </div>
   );
