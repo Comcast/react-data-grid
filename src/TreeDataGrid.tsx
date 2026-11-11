@@ -377,6 +377,14 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const row = rows[rowIdx];
 
     if (!isGroupRow(row)) return;
+
+    // Toggle the group from the row or from the cell that toggles it on click
+    if (event.key === 'Enter' && (idx === -1 || column?.key === groupBy[row.level])) {
+      event.preventGridDefault();
+      toggleGroup(row.id);
+      return;
+    }
+
     if (
       idx === -1 &&
       // Collapse the current group row if it is focused and expanded
