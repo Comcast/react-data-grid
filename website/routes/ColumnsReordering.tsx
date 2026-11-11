@@ -6,6 +6,9 @@ import { compare, getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
+  staticData: {
+    title: 'Columns Reordering'
+  },
   component: ColumnsReordering
 });
 

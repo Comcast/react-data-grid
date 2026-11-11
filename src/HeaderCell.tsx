@@ -23,16 +23,12 @@ const cellSortableClassname = css`
   }
 `;
 
-const cellResizable = css`
-  @layer rdg.HeaderCell {
-    touch-action: none;
-  }
-`;
-
-const cellResizableClassname = `rdg-cell-resizable ${cellResizable}`;
+const cellResizableClassname = 'rdg-cell-resizable';
 
 const resizeHandle = css`
   @layer rdg.HeaderCell {
+    /* prevent touch scrolling, so dragging the handle resizes the column */
+    touch-action: none;
     cursor: col-resize;
     position: absolute;
     inset-block-start: 0;
@@ -201,8 +197,9 @@ export default function HeaderCell<R, SR>({
       isCtrlKeyHeldDown(event) &&
       (key === 'ArrowLeft' || key === 'ArrowRight')
     ) {
-      // prevent navigation
-      // TODO: check if we can use `preventDefault` instead
+      // prevent scrolling
+      event.preventDefault();
+      // prevent navigation, as the grid ignores `preventDefault`
       event.stopPropagation();
       resizingRef.current = true;
       const { width } = event.currentTarget.getBoundingClientRect();

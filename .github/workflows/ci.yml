@@ -47,15 +47,15 @@ jobs:
           cache-save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           run-install: false
 
-      - run: vp install --frozen-lockfile
+      - run: vp pm ci
 
-      # `npm ci` doesn't catch every mismatch between package.json and package-lock.json,
+      # `vp pm ci` doesn't catch every mismatch between package.json and the lockfile,
       # e.g., Dependabot rewriting the `beta` dist-tag to `*` in the lockfile,
-      # so update the lockfile without installing anything and fail if either file changed
-      - name: Check that package-lock.json is up to date
+      # so update the lockfile without installing anything and fail if any tracked file changed
+      - name: Check that the lockfile is up to date
         run: |
           vp install --lockfile-only --ignore-scripts
-          git diff --exit-code -- package.json package-lock.json
+          git diff --exit-code
 
       # https://viteplus.dev/guide/github-actions-cache
       - name: Restore Vite Task cache
@@ -69,7 +69,7 @@ jobs:
       # Vite Task compares directory listings with those recorded after the cached run,
       # so directories created during the run must exist upfront for the cache to hit:
       # https://github.com/voidzero-dev/vite-task/issues/504
-      - run: mkdir lib coverage node_modules/.vite-temp
+      - run: mkdir dist lib node_modules/.vite-temp
 
       - run: vp run -v ci
         timeout-minutes: 6
@@ -91,11 +91,6 @@ jobs:
           include-hidden-files: true
           if-no-files-found: ignore
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
       # re-running an older commit's workflow, or tests finishing out of order, must not deploy an outdated website,
       # and checking here, rather than in `deploy`, skips that job before it records a deployment of the outdated commit;
       # the repository is public, so `git ls-remote` reads the head of main without a token
@@ -115,7 +110,8 @@ jobs:
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           name: github-pages-${{ github.run_attempt }}
-          path: dist
+          # the prerendered website, without the server bundle in `dist/server`
+          path: dist/client
 
   deploy:
     if: needs.test.outputs.is-head == 'true'

@@ -1,6 +1,6 @@
 {
   "name": "react-data-grid",
-  "version": "7.0.0-beta.63",
+  "version": "7.0.0-beta.64",
   "description": "Feature-rich and customizable data grid React component",
   "keywords": [
     "data grid",
@@ -9,7 +9,8 @@
   "license": "MIT",
   "repository": "github:Comcast/react-data-grid",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "type": "module",
   "sideEffects": [
@@ -32,28 +33,28 @@
   "devDependencies": {
     "@eslint/markdown": "^8.0.1",
     "@faker-js/faker": "^10.3.0",
-    "@tanstack/react-router": "^1.166.7",
-    "@tanstack/router-plugin": "^1.166.7",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.5",
     "@types/node": "^26.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/browser-playwright": "5.0.5",
-    "@vitest/coverage-istanbul": "5.0.5",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/browser-playwright": "5.1.0",
+    "@vitest/coverage-istanbul": "5.1.0",
     "clsx": "^2.1.1",
-    "ecij": "^0.6.0",
+    "ecij": "^0.7.0",
     "eslint": "^10.2.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
-    "oxc-transform-react": "^0.155.0",
-    "playwright": "^1.62.1",
+    "oxc-transform-react": "^0.157.0",
+    "playwright": "^1.65.0-beta-1793840934000",
     "publint": "^0.3.25",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "typescript": "beta",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
-    "vite-plus": "1.4.0",
-    "vitest": "5.0.5",
+    "typescript": "^7.1.0-beta",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.1",
+    "vite-plus": "1.5.1",
+    "vitest": "5.1.0",
     "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
@@ -63,8 +64,8 @@
   "overrides": {
     "oxc-transform-react": "$oxc-transform-react",
     "typescript": "$typescript",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
-    "vitest": "5.0.5"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.1",
+    "vitest": "5.1.0"
   },
   "devEngines": {
     "packageManager": {

@@ -8,6 +8,9 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/InfiniteScrolling')({
+  staticData: {
+    title: 'Infinite Scrolling'
+  },
   component: InfiniteScrolling
 });
 

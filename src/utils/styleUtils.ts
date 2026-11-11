@@ -32,11 +32,22 @@ export function getCellStyle<R, SR>(
 ): React.CSSProperties {
   const { idx, frozen } = column;
   const index = idx + 1;
+  let insetInlineStart;
+  let insetInlineEnd;
+
+  if (frozen !== false) {
+    if (frozen === 'start') {
+      insetInlineStart = `var(--rdg-frozen-start-${idx})`;
+    } else {
+      insetInlineEnd = `var(--rdg-frozen-end-${idx + colSpan - 1})`;
+    }
+  }
+
   return {
     gridColumnStart: index,
     gridColumnEnd: index + colSpan,
-    insetInlineStart: frozen === 'start' ? `var(--rdg-frozen-start-${idx})` : undefined,
-    insetInlineEnd: frozen === 'end' ? `var(--rdg-frozen-end-${idx + colSpan - 1})` : undefined
+    insetInlineStart,
+    insetInlineEnd
   };
 }
 
@@ -58,10 +69,11 @@ export function getCellClassname<R, SR>(
   column: CalculatedColumn<R, SR>,
   ...extraClasses: readonly ClassValue[]
 ): string {
+  const { frozen } = column;
+
   return classnames(
     cellClassname,
-    column.frozen === 'start' && cellFrozenStartClassname,
-    column.frozen === 'end' && cellFrozenEndClassname,
+    frozen !== false && (frozen === 'start' ? cellFrozenStartClassname : cellFrozenEndClassname),
     ...extraClasses
   );
 }

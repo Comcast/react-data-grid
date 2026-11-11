@@ -7,7 +7,7 @@ const grid = page.getGrid();
 const headerRows = grid.getHeaderRow();
 const headerCells = grid.getHeaderCell();
 
-const columns: readonly ColumnOrColumnGroup<NonNullable<unknown>>[] = [
+const columns: readonly ColumnOrColumnGroup<object>[] = [
   { key: 'col1', name: 'col 1' },
   {
     name: 'group 1',

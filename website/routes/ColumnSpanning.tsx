@@ -6,6 +6,9 @@ import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnSpanning')({
+  staticData: {
+    title: 'Column Spanning'
+  },
   component: ColumnSpanning
 });
 

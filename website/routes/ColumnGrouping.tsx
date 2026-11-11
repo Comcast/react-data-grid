@@ -5,6 +5,9 @@ import { renderCoordinates } from '../renderers';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnGrouping')({
+  staticData: {
+    title: 'Column Grouping'
+  },
   component: ColumnGrouping
 });
 

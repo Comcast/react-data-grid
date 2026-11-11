@@ -11,7 +11,7 @@ const textEditorInternalClassname = css`
     block-size: 100%;
     padding-block: 0;
     padding-inline: 6px;
-    border: 2px solid #ccc;
+    border: 2px solid light-dark(#8f8f8f, #ccc);
     vertical-align: top;
     color: var(--rdg-color);
     background-color: var(--rdg-background-color);
@@ -25,7 +25,7 @@ const textEditorInternalClassname = css`
     }
 
     &::placeholder {
-      color: #999;
+      color: light-dark(#767676, #999);
       opacity: 1;
     }
   }
@@ -46,6 +46,7 @@ export function renderTextEditor<TRow, TSummaryRow>({
 }: RenderEditCellContentProps<TRow, TSummaryRow>) {
   return (
     <input
+      aria-label={typeof column.name === 'string' ? column.name : undefined}
       className={textEditorClassname}
       ref={autoFocusAndSelect}
       value={row[column.key as keyof TRow] as unknown as string}

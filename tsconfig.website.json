@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"]
+    "lib": ["ESNext", "DOM"],
+    // TanStack Start's types import Node.js modules
+    "types": ["node"]
   },
   "include": ["src/css.d.ts", "src/globals.d.ts", "website/**/*"],
   "references": [{ "path": "tsconfig.src.json" }]

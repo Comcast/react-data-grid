@@ -3,6 +3,49 @@ import { Link } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type { Direction } from '../src';
+import { Route as AllFeaturesRoute } from './routes/AllFeatures';
+import { Route as AnimationRoute } from './routes/Animation';
+import { Route as CellNavigationRoute } from './routes/CellNavigation';
+import { Route as ColumnGroupingRoute } from './routes/ColumnGrouping';
+import { Route as ColumnSpanningRoute } from './routes/ColumnSpanning';
+import { Route as ColumnsReorderingRoute } from './routes/ColumnsReordering';
+import { Route as CommonFeaturesRoute } from './routes/CommonFeatures';
+import { Route as ContextMenuRoute } from './routes/ContextMenu';
+import { Route as CustomizableRenderersRoute } from './routes/CustomizableRenderers';
+import { Route as HeaderFiltersRoute } from './routes/HeaderFilters';
+import { Route as InfiniteScrollingRoute } from './routes/InfiniteScrolling';
+import { Route as MasterDetailRoute } from './routes/MasterDetail';
+import { Route as MillionCellsRoute } from './routes/MillionCells';
+import { Route as NoRowsRoute } from './routes/NoRows';
+import { Route as ResizableGridRoute } from './routes/ResizableGrid';
+import { Route as RowGroupingRoute } from './routes/RowGrouping';
+import { Route as RowsReorderingRoute } from './routes/RowsReordering';
+import { Route as ScrollToCellRoute } from './routes/ScrollToCell';
+import { Route as TreeViewRoute } from './routes/TreeView';
+import { Route as VariableRowHeightRoute } from './routes/VariableRowHeight';
+
+const demoRoutes = [
+  CommonFeaturesRoute,
+  AllFeaturesRoute,
+  CellNavigationRoute,
+  ColumnSpanningRoute,
+  ColumnGroupingRoute,
+  ColumnsReorderingRoute,
+  ContextMenuRoute,
+  CustomizableRenderersRoute,
+  RowGroupingRoute,
+  HeaderFiltersRoute,
+  InfiniteScrollingRoute,
+  MasterDetailRoute,
+  MillionCellsRoute,
+  NoRowsRoute,
+  ResizableGridRoute,
+  RowsReorderingRoute,
+  ScrollToCellRoute,
+  TreeViewRoute,
+  VariableRowHeightRoute,
+  AnimationRoute
+];
 
 const headerClassname = css`
   border-inline-start: 4px solid light-dark(hsl(210deg 50% 80%), hsl(210deg 50% 40%));
@@ -90,26 +133,11 @@ export default function Nav({ direction, onDirectionChange }: Props) {
 
       <nav aria-labelledby={demosNavId} className={navClassname}>
         <h2 id={demosNavId}>Demos</h2>
-        <Link to="/CommonFeatures">Common Features</Link>
-        <Link to="/AllFeatures">All Features</Link>
-        <Link to="/CellNavigation">Cell Navigation</Link>
-        <Link to="/ColumnSpanning">Column Spanning</Link>
-        <Link to="/ColumnGrouping">Column Grouping</Link>
-        <Link to="/ColumnsReordering">Columns Reordering</Link>
-        <Link to="/ContextMenu">Context Menu</Link>
-        <Link to="/CustomizableRenderers">Customizable Renderers</Link>
-        <Link to="/RowGrouping">Row Grouping</Link>
-        <Link to="/HeaderFilters">Header Filters</Link>
-        <Link to="/InfiniteScrolling">Infinite Scrolling</Link>
-        <Link to="/MasterDetail">Master Detail</Link>
-        <Link to="/MillionCells">A Million Cells</Link>
-        <Link to="/NoRows">No Rows</Link>
-        <Link to="/ResizableGrid">Resizable Grid</Link>
-        <Link to="/RowsReordering">Rows Reordering</Link>
-        <Link to="/ScrollToCell">Scroll to Cell</Link>
-        <Link to="/TreeView">Tree View</Link>
-        <Link to="/VariableRowHeight">Variable Row Height</Link>
-        <Link to="/Animation">Animation</Link>
+        {demoRoutes.map(({ to, options }) => (
+          <Link key={to} to={to}>
+            {options.staticData?.title}
+          </Link>
+        ))}
       </nav>
 
       <nav aria-labelledby={linksNavId} className={navClassname}>

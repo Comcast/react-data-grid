@@ -19,7 +19,7 @@ test/
   browser/            # vitest browser-mode tests (Playwright: Chromium, Firefox, WebKit)
   node/               # vitest SSR tests (Node.js)
   visual/             # vitest visual regression tests (CI-only — never run locally)
-website/              # demo site (Vite + TanStack Router)
+website/              # demo site (TanStack Start), prerendered for GitHub Pages
 ```
 
 ## Conventions
@@ -32,12 +32,14 @@ website/              # demo site (Vite + TanStack Router)
 - **`NoInfer<>`** — wrap callback parameters to prevent reverse type inference into component generics.
 - **Stable object shapes** — objects read in hot rendering paths, like calculated columns, must share one hidden class so property reads stay monomorphic: create them with every property in the same order, `undefined` when unset, and do not spread user-provided objects into them.
 - **No generators in rendering code** — React Compiler can't compile components or hooks that use `yield`, and iterating over generator objects is much slower than over arrays. Build arrays with plain loops instead (see `src/utils/viewportUtils.ts`).
+- **Frozen checks** — compare `column.frozen` against `false` first, as most columns aren't frozen, then against `'start'`, the second most common value.
 - **CSS layers** — all styles live in nested `@layer rdg.<Name>` sub-layers (e.g., `rdg.Cell`, `rdg.Row`). When a sub-layer overrides another sub-layer's styles, declare both in `src/style/layers.css`, which sets their order; undeclared sub-layers come after the declared ones. Use `ecij` `css` tagged templates (build-time extraction, not runtime CSS-in-JS). Co-locate styles in component files; `src/style/` is for shared styles.
 - **Dual class names** — components apply both a semantic class (`rdg-cell`) and a generated hash. Preserve both.
 - **Light/dark mode** — handled via CSS `light-dark()` + `color-scheme`, not JS.
 - **Accessibility first** — ARIA attributes (e.g., `aria-colindex`, `aria-rowindex`, `aria-selected`, roles) are required. Tests query by role.
-- **Build** — `vp pack` bundles the library to `lib/`, then lints the packed package with publint; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts. React Compiler compiles every component and hook, and `vp pack` fails in CI and agent sessions when it can't compile one.
+- **Build** — `vp pack` bundles the library to `lib/`, then lints the packed package with publint; `ecij` plugin prefixes classes with `rdg-{version}-` (dots→dashes) to avoid cross-version conflicts. React Compiler compiles every component and hook, and `vp pack` fails in CI and agent sessions when it can't compile one. The package also publishes `src`, which the source maps of `lib/index.js` and `lib/index.d.ts` point to, so the JavaScript map doesn't embed a copy of it.
 - **Workflows** — pin every action to a full commit SHA with its version in a comment (Dependabot updates both), pass expressions to `run` steps through `env` instead of inlining `${{ }}`, grant each job only the `permissions` it uses, and check out with `persist-credentials: false`. Jobs that install dependencies only get read permissions: publishing, pushing, and editing PRs happen in separate jobs that receive build output as artifacts and never install the project's dependencies.
+- **Website** — `vp build` prerenders every route of the demo site to `dist/client`, which CI deploys to GitHub Pages. The client build sets `chunkImportMap`, and as TanStack Start renders the HTML itself, `website/server.ts` adds the import map to each page. Demo routes set their title in `staticData`, typed in `website/router.tsx`: the root route's `head()` reads it from the deepest match for the page's title and canonical link, and `website/Nav.tsx` lists the demo routes in navigation order. The root route renders its `<Outlet>` in `<ClientOnly>`, so the prerendered pages only have the navigation, as the demos generate random data and format it in the browser's locale. Routes still run `beforeLoad` and `loader` on the server unless they set `ssr: false`, which loaders that generate data need, like the one in `AllFeatures`, or the page embeds the data. Routes can redirect in `beforeLoad`, like the index route: prerendering follows the redirect, and the root route's Suspense boundary makes React hydrate the navigation after the browser redirects, so keep the root route's default `wrapInSuspense`. With `ssr: false`, the redirect would only run in the browser, and the navigation would hydrate with another location than the prerendered one: React doesn't patch mismatched attributes. `vp dev` answers redirects with a 307, so check hydration in a prerendered build with development React (`NODE_ENV=development vp build`).
 - **Releases** — the header of `.github/workflows/publish.yml` explains how to publish. Its read-only `build` job hands `lib/` to the `publish` job, so the project's dependencies never run with the `id-token: write` permission that npm's trusted publishing relies on, and a separate `release` job creates the GitHub release.
 
 ## Testing
@@ -45,7 +47,6 @@ website/              # demo site (Vite + TanStack Router)
 - Browser tests use `vite-plus/test/browser` + Playwright. `test/setupBrowser.ts` configures `page.render()` via `vitest-browser-react` and registers custom locators via `locators.extend()` — prefer `page.getGrid()`, `page.getCell({ name })`, `page.getRow()`, `page.getHeaderCell()`, `page.getActiveCell()`, etc. over raw `page.getByRole()`.
 - Test helpers in `test/browser/utils.tsx`: `setup()`, `getRowWithCell()`, `getCellsAtRowIndex()`, `validateCellPosition()`, `scrollGrid()`, `testCount()`, `testRowCount()`.
 - `test/failOnConsole.ts` fails tests on unexpected console warnings/errors.
-- Firefox runs test files in parallel. Firefox sends the mouse events of all its pages with the same pointer ID, so each test file that drags a resize or drag-fill handle, which captures the pointer, runs in a separate Firefox instance with a browser of its own: add such test files to `firefoxPointerCaptureTests` in `vite.config.ts`. Use `--project "*firefox*"` to run all the Firefox instances.
 - **Never run visual regression tests** — screenshots are environment-dependent, so visual regression tests must run in CI only.
 
 ## Tooling
@@ -58,7 +59,7 @@ The project uses [Vite+](https://viteplus.dev/guide/), whose global `vp` CLI wra
 
 ## Validation
 
-Run `vp run ci` before submitting changes. It runs the same checks as CI, and skips any whose inputs haven't changed since they last passed.
+Run `vp run ci --coverage` before submitting changes. It runs the same checks as CI, including `coverage.thresholds` in `vite.config.ts`, and skips any whose inputs haven't changed since they last passed.
 
 While iterating, run individual checks instead. The static checks take seconds, so run them before tests:
 

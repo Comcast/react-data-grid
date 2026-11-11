@@ -3,7 +3,6 @@
 [![npm-badge]][npm-url]
 [![type-badge]][npm-url]
 [![size-badge]][size-url]
-[![codecov-badge]][codecov-url]
 [![ci-badge]][ci-url]
 
 The DataGrid component is designed to handle large datasets efficiently while offering a rich set of features for customization and interactivity.
@@ -25,25 +24,25 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - Tree-shaking support with no external dependencies to keep your bundles slim
 - Great performance thanks to virtualization: columns and rows outside the viewport are not rendered
 - Strictly typed with TypeScript
-- [Keyboard accessibility](https://comcast.github.io/react-data-grid/#/CommonFeatures)
+- [Keyboard accessibility](https://comcast.github.io/react-data-grid/CommonFeatures)
 - Light and dark mode support out of the box via `color-scheme`
-- [Frozen columns](https://comcast.github.io/react-data-grid/#/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
-- [Column resizing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Multi-column sorting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
+- [Frozen columns](https://comcast.github.io/react-data-grid/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
+- [Column resizing](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Multi-column sorting](https://comcast.github.io/react-data-grid/CommonFeatures)
   - Click on a sortable column header to toggle between its ascending/descending sort order
   - Ctrl+Click / Meta+Click to sort an additional column
-- [Column spanning](https://comcast.github.io/react-data-grid/#/ColumnSpanning)
-- [Column grouping](https://comcast.github.io/react-data-grid/#/ColumnGrouping)
-- [Row selection](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Row grouping](https://comcast.github.io/react-data-grid/#/RowGrouping)
-- [Summary rows](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Dynamic row heights](https://comcast.github.io/react-data-grid/#/VariableRowHeight)
-- [No rows fallback](https://comcast.github.io/react-data-grid/#/NoRows)
-- [Cell formatting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Cell editing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Cell copying / pasting](https://comcast.github.io/react-data-grid/#/AllFeatures)
-- [Cell value dragging / filling](https://comcast.github.io/react-data-grid/#/AllFeatures)
-- [Customizable renderers](https://comcast.github.io/react-data-grid/#/CustomizableRenderers)
+- [Column spanning](https://comcast.github.io/react-data-grid/ColumnSpanning)
+- [Column grouping](https://comcast.github.io/react-data-grid/ColumnGrouping)
+- [Row selection](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Row grouping](https://comcast.github.io/react-data-grid/RowGrouping)
+- [Summary rows](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Dynamic row heights](https://comcast.github.io/react-data-grid/VariableRowHeight)
+- [No rows fallback](https://comcast.github.io/react-data-grid/NoRows)
+- [Cell formatting](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Cell editing](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Cell copying / pasting](https://comcast.github.io/react-data-grid/AllFeatures)
+- [Cell value dragging / filling](https://comcast.github.io/react-data-grid/AllFeatures)
+- [Customizable renderers](https://comcast.github.io/react-data-grid/CustomizableRenderers)
 - Right-to-left (RTL) support
 
 ## Links
@@ -557,7 +556,7 @@ function MyGrid() {
 
 ###### `onCellMouseDown?: CellMouseEventHandler<R, SR>`
 
-Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
+Callback triggered when a pointer becomes active in a cell. The default behavior is to focus the cell. Call `preventGridDefault` to prevent the default behavior. A handler that prevents the default behavior can activate and focus the cell itself with `args.setActivePosition({ shouldFocus: true })`. See the [`CellMouseArgs`](#cellmouseargstrow-tsummaryrow) and [`CellMouseEvent`](#cellmouseevent) types.
 
 ```tsx
 function onCellMouseDown(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
@@ -578,7 +577,7 @@ This event can be used to open the cell editor on a single click:
 ```tsx
 function onCellClick(args: CellMouseArgs<R, SR>, event: CellMouseEvent) {
   if (args.column.key === 'id') {
-    args.setActivePosition(true);
+    args.setActivePosition({ enableEditor: true });
   }
 }
 
@@ -1979,8 +1978,8 @@ interface CellMouseArgs<TRow, TSummaryRow = unknown> {
   row: TRow;
   /** The row index of the cell. */
   rowIdx: number;
-  /** Function to manually focus the cell. Pass `true` to immediately start editing. */
-  setActivePosition: (enableEditor?: boolean) => void;
+  /** Sets the active position to the cell. Pass `{ enableEditor: true }` to open its editor, or `{ shouldFocus: true }` to also focus it. */
+  setActivePosition: (options?: SetActivePositionOptions) => void;
 }
 ```
 
@@ -1991,7 +1990,7 @@ import type { CellMouseArgs, CellMouseEvent } from 'react-data-grid';
 
 function onCellClick(args: CellMouseArgs<Row>, event: CellMouseEvent) {
   console.log('Clicked cell at row', args.rowIdx, 'column', args.column.key);
-  args.setActivePosition(true); // Focus and start editing
+  args.setActivePosition({ enableEditor: true }); // Activate the cell and open its editor
 }
 ```
 
@@ -2459,8 +2458,6 @@ type Maybe<T> = T | undefined | null;
 
 [ci-badge]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/Comcast/react-data-grid/actions/workflows/ci.yml
-[codecov-badge]: https://codecov.io/gh/Comcast/react-data-grid/branch/main/graph/badge.svg?token=cvrRSWiz0Q
-[codecov-url]: https://app.codecov.io/gh/Comcast/react-data-grid
 [npm-badge]: https://img.shields.io/npm/v/react-data-grid
 [npm-url]: https://www.npmjs.com/package/react-data-grid
 [size-badge]: https://img.shields.io/bundlephobia/minzip/react-data-grid
