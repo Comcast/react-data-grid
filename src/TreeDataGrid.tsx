@@ -476,12 +476,19 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const { rowIdx } = rowProps;
     let rowKey = key;
     let ariaRowIndex = rowProps['aria-rowindex'];
+    let ariaLevel: number | undefined;
+    let ariaSetSize: number | undefined;
+    let ariaPosInSet: number | undefined;
     const parentRowAndIndex = getParentRowAndIndex(rowIdx);
     if (parentRowAndIndex !== undefined) {
-      const [{ startRowIndex }, parentIdx] = parentRowAndIndex;
+      const [{ level, childRows, startRowIndex }, parentIdx] = parentRowAndIndex;
       // the rows of a group directly follow its group row
       const groupIndex = rowIdx - parentIdx - 1;
       ariaRowIndex = startRowIndex + headerAndTopSummaryRowsCount + groupIndex + 2;
+      // aria-level and aria-posinset are 1-based, and the rows are one level below their group
+      ariaLevel = level + 2;
+      ariaSetSize = childRows.length;
+      ariaPosInSet = groupIndex + 1;
       if (getRowKey === undefined) {
         rowKey = startRowIndex + groupIndex + 1;
       }
@@ -490,6 +497,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return rawRenderRow(rowKey, {
       ...rowProps,
       'aria-rowindex': ariaRowIndex,
+      'aria-level': ariaLevel,
+      'aria-setsize': ariaSetSize,
+      'aria-posinset': ariaPosInSet,
       row,
       rowClass,
       onCellMouseDown,
