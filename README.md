@@ -229,11 +229,15 @@ Apply custom CSS classes to cells using the [`cellClass`](#cellclass-maybestring
 
 #### Active Cell
 
-The active cell has the `rdg-cell-active` class, which draws its outline with the `--rdg-selection-width` and `--rdg-selection-color` variables. In a [`TreeDataGrid`](#treedatagrid-), a row can be active instead of one of its cells, and the active row has the `rdg-row-active` class.
+The active cell has the `rdg-cell-active` class, so you can restyle its outline, which uses the `--rdg-selection-width` and `--rdg-selection-color` variables. The class only marks the active cell: adding it to other cells doesn't outline them. In a [`TreeDataGrid`](#treedatagrid-), a row can be active instead of one of its cells. The active row has the `rdg-row-active` class, and its outline is the border of its `::after` pseudo-element.
 
 ```css
 .rdg-cell-active {
   outline-style: dashed;
+}
+
+.rdg-row-active::after {
+  border-style: dashed;
 }
 ```
 

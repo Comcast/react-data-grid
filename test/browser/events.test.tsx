@@ -52,7 +52,7 @@ const rows: readonly Row[] = [
 ];
 
 describe('Events', () => {
-  it('should not select cell if onCellMouseDown prevents grid default', async () => {
+  it('should not activate the cell if onCellMouseDown prevents grid default', async () => {
     await page.render(
       <DataGrid
         columns={columns}
