@@ -34,7 +34,7 @@ const columns: readonly Column<Row, SummaryRow>[] = [
     key: 'id',
     name: 'Id',
     renderGroupCell({ row }) {
-      return Math.min(...row.childRows.map((c) => c.id));
+      return Math.min(...row.leafRows.map((c) => c.id));
     }
   }
 ];

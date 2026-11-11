@@ -167,7 +167,7 @@ export interface RenderSummaryCellContentProps<TSummaryRow, TRow = unknown> {
 export interface RenderGroupCellContentProps<TRow, TSummaryRow = unknown> {
   column: CalculatedColumn<TRow, TSummaryRow>;
   /** The group row: its key, rows, expanded state, level, and ID */
-  row: GroupRow<TRow>;
+  row: RowGroup<TRow>;
   tabIndex: number;
   /** Expands or collapses the group */
   toggleGroup: () => void;
@@ -249,7 +249,7 @@ interface ActiveCellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> 
    * undefined if the active position is a row instead of a cell
    */
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
-  /** The active row. In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow` */
+  /** The active row. In `TreeDataGrid`, it can be a `RowGroup`, see `isRowGroup` */
   row: TActiveRow;
   rowIdx: number;
   setActivePosition: (position: Position, options?: SetActivePositionOptions) => void;
@@ -265,14 +265,14 @@ interface EditCellKeyDownArgs<TRow, TSummaryRow = unknown> {
 }
 
 /**
- * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `TRow | RowGroup<TRow>` in `TreeDataGrid`
  */
 export type CellKeyDownArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> =
   | ActiveCellKeyDownArgs<TRow, TSummaryRow, TActiveRow>
   | EditCellKeyDownArgs<TRow, TSummaryRow>;
 
 /**
- * @typeParam TActiveRow - The type of the active row, `TRow | GroupRow<TRow>` in `TreeDataGrid`
+ * @typeParam TActiveRow - The type of the active row, `TRow | RowGroup<TRow>` in `TreeDataGrid`
  */
 export interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TRow> {
   /** row index of the active position */
@@ -280,7 +280,7 @@ export interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TR
   /**
    * row object of the active position,
    * undefined if the active position is on a header or summary row.
-   * In `TreeDataGrid`, it can be a `GroupRow`, see `isGroupRow`
+   * In `TreeDataGrid`, it can be a `RowGroup`, see `isRowGroup`
    */
   row: TActiveRow | undefined;
   /**
@@ -290,18 +290,18 @@ export interface PositionChangeArgs<TRow, TSummaryRow = unknown, TActiveRow = TR
   column: CalculatedColumn<TRow, TSummaryRow> | undefined;
 }
 
-/** The arguments of `TreeDataGrid`'s `onCellKeyDown`, whose active row can be a `GroupRow` */
+/** The arguments of `TreeDataGrid`'s `onCellKeyDown`, whose active row can be a `RowGroup` */
 export type TreeCellKeyDownArgs<TRow, TSummaryRow = unknown> = CellKeyDownArgs<
   TRow,
   TSummaryRow,
-  TRow | GroupRow<TRow>
+  TRow | RowGroup<TRow>
 >;
 
-/** The arguments of `TreeDataGrid`'s `onActivePositionChange`, whose row can be a `GroupRow` */
+/** The arguments of `TreeDataGrid`'s `onActivePositionChange`, whose row can be a `RowGroup` */
 export type TreePositionChangeArgs<TRow, TSummaryRow = unknown> = PositionChangeArgs<
   TRow,
   TSummaryRow,
-  TRow | GroupRow<TRow>
+  TRow | RowGroup<TRow>
 >;
 
 export type CellMouseEventHandler<R, SR> = Maybe<
@@ -381,9 +381,9 @@ interface CellCopyPasteArgs<TRow, TSummaryRow = unknown> {
 export type CellCopyArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, TSummaryRow>;
 export type CellPasteArgs<TRow, TSummaryRow = unknown> = CellCopyPasteArgs<TRow, TSummaryRow>;
 
-export interface GroupRow<TRow> {
+export interface RowGroup<TRow> {
   /** The rows of the group, including the rows of its subgroups */
-  readonly childRows: readonly TRow[];
+  readonly leafRows: readonly TRow[];
   /** The group's ID, returned by `getGroupId` */
   readonly id: string;
   /** The ID of the parent group, or `undefined` on the first level */
@@ -418,7 +418,7 @@ export type ColSpanArgs<TRow, TSummaryRow> =
 
 export type RowHeightArgs<TRow> =
   | { type: 'ROW'; row: TRow }
-  | { type: 'GROUP'; row: GroupRow<TRow> };
+  | { type: 'GROUP'; row: RowGroup<TRow> };
 
 export interface RenderSortIconProps {
   /** The sort direction of the column, or `undefined` if it is not sorted */

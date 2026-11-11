@@ -6,7 +6,7 @@ export {
   type DataGridProps,
   type DefaultColumnOptions
 } from './DataGrid';
-export { isGroupRow, TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
+export { isRowGroup, TreeDataGrid, type TreeDataGridProps } from './TreeDataGrid';
 export { DataGridRenderersContext } from './DataGridRenderersContext';
 export { Row } from './Row';
 export { Cell } from './Cell';
@@ -35,7 +35,6 @@ export type {
   ColumnWidths,
   Direction,
   FillEvent,
-  GroupRow,
   PositionChangeArgs,
   RenderCellContentProps,
   RenderCellProps,
@@ -49,6 +48,7 @@ export type {
   RenderSortPriorityProps,
   RenderSortStatusProps,
   RenderSummaryCellContentProps,
+  RowGroup,
   RowHeightArgs,
   RowsChangeData,
   SelectHeaderRowEvent,
