@@ -33,8 +33,8 @@
   "devDependencies": {
     "@eslint/markdown": "^8.0.1",
     "@faker-js/faker": "^10.3.0",
-    "@tanstack/react-router": "^1.166.7",
-    "@tanstack/router-plugin": "^1.166.7",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.5",
     "@types/node": "^26.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -53,8 +53,8 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "^7.1.0-beta",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
-    "vite-plus": "1.5.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.1",
+    "vite-plus": "1.5.1",
     "vitest": "5.1.0",
     "vitest-browser-react": "^2.3.0"
   },
@@ -65,7 +65,7 @@
   "overrides": {
     "oxc-transform-react": "$oxc-transform-react",
     "typescript": "$typescript",
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.1",
     "vitest": "5.1.0"
   },
   "devEngines": {

@@ -65,7 +65,7 @@ jobs:
         with:
           run-install: false
 
-      - run: vp install --frozen-lockfile
+      - run: vp pm ci
 
       # so that removed screenshots are detected
       - name: Delete screenshots

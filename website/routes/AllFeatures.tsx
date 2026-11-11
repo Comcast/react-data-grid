@@ -11,11 +11,17 @@ import { getRowKey } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/AllFeatures')({
+  staticData: {
+    title: 'All Features'
+  },
   // split the loader to avoid importing faker in the site's entry js
   codeSplitGroupings: [['component', 'loader']],
   component: AllFeatures,
   loader,
-  staleTime: Number.POSITIVE_INFINITY
+  staleTime: Number.POSITIVE_INFINITY,
+  // generate the rows in the browser: prerendering would embed them in the page,
+  // with dates formatted in the build machine's locale
+  ssr: false
 });
 
 function loader(): readonly Row[] {

@@ -6,8 +6,6 @@ body {
 }
 
 :root {
-  color-scheme: light dark;
-
   &:has([value='light']:checked) {
     color-scheme: light;
   }
@@ -18,13 +16,10 @@ body {
 }
 
 body {
-  background-color: light-dark(#fff, hsl(0deg 0% 10%));
-  color: light-dark(#111, #fff);
-}
-
-#root {
   display: grid;
   grid-template-columns: auto 1fr;
+  background-color: light-dark(#fff, hsl(0deg 0% 10%));
+  color: light-dark(#111, #fff);
 }
 
 .fill-grid {

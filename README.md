@@ -24,25 +24,25 @@ The DataGrid component is designed to handle large datasets efficiently while of
 - Tree-shaking support with no external dependencies to keep your bundles slim
 - Great performance thanks to virtualization: columns and rows outside the viewport are not rendered
 - Strictly typed with TypeScript
-- [Keyboard accessibility](https://comcast.github.io/react-data-grid/#/CommonFeatures)
+- [Keyboard accessibility](https://comcast.github.io/react-data-grid/CommonFeatures)
 - Light and dark mode support out of the box via `color-scheme`
-- [Frozen columns](https://comcast.github.io/react-data-grid/#/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
-- [Column resizing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Multi-column sorting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
+- [Frozen columns](https://comcast.github.io/react-data-grid/CommonFeatures): Freeze columns to keep them visible during horizontal scrolling.
+- [Column resizing](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Multi-column sorting](https://comcast.github.io/react-data-grid/CommonFeatures)
   - Click on a sortable column header to toggle between its ascending/descending sort order
   - Ctrl+Click / Meta+Click to sort an additional column
-- [Column spanning](https://comcast.github.io/react-data-grid/#/ColumnSpanning)
-- [Column grouping](https://comcast.github.io/react-data-grid/#/ColumnGrouping)
-- [Row selection](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Row grouping](https://comcast.github.io/react-data-grid/#/RowGrouping)
-- [Summary rows](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Dynamic row heights](https://comcast.github.io/react-data-grid/#/VariableRowHeight)
-- [No rows fallback](https://comcast.github.io/react-data-grid/#/NoRows)
-- [Cell formatting](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Cell editing](https://comcast.github.io/react-data-grid/#/CommonFeatures)
-- [Cell copying / pasting](https://comcast.github.io/react-data-grid/#/AllFeatures)
-- [Cell value dragging / filling](https://comcast.github.io/react-data-grid/#/AllFeatures)
-- [Customizable renderers](https://comcast.github.io/react-data-grid/#/CustomizableRenderers)
+- [Column spanning](https://comcast.github.io/react-data-grid/ColumnSpanning)
+- [Column grouping](https://comcast.github.io/react-data-grid/ColumnGrouping)
+- [Row selection](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Row grouping](https://comcast.github.io/react-data-grid/RowGrouping)
+- [Summary rows](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Dynamic row heights](https://comcast.github.io/react-data-grid/VariableRowHeight)
+- [No rows fallback](https://comcast.github.io/react-data-grid/NoRows)
+- [Cell formatting](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Cell editing](https://comcast.github.io/react-data-grid/CommonFeatures)
+- [Cell copying / pasting](https://comcast.github.io/react-data-grid/AllFeatures)
+- [Cell value dragging / filling](https://comcast.github.io/react-data-grid/AllFeatures)
+- [Customizable renderers](https://comcast.github.io/react-data-grid/CustomizableRenderers)
 - Right-to-left (RTL) support
 
 ## Links

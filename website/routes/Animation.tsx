@@ -6,6 +6,9 @@ import { DataGrid, type Column } from '../../src';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/Animation')({
+  staticData: {
+    title: 'Animation'
+  },
   component: Animation
 });
 
