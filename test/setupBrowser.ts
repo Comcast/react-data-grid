@@ -65,8 +65,7 @@ locators.extend({
   },
 
   getActiveCell() {
-    // a single selector, as `and()` doesn't match inside an iframe when its argument is scoped to the frame
-    return '.rdg-cell-active:is([role="gridcell"], [role="columnheader"])';
+    return '.rdg-cell-active';
   },
 
   getDragHandle() {
