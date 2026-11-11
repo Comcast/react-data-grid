@@ -29,9 +29,9 @@ import { defaultRenderRow } from './Row';
 /**
  * All {@linkcode DataGridProps} are supported except those listed above. The `columns` prop only supports `Column[]` (no column groups). When `rowHeight` is a function, it receives {@linkcode RowHeightArgs} instead of just the row, and `onCellKeyDown` and `onActivePositionChange` receive group rows too. Additional props are listed below:
  *
- * @typeParam R - Row type
- * @typeParam SR - Summary row type
- * @typeParam K - Row key type
+ * @template R Row type
+ * @template SR Summary row type
+ * @template K Row key type
  */
 export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends Omit<
   DataGridProps<R, SR, K>,
@@ -267,9 +267,9 @@ export function isGroupRow<R>(row: R | GroupRow<R>): row is GroupRow<R> {
  * }
  * ```
  *
- * @typeParam R - Row type
- * @typeParam SR - Summary row type
- * @typeParam K - Row key type
+ * @template R Row type
+ * @template SR Summary row type
+ * @template K Row key type
  */
 export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,

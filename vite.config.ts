@@ -121,9 +121,10 @@ export default defineConfig({
           // the root cause of errors reported by later checks
           'vp run typecheck',
           'vp check',
-          'vp run eslint',
           // runs `vp pack`, then generates the API reference from its output
           'vp run docs',
+          // after the docs, to lint the generated API reference
+          'vp run eslint',
           'git diff --exit-code README.md',
           'vp build',
           'git diff --exit-code website/routeTree.gen.ts',
@@ -380,14 +381,6 @@ export default defineConfig({
       builtin: true
     },
 
-    settings: {
-      jsdoc: {
-        tagNamePreference: {
-          default: 'defaultValue'
-        }
-      }
-    },
-
     // https://oxc.rs/docs/guide/usage/linter/rules.html
     /*
 // copy all the rules from the rules table for easy pasting
@@ -598,13 +591,7 @@ copy(
       'eslint/yoda': 'off',
       'jsdoc/check-access': 'warn',
       'jsdoc/check-property-names': 'warn',
-      'jsdoc/check-tag-names': [
-        'warn',
-        {
-          // TSDoc tags
-          definedTags: ['defaultValue', 'typeParam']
-        }
-      ],
+      'jsdoc/check-tag-names': 'warn',
       'jsdoc/empty-tags': 'warn',
       'jsdoc/implements-on-classes': 'warn',
       'jsdoc/no-blank-blocks': 'warn',

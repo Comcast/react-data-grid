@@ -62,9 +62,9 @@ interface Declaration {
 using api = new API();
 using declarationsFile = api.createSourceFile(
   declarationsPath,
-  await readFile(declarationsPath, 'utf8')
+  await readFile(declarationsPath, 'utf-8')
 );
-using entryFile = api.createSourceFile(entryPath, await readFile(entryPath, 'utf8'));
+using entryFile = api.createSourceFile(entryPath, await readFile(entryPath, 'utf-8'));
 
 const declarations = new Map<string, Declaration>();
 // exported name -> declared name, e.g. `Cell` -> `MemoCell`
@@ -141,7 +141,7 @@ for (const [section, items] of groups) {
   }
 }
 
-const readme = await readFile(readmePath, 'utf8');
+const readme = await readFile(readmePath, 'utf-8');
 const startIndex = readme.indexOf(startMarker);
 const endIndex = readme.indexOf(endMarker);
 
@@ -246,7 +246,7 @@ function renderSummary({ summary }: Doc) {
 
 function renderTags({ tags }: Doc) {
   const labels: Record<string, string> = {
-    defaultValue: '**Default:** ',
+    default: '**Default:** ',
     example: '**Example:**\n\n',
     see: '**See also:** ',
     returns: '**Returns:**\n\n'
@@ -254,7 +254,7 @@ function renderTags({ tags }: Doc) {
   return tags
     .filter(({ name }) => {
       // the type parameters are described in the "Generics" section
-      if (name === 'typeParam') return false;
+      if (name === 'template') return false;
       if (name in labels) return true;
       throw new Error(`The @${name} tag is not supported in the API reference`);
     })
@@ -377,7 +377,7 @@ function hasRichMembers(node: InterfaceDeclaration) {
   return node.members.some((member) => {
     const { summary, tags } = getDoc(member);
     return (
-      tags.some((tag) => tag.name !== 'defaultValue') ||
+      tags.some((tag) => tag.name !== 'default') ||
       summary.includes('\n\n') ||
       summary.includes('```') ||
       /^\s*(?:[-*+]|\d+\.) /m.test(summary)

@@ -26,7 +26,7 @@ export interface Column<R, SR = unknown> {
    *
    * `max-content` can be used to expand the column to show all the content. Note that the grid is only able to calculate column width for visible rows.
    *
-   * @defaultValue `'auto'`
+   * @default `'auto'`
    *
    * @example
    * ```tsx
@@ -61,7 +61,7 @@ export interface Column<R, SR = unknown> {
   /**
    * Minimum column width in pixels.
    *
-   * @defaultValue `50` pixels
+   * @default `50` pixels
    */
   readonly minWidth?: Maybe<number>;
   /** Maximum column width in pixels. */
@@ -169,7 +169,7 @@ export interface Column<R, SR = unknown> {
    * - `'end'` — pins the column to the end edge (right in LTR, left in RTL).
    * - `false` — the column scrolls with the rest of the grid.
    *
-   * @defaultValue `false`
+   * @default `false`
    *
    * @example
    * ```tsx
@@ -186,25 +186,25 @@ export interface Column<R, SR = unknown> {
   /**
    * Enable resizing of the column.
    *
-   * @defaultValue `false`
+   * @default `false`
    */
   readonly resizable?: Maybe<boolean>;
   /**
    * Enable sorting of the column.
    *
-   * @defaultValue `false`
+   * @default `false`
    */
   readonly sortable?: Maybe<boolean>;
   /**
    * Enable dragging of the column.
    *
-   * @defaultValue `false`
+   * @default `false`
    */
   readonly draggable?: Maybe<boolean>;
   /**
    * Sets the column sort order to be descending instead of ascending the first time the column is sorted.
    *
-   * @defaultValue `false`
+   * @default `false`
    */
   readonly sortDescendingFirst?: Maybe<boolean>;
   /** Options for cell editing. */
@@ -213,19 +213,19 @@ export interface Column<R, SR = unknown> {
      * Render the cell content in addition to the edit cell content. Enable this option when the editor is rendered outside the grid, like a modal for example.
      * By default, the cell content is not rendered when the edit cell is open.
      *
-     * @defaultValue `false`
+     * @default `false`
      */
     readonly displayCellContent?: Maybe<boolean>;
     /**
      * Commit changes when clicking outside the cell.
      *
-     * @defaultValue `true`
+     * @default `true`
      */
     readonly commitOnOutsideClick?: Maybe<boolean>;
     /**
      * Close the editor when the row value changes externally.
      *
-     * @defaultValue `true`
+     * @default `true`
      */
     readonly closeOnExternalRowChange?: Maybe<boolean>;
   }>;
@@ -572,7 +572,7 @@ interface EditCellKeyDownArgs<R, SR = unknown> {
  * }
  * ```
  *
- * @typeParam TActiveRow - The type of the active row in `ACTIVE` mode, `R | GroupRow<R>` in `TreeDataGrid`
+ * @template TActiveRow The type of the active row in `ACTIVE` mode, `R | GroupRow<R>` in `TreeDataGrid`
  *
  * @see {@linkcode DataGridProps.onCellKeyDown | onCellKeyDown} prop on `<DataGrid />`, {@linkcode TreeCellKeyDownArgs}
  */
@@ -583,7 +583,7 @@ export type CellKeyDownArgs<R, SR = unknown, TActiveRow = R> =
 /**
  * Arguments passed to `onActivePositionChange`.
  *
- * @typeParam TActiveRow - The type of the active row, `R | GroupRow<R>` in `TreeDataGrid`
+ * @template TActiveRow The type of the active row, `R | GroupRow<R>` in `TreeDataGrid`
  *
  * @see {@linkcode DataGridProps.onActivePositionChange | onActivePositionChange} prop on `<DataGrid />`, {@linkcode TreePositionChangeArgs}
  */

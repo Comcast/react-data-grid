@@ -124,9 +124,9 @@ export interface DataGridHandle {
 }
 
 /**
- * @typeParam R - Row type
- * @typeParam SR - Summary row type
- * @typeParam K - Row key type
+ * @template R Row type
+ * @template SR Summary row type
+ * @template K Row key type
  */
 export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
   /**
@@ -234,7 +234,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
    *
    * ⚠️ **Performance:** When using a function, the heights of all rows are processed upfront. For large datasets (1000+ rows), this can cause performance issues if the identity of the function changes and invalidates internal memoization. Consider using a static function when possible, or memoize the `rowHeight` function.
    *
-   * @defaultValue `35` pixels
+   * @default `35` pixels
    *
    * @example
    * ```tsx
@@ -253,13 +253,13 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
   /**
    * Height of the header row in pixels.
    *
-   * @defaultValue `rowHeight` when it is a number, otherwise `35` pixels
+   * @default `rowHeight` when it is a number, otherwise `35` pixels
    */
   headerRowHeight?: Maybe<number>;
   /**
    * Height of each summary row in pixels.
    *
-   * @defaultValue `rowHeight` when it is a number, otherwise `35` pixels
+   * @default `rowHeight` when it is a number, otherwise `35` pixels
    */
   summaryRowHeight?: Maybe<number>;
   /**
@@ -573,7 +573,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
   /**
    * This prop can be used to disable virtualization.
    *
-   * @defaultValue `true`
+   * @default `true`
    */
   enableVirtualization?: Maybe<boolean>;
 
@@ -655,7 +655,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
    * - Column resize is controlled on the left edge of the column
    * - Vertical scrollbar is moved to the left
    *
-   * @defaultValue `'ltr'` left-to-right
+   * @default `'ltr'` left-to-right
    *
    * @see {@linkcode Direction}
    */
@@ -671,7 +671,7 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
   /**
    * ARIA role for the grid container.
    *
-   * @defaultValue `'grid'`
+   * @default `'grid'`
    */
   role?: React.AriaRole | undefined;
   /**
@@ -724,9 +724,9 @@ export interface DataGridProps<R, SR = unknown, K extends Key = Key> {
  * <DataGrid columns={columns} rows={rows} />
  * ```
  *
- * @typeParam R - Row type
- * @typeParam SR - Summary row type
- * @typeParam K - Row key type
+ * @template R Row type
+ * @template SR Summary row type
+ * @template K Row key type
  */
 export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridProps<R, SR, K>) {
   const {
