@@ -60,7 +60,8 @@ describe.each(modes)('$prefix', ({ colorScheme, forcedColors, prefix }) => {
         onSelectedRowsChange={() => {}}
         onRowsChange={() => {}}
         onFill={({ targetRow }) => targetRow}
-        style={{ blockSize: 160, inlineSize: 400 }}
+        // follow the emulated color scheme, like apps that set `color-scheme: light dark`
+        style={{ blockSize: 160, inlineSize: 400, colorScheme: 'light dark' }}
       />
     );
 
