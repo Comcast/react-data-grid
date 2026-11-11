@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, SelectColumn, type Column } from '../../src';
-import { getRowKey } from '../utils';
+import { getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/NoRows')({
@@ -56,6 +56,7 @@ function NoRows() {
       getRowKey={getRowKey}
       className={gridClassname}
       direction={direction}
+      initialSize={initialGridSize}
     />
   );
 }

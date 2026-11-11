@@ -5,6 +5,7 @@ import clsx from 'clsx';
 
 import { DataGrid, type Column, type DataGridHandle } from '../../src';
 import { renderCoordinates } from '../renderers';
+import { initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ScrollToCell')({
@@ -134,6 +135,7 @@ function ScrollToCell() {
         rows={rows}
         className={clsx('fill-grid', { [smoothClassname]: scrollBehavior === 'smooth' })}
         direction={direction}
+        initialSize={initialGridSize}
       />
     </>
   );
