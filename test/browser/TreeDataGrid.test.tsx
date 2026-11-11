@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { page, server, userEvent } from 'vite-plus/test/browser';
 
-import type { Column, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
-import { isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
+import type { Column, RowHeightArgs, TreeCellKeyDownArgs, TreePositionChangeArgs } from '../../src';
+import { DataGrid, isGroupRow, renderTextEditor, SelectColumn, TreeDataGrid } from '../../src';
 import { rowActiveClassname } from '../../src/style/row';
 import { getCellsAtRowIndex, getRowKey, getRowWithCell, testCount, testRowCount } from './utils';
 
@@ -392,6 +392,188 @@ test('should select rows in a group', async () => {
 
   await userEvent.click(headerCheckbox);
   await testCount(selectedRows, 0);
+});
+
+test('should select the rows of a group with Shift+Space', async () => {
+  await setup(['year', 'country']);
+  const selectedRows = page.getRow({ selected: true });
+
+  // expand the group, and activate the empty country cell of its row
+  const groupCell = page.getCell({ name: '2021' });
+  await userEvent.click(groupCell);
+  await userEvent.keyboard('{arrowright}{arrowright}{arrowright}');
+  await expect.element(getRowWithCell(groupCell).getCell().nth(2)).toHaveFocus();
+
+  // the group row and its 2 collapsed groups
+  await userEvent.keyboard('{Shift>} {/Shift}');
+  await testCount(selectedRows, 3);
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  await userEvent.keyboard('{Shift>} {/Shift}');
+  await testCount(selectedRows, 0);
+  await expect.element(headerCheckbox).not.toBeChecked();
+});
+
+test('should include the rows of collapsed groups in the select-all checkbox', async () => {
+  await setup(['year', 'country']);
+
+  const groupCell = page.getCell({ name: '2021' });
+  await userEvent.click(groupCell);
+  await userEvent.click(
+    getRowWithCell(page.getCell({ name: 'USA' })).getByRole('checkbox', { name: 'Select Group' })
+  );
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  // no visible row is selected
+  await userEvent.click(groupCell);
+  await testCount(page.getRow({ selected: true }), 0);
+  await expect.element(headerCheckbox).toBePartiallyChecked();
+
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).not.toBeChecked();
+
+  await userEvent.click(headerCheckbox);
+  await expect.element(headerCheckbox).toBeChecked();
+  await testCount(page.getRow({ selected: true }), 3);
+});
+
+async function toggleSelection(cellName: string, shift = false) {
+  const row = getRowWithCell(page.getCell({ name: cellName, exact: true }));
+  const checkbox = row.getByRole('checkbox', { name: /^Select( Group)?$/ });
+  if (shift) await userEvent.keyboard('{Shift>}');
+  await userEvent.click(checkbox);
+  if (shift) await userEvent.keyboard('{/Shift}');
+}
+
+test('should select the rows of collapsed groups in a Shift+click range', async () => {
+  await setup(['year']);
+  const selectedRows = page.getRow({ selected: true });
+
+  // only the 2021 group stays collapsed
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await userEvent.click(page.getCell({ name: '2022' }));
+
+  await toggleSelection('value: 1');
+  await toggleSelection('value: 4', true);
+  // the 3 group rows and the rows 1 and 4
+  await testCount(selectedRows, 5);
+  await expect.element(headerCheckbox).toBeChecked();
+
+  // the range can start on a group row
+  await userEvent.click(headerCheckbox);
+  await testCount(selectedRows, 0);
+  await toggleSelection('2020');
+  await toggleSelection('value: 4', true);
+  await testCount(selectedRows, 5);
+
+  // the rows of the 2021 group are selected
+  await userEvent.click(page.getCell({ name: '2021' }));
+  await testCount(selectedRows, 7);
+});
+
+test('should only select the rows of expanded groups that are in a Shift+click range', async () => {
+  await setup(['year']);
+  const selectedRows = page.getRow({ selected: true });
+
+  await userEvent.click(page.getCell({ name: '2020' }));
+  await userEvent.click(page.getCell({ name: '2021' }));
+
+  // the range covers the 2021 group row and its first row, but not its second row
+  await toggleSelection('value: 1');
+  await toggleSelection('value: 2', true);
+  // the 2020 group row and the rows 1 and 2
+  await testCount(selectedRows, 3);
+  await expect
+    .element(getRowWithCell(page.getCell({ name: 'value: 3' })))
+    .toHaveAttribute('aria-selected', 'false');
+  await expect
+    .element(getRowWithCell(page.getCell({ name: '2021' })))
+    .toHaveAttribute('aria-selected', 'false');
+});
+
+interface DetailRow {
+  id: number;
+}
+
+const detailRows: readonly DetailRow[] = [{ id: 1 }, { id: 2 }];
+// WebKit reports a ResizeObserver loop when the detail grid measures auto-sized columns
+const detailColumns: readonly Column<DetailRow>[] = [
+  SelectColumn,
+  { key: 'id', name: 'Id', width: 100 }
+];
+
+function getDetailRowKey(row: DetailRow) {
+  return row.id;
+}
+
+function DetailGrid() {
+  const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+
+  return (
+    <DataGrid
+      columns={detailColumns}
+      rows={detailRows}
+      getRowKey={getDetailRowKey}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+      // With `content-visibility: auto`, WebKit sizes the columns of the row wrongly until the
+      // next layout, and pressing the mouse on a checkbox triggers it, so the click misses
+      style={{ blockSize: 140, contentVisibility: 'visible' }}
+    />
+  );
+}
+
+const masterColumns: readonly Column<Row>[] = [
+  SelectColumn,
+  { key: 'year', name: 'Year' },
+  { key: 'detail', name: 'Detail', width: 300, renderCell: () => <DetailGrid /> }
+];
+
+function getMasterRowHeight({ type }: RowHeightArgs<Row>) {
+  return type === 'ROW' ? 150 : 35;
+}
+
+function MasterDetailTestGrid() {
+  const [selectedRows, setSelectedRows] = useState((): ReadonlySet<number> => new Set());
+  const [expandedGroupIds, setExpandedGroupIds] = useState(
+    (): ReadonlySet<string> => new Set(['2020'])
+  );
+
+  return (
+    <TreeDataGrid
+      columns={masterColumns}
+      rows={initialRows}
+      rowHeight={getMasterRowHeight}
+      getRowKey={getRowKey}
+      groupBy={['year']}
+      selectedRows={selectedRows}
+      onSelectedRowsChange={setSelectedRows}
+      expandedGroupIds={expandedGroupIds}
+      onExpandedGroupIdsChange={setExpandedGroupIds}
+    />
+  );
+}
+
+test('should not share the select-all checkbox with a grid in a cell', async () => {
+  await page.render(<MasterDetailTestGrid />);
+  const detailGrid = page.getGrid();
+  const detailHeaderCheckbox = detailGrid.getSelectAllCheckbox();
+  // the header row of the detail grid is in the tree grid too
+  const treeHeaderCheckbox = headerRow.nth(0).getSelectAllCheckbox();
+
+  await userEvent.click(detailHeaderCheckbox);
+  await expect.element(detailHeaderCheckbox).toBeChecked();
+  await testCount(detailGrid.getRow({ selected: true }), 2);
+  await expect.element(treeHeaderCheckbox).not.toBeChecked();
+  await expect.element(treeHeaderCheckbox).not.toBePartiallyChecked();
+
+  await userEvent.click(treeHeaderCheckbox);
+  await expect.element(treeHeaderCheckbox).toBeChecked();
+  await expect.element(detailHeaderCheckbox).toBeChecked();
+
+  await userEvent.click(detailHeaderCheckbox);
+  await expect.element(detailHeaderCheckbox).not.toBeChecked();
+  await expect.element(treeHeaderCheckbox).toBeChecked();
 });
 
 test('cell navigation in a treegrid', async () => {

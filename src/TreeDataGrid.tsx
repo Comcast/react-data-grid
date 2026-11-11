@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Key } from 'react';
 
-import { useLatestFunc } from './hooks';
-import { assertIsValidGetRowKey, getLeftRightKey } from './utils';
+import { SelectionOverrideContext, useLatestFunc, type SelectionOverride } from './hooks';
+import { assertIsValidGetRowKey, getLeftRightKey, max, min } from './utils';
 import type {
   CellClipboardEvent,
   CellCopyArgs,
@@ -15,6 +15,8 @@ import type {
   RenderRowProps,
   RowHeightArgs,
   RowsChangeData,
+  SelectHeaderRowEvent,
+  SelectRowEvent,
   TreeCellKeyDownArgs,
   TreePositionChangeArgs
 } from './types';
@@ -94,6 +96,39 @@ export function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TR
   return typeof row === 'object' && row !== null && allGroupRows.has(row);
 }
 
+interface GroupRowSelectionCache {
+  readonly getRowKey: unknown;
+  // by the `childRows` of the groups, which don't change when groups are expanded or collapsed
+  readonly isSelectedByGroup: WeakMap<readonly unknown[], boolean>;
+}
+
+// Virtualization unmounts the group rows that scroll out of view, so each group checks its rows
+// once per selection instead of every time it scrolls back into view.
+// Old selections are released with their cache, as the selection is the key.
+const groupRowSelectionCaches = new WeakMap<ReadonlySet<unknown>, GroupRowSelectionCache>();
+
+// a group row is selected when all its rows are
+function isGroupRowSelected<TRow, K>(
+  childRows: readonly TRow[],
+  selectedRows: Maybe<ReadonlySet<K>>,
+  getRowKey: Maybe<(row: TRow) => K>
+): boolean {
+  if (selectedRows == null || typeof getRowKey !== 'function') return false;
+
+  let cache = groupRowSelectionCaches.get(selectedRows);
+  if (cache === undefined || cache.getRowKey !== getRowKey) {
+    cache = { getRowKey, isSelectedByGroup: new WeakMap() };
+    groupRowSelectionCaches.set(selectedRows, cache);
+  }
+
+  let isSelected = cache.isSelectedByGroup.get(childRows);
+  if (isSelected === undefined) {
+    isSelected = childRows.every((row) => selectedRows.has(getRowKey(row)));
+    cache.isSelectedByGroup.set(childRows, isSelected);
+  }
+  return isSelected;
+}
+
 export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   columns: rawColumns,
   rows: rawRows,
@@ -117,7 +152,12 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   const rawRenderRow = renderers?.renderRow ?? contextRenderers?.renderRow ?? defaultRenderRow;
   const headerAndTopSummaryRowsCount = 1 + (props.topSummaryRows?.length ?? 0);
   const { leftKey, rightKey } = getLeftRightKey(props.direction);
+  const isSelectable = rawSelectedRows != null && rawOnSelectedRowsChange != null;
+  // the index of the last row selected or unselected, where Shift+click ranges start
+  const [previousRowIdx, setPreviousRowIdx] = useState(-1);
   const toggleGroupLatest = useLatestFunc(toggleGroup);
+  const selectAllRowsLatest = useLatestFunc(selectAllRows);
+  const selectRowLatest = useLatestFunc(selectRow);
   const getRowGroupKey = rawGetRowGroupKey ?? defaultGetRowGroupKey;
   const getGroupId = rawGetGroupId ?? defaultGetGroupId;
 
@@ -284,57 +324,91 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawGetRowKey(row));
   }, [rawGetRowKey]);
 
-  const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
-    if (rawSelectedRows == null) return null;
+  // the select-all checkbox also applies to the rows of collapsed groups, which `DataGrid` doesn't have
+  let hasSelectedRow = false;
+  let hasUnselectedRow = false;
 
-    assertIsValidGetRowKey<R, K>(rawGetRowKey);
-
-    const selectedRows = new Set<Key>(rawSelectedRows);
-    for (const row of rows) {
-      if (isGroupRow(row)) {
-        // select parent row if all the children are selected
-        const isGroupRowSelected = row.childRows.every((cr) =>
-          rawSelectedRows.has(rawGetRowKey(cr))
-        );
-        if (isGroupRowSelected) {
-          selectedRows.add(row.id);
-        }
+  // keep this loop out of `useMemo`: React Compiler memoizes it here, but not in the callback
+  if (rawGetRowKey != null && rawSelectedRows != null && rawSelectedRows.size > 0) {
+    for (const row of rawRows) {
+      if (rawSelectedRows.has(rawGetRowKey(row))) {
+        hasSelectedRow = true;
+      } else {
+        hasUnselectedRow = true;
       }
+
+      if (hasSelectedRow && hasUnselectedRow) break;
     }
+  }
 
-    return selectedRows;
-  }, [rawGetRowKey, rawSelectedRows, rows]);
+  const selectionOverride = useMemo(
+    (): SelectionOverride => ({
+      headerRowSelection: {
+        isRowSelected: hasSelectedRow && !hasUnselectedRow,
+        isIndeterminate: hasSelectedRow && hasUnselectedRow
+      },
+      onHeaderRowSelectionChange: selectAllRowsLatest,
+      onRowSelectionChange: selectRowLatest
+    }),
+    [hasSelectedRow, hasUnselectedRow, selectAllRowsLatest, selectRowLatest]
+  );
 
-  function onSelectedRowsChange(newSelectedRows: Set<Key>) {
+  // selects or unselects the given rows, and keeps the selection of the other rows
+  function setRowsSelection(changedRows: readonly R[], checked: boolean) {
     if (!rawOnSelectedRowsChange) return;
 
     assertIsValidGetRowKey<R, K>(rawGetRowKey);
 
-    const newRawSelectedRows = new Set(rawSelectedRows);
-    for (const row of rows) {
-      const key = isGroupRow(row) ? row.id : rawGetRowKey(row);
-      if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
-          // unselect all children if the parent row is unselected
-          for (const cr of row.childRows) {
-            newRawSelectedRows.delete(rawGetRowKey(cr));
-          }
-        } else {
-          newRawSelectedRows.delete(key as K);
-        }
-      } else if (!selectedRows?.has(key) && newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
-          // select all children if the parent row is selected
-          for (const cr of row.childRows) {
-            newRawSelectedRows.add(rawGetRowKey(cr));
-          }
-        } else {
-          newRawSelectedRows.add(key as K);
-        }
+    const newSelectedRows = new Set(rawSelectedRows);
+    for (const row of changedRows) {
+      const rowKey = rawGetRowKey(row);
+      if (checked) {
+        newSelectedRows.add(rowKey);
+      } else {
+        newSelectedRows.delete(rowKey);
       }
     }
 
-    rawOnSelectedRowsChange(newRawSelectedRows);
+    rawOnSelectedRowsChange(newSelectedRows);
+  }
+
+  function selectAllRows({ checked }: SelectHeaderRowEvent) {
+    setRowsSelection(rawRows, checked);
+  }
+
+  // Selects or unselects a row, or all the rows of a group row.
+  // A Shift+click range also includes the rows between the previous row and this one,
+  // as well as all the rows of the collapsed groups in between, like the group rows do.
+  function selectRow({ row, checked, isShiftClick }: SelectRowEvent<R | GroupRow<R>>) {
+    const rowIdx = rows.indexOf(row);
+    setPreviousRowIdx(rowIdx);
+    const changedRows: R[] = [];
+
+    if (isGroupRow(row)) {
+      for (const childRow of row.childRows) changedRows.push(childRow);
+    } else {
+      changedRows.push(row);
+    }
+
+    if (
+      isShiftClick &&
+      previousRowIdx !== -1 &&
+      previousRowIdx !== rowIdx &&
+      previousRowIdx < rows.length
+    ) {
+      const endIdx = max(previousRowIdx, rowIdx);
+      for (let idx = min(previousRowIdx, rowIdx) + 1; idx < endIdx; idx++) {
+        const rangeRow = rows[idx];
+        if (!isGroupRow(rangeRow)) {
+          changedRows.push(rangeRow);
+        } else if (!rangeRow.isExpanded) {
+          for (const childRow of rangeRow.childRows) changedRows.push(childRow);
+        }
+        // the rows of an expanded group follow its group row, so the range only includes those it covers
+      }
+    }
+
+    setRowsSelection(changedRows, checked);
   }
 
   function getParentRowAndIndex(rowIdx: number) {
@@ -377,6 +451,20 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const row = rows[rowIdx];
 
     if (!isGroupRow(row)) return;
+
+    // Select or unselect the rows of the group on Shift + Space when one of its cells is active,
+    // as `DataGrid` can't tell whether a group row is selected
+    if (idx !== -1 && isSelectable && event.shiftKey && event.key === ' ') {
+      // prevent scrolling
+      event.preventDefault();
+      event.preventGridDefault();
+      selectRow({
+        row,
+        checked: !isGroupRowSelected(row.childRows, rawSelectedRows, rawGetRowKey),
+        isShiftClick: false
+      });
+    }
+
     if (
       idx === -1 &&
       // Collapse the current group row if it is focused and expanded
@@ -455,17 +543,23 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       draggedOverCellIdx,
       activeCellEditor,
       isRowSelectionDisabled,
+      isRowSelected,
       isTreeGrid,
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
     if (isGroupRow(row)) {
       const { startRowIndex } = row;
+      const isGroupSelected = isGroupRowSelected(row.childRows, rawSelectedRows, rawGetRowKey);
       return (
         <GroupedRow
           key={row.id}
           {...rowProps}
           aria-rowindex={headerAndTopSummaryRowsCount + startRowIndex + 1}
+          // `DataGrid` sets `aria-selected` when rows can be selected,
+          // but it can't tell whether a group row is selected
+          aria-selected={rowProps['aria-selected'] === undefined ? undefined : isGroupSelected}
+          isRowSelected={isGroupSelected}
           row={row}
           groupBy={groupBy}
           toggleGroup={toggleGroupLatest}
@@ -500,36 +594,46 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       draggedOverCellIdx,
       activeCellEditor,
       isRowSelectionDisabled,
+      isRowSelected,
       isTreeGrid
     });
   }
 
   return (
-    <DataGrid<R, SR>
-      {...props}
-      role="treegrid"
-      aria-rowcount={
-        rowsCount + 1 + (props.topSummaryRows?.length ?? 0) + (props.bottomSummaryRows?.length ?? 0)
-      }
-      columns={columns}
-      // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
-      // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
-      // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
-      // to handle group rows, or never called with one
-      rows={rows as R[]}
-      rowHeight={rowHeight}
-      getRowKey={getRowKey}
-      onRowsChange={handleRowsChange}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={onSelectedRowsChange}
-      onCellKeyDown={handleKeyDown}
-      onCellCopy={handleCellCopy}
-      onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
-      renderers={{
-        ...renderers,
-        renderRow
-      }}
-    />
+    <SelectionOverrideContext value={selectionOverride}>
+      <DataGrid<R, SR>
+        {...props}
+        role="treegrid"
+        aria-rowcount={
+          rowsCount +
+          1 +
+          (props.topSummaryRows?.length ?? 0) +
+          (props.bottomSummaryRows?.length ?? 0)
+        }
+        columns={columns}
+        // The rows include group rows. `DataGrid` passes them to `onCellKeyDown` and
+        // `onActivePositionChange`, which are typed with `TreeCellKeyDownArgs` and
+        // `TreePositionChangeArgs`; the other props that receive rows are either wrapped here
+        // to handle group rows, or never called with one
+        rows={rows as R[]}
+        rowHeight={rowHeight}
+        getRowKey={getRowKey}
+        onRowsChange={handleRowsChange}
+        selectedRows={rawSelectedRows}
+        // `selectionOverride` changes the selection,
+        // `DataGrid` only uses it to tell whether rows can be selected
+        onSelectedRowsChange={
+          rawOnSelectedRowsChange as DataGridProps<R, SR>['onSelectedRowsChange']
+        }
+        onCellKeyDown={handleKeyDown}
+        onCellCopy={handleCellCopy}
+        onCellPaste={rawOnCellPaste ? handleCellPaste : undefined}
+        renderers={{
+          ...renderers,
+          renderRow
+        }}
+      />
+    </SelectionOverrideContext>
   );
 }
 
