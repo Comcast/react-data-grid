@@ -1,6 +1,6 @@
 import type {
   CalculatedColumn,
-  CalculatedColumnParent,
+  CalculatedColumnGroup,
   CellNavigationMode,
   Maybe,
   Position
@@ -124,7 +124,7 @@ export function getNextActivePosition<R, SR>({
     }
   };
 
-  const getParentRowIdx = (parent: CalculatedColumnParent<R, SR>) => {
+  const getParentRowIdx = (parent: CalculatedColumnGroup<R, SR>) => {
     return parent.level + mainHeaderRowIdx;
   };
 

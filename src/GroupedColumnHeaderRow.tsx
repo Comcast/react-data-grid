@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import type { CalculatedColumnParent, MapViewportColumns, Position } from './types';
+import type { CalculatedColumnGroup, MapViewportColumns, Position } from './types';
 import GroupedColumnHeaderCell from './GroupedColumnHeaderCell';
 import { headerRowClassname } from './HeaderRow';
 
@@ -19,7 +19,7 @@ function GroupedColumnHeaderRow<R, SR>({
   activeCellIdx,
   setPosition
 }: GroupedColumnHeaderRowProps<R, SR>) {
-  const renderedParents = new Set<CalculatedColumnParent<R, SR>>();
+  const renderedParents = new Set<CalculatedColumnGroup<R, SR>>();
 
   const cells = mapViewportColumns(activeCellIdx, undefined, (column, isCellActive) => {
     if (column.parent === undefined) return null;
