@@ -126,9 +126,7 @@ export function useCalculatedColumns<R, SR>({
           continue;
         }
 
-        // normalize the `frozen` value
-        const frozen: ColumnFrozen =
-          rawColumn.frozen === true ? 'start' : (rawColumn.frozen ?? false);
+        const frozen: ColumnFrozen = rawColumn.frozen ?? false;
 
         // Set every property in a fixed order instead of spreading `rawColumn`,
         // so that all calculated columns share a single hidden class (shape) in JS engines,

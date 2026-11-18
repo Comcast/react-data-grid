@@ -89,7 +89,7 @@ const columns: readonly Column<Row>[] = [
     name: 'ID',
     width: 80,
     resizable: true,
-    frozen: true
+    frozen: 'start'
   },
   {
     key: 'avatar',
@@ -127,7 +127,7 @@ const columns: readonly Column<Row>[] = [
     name: 'First Name',
     width: 200,
     resizable: true,
-    frozen: true,
+    frozen: 'start',
     renderEditCell: renderTextEditor
   },
   {
@@ -135,7 +135,7 @@ const columns: readonly Column<Row>[] = [
     name: 'Last Name',
     width: 200,
     resizable: true,
-    frozen: true,
+    frozen: 'start',
     renderEditCell: renderTextEditor
   },
   {

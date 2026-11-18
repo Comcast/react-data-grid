@@ -65,7 +65,7 @@ export const SelectColumn: Column<any, any> = {
   maxWidth: 35,
   resizable: false,
   sortable: false,
-  frozen: true,
+  frozen: 'start',
   renderHeaderCell(props) {
     return <SelectAllCell {...props} />;
   },

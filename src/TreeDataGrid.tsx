@@ -146,7 +146,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         groupBy.push(column.key);
         columns[index] = {
           ...column,
-          frozen: true,
+          frozen: 'start',
           renderCell: () => null,
           renderGroupCell: column.renderGroupCell ?? renderToggleGroup,
           editable: false
