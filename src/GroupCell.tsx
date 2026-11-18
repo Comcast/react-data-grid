@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
 import type { CalculatedColumn, GroupRow } from './types';
+import { cellActiveClassname } from './style/cell';
 
 interface GroupCellProps<R, SR> {
   column: CalculatedColumn<R, SR>;
@@ -33,12 +34,11 @@ function GroupCell<R, SR>({
       key={column.key}
       role="gridcell"
       aria-colindex={column.idx + 1}
-      aria-selected={isCellActive}
       // tabIndex={undefined} prevents clicks on the cell
       // from stealing focus from the row.
       // onMouseDown={preventDefault} would break mousewheel clicks
       tabIndex={tabIndex === -1 ? undefined : tabIndex}
-      className={getCellClassname(column)}
+      className={getCellClassname(column, isCellActive && cellActiveClassname)}
       style={{
         ...getCellStyle(column, 1),
         cursor: isLevelMatching ? 'pointer' : 'default'

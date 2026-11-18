@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useRovingTabIndex } from './hooks';
 import { getCellClassname, getCellStyle } from './utils';
 import type { RenderCellProps } from './types';
+import { cellActiveClassname } from './style/cell';
 
 type SharedRenderCellProps<R, SR> = Pick<
   RenderCellProps<R, SR>,
@@ -25,6 +26,7 @@ function SummaryCell<R, SR>({
   const { summaryCellClass } = column;
   const className = getCellClassname(
     column,
+    isCellActive && cellActiveClassname,
     typeof summaryCellClass === 'function' ? summaryCellClass(row) : summaryCellClass
   );
 
@@ -37,7 +39,6 @@ function SummaryCell<R, SR>({
       role="gridcell"
       aria-colindex={column.idx + 1}
       aria-colspan={colSpan > 1 ? colSpan : undefined}
-      aria-selected={isCellActive}
       tabIndex={tabIndex}
       className={className}
       style={getCellStyle(column, colSpan)}

@@ -65,7 +65,7 @@ locators.extend({
   },
 
   getActiveCell() {
-    return this.getCell({ selected: true }).or(this.getHeaderCell({ selected: true }));
+    return '.rdg-cell-active';
   },
 
   getDragHandle() {
