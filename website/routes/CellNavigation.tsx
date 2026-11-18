@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid } from '../../src';
 import type { CellKeyboardEvent, CellKeyDownArgs, Column } from '../../src';
+import { createRandom, formatDate, initialGridSize, referenceDate } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CellNavigation')({
@@ -57,23 +58,22 @@ const columns: Column<Row>[] = [
   }
 ];
 
-function getRandomDate(start: Date, end: Date) {
-  return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime())
-  ).toLocaleDateString();
+function getRandomDate(random: () => number, start: number, end: number) {
+  return formatDate(start + random() * (end - start));
 }
 
 function createRows(): Row[] {
+  const random = createRandom(1);
   const rows = [];
   for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
-      complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
-      startDate: getRandomDate(new Date(2015, 3, 1), new Date()),
-      completeDate: getRandomDate(new Date(), new Date(2016, 0, 1))
+      complete: Math.min(100, Math.round(random() * 110)),
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(random() * 4)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(random() * 4)],
+      startDate: getRandomDate(random, Date.UTC(2015, 3, 1), referenceDate),
+      completeDate: getRandomDate(random, referenceDate, Date.UTC(2016, 0, 1))
     });
   }
 
@@ -192,6 +192,7 @@ function CellNavigation() {
         rows={rows}
         direction={direction}
         onCellKeyDown={handleCellKeyDown}
+        initialSize={initialGridSize}
       />
     </>
   );

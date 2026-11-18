@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type ColumnOrColumnGroup } from '../../src';
 import { renderCoordinates } from '../renderers';
+import { initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnGrouping')({
@@ -111,6 +112,7 @@ function ColumnGrouping() {
       bottomSummaryRows={bottomSummaryRows}
       className="fill-grid"
       direction={direction}
+      initialSize={initialGridSize}
       defaultColumnOptions={{
         resizable: true,
         renderCell: renderCoordinates

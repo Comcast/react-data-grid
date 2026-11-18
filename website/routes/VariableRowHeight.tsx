@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';
+import { createRandom, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/VariableRowHeight')({
@@ -38,11 +39,12 @@ function VariableRowHeight() {
       rowHeight={rowHeight}
       className="fill-grid"
       direction={direction}
+      initialSize={initialGridSize}
     />
   );
 }
 
-function rowHeight() {
+function rowHeight(row: Row) {
   // should be based on the content of the row
-  return 25 + Math.round(Math.random() * 75);
+  return 25 + Math.round(createRandom(row)() * 75);
 }

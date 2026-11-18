@@ -5,7 +5,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
-import { getRowKey } from '../utils';
+import { getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ContextMenu')({
@@ -34,6 +34,7 @@ interface Row {
 }
 
 function createRows(): readonly Row[] {
+  faker.seed(1);
   const rows: Row[] = [];
 
   for (let i = 1; i < 1000; i++) {
@@ -102,6 +103,7 @@ function ContextMenuDemo() {
         rows={rows}
         className="fill-grid"
         direction={direction}
+        initialSize={initialGridSize}
         onCellContextMenu={({ row }, event) => {
           event.preventGridDefault();
           // Do not show the default context menu

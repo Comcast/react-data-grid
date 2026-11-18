@@ -4,6 +4,7 @@ import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
 import { CellExpander, ChildRowDeleteButton } from '../components';
+import { createRandom, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/TreeView')({
@@ -34,9 +35,10 @@ interface Action {
 }
 
 function createRows(): Row[] {
+  const random = createRandom(1);
   const rows = [];
   for (let i = 0; i < 100; i++) {
-    const price = Math.random() * 30;
+    const price = random() * 30;
     const id = `row${i}`;
     const row: Row = {
       id,
@@ -200,6 +202,7 @@ function TreeView() {
         rows={rows}
         className={gridClassname}
         direction={direction}
+        initialSize={initialGridSize}
       />
     </>
   );

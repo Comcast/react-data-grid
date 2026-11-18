@@ -429,6 +429,18 @@ return <DataGrid columnWidths={columnWidths} onColumnWidthsChange={setColumnWidt
 
 Callback triggered when column widths change. If not provided, an internal state is used. See the [`ColumnWidths`](#columnwidths) type.
 
+###### `initialSize?: Maybe<GridSize>`
+
+**Default:** `{ inlineSize: 1, blockSize: 1 }`
+
+Size of the grid until the browser measures it, e.g., when rendering on the server. The grid renders the rows and columns that fit in this size. See the [`GridSize`](#gridsize) type.
+
+The server can't measure the grid, so by default, server rendering only includes its first few rows and columns. Set `initialSize` to the size that the grid is likely to have, and the server renders the rows and columns that fit. When hydrating, the browser renders the same rows and columns as the server, then measures the grid and renders the rows and columns that fit in its actual size.
+
+```tsx
+<DataGrid columns={columns} rows={rows} initialSize={{ inlineSize: 1920, blockSize: 1080 }} />
+```
+
 ###### `selectedRows?: Maybe<ReadonlySet<K>>`
 
 A set of selected row keys. `getRowKey` is required for row selection to work.
@@ -2421,6 +2433,21 @@ interface ColumnWidth {
 ```
 
 **See also:** [`ColumnWidths`](#columnwidths)
+
+#### `GridSize`
+
+The size of the grid.
+
+```tsx
+interface GridSize {
+  /** The width in pixels */
+  readonly inlineSize: number;
+  /** The height in pixels */
+  readonly blockSize: number;
+}
+```
+
+**See also:** [`initialSize`](#initialsize-maybegridsize) prop on `<DataGrid />`
 
 #### `Direction`
 

@@ -1,7 +1,7 @@
 import '../root.css';
 
 import { useState, type ReactNode } from 'react';
-import { ClientOnly, createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
+import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import type { Direction } from '../../src';
@@ -86,9 +86,7 @@ function Root() {
       </a>
       <Nav direction={direction} onDirectionChange={setDirection} />
       <main id="demo" tabIndex={-1} dir={direction} className={mainClassname}>
-        <ClientOnly>
-          <Outlet />
-        </ClientOnly>
+        <Outlet />
       </main>
     </DirectionContext>
   );

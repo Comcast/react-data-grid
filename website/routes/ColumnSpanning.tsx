@@ -3,6 +3,7 @@ import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
 import { renderCoordinates } from '../renderers';
+import { initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnSpanning')({
@@ -69,6 +70,7 @@ function ColumnSpanning() {
       rowHeight={22}
       className="fill-grid"
       direction={direction}
+      initialSize={initialGridSize}
     />
   );
 }

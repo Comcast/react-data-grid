@@ -11,7 +11,7 @@ import type {
   RenderSortStatusProps,
   SortColumn
 } from '../../src';
-import { compare, getRowKey } from '../utils';
+import { compare, createRandom, getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/CustomizableRenderers')({
@@ -45,15 +45,16 @@ interface Row {
 }
 
 function createRows(): readonly Row[] {
+  const random = createRandom(1);
   const rows: Row[] = [];
 
   for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
-      complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(Math.random() * 3)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(Math.random() * 3)]
+      complete: Math.min(100, Math.round(random() * 110)),
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(random() * 3)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(random() * 3)]
     });
   }
 
@@ -129,6 +130,7 @@ function CustomizableRenderers() {
       onSelectedRowsChange={setSelectedRows}
       renderers={{ renderSortStatus, renderCheckbox, renderCell, renderRow }}
       direction={direction}
+      initialSize={initialGridSize}
     />
   );
 }

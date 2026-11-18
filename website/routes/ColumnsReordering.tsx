@@ -2,7 +2,7 @@ import { startTransition, useCallback, useMemo, useState, ViewTransition } from 
 import { createFileRoute } from '@tanstack/react-router';
 
 import { DataGrid, type Column, type ColumnWidths, type SortColumn } from '../../src';
-import { compare, getRowKey } from '../utils';
+import { compare, createRandom, getRowKey, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/ColumnsReordering')({
@@ -21,15 +21,16 @@ interface Row {
 }
 
 function createRows(): readonly Row[] {
+  const random = createRandom(1);
   const rows: Row[] = [];
 
   for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
-      complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(Math.random() * 3)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(Math.random() * 3)]
+      complete: Math.min(100, Math.round(random() * 110)),
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(random() * 3)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(random() * 3)]
     });
   }
 
@@ -164,6 +165,7 @@ function ColumnsReordering() {
           onColumnsReorder={onColumnsReorder}
           columnWidths={columnWidths}
           onColumnWidthsChange={setColumnWidths}
+          initialSize={initialGridSize}
         />
       </ViewTransition>
     </>

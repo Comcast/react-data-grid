@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { css } from 'ecij';
 
 import { DataGrid, type Column } from '../../src';
+import { createRandom, initialGridSize } from '../utils';
 import { useDirection } from '../directionContext';
 
 export const Route = createFileRoute('/Animation')({
@@ -32,15 +33,16 @@ interface Row {
 }
 
 function createRows(): Row[] {
+  const random = createRandom(1);
   const rows: Row[] = [];
 
   for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
-      complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(Math.random() * 3)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(Math.random() * 3)]
+      complete: Math.min(100, Math.round(random() * 110)),
+      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(random() * 3)],
+      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(random() * 3)]
     });
   }
 
@@ -102,6 +104,7 @@ function Animation() {
         rows={rows}
         direction={direction}
         rowHeight={rowHeight}
+        initialSize={initialGridSize}
       />
     </>
   );

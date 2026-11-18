@@ -471,6 +471,13 @@ export interface ColumnWidth {
 
 export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
 
+export interface GridSize {
+  /** The width in pixels */
+  readonly inlineSize: number;
+  /** The height in pixels */
+  readonly blockSize: number;
+}
+
 export type Direction = 'ltr' | 'rtl';
 
 export type ResizedWidth = number | 'max-content';
