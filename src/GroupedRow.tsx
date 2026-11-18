@@ -3,7 +3,7 @@ import { css } from 'ecij';
 
 import { RowSelectionContext, type RowSelectionContextValue } from './hooks';
 import { classnames } from './utils';
-import type { BaseRenderRowProps, GroupRow, Omit } from './types';
+import type { BaseRenderRowProps, Omit, RowGroup } from './types';
 import GroupCell from './GroupCell';
 import { cell, cellFrozenBase } from './style/cell';
 import { rowClassname, rowActiveClassname } from './style/row';
@@ -23,7 +23,7 @@ const groupRow = css`
 const groupRowClassname = `rdg-group-row ${groupRow}`;
 
 interface GroupedRowProps<R, SR> extends Omit<BaseRenderRowProps<R, SR>, 'isRowSelectionDisabled'> {
-  row: GroupRow<R>;
+  row: RowGroup<R>;
   groupBy: readonly string[];
   toggleGroup: (expandedGroupId: string) => void;
 }

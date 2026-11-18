@@ -9,10 +9,10 @@ import type {
   CellKeyboardEvent,
   CellPasteArgs,
   Column,
-  GroupRow,
   Maybe,
   Omit,
   RenderRowProps,
+  RowGroup,
   RowHeightArgs,
   RowsChangeData,
   TreeCellKeyDownArgs,
@@ -52,24 +52,24 @@ export interface TreeDataGridProps<R, SR = unknown, K extends Key = Key> extends
   getGroupId?: Maybe<(groupKey: string, parentId?: string) => string>;
 }
 
-interface PartialGroupRow<TRow> {
+interface PartialRowGroup<TRow> {
   // `undefined` for the groups on the last level, which only contain rows
   readonly groups: GroupsMap<TRow> | undefined;
   // all the descendant rows of the group, not just the direct children
-  readonly childRows: readonly TRow[];
+  readonly leafRows: readonly TRow[];
   readonly startRowIndex: number;
 }
 
-type GroupsMap<TRow> = ReadonlyMap<string, PartialGroupRow<TRow>>;
+type GroupsMap<TRow> = ReadonlyMap<string, PartialRowGroup<TRow>>;
 
 // only used while the rows are being grouped
-interface MutablePartialGroupRow<TRow> {
+interface MutablePartialRowGroup<TRow> {
   readonly groups: MutableGroupsMap<TRow> | undefined;
-  readonly childRows: TRow[];
+  readonly leafRows: TRow[];
   startRowIndex: number;
 }
 
-type MutableGroupsMap<TRow> = Map<string, MutablePartialGroupRow<TRow>>;
+type MutableGroupsMap<TRow> = Map<string, MutablePartialRowGroup<TRow>>;
 
 interface GroupedRows<TRow> {
   readonly groups: GroupsMap<TRow> | undefined;
@@ -77,20 +77,20 @@ interface GroupedRows<TRow> {
 }
 
 interface FlattenedRows<TRow> {
-  readonly rows: readonly (TRow | GroupRow<TRow>)[];
+  readonly rows: readonly (TRow | RowGroup<TRow>)[];
   // indexes of the group rows in `rows`, in ascending order
   readonly groupRowIndexes: readonly number[];
 }
 
 // Group rows are only ever created by `TreeDataGrid`, so every instance can share a single
-// set, which keeps `isGroupRow` stable and out of the dependency arrays below
+// set, which keeps `isRowGroup` stable and out of the dependency arrays below
 const allGroupRows = new WeakSet<object>();
 
 /**
  * Returns whether a row of a `TreeDataGrid` is a group row,
  * e.g., the active row passed to `onCellKeyDown` or `onActivePositionChange`
  */
-export function isGroupRow<TRow>(row: TRow | GroupRow<TRow>): row is GroupRow<TRow> {
+export function isRowGroup<TRow>(row: TRow | RowGroup<TRow>): row is RowGroup<TRow> {
   return typeof row === 'object' && row !== null && allGroupRows.has(row);
 }
 
@@ -177,12 +177,12 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           group = {
             // the groups on the last level don't need a map, which saves one per group
             groups: level === lastLevel ? undefined : new Map(),
-            childRows: [],
+            leafRows: [],
             startRowIndex: 0
           };
           parentGroups.set(groupKey, group);
         }
-        group.childRows.push(row);
+        group.leafRows.push(row);
         if (group.groups !== undefined) {
           parentGroups = group.groups;
         }
@@ -201,7 +201,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
         groupRowsCount +=
           group.groups === undefined
             ? // the group is on the last level, it only contains rows
-              group.childRows.length
+              group.leafRows.length
             : setStartRowIndexes(group.groups, startRowIndex + groupRowsCount);
       }
 
@@ -218,7 +218,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       return { rows: rawRows, groupRowIndexes: [] };
     }
 
-    const flattenedRows: (R | GroupRow<R>)[] = [];
+    const flattenedRows: (R | RowGroup<R>)[] = [];
     const groupRowIndexes: number[] = [];
 
     // Only the expanded groups are traversed
@@ -227,16 +227,16 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
       for (const [groupKey, group] of groups) {
         // destructuring in the loop head would stop React Compiler from compiling the component
-        const { groups: childGroups, childRows, startRowIndex } = group;
+        const { groups: childGroups, leafRows, startRowIndex } = group;
         const id = getGroupId(groupKey, parentId);
         const isExpanded = expandedGroupIds.has(id);
 
-        const groupRow: GroupRow<R> = {
+        const groupRow: RowGroup<R> = {
           id,
           parentId,
           groupKey,
           isExpanded,
-          childRows,
+          leafRows,
           level,
           posInSet: posInSet++,
           setSize: groups.size,
@@ -250,7 +250,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
           if (childGroups === undefined) {
             // the group is on the last level, it only contains rows.
             // Push them one by one: spreading them would throw in groups with too many rows
-            for (const row of childRows) {
+            for (const row of leafRows) {
               flattenedRows.push(row);
             }
           } else {
@@ -267,8 +267,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
   const rowHeight = useMemo(() => {
     if (typeof rawRowHeight === 'function') {
-      return (row: R | GroupRow<R>): number => {
-        if (isGroupRow(row)) {
+      return (row: R | RowGroup<R>): number => {
+        if (isRowGroup(row)) {
           return rawRowHeight({ type: 'GROUP', row });
         }
         return rawRowHeight({ type: 'ROW', row });
@@ -281,7 +281,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
   // Without rawGetRowKey, the keys are computed in renderRow, where the row index is known
   const getRowKey = useMemo(() => {
     if (typeof rawGetRowKey !== 'function') return undefined;
-    return (row: R | GroupRow<R>) => (isGroupRow(row) ? row.id : rawGetRowKey(row));
+    return (row: R | RowGroup<R>) => (isRowGroup(row) ? row.id : rawGetRowKey(row));
   }, [rawGetRowKey]);
 
   const selectedRows = useMemo((): Maybe<ReadonlySet<Key>> => {
@@ -291,9 +291,9 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
     const selectedRows = new Set<Key>(rawSelectedRows);
     for (const row of rows) {
-      if (isGroupRow(row)) {
+      if (isRowGroup(row)) {
         // select parent row if all the children are selected
-        const isGroupRowSelected = row.childRows.every((cr) =>
+        const isGroupRowSelected = row.leafRows.every((cr) =>
           rawSelectedRows.has(rawGetRowKey(cr))
         );
         if (isGroupRowSelected) {
@@ -312,20 +312,20 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
 
     const newRawSelectedRows = new Set(rawSelectedRows);
     for (const row of rows) {
-      const key = isGroupRow(row) ? row.id : rawGetRowKey(row);
+      const key = isRowGroup(row) ? row.id : rawGetRowKey(row);
       if (selectedRows?.has(key) && !newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
+        if (isRowGroup(row)) {
           // unselect all children if the parent row is unselected
-          for (const cr of row.childRows) {
+          for (const cr of row.leafRows) {
             newRawSelectedRows.delete(rawGetRowKey(cr));
           }
         } else {
           newRawSelectedRows.delete(key as K);
         }
       } else if (!selectedRows?.has(key) && newSelectedRows.has(key)) {
-        if (isGroupRow(row)) {
+        if (isRowGroup(row)) {
           // select all children if the parent row is selected
-          for (const cr of row.childRows) {
+          for (const cr of row.leafRows) {
             newRawSelectedRows.add(rawGetRowKey(cr));
           }
         } else {
@@ -358,8 +358,8 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     // a group row's parent is the closest group row before it whose id is its parentId
     for (let i = position; i >= 0; i--) {
       const parentIdx = groupRowIndexes[i];
-      const parentRow = rows[parentIdx] as GroupRow<R>;
-      if (!isGroupRow(row) || row.parentId === parentRow.id) {
+      const parentRow = rows[parentIdx] as RowGroup<R>;
+      if (!isRowGroup(row) || row.parentId === parentRow.id) {
         return [parentRow, parentIdx] as const;
       }
     }
@@ -376,7 +376,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     const idx = column?.idx ?? -1;
     const row = rows[rowIdx];
 
-    if (!isGroupRow(row)) return;
+    if (!isRowGroup(row)) return;
     if (
       idx === -1 &&
       // Collapse the current group row if it is focused and expanded
@@ -405,7 +405,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     { row, column }: CellCopyArgs<NoInfer<R>, NoInfer<SR>>,
     event: CellClipboardEvent
   ) {
-    if (!isGroupRow(row)) {
+    if (!isRowGroup(row)) {
       rawOnCellCopy?.({ row, column }, event);
     }
   }
@@ -414,7 +414,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
     { row, column }: CellPasteArgs<NoInfer<R>, NoInfer<SR>>,
     event: CellClipboardEvent
   ) {
-    return isGroupRow(row) ? row : rawOnCellPaste!({ row, column }, event);
+    return isRowGroup(row) ? row : rawOnCellPaste!({ row, column }, event);
   }
 
   function handleRowsChange(updatedRows: R[], { indexes, column }: RowsChangeData<R, SR>) {
@@ -459,7 +459,7 @@ export function TreeDataGrid<R, SR = unknown, K extends Key = Key>({
       ...rowProps
     }: RenderRowProps<R, SR>
   ) {
-    if (isGroupRow(row)) {
+    if (isRowGroup(row)) {
       const { startRowIndex } = row;
       return (
         <GroupedRow
