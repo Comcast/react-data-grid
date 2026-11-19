@@ -303,10 +303,19 @@ test('should toggle group using keyboard', async () => {
   // clicking on the group cell focuses the row
   await expect.element(activeCell).not.toBeInTheDocument();
   await expect.element(getRowWithCell(groupCell)).toHaveClass(rowActiveClassname);
-  await userEvent.keyboard('{arrowright}{arrowright}{enter}');
-  await testRowCount(5);
   await userEvent.keyboard('{enter}');
+  await testRowCount(5);
+  // Enter keeps working after moving away and back to the row
+  await userEvent.keyboard('{arrowup}{arrowdown}{enter}');
   await testRowCount(7);
+  // the group cell toggles the group
+  await userEvent.keyboard('{arrowright}{arrowright}');
+  await expect.element(groupCell).toHaveFocus();
+  await userEvent.keyboard('{enter}');
+  await testRowCount(5);
+  // other cells of the group row don't
+  await userEvent.keyboard('{arrowright}{enter}');
+  await testRowCount(5);
 });
 
 test('should set aria-attributes', async () => {
