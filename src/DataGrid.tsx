@@ -27,8 +27,10 @@ import {
   focusCell,
   getCellStyle,
   getCellToScroll,
+  getColumnInColumns,
   getLeftRightKey,
   getNextActivePosition,
+  getRowInRows,
   isCellEditableUtil,
   isCtrlKeyHeldDown,
   isDefaultCellInput,
@@ -587,7 +589,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         previousRowIdx < rowIdx ? [previousRowIdx, rowIdx] : [rowIdx, previousRowIdx];
 
       for (let i = min + 1; i < max; i++) {
-        const row = rows[i];
+        const row = getRow(i);
         if (isRowSelectionDisabled?.(row) === true) continue;
         if (checked) {
           newSelectedRows.add(getRowKey(row));
@@ -609,7 +611,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       onCellKeyDown(
         {
           mode: 'ACTIVE',
-          row: rows[rowIdx],
+          row: getRow(rowIdx),
           column: columns[idx],
           rowIdx,
           setActivePosition: setPosition
@@ -649,7 +651,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
 
   function updateRow(column: CalculatedColumn<R, SR>, rowIdx: number, row: R) {
     if (typeof onRowsChange !== 'function') return;
-    if (row === rows[rowIdx]) return;
+    if (row === getRow(rowIdx)) return;
     const updatedRows = rows.with(rowIdx, row);
     onRowsChange(updatedRows, {
       indexes: [rowIdx],
@@ -784,8 +786,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const indexes: number[] = [];
     for (let i = startRowIdx; i < endRowIdx; i++) {
       if (isCellEditable({ idx, rowIdx: i })) {
-        const updatedRow = onFill!({ columnKey: column.key, sourceRow, targetRow: rows[i] });
-        if (updatedRow !== rows[i]) {
+        const targetRow = getRow(i);
+        const updatedRow = onFill!({ columnKey: column.key, sourceRow, targetRow });
+        if (updatedRow !== targetRow) {
           updatedRows[i] = updatedRow;
           indexes.push(i);
         }
@@ -797,10 +800,21 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     }
   }
 
+  /**
+   * utils
+   */
+  function getColumn(index: number) {
+    return getColumnInColumns(columns, index);
+  }
+
+  function getRow(index: number) {
+    return getRowInRows(rows, index);
+  }
+
   function isCellEditable(position: Position): boolean {
     return (
       validatePosition(position).isCellInViewport &&
-      isCellEditableUtil(columns[position.idx], rows[position.rowIdx])
+      isCellEditableUtil(getColumn(position.idx), getRow(position.rowIdx))
     );
   }
 
@@ -819,7 +833,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       // after double-clicking and displayCellContent is enabled
       gridRef.current?.ownerDocument.getSelection()?.removeAllRanges();
 
-      const row = rows[rowIdx];
+      const row = getRow(rowIdx);
       setActivePosition({ idx, rowIdx, mode: 'EDIT', row, originalRow: row });
     } else if (samePosition) {
       // Avoid re-renders if the active position is the same
@@ -832,8 +846,8 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
       }
     }
 
-    if (onActivePositionChange && !samePosition) {
-      onActivePositionChange({
+    if (!samePosition) {
+      onActivePositionChange?.({
         rowIdx,
         row: rows[rowIdx],
         column: columns[idx]
@@ -974,7 +988,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
     const style = getCellStyle(column, colSpan);
     // the drag handle is at the end of the last column that the cell spans,
     // where it sticks when the column is start-frozen
-    const lastColumn = columns[column.idx + colSpan - 1];
+    const lastColumn = getColumn(column.idx + colSpan - 1);
     const columnWidth = getColumnWidth(lastColumn);
     const { insetInlineStart } = getCellStyle(lastColumn, 1);
     const marginEnd = 'calc(var(--rdg-drag-handle-size) * -0.5 + 1px)';
@@ -1127,7 +1141,7 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(props: DataGridPr
         ? mapViewportColumnsOutsideOfViewport
         : mapViewportColumns;
 
-    const row = rows[rowIdx];
+    const row = getRow(rowIdx);
     const gridRowStart = headerAndTopSummaryRowsCount + rowIdx + 1;
     let key: K | number = rowIdx;
     let isRowSelected = false;
