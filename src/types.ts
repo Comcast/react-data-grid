@@ -463,14 +463,39 @@ export interface SetActivePositionOptions {
 }
 
 export interface ColumnWidth {
-  /** `'resized'` if the user resized the column, or `'measured'` if the grid measured it */
-  readonly type: 'resized' | 'measured';
+  /**
+   * `'measured'` if the grid measured the column, or `'resized'` if the user resized it.
+   * Measured widths are only a cache that the grid re-evaluates when it is mounted, when the grid or a column is resized,
+   * and when `columnWidths` changes, and they are ignored for columns whose `width` is a number.
+   * Resized widths are preserved, including for columns that are not rendered,
+   * and clamped between the column's `minWidth` and `maxWidth`.
+   */
+  readonly type: 'measured' | 'resized';
   /** The width in pixels */
   readonly width: number;
 }
 
 export type ColumnWidths = ReadonlyMap<string, ColumnWidth>;
 
-export type Direction = 'ltr' | 'rtl';
+/**
+ * `resizing` and `autosizing` are transient states that only exist while the user is
+ * resizing a column. They are internal and are never exposed via `onColumnWidthsChange`.
+ */
+export type InternalColumnWidth =
+  | ColumnWidth
+  | {
+      readonly type: 'resizing';
+      readonly width: number;
+    }
+  | {
+      readonly type: 'autosizing';
+      readonly width: 'max-content';
+      /** Returns the width to keep once the column is measured, or `undefined` to remove it */
+      readonly onMeasure: (width: number) => ColumnWidth | undefined;
+    };
 
-export type ResizedWidth = number | 'max-content';
+export type InternalColumnWidths = ReadonlyMap<string, InternalColumnWidth>;
+
+export type ResizedWidth = InternalColumnWidth['width'];
+
+export type Direction = 'ltr' | 'rtl';
