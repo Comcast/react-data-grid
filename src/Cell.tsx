@@ -128,6 +128,9 @@ function Cell<R, SR>({
   );
 }
 
+/**
+ * The default cell component. Can be wrapped via the {@linkcode Renderers.renderCell | renderers.renderCell} prop.
+ */
 const MemoCell = memo(Cell) as <R, SR>(props: RenderCellProps<R, SR>) => React.JSX.Element;
 
 export { MemoCell as Cell };

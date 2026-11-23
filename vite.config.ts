@@ -81,6 +81,20 @@ export default defineConfig({
         command: 'tsc --build',
         cache: false
       },
+      pack: {
+        command: 'vp pack',
+        cache: {
+          // `vp pack` cleans `lib/` before writing to it
+          input: [{ auto: true }, '!lib/**']
+        }
+      },
+      // generates the API reference of the README from the declarations and JSDoc comments of `lib/index.d.ts`
+      docs: {
+        dependsOn: ['pack'],
+        command: ['node scripts/generateApiDocs.ts', 'vp fmt README.md'],
+        // the README is both an input and the output
+        cache: false
+      },
       'install-browsers': {
         command: isCI ? 'bash .github/install-browsers.sh' : 'playwright install --no-shell',
         // browsers are installed outside the workspace, so they cannot be restored from the cache
@@ -100,8 +114,11 @@ export default defineConfig({
           // the root cause of errors reported by later checks
           'vp run typecheck',
           'vp check',
+          // runs `vp pack`, then generates the API reference from its output
+          'vp run docs',
+          // after the docs, to lint the generated API reference
           'vp run eslint',
-          'vp pack',
+          'git diff --exit-code README.md',
           'vp build',
           'git diff --exit-code website/routeTree.gen.ts',
           'vp run test'
@@ -343,7 +360,7 @@ export default defineConfig({
   lint: {
     ignorePatterns: ['/website/routeTree.gen.ts'],
 
-    plugins: ['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
+    plugins: ['eslint', 'jsdoc', 'oxc', 'react', 'typescript', 'unicorn', 'vitest'],
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
 
     options: {
@@ -360,7 +377,7 @@ export default defineConfig({
     // https://oxc.rs/docs/guide/usage/linter/rules.html
     /*
 // copy all the rules from the rules table for easy pasting
-const groups = new Set(['eslint', 'oxc', 'react', 'typescript', 'unicorn', 'vitest']);
+const groups = new Set(['eslint', 'jsdoc', 'oxc', 'react', 'typescript', 'unicorn', 'vitest']);
 copy(
   Iterator.from(document.querySelectorAll('tbody tr'))
     .map((row) => [
@@ -565,6 +582,29 @@ copy(
       'eslint/valid-typeof': ['warn', { requireStringLiterals: true }],
       'eslint/vars-on-top': 'off',
       'eslint/yoda': 'off',
+      'jsdoc/check-access': 'warn',
+      'jsdoc/check-property-names': 'warn',
+      'jsdoc/check-tag-names': 'warn',
+      'jsdoc/empty-tags': 'warn',
+      'jsdoc/implements-on-classes': 'warn',
+      'jsdoc/no-blank-blocks': 'warn',
+      'jsdoc/no-defaults': 'warn',
+      'jsdoc/require-param': 'off',
+      'jsdoc/require-param-description': 'warn',
+      'jsdoc/require-param-name': 'warn',
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/require-property': 'warn',
+      'jsdoc/require-property-description': 'warn',
+      'jsdoc/require-property-name': 'warn',
+      'jsdoc/require-property-type': 'off',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/require-returns-description': 'warn',
+      'jsdoc/require-returns-type': 'off',
+      'jsdoc/require-throws-description': 'warn',
+      'jsdoc/require-throws-type': 'off',
+      'jsdoc/require-yields': 'warn',
+      'jsdoc/require-yields-description': 'warn',
+      'jsdoc/require-yields-type': 'off',
       'oxc/approx-constant': 'warn',
       'oxc/bad-array-method-on-arguments': 'warn',
       'oxc/bad-bitwise-operator': 'warn',

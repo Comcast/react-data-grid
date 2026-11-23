@@ -22,6 +22,20 @@ const checkbox = css`
 
 const checkboxClassname = `rdg-checkbox-input ${checkbox}`;
 
+/**
+ * Renders a checkbox input with proper styling and accessibility.
+ *
+ * @example
+ * ```tsx
+ * import { DataGrid, renderCheckbox } from 'react-data-grid';
+ *
+ * <DataGrid
+ *   renderers={{
+ *     renderCheckbox: (props) => renderCheckbox({ ...props, 'aria-label': 'Select row' })
+ *   }}
+ * />;
+ * ```
+ */
 export function renderCheckbox({ onChange, indeterminate, ...props }: RenderCheckboxProps) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.checked, (e.nativeEvent as MouseEvent).shiftKey);
