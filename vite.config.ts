@@ -91,14 +91,7 @@ export default defineConfig({
         dependsOn: ['install-browsers'],
         cache: {
           // `CI` enables visual tests, `GITHUB_WORKFLOW` enables coverage
-          env: ['CI', 'GITHUB_WORKFLOW'],
-          input: [
-            { auto: true },
-            // failing tests like `test.fails()` output screenshot failures, invalidating the task cache
-            '!.vitest/**',
-            '!coverage/**',
-            '!node_modules/.cache/vite/**'
-          ]
+          env: ['CI', 'GITHUB_WORKFLOW']
         }
       },
       ci: {
@@ -112,11 +105,7 @@ export default defineConfig({
           'vp build',
           'git diff --exit-code website/routeTree.gen.ts',
           'vp run test'
-        ],
-        cache: {
-          // `vp pack` cleans `lib/` before writing to it
-          input: [{ auto: true }, '!lib/**']
-        }
+        ]
       },
       // the first step of a release, see the header of `.github/workflows/publish.yml`:
       // arguments are passed to `vp pm version`, as `vp run` appends them to the last command
