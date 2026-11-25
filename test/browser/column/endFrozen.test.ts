@@ -6,6 +6,7 @@ import {
   cellFrozenStartClassname,
   cellFrozenEndClassname
 } from '../../../src/style/cell';
+import { rowActiveClassname } from '../../../src/style/row';
 import { getCellsAtRowIndex, setup } from '../utils';
 
 const headerCells = page.getHeaderCell();
@@ -389,9 +390,9 @@ test('selection outline paints on edge-frozen cells when row is active', async (
 
   await setup({ columns, rows });
 
-  // Trigger the `&[tabindex='0']` rule by setting the attribute directly
+  // Trigger the active row rule by setting the class directly
   const firstRow = page.getRow().nth(0).element() as HTMLElement;
-  firstRow.setAttribute('tabindex', '0');
+  firstRow.classList.add(rowActiveClassname);
 
   const cells = firstRow.children;
   const startCell = cells[0] as HTMLElement;

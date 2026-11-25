@@ -10,6 +10,14 @@ const root = css`
     *::after {
       box-sizing: inherit;
     }
+
+    /*
+     * If the root's children inherited box-sizing, Chromium would restyle all of them
+     * whenever a non-inherited style of the root changes, like its scroll padding.
+     */
+    > * {
+      box-sizing: border-box;
+    }
   }
 
   @layer rdg.Root {
