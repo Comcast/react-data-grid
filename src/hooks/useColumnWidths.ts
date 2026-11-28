@@ -28,16 +28,18 @@ export function useColumnWidths<R, SR>(
     columnsCanFlex &&
     // there is enough space for columns to flex and the grid was resized
     gridWidth !== prevGridWidth;
-  const newTemplateColumns = [...templateColumns];
+  let newTemplateColumns = templateColumns;
   const columnsToMeasure: string[] = [];
 
   for (const { key, idx, width } of viewportColumns) {
     const columnWidth = columnWidths.get(key);
     if (key === columnToAutoResize?.key) {
-      newTemplateColumns[idx] =
+      newTemplateColumns = newTemplateColumns.with(
+        idx,
         columnToAutoResize.width === 'max-content'
           ? columnToAutoResize.width
-          : `${columnToAutoResize.width}px`;
+          : `${columnToAutoResize.width}px`
+      );
       columnsToMeasure.push(key);
     } else if (
       typeof width === 'string' &&
@@ -47,7 +49,7 @@ export function useColumnWidths<R, SR>(
         columnsToMeasureOnResize?.has(key) === true ||
         columnWidth === undefined)
     ) {
-      newTemplateColumns[idx] = width;
+      newTemplateColumns = newTemplateColumns.with(idx, width);
       columnsToMeasure.push(key);
     }
   }
